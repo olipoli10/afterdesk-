@@ -2,8 +2,9 @@ import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
-import { personalOutboundSchema, sendPersonalTwilio, twilioDispatchPolicy, type OutboundKind } from "./twilio-outbound";
+import { personalOutboundSchema, sendPersonalTwilio, twilioDispatchPolicy, type OutboundKind, type PersonalOutbound } from "./twilio-outbound";
 import type { ConnectorEnvironment } from "./google-client";
+import { requireGoogleReadAuthority } from "./google-connection";
 
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 type DB = Prisma.TransactionClient | typeof prisma;
@@ -11,6 +12,19 @@ async function requireSelfRecipient(db: DB, userId: string, workspaceId: string,
   const member = await db.constructionWorkspaceMember.findFirst({ where: { workspaceId, userId, status: "active", role: { in: ["owner", "admin"] }, workspace: { status: "active" } } });
   const identity = await db.constructionCommunicationIdentity.findFirst({ where: { workspaceId, userId, channel: "sms", normalizedAddress: to, verified: true, status: "active", permissions: { has: "COMMAND" } } });
   if (!member || !identity) throw new Error("VERIFIED_SELF_RECIPIENT_REQUIRED");
+}
+/** Source-derived replies retain their disclosure authority even when somebody
+ * uses the ordinary approval endpoint instead of the automatic-reply worker. */
+async function requireCurrentReplySource(db: DB, row: { workspaceId: string; createdByUserId: string; idempotencyKey: string },
+  request: PersonalOutbound, env: ConnectorEnvironment) {
+  if (!request.sourceOperationId && !row.idempotencyKey.startsWith("reply:")) return;
+  if (!request.sourceOperationId || row.idempotencyKey !== `reply:${request.sourceOperationId}`) throw new Error("AUTOMATIC_REPLY_REFUSED");
+  const source = await db.personalAssistantOperation.findFirst({ where: { id: request.sourceOperationId, workspaceId: row.workspaceId,
+    createdByUserId: row.createdByUserId, kind: "personal_sms_inbound", status: "completed" } });
+  const inbound = source?.request as { from?: string; to?: string } | undefined;
+  const answer = source?.result as { reply?: string; source?: string; googleReadAuthority?: unknown } | undefined;
+  if (!source || inbound?.from !== request.to || inbound.to !== request.from || answer?.reply !== request.text) throw new Error("AUTOMATIC_REPLY_REFUSED");
+  if (answer.source === "GOOGLE_CALENDAR") await requireGoogleReadAuthority(db, row.createdByUserId, row.workspaceId, answer.googleReadAuthority, env);
 }
 export async function preparePersonalOutbound(input: { userId: string; workspaceId: string; kind: OutboundKind; to: string; text: string; requestId: string }, env: ConnectorEnvironment = process.env) {
   return prisma.$transaction(tx => preparePersonalOutboundInTransaction(tx, input, env), { isolationLevel: "Serializable" });
@@ -36,6 +50,7 @@ export async function approvePersonalOutbound(input: { userId: string; workspace
     const request = personalOutboundSchema.parse(row.request);
     if (hash(JSON.stringify(request)) !== row.requestHash) throw new Error("OUTBOUND_CONTENT_CHANGED");
     await requireSelfRecipient(tx, input.userId, input.workspaceId, request.to);
+    await requireCurrentReplySource(tx, row, request, env);
     const policy = twilioDispatchPolicy(env, row.kind as OutboundKind, request.text);
     const update = await tx.personalAssistantOperation.updateMany({ where: { id: row.id, status: "pending", requestHash: input.expectedRequestHash }, data: { status: "approved", result: { approvedBy: input.userId, approvedHash: row.requestHash, approvedUntil: new Date(Math.min(Date.now() + 600000, policy.expiresAt.getTime())).toISOString() } } });
     if (update.count !== 1) throw new Error("APPROVAL_REFUSED_OR_ALREADY_USED");
@@ -51,6 +66,7 @@ export async function dispatchPersonalOutbound(operationId: string, env: Connect
     const request = personalOutboundSchema.parse(row.request);
     if (hash(JSON.stringify(request)) !== row.requestHash || request.from !== env.TWILIO_PHONE_NUMBER) throw new Error("OUTBOUND_CONTENT_CHANGED");
     await requireSelfRecipient(tx, row.createdByUserId, row.workspaceId, request.to);
+    await requireCurrentReplySource(tx, row, request, env);
     const account = await tx.constructionConnectorAccount.findUniqueOrThrow({ where: { id: row.connectorAccountId } });
     if (account.status !== "connected" || account.revokedAt || account.externalAccountKeyHash !== hash(env.TWILIO_ACCOUNT_SID ?? "")) throw new Error("SMS_CONNECTION_REVOKED");
     const grant = await tx.constructionConnectorGrant.findFirst({ where: { connectorAccountId: account.id, capability: row.kind === "sms_outbound" ? "personal_sms_send" : "personal_voice_send", status: "active", revokedAt: null } });
@@ -66,7 +82,11 @@ export async function dispatchPersonalOutbound(operationId: string, env: Connect
   }, { isolationLevel: "Serializable" });
   let transportAttempted = false;
   try {
-    const result = await sendPersonalTwilio(claimed.row.kind as OutboundKind, claimed.request, env, (...args) => { transportAttempted = true; return transport(...args); }, operationId);
+    const result = await sendPersonalTwilio(claimed.row.kind as OutboundKind, claimed.request, env, async (...args) => {
+      // Recheck after claim/budget latency, immediately before network dispatch.
+      await requireCurrentReplySource(prisma, claimed.row, claimed.request, env);
+      transportAttempted = true; return transport(...args);
+    }, operationId);
     await prisma.personalAssistantOperation.update({ where: { id: operationId }, data: { status: "completed", externalTransportPerformed: true, leaseUntil: null, result: { ...result, acceptedByProvider: true, approvalHash: claimed.row.requestHash } } });
     return result;
   } catch {
@@ -95,10 +115,7 @@ export async function sendAutomaticPersonalReply(operationId: string, env: Conne
   if (!row || row.kind !== "sms_outbound" || !["pending", "approved"].includes(row.status)) throw new Error("AUTOMATIC_REPLY_REFUSED");
   const request = personalOutboundSchema.parse(row.request);
   if (!request.sourceOperationId || row.idempotencyKey !== `reply:${request.sourceOperationId}`) throw new Error("AUTOMATIC_REPLY_REFUSED");
-  const source = await prisma.personalAssistantOperation.findFirst({ where: { id: request.sourceOperationId, workspaceId: row.workspaceId, createdByUserId: row.createdByUserId, kind: "personal_sms_inbound", status: "completed" } });
-  const inbound = source?.request as { from?: string; to?: string } | undefined;
-  const answer = source?.result as { reply?: string } | undefined;
-  if (!source || inbound?.from !== request.to || inbound.to !== request.from || answer?.reply !== request.text) throw new Error("AUTOMATIC_REPLY_REFUSED");
+  await requireCurrentReplySource(prisma, row, request, env);
   const grant = await prisma.constructionConnectorGrant.findFirst({ where: { connectorAccountId: row.connectorAccountId, capability: "personal_sms_send", status: "active", revokedAt: null } });
   if (!grant) throw new Error("AUTOMATIC_REPLY_CONSENT_REQUIRED");
   if (row.status === "pending") await approvePersonalOutbound({ userId: row.createdByUserId, workspaceId: row.workspaceId, operationId: row.id, expectedRequestHash: row.requestHash }, env);

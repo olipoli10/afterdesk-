@@ -1,0 +1,96 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests) 54467ms
+     ✓ finishes SMS source and stored review atomically, without pretending to fetch Google  8348ms
+     ✓ prepares one exact source-quoted Google draft and separate owner reply, with zero approval or transport  5040ms
+     ✓ prepares an exact self SMS only, without sending it  4706ms
+     ✓ never leaves a draft or success reply when final source review refuses: {"rollback":true}  5103ms
+     ✓ never leaves a draft or success reply when final source review refuses: {"revoke":true}  4511ms
+     ✓ does not reserve or admit when disabled or explicit AI consent is revoked  1355ms
+     ✓ rolls back AI, child, gateway and CAD reservation if the USD hold refuses  2100ms
+     ✓ admits once under concurrency, stores only a proposal, never settles or replays  5436ms
+     ✓ refuses transport after consent revocation and preserves held exposure  2919ms
+     ✓ refuses dispatch when the account USD cap is withdrawn after admission  2436ms
+     ✓ drops a proposal if permission changes during model latency and never retries  3374ms
+     ✓ does not accept a proposal when the USD ceiling is removed during latency  3064ms
+     ✓ keeps unknown callback outcomes and both reservations, without business writes  3110ms
+     ✓ records a pre-dispatch expired claim without a callback, refund or second claim  2960ms
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (8 tests) 14474ms
+     ✓ prepares without transport then inserts exactly once after owner approval  3909ms
+     ✓ withholds calendar success on uncertain write and never retries automatically  1460ms
+     ✓ stores encrypted tokens, scrubs one-use material and survives reconnect  2944ms
+     ✓ rejects a wrong browser correlation before any token exchange  389ms
+     ✓ lets only one concurrent callback exchange the code  2479ms
+     ✓ refuses cross-workspace access and clears credentials on local disconnect  1414ms
+     ✓ does not reconnect a connection revoked during the exchange  855ms
+     ✓ reads through granted authority and refuses a revoked read grant  1022ms
+ ✓ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests) 12599ms
+     ✓ prepares a requested account/grant without consent, key or transport  2389ms
+     ✓ provisioning encrypts a fake key but never auto-grants AI consent  499ms
+     ✓ explicit consent does not manufacture a connected credential  316ms
+     ✓ lazy access resolves only the current owner/source/credential binding  922ms
+     ✓ withholds lazy access after SMS identity revoked  1004ms
+     ✓ withholds lazy access after SMS identity permissions  981ms
+     ✓ withholds lazy access after SMS identity rebound  1160ms
+     ✓ local revoke invalidates stored consent/key but preserves source evidence  1059ms
+     ✓ credential rotation fences old authority and resolves only the replacement  1302ms
+     ✓ AES-GCM binding rejects another workspace's synthetic ciphertext even under the same test encryption key  1688ms
+     ✓ an administrator who is not the actual workspace owner cannot prepare, consent or provision  409ms
+     ✓ unverified owner loses lazy access and consent capability  867ms
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (6 tests) 10531ms
+     ✓ automatically replies only to the original sender with standing self-SMS consent  3549ms
+     ✓ binds proof from signed intake once, never a phone entered as a string  728ms
+     ✓ sends once after exact approval and records delivery separately  1404ms
+     ✓ serializes competing reservations and never exceeds the configured local allowance  2945ms
+     ✓ retains reservation and refuses replay after an uncertain transport  935ms
+     ✓ revokes pending authority without sending  966ms
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 9393ms
+     ✓ processes through the guarded engine once and durably prepares one unsent reply  2173ms
+     ✓ holds an uncertain engine outcome without silently retrying it  318ms
+     ✓ retains exactly one durable operation across concurrent deliveries and reconnect  4164ms
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 9157ms
+     ✓ reloads the stored source, rejects cross-workspace lookup and observes revocation  2635ms
+     ✓ changes authority fingerprint when connector version changes and refuses changed source  686ms
+     ✓ enforces personal purpose, non-null unique FK and immutable binding in PostgreSQL  943ms
+     ✓ fences one personal attempt across real concurrent transactions and rejects replay  2807ms
+     ✓ rolls back account USD exposure with its parent transaction and serializes competing holds  2083ms
+ ❯ specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts (3 tests | 1 failed) 8327ms
+     ✓ persists exact authority with one reply, no model admission, and survives reconnect  5608ms
+     ✓ does not commit a reply when Google is disconnected after the read  1475ms
+     × invalidates a saved disclosure receipt after grant revocation and rejects another workspace 1242ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts > SMS deterministic Google read with disposable PG and fake transport > invalidates a saved disclosure receipt after grant revocation and rejects another workspace
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorGrant.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts:66:45
+
+  63 const f = await fixture();
+  64 const read = await readGoogleCalendarWithAuthority(f.userId, f.workspaceId, new Date().toISOString(), new Date(Date.now() + 3600000).toISOString(), f.env, f.client);
+  65 await expect(requireGoogleReadAuthority(prisma, f.userId, "another-workspace", read.authority, f.env)).rejects.toThrow("GOOGLE_READ_ACCESS_REFUSED");
+→ 66 await prisma.constructionConnectorGrant.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorGrant\" violates check constraint \"ConstructionConnectorGrant_revoked_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv1evoi0027i5c8dcg4cpsg, cmtv1evdm0025i5c8crplrr1k, calendar_read, revoked, {openid,https://www.googleapis.com/auth/calendar.events.readonly..., {openid,https://www.googleapis.com/auth/calendar.events.readonly..., 1, 2026-09-10 04:38:43.169, 2026-09-10 04:38:43.472, 2026-09-10 04:38:43.171, 2026-09-10 04:38:43.473)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts:66:5
+     64|     const read = await readGoogleCalendarWithAuthority(f.userId, f.wor…
+     65|     await expect(requireGoogleReadAuthority(prisma, f.userId, "another…
+     66|     await prisma.constructionConnectorGrant.update({ where: { id: read…
+       |     ^
+     67|     await expect(requireGoogleReadAuthority(prisma, f.userId, f.worksp…
+     68|     expect(f.transport).toHaveBeenCalledTimes(3);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 53 passed (54)
+   Start at  00:36:35
+   Duration  128.34s (transform 1.73s, setup 0ms, import 8.02s, tests 118.95s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

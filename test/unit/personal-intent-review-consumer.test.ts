@@ -48,6 +48,23 @@ beforeEach(() => {
 });
 
 describe("stored personal candidate review consumer (local, mocked persistence)", () => {
+  it.each([["MISSING_END_TIME", "À quelle heure"], ["AMBIGUOUS_TIME", "matin"], ["UNSUPPORTED_RECIPIENT", "numéro"], ["MISSING_CONTEXT", "contexte"], ["AMBIGUOUS_CONTACT", "destinataire"], ["UNSUPPORTED_REQUEST", "pas prise en charge"]] as const)("preserves the fixed useful clarification for %s", async (reason, questionPart) => {
+    const f = fixture("Ajoute visite demain à 14h", "calendar");
+    f.proposal.actions = [{ id: "a", kind: "CLARIFY", reason, dependsOn: [] }]; f.reseal();
+    expect(await prepareStoredPersonalIntentReview(f.tx, f.input, env)).toMatchObject({ actions: [{ status: "CLARIFY", question: expect.stringContaining(questionPart) }] });
+    expect(shared.calendar).not.toHaveBeenCalled(); expect(shared.outbound).not.toHaveBeenCalled();
+  });
+  it("prepares the complete natural de interval from unchanged source spans", async () => {
+    const f = fixture("Ajoute visite demain de 14h à 15h", "calendar");
+    const action = f.proposal.actions[0]; if (action.kind !== "PREPARE_CALENDAR_EVENT") throw new Error("fixture");
+    action.starts = f.span("demain de 14h"); f.reseal();
+    expect(await prepareStoredPersonalIntentReview(f.tx, f.input, env)).toMatchObject({ actions: [{ status: "PREPARED_UNSENT", draft: { startsAt: "2026-09-11T18:00:00.000Z", endsAt: "2026-09-11T19:00:00.000Z" } }] });
+  });
+  it("does not create an approvable draft when the source explicitly names another timezone", async () => {
+    const f = fixture("Ajoute visite demain à 14h à 15h, heure de Vancouver", "calendar");
+    expect(await prepareStoredPersonalIntentReview(f.tx, f.input, env)).toMatchObject({ actions: [{ status: "CLARIFY", question: expect.stringContaining("fuseau horaire") }] });
+    expect(shared.calendar).not.toHaveBeenCalled();
+  });
   it("is OFF before DB access", async () => {
     const f = fixture(); expect(await prepareStoredPersonalIntentReview(f.tx, { ...f.input, enabled: undefined }, env)).toMatchObject({ status: "DISABLED" });
     expect(f.query).not.toHaveBeenCalled(); expect(shared.outbound).not.toHaveBeenCalled();

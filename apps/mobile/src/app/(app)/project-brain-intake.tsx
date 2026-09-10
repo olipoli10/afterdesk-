@@ -7,7 +7,7 @@ import {
   useAudioRecorderState,
 } from "expo-audio";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button, Card, Heading, Label, Loading, Notice, Screen, colors, sharedStyles } from "@/components/ui";
 import {
@@ -30,16 +30,8 @@ import {
   type ProjectBrainCommandAttempt,
 } from "@/lib/project-brain-intent-queue";
 import { mobileProductCopy } from "@/lib/product-experience";
+import { createProjectBrainSourcePicker, PROJECT_BRAIN_PICKER_TYPES, projectBrainPickerMessage, type ProjectBrainPickerContext } from "@/lib/project-brain-source-picker";
 import { useMobileSession } from "@/state/mobile-session";
-
-const PICKER_TYPES = ["image/jpeg", "image/png", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
-type SupportedMime = MobileProjectBrainSourceCommand["mimeType"];
-function mimeFor(name: string, reported?: string | null): SupportedMime | null {
-  if (reported && PICKER_TYPES.includes(reported)) return reported as SupportedMime;
-  const extension = name.split(".").pop()?.toLowerCase();
-  return ({ jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" } as Partial<Record<string, SupportedMime>>)[extension ?? ""] ?? null;
-}
-function kindFor(mime: string): "PHOTO" | "DOCUMENT" { return mime.startsWith("image/") ? "PHOTO" : "DOCUMENT"; }
 
 export default function ProjectBrainIntakeScreen() {
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
@@ -62,6 +54,11 @@ export default function ProjectBrainIntakeScreen() {
   const [blockers, setBlockers] = useState("");
   const [nextDecision, setNextDecision] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [pickerBusy, setPickerBusy] = useState(false);
+  const [sourcePicker] = useState(createProjectBrainSourcePicker);
+  const pickerContextRef = useRef<ProjectBrainPickerContext | null>(null);
+  const pickerMounted = useRef(true);
+  useEffect(() => { pickerMounted.current = true; return () => { pickerMounted.current = false; }; }, []);
   const recordingSeen = useRef(false);
   const manualVoiceStop = useRef(false);
   const finalizingVoice = useRef(false);
@@ -85,13 +82,21 @@ export default function ProjectBrainIntakeScreen() {
   }, [briefHydrationKey, intake?.ownerBrief]);
 
   const canManage = activeWorkspace?.role === "OWNER" || activeWorkspace?.role === "OFFICE_MANAGER";
-  const busy = projectBrainLoadState === "LOADING"
+  const busy = pickerBusy || projectBrainLoadState === "LOADING"
     || commandQueue.some((item) => item.state === "SENDING")
     || sourceQueue.some((item) => item.state === "SENDING");
   const hasPendingCommand = commandQueue.some((item) => item.state === "READY" || item.state === "SENDING" || item.state === "OUTCOME_UNKNOWN");
   const hasUnknownSourceOutcome = sourceQueue.some((item) => item.state === "OUTCOME_UNKNOWN");
   const intakeId = intake?.id;
   const intakeStateVersion = intake?.stateVersion;
+  const pickerWorkspaceId = activeWorkspace?.id;
+  const pickerIntakeStatus = intake?.status;
+  useLayoutEffect(() => {
+    pickerContextRef.current = canManage && pickerWorkspaceId && projectId && intakeId && intakeStateVersion
+      && pickerIntakeStatus === "DRAFT" && !hasPendingCommand && projectBrainLoadState !== "LOADING"
+      ? { workspaceId: pickerWorkspaceId, projectId, intakeId, stateVersion: intakeStateVersion } : null;
+    return () => { pickerContextRef.current = null; };
+  }, [canManage, pickerWorkspaceId, projectId, intakeId, intakeStateVersion, pickerIntakeStatus, hasPendingCommand, projectBrainLoadState]);
   const briefDraft = { summary, scope, importantPeople, importantDates, blockers, nextDecision };
   const briefIsDurable = projectBrainOwnerBriefMatches(intake?.ownerBrief ?? null, briefDraft);
   const commandBase = () => ({ schemaVersion: 1 as const, commandId: globalThis.crypto.randomUUID(), workspaceId: activeWorkspace!.id, projectId: projectId! });
@@ -117,9 +122,9 @@ export default function ProjectBrainIntakeScreen() {
     await runCommand(command as MobileProjectBrainCommand);
   };
 
-  const sendSources = async (sources: Omit<MobileProjectBrainSourceCommand, "expectedStateVersion">[]) => {
-    if (!intakeId || !intakeStateVersion) return;
-    const attempts = createProjectBrainSourceAttempts(sources, intakeStateVersion);
+  const sendSources = async (sources: Omit<MobileProjectBrainSourceCommand, "expectedStateVersion">[], expectedVersion = intakeStateVersion) => {
+    if (!intakeId || !expectedVersion) return;
+    const attempts = createProjectBrainSourceAttempts(sources, expectedVersion);
     try {
       const durableAttempts = await stageProjectBrainSources(attempts);
       for (const attempt of durableAttempts) {
@@ -131,17 +136,29 @@ export default function ProjectBrainIntakeScreen() {
     }
   };
   const pickSources = async () => {
-    if (!intake) return;
+    const pickerContext = pickerContextRef.current;
+    if (sourcePicker.isBusy() || !pickerContext || busy || recorderState.isRecording) return;
     setLocalError(null);
-    const picked = await DocumentPicker.getDocumentAsync({ type: PICKER_TYPES, multiple: true, copyToCacheDirectory: true });
-    if (picked.canceled) return;
-    const sources: Omit<MobileProjectBrainSourceCommand, "expectedStateVersion">[] = [];
-    for (const asset of picked.assets) {
-      const mimeType = mimeFor(asset.name, asset.mimeType);
-      if (!mimeType || !asset.size || asset.size > PROJECT_BRAIN_MAX_SOURCE_BYTES) { setLocalError(copy.invalidFile); continue; }
-      sources.push({ ...commandBase(), action: "ADMIT_PROJECT_BRAIN_SOURCE", intakeId: intake.id, kind: kindFor(mimeType), fileName: asset.name, mimeType, sizeBytes: asset.size, durationMs: null, uri: asset.uri });
+    setPickerBusy(true);
+    try {
+      const result = await sourcePicker.run({
+        context: pickerContext,
+        readCurrentContext: () => pickerContextRef.current,
+        pick: () => DocumentPicker.getDocumentAsync({ type: PROJECT_BRAIN_PICKER_TYPES, multiple: true, copyToCacheDirectory: true }),
+        onSelected: async (context, sources) => {
+          await sendSources(sources.map((source) => ({ ...source, schemaVersion: 1, commandId: globalThis.crypto.randomUUID(),
+            action: "ADMIT_PROJECT_BRAIN_SOURCE", workspaceId: context.workspaceId, projectId: context.projectId, intakeId: context.intakeId })), context.stateVersion);
+        },
+      });
+      if (!pickerMounted.current) return;
+      if (result.status === "INVALID_SELECTION" || (result.status === "SELECTED" && result.rejectedCount > 0)) setLocalError(copy.invalidFile);
+      else {
+        const message = projectBrainPickerMessage(result.status, activeWorkspace?.defaultLocale);
+        if (message) setLocalError(message);
+      }
+    } finally {
+      if (pickerMounted.current) setPickerBusy(false);
     }
-    await sendSources(sources);
   };
   const startVoice = async () => {
     setLocalError(null);
@@ -225,7 +242,7 @@ export default function ProjectBrainIntakeScreen() {
       {!intake ? <Card><Text style={sharedStyles.name}>{project?.name ?? projectId}</Text><Text style={sharedStyles.muted}>{copy.created}</Text><Button disabled={!canManage || busy || hasPendingCommand} accessibilityRole="button" accessibilityLabel={copy.created} onPress={create}>{copy.created}</Button></Card> : (
         <>
           <Card><Label>{copy.sources}</Label>
-            <Button disabled={busy || hasPendingCommand || intake.status !== "DRAFT"} accessibilityRole="button" accessibilityLabel={copy.add} onPress={pickSources}>{copy.add}</Button>
+            <Button disabled={busy || recorderState.isRecording || hasPendingCommand || intake.status !== "DRAFT"} accessibilityRole="button" accessibilityLabel={copy.add} onPress={pickSources}>{copy.add}</Button>
             <Button tone="secondary" disabled={busy || hasPendingCommand || intake.status !== "DRAFT" || Platform.OS === "web"} accessibilityRole="button" accessibilityLabel={recorderState.isRecording ? copy.stop : copy.voice} onPress={recorderState.isRecording ? stopVoice : startVoice}>{recorderState.isRecording ? copy.stop : copy.voice}</Button>
             {Platform.OS === "web" ? <Text style={sharedStyles.muted}>{copy.voiceMobileOnly}</Text> : null}
             {intake.sources.length ? intake.sources.map((source) => <View key={source.id} style={styles.source}><Text style={sharedStyles.name}>{source.displayName}</Text><Text style={sharedStyles.muted}>{copy.sourceKind[source.kind]} · {Math.ceil(source.sizeBytes / 1024)} {copy.kilobytes} · {copy.localOnly}</Text></View>) : <Text style={sharedStyles.muted}>{copy.none}</Text>}

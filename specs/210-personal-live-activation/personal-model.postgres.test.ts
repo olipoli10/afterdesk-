@@ -81,7 +81,7 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
       grants: { create: { capability, status: "active", grantedAt: f.now, requestedScopes: [scope], grantedScopes: [scope] } } } });
   }
   it("finishes SMS source and stored review atomically, without pretending to fetch Google", async () => {
-    const f = await personalModelFixture(); await calendarAccount(f, "calendar_read");
+    const f = await personalModelFixture("Regarde mon calendrier pour demain."); await calendarAccount(f, "calendar_read");
     const { result, source } = await reviewedSource(f, () => [{ id: "calendar", kind: "READ_CALENDAR", dependsOn: [], period: span(f.body, "demain") }]);
     expect(result.status).toBe("COMPLETED_REPLY_PREPARED"); expect(source.status).toBe("completed");
     expect(source.result).toMatchObject({ source: "MODEL_REVIEW_ONLY", replyDelivery: "PREPARED_UNSENT", personalModelReview: {

@@ -22,6 +22,33 @@ async function requireOwner(db: Prisma.TransactionClient | typeof prisma, userId
   if (!member) throw new Error("CONNECTION_ACCESS_REFUSED");
 }
 const binding = (workspaceId: string, accountId: string, purpose: string) => JSON.stringify([workspaceId, accountId, purpose]);
+const authorityId = z.string().min(1).max(191);
+export const googleReadAuthoritySchema = z.object({ schemaVersion: z.literal(1), userId: authorityId, workspaceId: authorityId,
+  accountId: authorityId, accountVersion: z.number().int().nonnegative(), credentialId: authorityId,
+  readGrantId: authorityId, readGrantVersion: z.number().int().nonnegative() }).strict();
+export type GoogleReadAuthority = Readonly<z.infer<typeof googleReadAuthoritySchema>>;
+
+/** Internal read/disclosure receipt, not action authority. A reconnect, credential
+ * replacement or read-grant revision invalidates the previously read snapshot. */
+export async function requireGoogleReadAuthority(db: Prisma.TransactionClient | typeof prisma, userId: string, workspaceId: string,
+  untrusted: unknown, env: ConnectorEnvironment = process.env): Promise<GoogleReadAuthority> {
+  requireGooglePilot(env);
+  const authority = googleReadAuthoritySchema.parse(untrusted);
+  if (authority.userId !== userId || authority.workspaceId !== workspaceId) throw new Error("GOOGLE_READ_ACCESS_REFUSED");
+  const current = await db.$queryRawUnsafe<Array<{ id: string }>>(`SELECT a.id FROM "ConstructionConnectorAccount" a
+    JOIN "ConstructionWorkspace" w ON w.id=a."workspaceId"
+    JOIN "ConstructionWorkspaceMember" m ON m."workspaceId"=w.id AND m."userId"=$2
+    JOIN "ConstructionConnectorGrant" g ON g."connectorAccountId"=a.id
+    JOIN "ConstructionConnectorCredential" c ON c.id=a."credentialRef" AND c."connectorAccountId"=a.id AND c."workspaceId"=w.id
+    WHERE w.id=$1 AND w.status='active' AND m.status='active' AND m.role IN ('owner','admin')
+      AND a.id=$3 AND a.provider='google_calendar' AND a.status='connected' AND a."revokedAt" IS NULL AND a."stateVersion"=$4
+      AND c.id=$5 AND c."revokedAt" IS NULL
+      AND g.id=$6 AND g."stateVersion"=$7 AND g.capability='calendar_read' AND g.status='active' AND g."revokedAt" IS NULL
+    FOR SHARE OF w,m,a,g,c`, workspaceId, userId, authority.accountId, authority.accountVersion, authority.credentialId,
+    authority.readGrantId, authority.readGrantVersion);
+  if (current.length !== 1) throw new Error("GOOGLE_READ_ACCESS_REFUSED");
+  return Object.freeze(authority);
+}
 
 export async function beginGoogleConnection(input: { userId: string; workspaceId: string; mode: CalendarConnectionMode }, env: ConnectorEnvironment = process.env) {
   const key = requireConnectorKey(env.ENDVERA_CONNECTOR_ENCRYPTION_KEY);
@@ -121,12 +148,15 @@ export async function googleTokensForOwner(userId: string, workspaceId: string, 
   if (!grant) throw new Error("GOOGLE_READ_ACCESS_REFUSED");
   const credential = await prisma.constructionConnectorCredential.findFirst({ where: { id: account.credentialRef, connectorAccountId: account.id, workspaceId, revokedAt: null } });
   if (!credential) throw new Error("GOOGLE_NOT_CONNECTED");
+  const readAuthority = await requireGoogleReadAuthority(prisma, userId, workspaceId, { schemaVersion: 1, userId, workspaceId,
+    accountId: account.id, accountVersion: account.stateVersion, credentialId: credential.id, readGrantId: grant.id, readGrantVersion: grant.stateVersion }, env);
   const key = requireConnectorKey(env.ENDVERA_CONNECTOR_ENCRYPTION_KEY);
   const aad = binding(workspaceId, account.id, `tokens:${credential.id}`);
   let tokens = googleTokensSchema.parse(JSON.parse(openConnectorSecret(credential.ciphertext, aad, key)));
   if (tokens.expiresAt <= Date.now() + 60_000) {
     tokens = await client.refresh(tokens);
     await prisma.$transaction(async tx => {
+      await requireGoogleReadAuthority(tx, userId, workspaceId, readAuthority, env);
       await requireOwner(tx, userId, workspaceId);
       const active = await tx.constructionConnectorAccount.findFirst({ where: { id: account.id, stateVersion: account.stateVersion, status: "connected", credentialRef: credential.id } });
       if (!active) throw new Error("GOOGLE_CONNECTION_CHANGED");
@@ -134,7 +164,7 @@ export async function googleTokensForOwner(userId: string, workspaceId: string, 
       if (updated.count !== 1) throw new Error("GOOGLE_CONNECTION_CHANGED");
     }, { isolationLevel: "Serializable" });
   }
-  return { accountId: account.id, accountVersion: account.stateVersion, tokens };
+  return { accountId: account.id, accountVersion: account.stateVersion, tokens, readAuthority };
 }
 
 export async function googleConnectionStatus(userId: string, workspaceId: string, env: ConnectorEnvironment = process.env) {
@@ -147,13 +177,17 @@ export async function googleConnectionStatus(userId: string, workspaceId: string
 }
 
 export async function readGoogleCalendar(userId: string, workspaceId: string, start: string, end: string, env: ConnectorEnvironment = process.env, client = new GoogleCalendarClient(env)) {
-  const { tokens, accountId, accountVersion } = await googleTokensForOwner(userId, workspaceId, env, client);
+  return (await readGoogleCalendarWithAuthority(userId, workspaceId, start, end, env, client)).result;
+}
+
+/** Internal worker variant; public API retains its original result-only shape. */
+export async function readGoogleCalendarWithAuthority(userId: string, workspaceId: string, start: string, end: string, env: ConnectorEnvironment = process.env, client = new GoogleCalendarClient(env)) {
+  const { tokens, readAuthority } = await googleTokensForOwner(userId, workspaceId, env, client);
+  await requireGoogleReadAuthority(prisma, userId, workspaceId, readAuthority, env);
   const result = await client.listEvents(tokens, start, end);
-  // Withhold data if the owner or connection was revoked while Google answered.
-  const status = await googleConnectionStatus(userId, workspaceId, env);
-  const unchanged = await prisma.constructionConnectorAccount.findFirst({ where: { id: accountId, stateVersion: accountVersion, status: "connected", revokedAt: null } });
-  if (!status.readEnabled || !unchanged) throw new Error("GOOGLE_READ_ACCESS_REFUSED");
-  return result;
+  // Withhold results if any bound authority changed while Google answered.
+  await requireGoogleReadAuthority(prisma, userId, workspaceId, readAuthority, env);
+  return { result, authority: readAuthority };
 }
 
 export async function disconnectGoogleLocally(userId: string, workspaceId: string) {

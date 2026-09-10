@@ -1,12 +1,12 @@
 import "server-only";
 import { z } from "zod";
-import { inspectPersonalIntentCandidate, type PersonalIntentInput } from "./contract";
+import { inspectPersonalIntentCandidate, type PersonalIntentInput, type PersonalIntentProposal } from "./contract";
 
 /** Closed local grammar, not a general French date parser.
  * READ: aujourd'hui / aujourd’hui / demain, optionally "pour ", "toute la
  * journée ..." or "... toute la journée". No weekday/week/month inference.
  * START: YYYY-MM-DD[T or space]HH:mm; YYYY-MM-DD à TIME;
- *        aujourd'hui/demain à TIME.
+ *        aujourd'hui/demain à TIME; demain de TIME.
  * END: same forms, or TIME on the START's explicit local date. An earlier end
  * never rolls to tomorrow. Cross-day events must name both dates explicitly.
  * TIME: two-digit HH:mm; H[h] or H[h]MM with H=0 or 13..23;
@@ -21,7 +21,7 @@ export const PERSONAL_TEMPORAL_GRAMMAR_VERSION = "quebec-explicit-calendar-v1";
 const contextSchema = z.object({ receivedAt: z.string().datetime({ offset: true }), timezone: z.string().min(1).max(100) }).strict();
 export type PersonalTemporalContext = Readonly<z.infer<typeof contextSchema>>;
 type Reason = "INVALID_INPUT" | "INVALID_CONTEXT" | "UNSUPPORTED_ACTION" | "UNSUPPORTED_TEMPORAL_GRAMMAR"
-  | "AMBIGUOUS_TIME" | "MISSING_END_TIME" | "INVALID_DATE" | "DST_GAP" | "DST_FOLD" | "END_NOT_AFTER_START";
+  | "AMBIGUOUS_TIME" | "MISSING_END_TIME" | "INVALID_DATE" | "DST_GAP" | "DST_FOLD" | "END_NOT_AFTER_START" | "EXPLICIT_TIMEZONE_UNSUPPORTED";
 const questions: Record<Reason, string> = {
   INVALID_INPUT: "La demande source n’est pas vérifiable. Vérifie la demande dans ENDVERA.",
   INVALID_CONTEXT: "Le moment de réception ou le fuseau horaire doit être vérifié dans ENDVERA.",
@@ -33,7 +33,21 @@ const questions: Record<Reason, string> = {
   DST_GAP: "Cette heure locale n’existe pas à cause du changement d’heure. Choisis une autre heure.",
   DST_FOLD: "Cette heure locale se produit deux fois au changement d’heure. Choisis une heure non ambiguë.",
   END_NOT_AFTER_START: "La fin doit être après le début. Pour un autre jour, précise aussi la date de fin.",
+  EXPLICIT_TIMEZONE_UNSUPPORTED: "Le fuseau horaire indiqué doit être précisé ou correspondre au fuseau du chantier. Aucun décalage n’a été deviné; vérifie le fuseau avant de préparer le rendez-vous.",
 };
+type CandidateClarification = Extract<PersonalIntentProposal["actions"][number], { kind: "CLARIFY" }>["reason"];
+/** Fixed text selected by the strict enum, never candidate-authored questions. */
+export function personalIntentClarificationQuestion(reason: CandidateClarification): string {
+  const templates: Record<CandidateClarification, string> = {
+    AMBIGUOUS_TIME: questions.AMBIGUOUS_TIME,
+    MISSING_END_TIME: questions.MISSING_END_TIME,
+    AMBIGUOUS_CONTACT: "Le destinataire doit être précisé. Ce pilote accepte seulement ton propre numéro vérifié; aucun contact n’a été choisi à ta place.",
+    UNSUPPORTED_RECIPIENT: "Ce pilote accepte seulement ton propre numéro vérifié. Aucun message ou appel à un tiers n’a été préparé.",
+    UNSUPPORTED_REQUEST: "Cette demande n’est pas prise en charge dans ce pilote. Précise une lecture d’agenda, un rendez-vous avec début et fin, ou un message à ton propre numéro.",
+    MISSING_CONTEXT: "Il manque du contexte pour comprendre la demande. Précise l’action et ses détails; aucun ancien message n’a été associé automatiquement.",
+  };
+  return templates[reason] ?? templates.UNSUPPORTED_REQUEST;
+}
 type Failure = Readonly<{ status: "CLARIFY"; reason: Reason; question: string; executionAuthorized: false; preview: null }>;
 type Success = Readonly<{
   status: "RESOLVED_NOT_AUTHORIZED"; executionAuthorized: false; preview: null;
@@ -57,6 +71,31 @@ const dateValid = (date: CalendarDate) => {
 };
 function formatter(timezone: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+}
+/** Source spans alone cannot erase an explicit timezone written elsewhere.
+ * Closed markers only: no city lookup, abbreviation expansion or offset guess.
+ * Canonical IANA aliases may agree with the persisted zone. Everything else
+ * explicitly presented as a timezone requires human clarification. */
+function explicitTimezoneAgrees(source: string, timezone: string): boolean {
+  const canonical = (value: string) => { try { return new Intl.DateTimeFormat("en", { timeZone: value }).resolvedOptions().timeZone; } catch { return null; } };
+  const expected = canonical(timezone);
+  const same = (value: string) => canonical(value) === expected;
+  const text = source.replace(/’/g, "'");
+  // A numeric offset / Z suffix may not be dropped from an exact datetime span.
+  if (/(?<!\d)\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(?:z\b|[+-]\d{2}(?::?\d{2})?\b)/i.test(text)
+    || /\b(?:UTC|GMT)\s*[+-]\s*\d/i.test(text)) return false;
+  const zoneToken = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+)+/;
+  const markers = /\b(?:fuseau(?:\s+horaire)?|timezone|time\s+zone|heure\s+(?:de\s+|du\s+|d'))\s*(?::|=)?\s*/gi;
+  for (const match of text.matchAll(markers)) {
+    const tail = text.slice(match.index + match[0].length);
+    const token = zoneToken.exec(tail)?.[0] ?? /^(?:UTC|GMT)\b/i.exec(tail)?.[0];
+    if (!token || !same(token)) return false;
+  }
+  for (const match of text.matchAll(/\b[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+)+\b/g)) if (!same(match[0])) return false;
+  // Case-sensitive EST avoids interpreting the ordinary French verb "est".
+  if (/\bEST\b/.test(text) || /\b(?:EDT|PST|PDT|CST|CDT|MST|MDT|HNE|HAE|HNP|HAP|CET|CEST)\b/i.test(text)) return false;
+  for (const match of text.matchAll(/\b(?:UTC|GMT)\b/gi)) if (!same(match[0])) return false;
+  return true;
 }
 function parts(date: Date, format: Intl.DateTimeFormat): Wall {
   const data = Object.fromEntries(format.formatToParts(date).map(part => [part.type, part.value]));
@@ -106,7 +145,7 @@ function parseWall(raw: string, today: CalendarDate, endDate?: CalendarDate): Wa
     if (!dateValid(date)) return clarify("INVALID_DATE");
     const parsed = time(iso[4]); return "status" in parsed ? parsed : { ...date, ...parsed };
   }
-  const dated = /^(aujourd'hui|demain|\d{4}-\d{2}-\d{2}) à\s*(.+)$/.exec(quote);
+  const dated = /^(aujourd'hui|demain|\d{4}-\d{2}-\d{2}) à\s*(.+)$/.exec(quote) ?? /^(demain) de\s*(.+)$/.exec(quote);
   if (dated) {
     const [year, month, day] = dated[1].split("-").map(Number);
     const date = dated[1] === "demain" ? nextDate(today) : dated[1] === "aujourd'hui" ? today : { year, month, day };
@@ -137,6 +176,7 @@ export function resolvePersonalCalendarTemporal(input: PersonalIntentInput, rawP
   if (!action) return clarify("INVALID_INPUT");
   if (action.kind === "CLARIFY") return clarify(action.reason === "MISSING_END_TIME" ? "MISSING_END_TIME"
     : action.reason === "AMBIGUOUS_TIME" ? "AMBIGUOUS_TIME" : "UNSUPPORTED_ACTION");
+  if (!explicitTimezoneAgrees(input.source, context.timezone)) return clarify("EXPLICIT_TIMEZONE_UNSUPPORTED");
   let starts: Wall | Failure; let ends: Wall | Failure;
   if (action.kind === "READ_CALENDAR") {
     const quote = normalize(action.period.quote).replace(/^pour /, "").replace(/^toute la journée /, "").replace(/ toute la journée$/, "");

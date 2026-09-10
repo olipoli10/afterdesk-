@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ find: vi.fn(), list: vi.fn(), update: vi.fn(), execute: vi.fn(), transaction: vi.fn(), workspace: vi.fn(), admission: vi.fn(), engine: vi.fn(), send: vi.fn() }));
+const mocks = vi.hoisted(() => ({ find: vi.fn(), list: vi.fn(), update: vi.fn(), execute: vi.fn(), transaction: vi.fn(), workspace: vi.fn(), admission: vi.fn(), engine: vi.fn(), send: vi.fn(), calendar: vi.fn(), googleAuthority: vi.fn() }));
 vi.mock("@/lib/db", () => ({ prisma: {
   personalAssistantOperation: { findUnique: mocks.find, findMany: mocks.list, updateMany: mocks.update },
   constructionWorkspace: { findUniqueOrThrow: mocks.workspace }, $executeRawUnsafe: mocks.execute, $transaction: mocks.transaction,
 } }));
 vi.mock("@/server/personal-assistant/sms-inbox", () => ({ enqueuePersonalSms: mocks.admission }));
 vi.mock("@/server/construction-operating-assistant-r36c/orchestrator", () => ({ processUnifiedAssistantRequest: mocks.engine }));
-vi.mock("@/server/personal-assistant/google-connection", () => ({ readGoogleCalendar: vi.fn() }));
+vi.mock("@/server/personal-assistant/google-connection", () => ({ readGoogleCalendarWithAuthority: mocks.calendar, requireGoogleReadAuthority: mocks.googleAuthority }));
 vi.mock("@/server/personal-assistant/outbox", () => ({ sendAutomaticPersonalReply: mocks.send }));
 import { drainPersonalSms, processPersonalSms } from "@/server/personal-assistant/sms-worker";
 
@@ -26,6 +26,7 @@ beforeEach(() => {
   mocks.find.mockResolvedValue(row); mocks.admission.mockResolvedValue({ operationId: row.id });
   mocks.execute.mockResolvedValue(1); mocks.update.mockResolvedValue({ count: 1 }); mocks.workspace.mockResolvedValue({ defaultTimezone: "America/Toronto" });
   mocks.engine.mockResolvedValue({ reply: "Note préparée.", intent: "UNSUPPORTED" });
+  mocks.googleAuthority.mockResolvedValue({});
   mocks.transaction.mockImplementation(async work => {
     const staged: unknown[] = [];
     const result = await work({ constructionCommunicationIdentity: { findFirst: async () => ({ id: "identity" }) },
@@ -36,6 +37,47 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 
 describe("personal SMS source deadline and exact ownership", () => {
+  const googleAuthority = { schemaVersion: 1, userId: "owner", workspaceId: "workspace", accountId: "google", accountVersion: 2, credentialId: "credential", readGrantId: "grant", readGrantVersion: 1 };
+  const googleRead = { result: { events: [], timeZone: "America/Toronto", complete: true, source: "GOOGLE_CALENDAR" }, authority: googleAuthority };
+  it.each(["true", "false"])("reads an exact day with model=%s without a model or legacy interpreter", async flag => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "Qu’est-ce que j’ai demain?" } });
+    mocks.calendar.mockResolvedValue(googleRead); const model = vi.fn();
+    expect(await processPersonalSms(row.id, { ...env, ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: flag }, { model })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(mocks.calendar).toHaveBeenCalledTimes(1); expect(model).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled();
+    expect(mocks.calendar.mock.calls[0].slice(0, 4)).toEqual(["owner", "workspace", "2026-09-10T04:00:00.000Z", "2026-09-11T04:00:00.000Z"]);
+    expect(mocks.googleAuthority).toHaveBeenCalledTimes(1);
+    const result = JSON.parse(finish.mock.calls[0][6]);
+    expect(result).toMatchObject({ source: "GOOGLE_CALENDAR", googleReadAuthority: googleAuthority, replyDelivery: "PREPARED_UNSENT" });
+    expect(result.reply).toContain("aucun rendez-vous");
+  });
+  it.each(["Qu’est-ce que j’ai demain et annule tout", "Ne regarde pas mon calendrier demain", "Si Marc vient, montre mon horaire demain"])("never routes a mixed/negative/conditional request directly: %s", async body => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body } });
+    const model = vi.fn(async () => ({ reply: "Précise ta demande." }));
+    await processPersonalSms(row.id, { ...env, ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true" }, { model });
+    expect(model).toHaveBeenCalledTimes(1); expect(mocks.calendar).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled();
+  });
+  it.each(["disconnected", "incomplete", "revoked-before-commit"])("does not invent an empty calendar or use model fallback when %s", async failure => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "Mon agenda demain" } });
+    mocks.calendar.mockResolvedValue(googleRead);
+    if (failure === "disconnected") mocks.calendar.mockRejectedValue(new Error("GOOGLE_NOT_CONNECTED"));
+    if (failure === "incomplete") mocks.calendar.mockResolvedValue({ ...googleRead, result: { ...googleRead.result, complete: false } });
+    if (failure === "revoked-before-commit") mocks.googleAuthority.mockRejectedValue(new Error("GOOGLE_READ_ACCESS_REFUSED"));
+    const model = vi.fn();
+    expect(await processPersonalSms(row.id, { ...env, ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true" }, { model })).toMatchObject({ status: "REVIEW_REQUIRED" });
+    expect(model).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled(); expect(committedReplies).toHaveLength(0); expect(finish).not.toHaveBeenCalled();
+  });
+  it("bounds the entire drain by a shorter caller deadline", async () => {
+    mocks.list.mockResolvedValue(Array.from({ length: 10 }, () => ({ id: row.id })));
+    mocks.engine.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({ reply: "Synthétique" }), 20_000)));
+    const pending = drainPersonalSms(env, 10, { deadlineAt: Date.now() + 5_000 });
+    await vi.advanceTimersByTimeAsync(6_000); expect(await pending).toMatchObject({ deadlineReached: true, processed: 0 });
+    expect(mocks.engine).toHaveBeenCalledTimes(1); expect(committedReplies).toHaveLength(0);
+    await vi.advanceTimersByTimeAsync(30_000); expect(committedReplies).toHaveLength(0);
+  });
+  it("rejects nonfinite batch deadlines before doing work", async () => {
+    await expect(drainPersonalSms(env, 1, { deadlineAt: NaN })).rejects.toThrow("SMS_WORKER_DEADLINE_INVALID");
+    expect(mocks.list).not.toHaveBeenCalled();
+  });
   it("uses the model lane exclusively and commits source review with the reply", async () => {
     const review = { status: "REVIEW_PREPARED_NOT_AUTHORIZED" as const, executionAuthorized: false as const, externalTransportPerformed: false as const,
       accounting: "UNSETTLED" as const, automaticRetry: false as const, semanticIntentVerified: false as const, modelChildOperationId: "child",

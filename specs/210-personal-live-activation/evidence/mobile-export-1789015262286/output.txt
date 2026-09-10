@@ -1,0 +1,31 @@
+Using src/app as the root directory for Expo Router.
+React Compiler enabled
+Starting Metro Bundler
+
+Android Bundled 21233ms ..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\entry.js (1691 modules)
+
+› Assets (28):
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\@expo-google-fonts\material-symbols\400Regular\MaterialSymbols_400Regular.ttf (964KB)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\arrow_down.png (9.5KB)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\arrow_right.xml (307B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\checkmark.xml (312B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\error.png (469B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\file.png (138B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\forward.png (188B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\pkg.png (364B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\react-navigation\elements\back-icon-mask.png (653B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\react-navigation\elements\back-icon.png (4 variations | 152B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\react-navigation\elements\clear-icon.png (4 variations | 425B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\react-navigation\elements\close-icon.png (4 variations | 235B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\react-navigation\elements\search-icon.png (4 variations | 599B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\sitemap.png (465B)
+..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\assets\unmatched.png (4.8KB)
+assets\images\icon.png (58KB)
+
+› android bundles (1):
+_expo/static/js/android/entry-7f30e1585b519815835f2a094cdeb4a4.hbc (4.9MB)
+
+› Files (1):
+metadata.json (1.9KB)
+
+Exported: dist-personal-210-mobile-export-1789015262286

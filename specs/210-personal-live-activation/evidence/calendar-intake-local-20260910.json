@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "state": "LOCAL_WAVE_VALIDATED_PROJECT_INCOMPLETE",
+  "recordedAt": "2026-09-10T04:51:00Z",
+  "root": {"passed":3265,"skippedHistorical":3,"receipt":"root-1789015664077/result.json"},
+  "mobile": {"passed":328,"receipt":"mobile-1789015758358/result.json","photoScreenIntegrated":false},
+  "postgres": {"passed":54,"files":7,"receipt":"postgres-1789015674819/result.json","disposableClusterRemoved":true,"fakeTransportOnly":true},
+  "nextBuild": {"passed":true,"receipt":"build-1789015251824/result.json","precedesFinalTemporalChanges":true},
+  "androidExport": {"passed":true,"receipt":"mobile-export-1789015262286/result.json","notSignedApk":true,"precedesUnwiredPhotoComponent":true},
+  "types": {"root":"PASS","mobile":"PASS"},
+  "providerBoundary": {"scannedModules":4828,"violations":0},
+  "independentLocalReviews": {"smsWakeupTests":19,"temporalBoundaryTests":11,"photoHelperTests":40,"operatorRuntimeTests":9,"sameModelAgentsNotIndependentModelQualityEvidence":true},
+  "knownNextRepair": {"outboxIsolatedAuditPassed":1,"outboxIsolatedAuditFailed":7,"scope":"postclaim revocation, global switch, deadline and late completion","notClaimedPass":true},
+  "external": {"providerCalls":0,"credentialsRead":false,"remoteMigration":false,"deployment":false,"signedApkBuild":false,"samsungObserved":false},
+  "dashboard": {"roadmapPhaseExitsPercent":22,"localBuildReadinessPercent":46.75,"c2PreparationPassed":18,"c2PreparationTotal":18,"customerTestReadiness":"NO-GO","verifiedE2EObservedPercent":0},
+  "heartbeat": {"id":"endvera-mise-en-service-personnelle","active":true,"minutes":3},
+  "projectComplete":false
+}

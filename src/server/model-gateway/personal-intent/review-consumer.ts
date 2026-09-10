@@ -10,7 +10,7 @@ import { inspectPersonalGatewaySubject } from "../personal-subject";
 import { inspectModelAuthority } from "./admission";
 import { PERSONAL_MODEL_AUTHORITY } from "./budget-policy";
 import { inspectPersonalIntentCandidate } from "./contract";
-import { resolvePersonalCalendarTemporal } from "./temporal";
+import { personalIntentClarificationQuestion, resolvePersonalCalendarTemporal } from "./temporal";
 
 const id = z.string().min(1).max(191);
 const fingerprint = z.string().regex(/^sha256:[a-f0-9]{64}$/);
@@ -106,7 +106,7 @@ export async function prepareStoredPersonalIntentReview(tx: Prisma.TransactionCl
     if (unsafeContext) { ask("Confirme séparément l’action exacte : la demande contient une négation ou une condition. Rien n’est préparé."); continue; }
     if (otherRecipient) { ask("Ce pilote prépare seulement un message destiné à ton propre numéro vérifié. Précise une demande personnelle séparée."); continue; }
     if (action.dependsOn.length) { ask("Cette action dépend d’une autre étape. Confirme chaque action séparément avant de la préparer."); continue; }
-    if (action.kind === "CLARIFY") { ask("Précise la demande, les dates et le destinataire. Aucun effet n’a été exécuté."); continue; }
+    if (action.kind === "CLARIFY") { ask(personalIntentClarificationQuestion(action.reason)); continue; }
     if (action.kind === "READ_CALENDAR" || action.kind === "PREPARE_CALENDAR_EVENT") {
       const temporal = resolvePersonalCalendarTemporal(source.input, proposalRaw, action.id, { receivedAt: source.receivedAt, timezone: source.timezone });
       if (temporal.status === "CLARIFY") { ask(temporal.question); continue; }

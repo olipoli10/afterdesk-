@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db";
 import { externalCapabilityDecision } from "@/lib/release/external-capabilities";
 import { processUnifiedAssistantRequest } from "@/server/construction-operating-assistant-r36c/orchestrator";
 import { enqueuePersonalSms } from "./sms-inbox";
-import { readGoogleCalendar } from "./google-connection";
+import { readGoogleCalendarWithAuthority, requireGoogleReadAuthority, type GoogleReadAuthority } from "./google-connection";
 import { GoogleCalendarClient, type ConnectorEnvironment } from "./google-client";
 import { sendAutomaticPersonalReply } from "./outbox";
 import { processPersonalModelSms, personalModelReviewReply, type PersonalModelSmsResult } from "./model-worker";
@@ -34,7 +34,7 @@ export const PERSONAL_SMS_BATCH_BUDGET_MS = 50_000;
 const CLEANUP_BUDGET_MS = 2_000;
 export type PersonalSmsSourceClaim = Readonly<{ operationId: string; workspaceId: string; userId: string; attempt: 1; leaseUntil: string }>;
 export type PersonalSmsExecutionContext = Readonly<{ claim: PersonalSmsSourceClaim; signal: AbortSignal; deadlineAt: number }>;
-type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; calendar?: typeof readGoogleCalendar; deadlineAt?: number };
+type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; calendar?: typeof readGoogleCalendarWithAuthority; deadlineAt?: number };
 
 class SmsWorkerDeadline extends Error { constructor() { super("SMS_WORKER_DEADLINE"); } }
 async function withinDeadline<T>(work: () => Promise<T>, deadlineAt: number, expired: () => void = () => undefined): Promise<T> {
@@ -91,19 +91,26 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
     const day = smsCalendarDay(received.body);
     let reply: string; let source: "GOOGLE_CALENDAR" | "ENDVERA_LOCAL" | "CLARIFICATION" | "MODEL_REVIEW_ONLY";
     let finalizeReview: PersonalModelSmsResult["finalizeReview"];
-    if (env.ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED === "true") {
-      const result = await (deps.model ?? processPersonalModelSms)(Object.freeze({ claim, signal: controller.signal, deadlineAt }), env);
-      requireLive();
-      reply = result.reply; finalizeReview = result.finalizeReview; source = "MODEL_REVIEW_ONLY";
-    } else if (day) {
+    let googleReadAuthority: GoogleReadAuthority | undefined;
+    let googleReadRange: { start: string; end: string } | undefined;
+    // Only the closed whole-message day grammar bypasses interpretation. No
+    // model call or legacy fallback is needed for this explicit read request.
+    if (day) {
       const range = personalCalendarWindow(row.createdAt, workspace.defaultTimezone, day);
       const client = new GoogleCalendarClient(env, undefined, undefined, controller.signal);
-      const result = await (deps.calendar ?? readGoogleCalendar)(row.createdByUserId, row.workspaceId, range.start, range.end, env, client);
+      const read = await (deps.calendar ?? readGoogleCalendarWithAuthority)(row.createdByUserId, row.workspaceId, range.start, range.end, env, client);
       requireLive();
+      const result = read.result;
+      if (result.complete !== true || result.source !== "GOOGLE_CALENDAR") throw new Error("GOOGLE_CALENDAR_INCOMPLETE");
+      googleReadAuthority = read.authority; googleReadRange = range;
       const label = day === "TOMORROW" ? "Demain" : "Aujourd’hui";
       reply = result.events.length === 0 ? `${label} : aucun rendez-vous dans ton Google Agenda principal (${workspace.defaultTimezone}).`
         : `${label}, Google Agenda (${workspace.defaultTimezone}) :\n${result.events.map(event => `${event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString("fr-CA", { timeZone: workspace.defaultTimezone, hour: "2-digit", minute: "2-digit" }) : "Toute la journée"} — ${event.summary}`).join("\n")}`;
       source = "GOOGLE_CALENDAR";
+    } else if (env.ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED === "true") {
+      const result = await (deps.model ?? processPersonalModelSms)(Object.freeze({ claim, signal: controller.signal, deadlineAt }), env);
+      requireLive();
+      reply = result.reply; finalizeReview = result.finalizeReview; source = "MODEL_REVIEW_ONLY";
     } else if (/\bgoogle\b/i.test(received.body)) {
       reply = "Pour consulter Google Agenda, demande « Qu’est-ce que j’ai demain? ». Les autres demandes Google nécessitent encore une précision ou une action approuvée dans l’app. Rien n’a été modifié."; source = "CLARIFICATION";
     } else {
@@ -129,6 +136,8 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       const active = await tx.constructionCommunicationIdentity.findFirst({ where: { id: received.identityId, userId: row.createdByUserId, workspaceId: row.workspaceId, verified: true, status: "active", permissions: { has: "COMMAND" } } });
       if (!active) throw new Error("SMS_IDENTITY_REVOKED");
       requireLive();
+      if (source === "GOOGLE_CALENDAR") await requireGoogleReadAuthority(tx, row.createdByUserId, row.workspaceId, googleReadAuthority, env);
+      requireLive();
       const personalModelReview = finalizeReview ? await finalizeReview(tx) : undefined;
       if (personalModelReview) reply = personalModelReviewReply(personalModelReview);
       requireLive();
@@ -139,7 +148,8 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       const finished = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"leaseUntil"=NULL,result=$6::jsonb,"updatedAt"=now()
         WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=$5
           AND kind='personal_sms_inbound' AND status='processing' AND "leaseUntil">clock_timestamp()`,
-        claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil), JSON.stringify({ reply, source, replyDelivery: "PREPARED_UNSENT", ...(personalModelReview ? { personalModelReview } : {}) }));
+        claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil), JSON.stringify({ reply, source, replyDelivery: "PREPARED_UNSENT",
+          ...(source === "GOOGLE_CALENDAR" ? { googleReadAuthority, googleReadRange } : {}), ...(personalModelReview ? { personalModelReview } : {}) }));
       if (finished !== 1) throw new Error("SMS_SOURCE_CLAIM_LOST");
     }, { isolationLevel: "Serializable", maxWait: 1000, timeout: Math.max(1, Math.min(5000, deadlineAt - Date.now())) });
     requireLive();
@@ -160,8 +170,9 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
 
 export async function drainPersonalSms(env: ConnectorEnvironment = process.env, batchSize = 10, deps: Dependencies = {}) {
   if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 10) throw new Error("SMS_BATCH_LIMIT_INVALID");
+  if (deps.deadlineAt !== undefined && !Number.isFinite(deps.deadlineAt)) throw new Error("SMS_WORKER_DEADLINE_INVALID");
   if (!personalSmsWorkerEnabled(env)) return { disabled: true, processed: 0 };
-  const deadlineAt = Date.now() + PERSONAL_SMS_BATCH_BUDGET_MS;
+  const deadlineAt = Math.min(Date.now() + PERSONAL_SMS_BATCH_BUDGET_MS, deps.deadlineAt ?? Infinity);
   const requireBatchTime = () => { if (Date.now() >= deadlineAt) throw new SmsWorkerDeadline(); };
   let processed = 0;
   const work = async () => {

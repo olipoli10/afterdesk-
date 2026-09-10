@@ -1,0 +1,67 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts (3 tests) 10824ms
+     ✓ persists exact authority with one reply, no model admission, and survives reconnect  7006ms
+     ✓ does not commit a reply when Google is disconnected after the read  2261ms
+     ✓ invalidates a saved disclosure receipt after grant revocation and rejects another workspace  1553ms
+ ✓ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests) 39790ms
+     ✓ finishes SMS source and stored review atomically, without pretending to fetch Google  6421ms
+     ✓ prepares one exact source-quoted Google draft and separate owner reply, with zero approval or transport  3421ms
+     ✓ prepares an exact self SMS only, without sending it  4337ms
+     ✓ never leaves a draft or success reply when final source review refuses: {"rollback":true}  3562ms
+     ✓ never leaves a draft or success reply when final source review refuses: {"revoke":true}  3057ms
+     ✓ does not reserve or admit when disabled or explicit AI consent is revoked  1098ms
+     ✓ rolls back AI, child, gateway and CAD reservation if the USD hold refuses  1407ms
+     ✓ admits once under concurrency, stores only a proposal, never settles or replays  3923ms
+     ✓ refuses transport after consent revocation and preserves held exposure  1583ms
+     ✓ refuses dispatch when the account USD cap is withdrawn after admission  1666ms
+     ✓ drops a proposal if permission changes during model latency and never retries  2168ms
+     ✓ does not accept a proposal when the USD ceiling is removed during latency  2603ms
+     ✓ keeps unknown callback outcomes and both reservations, without business writes  2462ms
+     ✓ records a pre-dispatch expired claim without a callback, refund or second claim  2077ms
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (8 tests) 14229ms
+     ✓ prepares without transport then inserts exactly once after owner approval  3527ms
+     ✓ withholds calendar success on uncertain write and never retries automatically  1398ms
+     ✓ stores encrypted tokens, scrubs one-use material and survives reconnect  3112ms
+     ✓ rejects a wrong browser correlation before any token exchange  488ms
+     ✓ lets only one concurrent callback exchange the code  2555ms
+     ✓ refuses cross-workspace access and clears credentials on local disconnect  1342ms
+     ✓ does not reconnect a connection revoked during the exchange  774ms
+     ✓ reads through granted authority and refuses a revoked read grant  1030ms
+ ✓ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests) 15472ms
+     ✓ prepares a requested account/grant without consent, key or transport  2492ms
+     ✓ provisioning encrypts a fake key but never auto-grants AI consent  598ms
+     ✓ explicit consent does not manufacture a connected credential  351ms
+     ✓ lazy access resolves only the current owner/source/credential binding  1107ms
+     ✓ withholds lazy access after SMS identity revoked  977ms
+     ✓ withholds lazy access after SMS identity permissions  994ms
+     ✓ withholds lazy access after SMS identity rebound  1168ms
+     ✓ local revoke invalidates stored consent/key but preserves source evidence  1202ms
+     ✓ credential rotation fences old authority and resolves only the replacement  1224ms
+     ✓ AES-GCM binding rejects another workspace's synthetic ciphertext even under the same test encryption key  3058ms
+     ✓ an administrator who is not the actual workspace owner cannot prepare, consent or provision  1290ms
+     ✓ unverified owner loses lazy access and consent capability  1005ms
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (6 tests) 10063ms
+     ✓ automatically replies only to the original sender with standing self-SMS consent  3679ms
+     ✓ binds proof from signed intake once, never a phone entered as a string  618ms
+     ✓ sends once after exact approval and records delivery separately  1252ms
+     ✓ serializes competing reservations and never exceeds the configured local allowance  2791ms
+     ✓ retains reservation and refuses replay after an uncertain transport  852ms
+     ✓ revokes pending authority without sending  869ms
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 9351ms
+     ✓ processes through the guarded engine once and durably prepares one unsent reply  2158ms
+     ✓ retains exactly one durable operation across concurrent deliveries and reconnect  4163ms
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 8731ms
+     ✓ reloads the stored source, rejects cross-workspace lookup and observes revocation  2555ms
+     ✓ changes authority fingerprint when connector version changes and refuses changed source  612ms
+     ✓ enforces personal purpose, non-null unique FK and immutable binding in PostgreSQL  802ms
+     ✓ fences one personal attempt across real concurrent transactions and rejects replay  2670ms
+     ✓ rolls back account USD exposure with its parent transaction and serializes competing holds  2091ms
+
+ Test Files  7 passed (7)
+      Tests  54 passed (54)
+   Start at  00:40:58
+   Duration  121.60s (transform 1.20s, setup 0ms, import 11.96s, tests 108.46s, environment 1ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

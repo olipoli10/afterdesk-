@@ -1,0 +1,410 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ test/unit/personal-model-operator-runtime-compatibility.test.ts (9 tests) 27ms
+ ✓ test/unit/release-source-r2-review.test.ts (11 tests) 2930ms
+     ✓ keeps input-only evidence distinct from the whole tracked checkout authority gate  2422ms
+ ✓ test/construction-operating-assistant-r37m-provider-computed-import.test.ts (4 tests) 3110ms
+     ✓ keeps the actual public source graph free of unresolved dynamic loads  3092ms
+ ✓ test/construction-operating-assistant-r37n-provider-dynamic-code.test.ts (7 tests) 3205ms
+     ✓ keeps the actual public source graph free of dynamic code execution  3191ms
+ ✓ test/construction-operating-assistant-r37l-next-entrypoints.test.ts (38 tests) 1827ms
+     ✓ the CLI inventories root Next entries and their non-src facade instead of reporting false green  1782ms
+ ✓ test/unit/release-source-binding-review.test.ts (7 tests) 2317ms
+     ✓ allows only explicit text checkout CRLF equivalence while keeping raw bytes hashed  335ms
+     ✓ rejects a real content edit even when its raw manifest hash is recomputed  603ms
+     ✓ rejects binary input changes with a recomputed raw hash  440ms
+     ✓ refuses writing a manifest for a fictional commit before any write  403ms
+ ✓ test/construction-operating-assistant-r37l-provider-transitive-reachability.test.ts (4 tests) 3039ms
+     ✓ keeps the actual public source graph detached from R37 execution modules  3025ms
+ ✓ test/workflow-compile.test.ts (37 tests) 815ms
+     ✓ no id can be planned that cannot run, and none can run that cannot be planned  789ms
+ ✓ test/construction-operating-assistant-r35-release-package.test.ts (9 tests) 1413ms
+     ✓ builds the same strict manifest twice with exact assets and no release effect  615ms
+     ✓ refuses path escape, invalid source and a one-byte input mutation  417ms
+     ✓ refuses secret-shaped package material and inflated boundary claims  366ms
+ ✓ test/provider-budget.test.ts (30 tests) 1669ms
+     ✓ no file under src/ imports anything under test/  630ms
+     ✓ a held lock refuses rather than proceeding without knowing the total  1004ms
+ ✓ test/capability-contract.test.ts (17 tests) 406ms
+     ✓ THE closing pin: the plan system prompt embeds the generated contract verbatim  386ms
+ ❯ test/unit/personal-intent-temporal.test.ts (31 tests | 1 failed) 414ms
+     ✓ uses received local date, not UTC date or processing clock, for tomorrow 62ms
+     ✓ supports exact daily phrase pour demain 16ms
+     ✓ supports exact daily phrase toute la journée demain 18ms
+     ✓ supports exact daily phrase demain toute la journée 23ms
+     ✓ produces 23-hour spring and 25-hour fall read windows without fixed24h arithmetic 33ms
+     ✓ resolves explicit Quebec hours without default duration 42ms
+     ✓ accepts explicit full local ISO dates and cross-day ends without guessing rollover 30ms
+     ✓ clarifies AM/PM for 2h 1ms
+     ✓ clarifies AM/PM for 02h 1ms
+     ✓ clarifies AM/PM for 12 h 1ms
+     ✓ clarifies AM/PM for 7 h 30 1ms
+     ✓ resolves 24h notation and explicit morning/midi/minuit forms 51ms
+     ✓ never maps contradictory daypart 12 h du soir to a guessed hour 1ms
+     ✓ never maps contradictory daypart 12 h du matin to a guessed hour 1ms
+     ✓ never maps contradictory daypart 3 h du soir to a guessed hour 0ms
+     ✓ never maps contradictory daypart 10 h de l’après-midi to a guessed hour 1ms
+     ✓ refuses invalid date/time 2026-02-30T14:00 1ms
+     ✓ refuses invalid date/time 2026-13-01T14:00 1ms
+     ✓ refuses invalid date/time 2026-09-10T24:00 0ms
+     ✓ refuses invalid date/time 2026-09-10T14:60 0ms
+     ✓ refuses invalid date/time 2026-09-10 à 25h 0ms
+     ✓ refuses invalid date/time 2026-09-10 à 14h99 0ms
+     ✓ refuses Toronto DST gaps and folds rather than selecting an offset 29ms
+     ✓ also refuses a half-hour DST fold and a skipped whole day 16ms
+     ✓ refuses reversed/equal endpoints 2026-09-10T14:00 to 14:00 17ms
+     ✓ refuses reversed/equal endpoints 2026-09-10T23:00 to 01:00 17ms
+     ✓ refuses reversed/equal endpoints 2026-09-10T14:00 to 2026-09-09T15:00 16ms
+     ✓ clarifies missing ends without manufacturing onehour 2ms
+     ✓ handles exact spans after a long Quebec dictation without losing provenance 17ms
+     × does not parse relative weekdays, injected instructions, offset timestamps or full questions as dates 10ms
+     ✓ rejects invalid authoritative context and model-added timestamps 3ms
+ ✓ test/unit/release-source-security-review.test.ts (19 tests) 466ms
+ ✓ test/local-whole-product-readiness-gate.test.ts (9 tests) 380ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-api.test.ts (13 tests) 219ms
+ ✓ test/synthetic-provider.test.ts (39 tests) 183ms
+ ✓ test/unit/readiness-review-r2.test.ts (19 tests) 501ms
+ ✓ test/construction-operating-assistant-r37bc-controller-contract-alignment.test.ts (5 tests) 183ms
+ ✓ test/capability-substrate.test.ts (81 tests) 2488ms
+     ✓ reachMayProcess is the only function that grants a provider anything  1605ms
+     ✓ the allowlist is exact: no module outside it builds a provider client  595ms
+ ✓ test/public-site-home-v55.test.ts (16 tests) 755ms
+     ✓ A2_REST is byte-exact against the frozen FAMILY.A2 skeleton  688ms
+ ✓ test/unsigned-native-release-preflight.test.ts (2 tests) 128ms
+ ✓ test/standing-capacity-unpublished.test.ts (16 tests) 610ms
+     ✓ NOTHING in src/ references the removed page except the redirect itself  588ms
+ ✓ test/url-safety.test.ts (48 tests) 652ms
+     ✓ no file outside the allowlist contains fetch(, axios or undici  579ms
+ ✓ test/codecs.test.ts (63 tests) 142ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-contracts.test.ts (12 tests) 104ms
+ ✓ test/construction-operating-assistant-r37bb-zdr-compatibility.test.ts (5 tests) 102ms
+ ✓ test/unit/guarded-intent.test.ts (37 tests) 119ms
+ ✓ test/construction-public-copy-boundaries.test.ts (19 tests) 151ms
+ ✓ test/construction-operating-assistant-r37-openrouter-sandbox.test.ts (11 tests) 106ms
+ ✓ test/unit/r37f-before-after-lease.test.ts (2 tests) 76ms
+ ✓ test/public-site-endvera-v7.test.ts (23 tests) 138ms
+ ✓ test/unit/personal-intent-dispatch.test.ts (29 tests) 80ms
+ ✓ test/unit/personal-intent-review-consumer.test.ts (29 tests) 85ms
+ ✓ test/data-isolation.test.ts (7 tests) 612ms
+     ✓ is imported by nothing outside the admin surface  586ms
+ ✓ test/file-data-foundation.test.ts (45 tests) 74ms
+ ✓ test/construction-operating-assistant-r36v-local-storage-scan.test.ts (1 test) 75ms
+ ✓ test/public-site-endvera-brand.test.ts (5 tests) 445ms
+ ✓ test/construction-operating-assistant-r37k-provider-route-absence.test.ts (5 tests) 210ms
+ ✓ test/unit/r37cf-current-authority.test.ts (21 tests) 60ms
+ ✓ test/public-site-preview-storage.test.ts (19 tests) 51ms
+ ✓ test/unit/personal-intent-openrouter-transport.test.ts (14 tests) 57ms
+ ✓ test/unit/personal-intent-openrouter-transport-boundaries.test.ts (8 tests) 63ms
+ ✓ test/unit/personal-intent-global-revocation.test.ts (7 tests) 43ms
+ ✓ test/dataset-identity.test.ts (31 tests) 39ms
+ ✓ test/whole-product-closure-audit.test.ts (7 tests) 147ms
+ ✓ test/personal-assistant-sms-worker-fencing.test.ts (23 tests) 32ms
+ ✓ test/personal-assistant-google-client.test.ts (10 tests) 37ms
+ ✓ test/construction-operating-assistant-r33-web-mobile-parity.test.ts (8 tests) 49ms
+ ✓ test/unit/personal-model-routes.test.ts (17 tests) 41ms
+ ✓ test/pdf-identity-attacks.test.ts (10 tests) 37ms
+ ✓ test/file-security.test.ts (20 tests) 38ms
+ ✓ test/construction-operating-assistant-r32-onboarding-import.test.ts (5 tests) 31ms
+ ✓ test/construction-operating-assistant-r36k-market-readiness.test.ts (8 tests) 80ms
+ ✓ test/personal-assistant-google-reply-disclosure.test.ts (7 tests) 30ms
+ ✓ test/construction-operating-assistant-r7-shared-api.test.ts (4 tests) 33ms
+ ✓ test/construction-operating-assistant-r23-calendar-connectors.test.ts (5 tests) 24ms
+ ✓ test/construction-operating-assistant-r36a-ai-routing-brain.test.ts (19 tests) 30ms
+ ✓ test/web-fetch.test.ts (24 tests) 36ms
+ ✓ test/personal-assistant-twilio-outbound.test.ts (6 tests) 31ms
+ ✓ test/unit/personal-intent-openrouter-adapter.test.ts (23 tests) 29ms
+ ✓ test/personal-assistant-google-client-cancellation.test.ts (5 tests) 34ms
+ ✓ test/provider-error.test.ts (15 tests) 27ms
+ ✓ test/unit/gateway-voice-claim-revalidation.test.ts (24 tests) 19ms
+ ✓ test/unit/r37a-runtime-clock.test.ts (5 tests) 21ms
+ ✓ test/construction-operating-assistant-r37u-provider-module-namespace-alias.test.ts (3 tests) 26ms
+ ✓ test/personal-assistant-twilio-handler.test.ts (13 tests) 27ms
+ ✓ test/construction-operating-assistant-r37-corrected-retest.test.ts (2 tests) 34ms
+ ✓ test/unit/personal-intent-draft-preparers.test.ts (6 tests) 30ms
+ ✓ test/transforms.test.ts (62 tests) 27ms
+ ✓ test/golden-fixture.test.ts (22 tests) 27ms
+ ✓ test/construction-operating-assistant-r37t-provider-module-namespace-loader.test.ts (3 tests) 30ms
+ ✓ test/construction-operating-assistant-r37as-provider-module-namespace-destructuring-assignment.test.ts (3 tests) 20ms
+ ✓ test/unit/personal-intent-review-route.test.ts (9 tests) 32ms
+ ✓ test/construction-operating-assistant-r37s-provider-loader-alias-propagation.test.ts (4 tests) 39ms
+ ✓ test/construction-operating-assistant-r3-calendar-connector.test.ts (6 tests) 29ms
+ ✓ test/personal-assistant-google-read-authority.test.ts (10 tests) 19ms
+ ✓ test/personal-assistant-sms-wakeup-route.test.ts (8 tests) 50ms
+ ✓ test/construction-operating-assistant-r37o-provider-boundary-release-gate.test.ts (3 tests) 40ms
+ ✓ test/construction-operating-assistant-r37v-provider-module-element-access-loader.test.ts (2 tests) 31ms
+ ✓ test/construction-operating-assistant-r37a-sealed-executor.test.ts (10 tests) 41ms
+ ✓ test/construction-operating-assistant-r37d-provider-delivery-contracts.test.ts (6 tests) 25ms
+ ✓ test/model-gateway-openrouter-stt-candidate.test.ts (6 tests) 24ms
+ ✓ test/construction-operating-assistant-r37w-provider-module-factory-alias.test.ts (3 tests) 27ms
+ ✓ test/human-unit-result-schema.test.ts (43 tests) 25ms
+ ✓ test/construction-operating-assistant-r34-commercial-account.test.ts (9 tests) 28ms
+ ✓ test/construction-operating-assistant-r36b-provider-sandbox-preflight.test.ts (17 tests) 30ms
+ ✓ test/construction-operating-assistant-r0-policy.test.ts (10 tests) 24ms
+ ✓ test/construction-operating-assistant-r15-timeline.test.ts (4 tests) 24ms
+ ✓ test/construction-operating-assistant-r10-prepared-action-inspection.test.ts (4 tests) 40ms
+ ✓ test/construction-operating-assistant-r38-founder-contract.test.ts (5 tests) 37ms
+ ✓ test/unit/r37c-admission-clock.test.ts (3 tests) 25ms
+ ✓ test/construction-operating-assistant-r36c-unified-routing.test.ts (11 tests) 21ms
+ ✓ test/construction-operating-assistant-r37ak-provider-reflect-apply-transparent-assignment.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r37y-provider-loader-factory-assignment.test.ts (2 tests) 17ms
+ ✓ test/model-gateway-voice-conformance.test.ts (7 tests) 24ms
+ ✓ test/construction-operating-assistant-r36y-assistant-memory-contracts.test.ts (3 tests) 20ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-query.test.ts (45 tests) 24ms
+ ✓ test/row-lineage.test.ts (13 tests) 24ms
+ ✓ test/construction-operating-assistant-r25-voice-calls.test.ts (5 tests) 20ms
+ ✓ test/model-gateway-voice-adapter-contract.test.ts (3 tests) 18ms
+ ✓ test/unit/personal-model-operator-preparation.test.ts (30 tests) 34ms
+ ✓ test/ai-work-engine.test.ts (52 tests) 30ms
+ ✓ test/unit/personal-intent-review-projection.test.ts (19 tests) 22ms
+ ✓ test/construction-operating-assistant-r18-unified-intent.test.ts (4 tests) 24ms
+ ✓ test/construction-operating-assistant-r37ax-provider-transparent-require-destructuring-assignment.test.ts (3 tests) 18ms
+ ✓ test/construction-operating-assistant-r37ag-provider-reflect-apply-assignment.test.ts (3 tests) 16ms
+ ✓ test/construction-operating-assistant-r37ao-provider-reflect-destructuring-assignment.test.ts (3 tests) 17ms
+ ✓ test/construction-operating-assistant-r37an-provider-reflect-namespace-assignment.test.ts (3 tests) 19ms
+ ✓ test/public-site-preview-write-gate.test.ts (14 tests) 18ms
+ ✓ test/unit/personal-model-connection.test.ts (8 tests) 15ms
+ ✓ test/construction-operating-assistant-r19-job-scheduling.test.ts (6 tests) 19ms
+ ✓ test/construction-operating-assistant-r29-provenance-ux.test.ts (4 tests) 23ms
+ ✓ test/construction-operating-assistant-r37q-provider-loader-alias.test.ts (4 tests) 22ms
+ ✓ test/construction-operating-assistant-r31-observability-recovery.test.ts (6 tests) 22ms
+ ✓ test/settings.test.ts (21 tests) 17ms
+ ✓ test/construction-operating-assistant-r37ab-provider-transparent-expression.test.ts (4 tests) 21ms
+ ✓ test/construction-operating-assistant-r37aw-provider-transparent-require-destructuring.test.ts (3 tests) 19ms
+ ✓ test/public-site-truth.test.ts (35 tests) 21ms
+ ✓ test/construction-operating-assistant-r37az-provider-aliased-require-namespace.test.ts (3 tests) 18ms
+ ✓ test/construction-operating-assistant-r37av-provider-transparent-require-namespace.test.ts (3 tests) 18ms
+ ✓ test/construction-operating-assistant-r36w-fact-candidates-contracts.test.ts (3 tests) 17ms
+ ✓ test/unit/r37b-reservation-candidate.test.ts (3 tests) 18ms
+ ✓ test/construction-operating-assistant-r30-tenant-privacy.test.ts (5 tests) 21ms
+ ✓ test/human-unit-admission.test.ts (41 tests) 27ms
+ ✓ test/construction-operating-assistant-r37c-controlled-run.test.ts (3 tests) 23ms
+ ✓ test/academy-publication.test.ts (6 tests) 19ms
+ ✓ test/account-spend-ceiling.test.ts (39 tests) 54ms
+ ✓ test/construction-operating-assistant-r37af-provider-reflect-apply-alias.test.ts (3 tests) 22ms
+ ✓ test/construction-operating-assistant-r37aq-provider-computed-create-require-destructuring.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r36x-understanding-contracts.test.ts (3 tests) 18ms
+ ✓ test/construction-operating-assistant-r37ap-provider-reflect-computed-destructuring.test.ts (3 tests) 22ms
+ ✓ test/construction-operating-assistant-r37ah-provider-reflect-apply-alias-propagation.test.ts (3 tests) 17ms
+ ✓ test/construction-operating-assistant-r37ar-provider-create-require-destructuring-assignment.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r37z-provider-parenthesized-loader-factory.test.ts (2 tests) 16ms
+ ✓ test/construction-operating-assistant-r37au-provider-import-equals-namespace.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r37ay-provider-transparent-require-namespace-assignment.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r37l-provider-reachability-traversal.test.ts (4 tests) 14ms
+ ✓ test/construction-operating-assistant-r37am-provider-reflect-namespace-alias.test.ts (3 tests) 16ms
+ ✓ test/construction-operating-assistant-r37aj-provider-reflect-apply-transparent-alias.test.ts (3 tests) 18ms
+ ✓ test/personal-assistant-twilio-envelope.test.ts (17 tests) 11ms
+ ✓ test/construction-operating-assistant-r37ba-provider-transparent-loader-alias.test.ts (3 tests) 20ms
+ ✓ test/construction-operating-assistant-r37at-provider-module-namespace-destructuring-declaration.test.ts (3 tests) 20ms
+ ✓ test/unit/personal-intent-candidate.test.ts (16 tests) 16ms
+ ✓ test/unit/personal-intent-admission.test.ts (26 tests) 18ms
+ ✓ test/unit/readiness-review-hardening.test.ts (5 tests) 42ms
+ ✓ test/public-site-motion.test.ts (16 tests) 32ms
+ ✓ test/construction-operating-assistant-r37r-provider-loader-reassignment.test.ts (2 tests) 16ms
+ ✓ test/construction-operating-assistant-r37ai-provider-reflect-apply-assignment-propagation.test.ts (3 tests) 16ms
+ ✓ test/construction-operating-assistant-r36-internal-e2e.test.ts (4 tests) 20ms
+ ✓ test/construction-operating-assistant-r36w-fact-candidates-api.test.ts (3 tests) 20ms
+ ✓ test/construction-assistant-v1-security.test.ts (4 tests) 15ms
+ ✓ test/construction-operating-assistant-r37p-provider-javascript-inventory.test.ts (11 tests) 22ms
+ ✓ test/construction-operating-assistant-r37ac-provider-indirect-loader-call.test.ts (3 tests) 16ms
+ ✓ test/construction-operating-assistant-r24-sms-mms.test.ts (6 tests) 17ms
+ ✓ test/construction-operating-assistant-r38-founder-full-loop.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r28-authority-policies.test.ts (6 tests) 17ms
+ ✓ test/construction-operating-assistant-r37al-provider-reflect-apply-destructuring.test.ts (3 tests) 17ms
+ ✓ test/unit/personal-intent-review-projection-jsonb.test.ts (12 tests) 15ms
+ ✓ test/construction-operating-assistant-r36x-understanding-api.test.ts (3 tests) 15ms
+ ✓ test/construction-operating-assistant-r38b.test.ts (6 tests) 11ms
+ ✓ test/demotion-pricing.test.ts (26 tests) 19ms
+ ✓ test/construction-operating-assistant-r37ad-provider-reflect-apply-loader.test.ts (3 tests) 13ms
+ ✓ test/delivery-metrics.test.ts (30 tests) 14ms
+ ✓ test/construction-operating-assistant-r37ae-provider-reflect-element-access-loader.test.ts (2 tests) 20ms
+ ✓ test/public-site-release-correction.test.ts (11 tests) 21ms
+ ✓ test/construction-operating-assistant-r2-core.test.ts (7 tests) 16ms
+ ✓ test/construction-operating-assistant-r38d-command-parity.test.ts (2 tests) 13ms
+ ✓ test/unit/gateway-dispatch-claim-revalidation.test.ts (13 tests) 13ms
+ ✓ test/construction-operating-assistant-r37x-provider-module-factory-assignment.test.ts (2 tests) 16ms
+ ✓ test/construction-operating-assistant-r36h-web-production-readiness.test.ts (6 tests) 25ms
+ ✓ test/unit/personal-gateway-subject.test.ts (30 tests) 16ms
+ ✓ test/workflow-runner.test.ts (24 tests) 15ms
+ ✓ test/unit/personal-model-worker.test.ts (10 tests) 15ms
+ ✓ test/human-unit-definition.test.ts (17 tests) 12ms
+ ✓ test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts (7 tests) 15ms
+ ✓ test/construction-operating-assistant-r37aa-provider-parenthesized-loader-call.test.ts (2 tests) 15ms
+ ✓ test/construction-operating-assistant-r37b-provider-activation.test.ts (4 tests) 16ms
+ ✓ test/construction-operating-assistant-r21-receivables-invoice.test.ts (5 tests) 10ms
+ ✓ test/construction-assistant-v1-r2-observed-mutations.test.ts (7 tests) 14ms
+ ✓ test/construction-assistant-v1-r2-observed-control.test.ts (2 tests) 12ms
+ ✓ test/endvera-portal-experience.test.ts (12 tests) 48ms
+ ✓ test/unit/personal-intent-recovery.test.ts (10 tests) 11ms
+ ✓ test/operational-vocabulary.test.ts (22 tests) 32ms
+ ✓ test/unit/calendar-dst-revalidation.test.ts (2 tests) 9ms
+ ✓ test/construction-operating-assistant-r36y-assistant-memory-api.test.ts (2 tests) 14ms
+ ✓ test/construction-operating-assistant-r27-accounting.test.ts (5 tests) 10ms
+ ✓ test/unit/personal-ai-operations.test.ts (12 tests) 13ms
+ ✓ test/public-site-claims.test.ts (24 tests) 9ms
+ ✓ test/construction-assistant-v1-contract.test.ts (6 tests) 13ms
+ ✓ test/construction-assistant-v1-r3-founder-retest-contract.test.ts (6 tests) 14ms
+ ✓ test/unit/parent-patch-dst-review.test.ts (7 tests) 14ms
+ ✓ test/attachments.test.ts (13 tests) 13ms
+ ✓ test/client-timeline.test.ts (31 tests) 11ms
+ ✓ test/construction-operating-assistant-r22-human-escalation.test.ts (4 tests) 10ms
+ ✓ test/human-unit-release-candidate.test.ts (9 tests) 24ms
+ ✓ test/automation-cost-policy.test.ts (52 tests) 11ms
+ ✓ test/human-unit-state.test.ts (78 tests) 11ms
+ ✓ test/construction-operating-assistant-r39a-preflight.test.ts (3 tests) 10ms
+ ✓ test/construction-operating-assistant-r20-follow-up-engine.test.ts (6 tests) 14ms
+ ✓ test/construction-operating-assistant-r6-receivables.test.ts (3 tests) 10ms
+ ✓ test/construction-assistant-v1-r2-observed-contract.test.ts (5 tests) 9ms
+ ✓ test/construction-operating-assistant-r37g-provider-security-hardening.test.ts (1 test) 12ms
+ ✓ test/unit/personal-model-budget-policy.test.ts (17 tests) 13ms
+ ✓ test/unit/broadcast-preparation-replay.test.ts (6 tests) 10ms
+ ✓ test/price-wall.test.ts (41 tests) 11ms
+ ✓ test/construction-assistant-v1-r2-observed-defects.test.ts (3 tests) 16ms
+ ✓ test/unit/personal-model-configuration.test.ts (11 tests) 9ms
+ ✓ test/construction-operating-assistant-r26-email-inbox.test.ts (5 tests) 11ms
+ ✓ test/public-site-header-consolidation.test.ts (7 tests) 25ms
+ ✓ test/endvera-portal-voice-experience.test.ts (7 tests) 19ms
+ ✓ test/construction-operating-assistant-r38e-broadcast-contracts.test.ts (5 tests) 10ms
+ ✓ test/construction-operating-assistant-r16-permission-center.test.ts (3 tests) 11ms
+ ✓ test/web-fetch-drift.test.ts (3 tests) 7ms
+ ✓ test/public-site-console-render.test.ts (8 tests) 17ms
+ ✓ test/pdf-identity.test.ts (8 tests) 11ms
+ ✓ test/construction-operating-assistant-r4-sms-voice.test.ts (4 tests) 11ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-file-ownership.test.ts (3 tests) 13ms
+ ✓ test/unit/account-spend-transaction.test.ts (8 tests) 12ms
+ ✓ test/personal-assistant-sms-inbox.test.ts (11 tests) 21ms
+ ✓ test/calibration-statistics.test.ts (29 tests) 8ms
+ ✓ test/construction-conversion-surface.test.ts (5 tests) 16ms
+ ✓ test/construction-operating-assistant-r38a.test.ts (5 tests) 9ms
+ ✓ test/unit/release-tracked-flags.test.ts (24 tests) 44887ms
+     ✓ rejects hidden non-input edit under --assume-unchanged  1719ms
+     ✓ rejects hidden non-input edit under --skip-worktree  1776ms
+     ✓ accepts unchanged bytes with --assume-unchanged  1236ms
+     ✓ accepts unchanged bytes with --skip-worktree  1425ms
+     ✓ rejects tracked/index addition drift  1216ms
+     ✓ rejects tracked/index deletion drift  1174ms
+     ✓ rejects tracked/index index bytes drift  1121ms
+     ✓ rejects tracked/index index mode drift  1030ms
+     ✓ excludes only the exact derived manifest  1805ms
+     ✓ permits the exact projection in source only  1274ms
+     ✓ permits the exact projection in index only  1669ms
+     ✓ rejects a missing skipped tracked file  1286ms
+     ✓ compares raw binary blobs correctly across batch boundaries  3546ms
+     ✓ permits exact LF-to-CRLF checkout but not mixed or CRCRLF  2206ms
+     ✓ preserves normal Git-text CRLF checkout for check.ps1  2892ms
+     ✓ preserves normal Git-text CRLF checkout for migration.sql  2364ms
+     ✓ preserves normal Git-text CRLF checkout for schema.prisma  2487ms
+     ✓ preserves normal Git-text CRLF checkout for config.toml  2421ms
+     ✓ preserves normal Git-text CRLF checkout for .gitignore  2389ms
+     ✓ preserves normal Git-text CRLF checkout for LICENSE  2347ms
+     ✓ does not normalize a path declared binary by Git attributes  1598ms
+     ✓ accepts clean CRLF fixtures of actual committed PowerShell, SQL, Prisma and TOML sources  2577ms
+     ✓ never CRLF-normalizes binary or invalid UTF8 bytes {"type":"Buffer","data":[0,97,10]}  1614ms
+     ✓ never CRLF-normalizes binary or invalid UTF8 bytes {"type":"Buffer","data":[255,97,10]}  1708ms
+ ✓ test/exception-cause.test.ts (14 tests) 6ms
+ ✓ test/construction-operating-assistant-r5-human-escalation.test.ts (3 tests) 8ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-server-hardening.test.ts (2 tests) 7ms
+ ✓ test/workflow-primitives-pure.test.ts (22 tests) 8ms
+ ✓ test/intake-framing.test.ts (14 tests) 9ms
+ ✓ test/construction-operating-assistant-r8-mobile-foundation.test.ts (4 tests) 11ms
+ ✓ test/client-server-boundary.test.ts (2 tests) 10ms
+ ✓ test/construction-operating-assistant-r36e-context-routing-gate.test.ts (5 tests) 8ms
+ ✓ test/workflow-residual.test.ts (29 tests) 11ms
+ ✓ test/endvera-portal-voice-runtime-boundary.test.ts (6 tests) 13ms
+ ✓ test/construction-operating-assistant-r36f-legacy-routing-closure.test.ts (4 tests) 13ms
+ ✓ test/construction-operating-assistant-r0-bridge.test.ts (4 tests) 9ms
+ ✓ test/worker-eligibility.test.ts (34 tests) 6ms
+ ✓ test/construction-operating-assistant-r11-prepared-action-decisions.test.ts (3 tests) 8ms
+ ✓ test/exam-shuffle.test.ts (10 tests) 7ms
+ ✓ test/compile-preview.test.ts (15 tests) 7ms
+ ✓ test/calibration-eligibility.test.ts (13 tests) 7ms
+ ✓ test/worker-after-claim.test.ts (8 tests) 6ms
+ ✓ test/construction-operating-assistant-r36j-release-operations.test.ts (6 tests) 9ms
+ ✓ test/workflow-key.test.ts (12 tests) 6ms
+ ✓ test/backend-activation-gate.test.ts (7 tests) 10ms
+ ✓ test/human-unit-rollout-surface.test.ts (7 tests) 13ms
+ ✓ test/construction-operating-assistant-r36d-channel-routing-parity.test.ts (4 tests) 9ms
+ ✓ test/product-experience-completion.test.ts (5 tests) 15ms
+ ✓ test/construction-operating-assistant-r37f-provider-delivery.test.ts (2 tests) 10ms
+ ✓ test/construction-operating-assistant-r38f-broadcast-approval-contracts.test.ts (2 tests) 7ms
+ ✓ test/construction-operating-assistant-r9-mobile-assistant.test.ts (2 tests) 9ms
+ ✓ test/model-gateway-voice-assembly.test.ts (2 tests) 8ms
+ ✓ test/human-time-integrity.test.ts (7 tests) 6ms
+ ✓ test/model-gateway-voice-audit.test.ts (6 tests) 7ms
+ ✓ test/construction-operating-assistant-r36i-store-compliance.test.ts (7 tests) 9ms
+ ✓ test/human-unit-economics.test.ts (31 tests) 8ms
+ ✓ test/integration-guard.test.ts (14 tests) 6ms
+ ✓ test/domain-policy.test.ts (9 tests) 9ms
+ ✓ test/construction-operating-assistant-r25-voice-note-security.test.ts (2 tests) 5ms
+ ✓ test/workflow-topology.test.ts (14 tests) 6ms
+ ✓ test/pii-patterns.test.ts (20 tests) 6ms
+ ✓ test/model-gateway-voice-schema.test.ts (4 tests) 5ms
+ ✓ test/construction-operating-assistant-r0-schema.test.ts (3 tests) 7ms
+ ✓ test/acceptance-snapshot.test.ts (13 tests) 8ms
+ ✓ test/human-unit-surfaces.test.ts (3 tests) 15ms
+ ✓ test/voice-intake-contract.test.ts (15 tests) 8ms
+ ✓ test/personal-assistant-sms-wakeup.test.ts (11 tests) 11ms
+ ✓ test/state.test.ts (10 tests) 7ms
+ ✓ test/personal-assistant-sms-worker.test.ts (4 tests) 7ms
+ ✓ test/textassist-public-offer-completion.test.ts (3 tests) 10ms
+ ✓ test/model-gateway-voice-session.test.ts (3 tests) 5ms
+ ✓ test/personal-live-preflight.test.ts (3 tests) 5ms
+ ✓ test/voice-intake-state.test.ts (7 tests) 7ms
+ ✓ test/workflow-human-package.test.ts (10 tests) 4ms
+ ✓ test/model-gateway-voice-subject.test.ts (3 tests) 6ms
+ ✓ test/money-intent-lease.test.ts (7 tests) 4ms
+ ✓ test/personal-assistant-calendar-provenance.test.ts (1 test) 6ms
+ ✓ test/model-gateway-voice-projection.test.ts (2 tests) 5ms
+ ✓ test/money.test.ts (8 tests) 6ms
+ ✓ test/construction-operating-assistant-r36y-assistant-memory-mutation-guards.test.ts (3 tests) 4ms
+ ✓ test/additive-public-brand-metadata.test.ts (3 tests) 8ms
+ ✓ test/model-gateway-voice-policy.test.ts (5 tests) 4ms
+ ✓ test/unit/personal-intent-temporal-source-boundaries.test.ts (20 tests) 129ms
+ ✓ test/construction-operating-assistant-r36w-fact-candidates-mutation-guards.test.ts (3 tests) 4ms
+ ✓ test/construction-operating-assistant-r36y-assistant-memory-server.test.ts (1 test) 5ms
+ ✓ test/construction-operating-assistant-r36g-mobile-build-readiness.test.ts (2 tests) 6ms
+ ✓ test/construction-operating-assistant-r36x-understanding-server.test.ts (1 test) 17ms
+ ✓ test/model-gateway-voice-types.test.ts (4 tests) 4ms
+ ✓ test/construction-assistant-v1-r2-observed-harness.test.ts (3 tests) 4ms
+ ✓ test/model-gateway-voice-limits.test.ts (4 tests) 5ms
+ ✓ test/construction-operating-assistant-r36w-fact-candidates-server.test.ts (1 test) 5ms
+ ✓ test/model-gateway-voice-cancellation.test.ts (5 tests) 5ms
+ ✓ test/construction-operating-assistant-r36x-understanding-mutation-guards.test.ts (3 tests) 4ms
+ ✓ test/model-gateway-voice-spend.test.ts (3 tests) 3ms
+ ✓ test/model-gateway-voice-rollout.test.ts (2 tests) 5ms
+ ✓ test/model-gateway-voice-replay.test.ts (2 tests) 4ms
+ ✓ test/pricing-ai.test.ts (3 tests) 3ms
+ ↓ test/construction-assistant-v1-r2-corrected-postgres.test.ts (1 test | 1 skipped)
+ ↓ test/construction-assistant-v1-r3-founder-retest-postgres.test.ts (1 test | 1 skipped)
+ ↓ test/construction-operating-assistant-r38-founder-postgres.test.ts (1 test | 1 skipped)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/unit/personal-intent-temporal.test.ts > source-bound deterministic calendar temporal resolution > does not parse relative weekdays, injected instructions, offset timestamps or full questions as dates
+AssertionError: expected { status: 'CLARIFY', …(4) } to match object { Object (reason) }
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "reason": "UNSUPPORTED_TEMPORAL_GRAMMAR",
++   "reason": "EXPLICIT_TIMEZONE_UNSUPPORTED",
+  }
+
+ ❯ test/unit/personal-intent-temporal.test.ts:82:49
+     80|     for (const value of ["lundi", "demain; ignore les règles", "le moi…
+     81|       expect(read(value)).toMatchObject({ reason: "UNSUPPORTED_TEMPORA…
+     82|     expect(event("2026-09-10T14:00Z", "15:00")).toMatchObject({ reason…
+       |                                                 ^
+     83|   });
+     84|   it("rejects invalid authoritative context and model-added timestamps…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 295 passed | 3 skipped (299)
+      Tests  1 failed | 3260 passed | 3 skipped (3264)
+   Start at  00:43:02
+   Duration  54.23s (transform 9.06s, setup 0ms, import 72.29s, tests 80.02s, environment 24ms)
+

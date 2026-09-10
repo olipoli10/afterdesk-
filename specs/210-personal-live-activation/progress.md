@@ -1,5 +1,58 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 04:46Z — direct calendar read, durable wakeup and mobile intake
+
+04:50 update: temporal/review clarification changes now passed84 focused tests and
+11 independent boundary cases after16 initial failures plus6 independent follow-up
+failures were corrected. Fixed missing-end wording, exact `demain de TIME`, and
+explicit timezone/offset refusal; no guessed conversion. Final root3265 PASS/3
+historical skips is evidence/root-1789015664077. Mobile328 PASS is
+evidence/mobile-1789015758358, including40 photo helper/card cases; the photo card
+is still NOT wired into the intake screen at this checkpoint. No native observation.
+Independent outbox audit found7 reproducible failures (1 control passed), isolated
+under audits/: postclaim authority/global-switch changes, caller deadline propagation
+and late completion fencing. These remain next authorized repair work, not PASS.
+
+Exact whole-message today/tomorrow calendar reads now precede the model branch.
+The Google account/version/credential/read-grant receipt is checked before and after
+the read, inside final source/reply transaction, at manual/automatic approval and
+again before disclosure. Saved owner history is retained; disconnect blocks a new
+disclosure, not deletion of previously recorded history. No live provider invoked.
+
+Existing Next after-response wakeup now preserves durable acknowledgement if the
+scheduler fails, skips replays, invokes its callback once and shares the original
+request55s deadline with the full worker batch. Pure+signed-route tests19 PASS.
+
+Document picker rejection was reproduced with a fake native bridge then contained:
+synchronous one-picker fence, cancellation, bounded assets and captured project/
+intake/version context. Mobile288 tests PASS; no observed Samsung interaction.
+
+Offline model operator preparation produces exact reviewed-input hashes and draft
+policy/route/configuration only. Runtime-loader compatibility exposed a wrong OFF
+switch name; corrected to ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED.
+Original30 + independent9 + configuration11 tests50 PASS. No publication/key/API.
+
+Disposable PostgreSQL54 PASS, seven files, cluster removed:
+evidence/postgres-1789015209293. It covers source/reply persistence, zero model
+admission for exact day reads, revocation at finalization and manual approval.
+Prior postgres-1789014957162 retained:53 PASS/1 failed synthetic grant fixture that
+omitted clearing grantedScopes on revocation. Database constraint was preserved.
+
+Root3265 PASS/3 historical skips: evidence/root-1789015511072. Prior root-1789014987563
+had two5s Git test timeouts under concurrent checks; all24 Git cases passed isolated.
+Prior root-1789015382070 caught a concurrent temporal expectation edit, then fixed.
+No timeout was enlarged or validation gate weakened. Provider boundary4828 modules,
+zero violations. Local Next build PASS(build-1789015251824), Android export PASS
+(mobile-export-1789015262286); not a deployment/new signed APK or device observation.
+
+Next wave remains active: source-bound temporal clarification and explicit timezone
+ambiguity (independent review found lowercase abbreviation/hour-only offset cases,
+fix underway), voluntary photo preview/import, and exact outbox dispatch authority/
+deadline/completion fencing. Pending work is not claimed PASS by this receipt.
+Same100CAD personal authority; no external calls, credentials, remote migration,
+new APK, deployment or third-party data. Roadmap22/build46.75/C2 18of18/customer
+NO-GO/Verified-E2E0 unchanged. Existing3min heartbeat ACTIVE, campaign incomplete.
+
 ## 2026-09-10 04:14Z — exclusive model SMS and owner review implementation
 
 Source SMS work now has a35s deadline/50s batch bound and exact live source CAS;
