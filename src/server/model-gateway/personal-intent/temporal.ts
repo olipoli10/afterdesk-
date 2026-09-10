@@ -137,31 +137,51 @@ function time(quote: string): { hour: number; minute: number } | Failure {
   } else if (hour >= 1 && hour <= 12) return clarify("AMBIGUOUS_TIME");
   return { hour, minute };
 }
-function parseWall(raw: string, today: CalendarDate, endDate?: CalendarDate): Wall | Failure {
+function parseWall(raw: string, today: CalendarDate, endDate?: CalendarDate, ambiguousTime?: { hour: number; minute: number }): Wall | Failure {
   const quote = normalize(raw);
+  // An explicit reply can clarify only a literal the unchanged parser actually
+  // classified AMBIGUOUS_TIME. It never replaces a date or an already clear time.
+  const literalTime = (value: string) => {
+    const parsed = time(value);
+    return "status" in parsed && parsed.reason === "AMBIGUOUS_TIME" && ambiguousTime ? { hour: ambiguousTime.hour, minute: ambiguousTime.minute } : parsed;
+  };
   const iso = /^(\d{4})-(\d{2})-(\d{2})(?:t| | à )(\d{2}:\d{2})$/.exec(quote);
   if (iso) {
     const date = { year: Number(iso[1]), month: Number(iso[2]), day: Number(iso[3]) };
     if (!dateValid(date)) return clarify("INVALID_DATE");
-    const parsed = time(iso[4]); return "status" in parsed ? parsed : { ...date, ...parsed };
+    const parsed = literalTime(iso[4]); return "status" in parsed ? parsed : { ...date, ...parsed };
   }
   const dated = /^(aujourd'hui|demain|\d{4}-\d{2}-\d{2}) à\s*(.+)$/.exec(quote) ?? /^(demain) de\s*(.+)$/.exec(quote);
   if (dated) {
     const [year, month, day] = dated[1].split("-").map(Number);
     const date = dated[1] === "demain" ? nextDate(today) : dated[1] === "aujourd'hui" ? today : { year, month, day };
     if (!dateValid(date)) return clarify("INVALID_DATE");
-    const parsed = time(dated[2]); return "status" in parsed ? parsed : { ...date, ...parsed };
+    const parsed = literalTime(dated[2]); return "status" in parsed ? parsed : { ...date, ...parsed };
   }
   if (endDate) {
-    const parsed = time(quote); return "status" in parsed ? parsed : { ...endDate, ...parsed };
+    const parsed = literalTime(quote); return "status" in parsed ? parsed : { ...endDate, ...parsed };
   }
   return clarify("UNSUPPORTED_TEMPORAL_GRAMMAR");
 }
 
+/** Shared lexical/date-shape classification, not UTC or event resolution. END
+ * uses the receipt's date only to admit a time-only literal; it does not claim
+ * that date is the event's end date. No start/end ordering or DST is established. */
+export function classifyPersonalCalendarTemporalSlot(raw: string, position: "START" | "END", untrustedContext: PersonalTemporalContext): "AMBIGUOUS" | "EXPLICIT" | "UNSUPPORTED" {
+  try {
+    if (typeof raw !== "string" || !["START", "END"].includes(position)) return "UNSUPPORTED";
+    const context = contextSchema.parse(untrustedContext);
+    const today = parts(new Date(context.receivedAt), formatter(context.timezone));
+    if (!dateValid(today)) return "UNSUPPORTED";
+    const parsed = parseWall(raw, today, position === "END" ? today : undefined);
+    return "status" in parsed ? parsed.reason === "AMBIGUOUS_TIME" ? "AMBIGUOUS" : "UNSUPPORTED" : "EXPLICIT";
+  } catch { return "UNSUPPORTED"; }
+}
+
 /** Pure inspection only. Revalidates the full source-bound proposal before using
  * any field. The caller must later authenticate/reload context and exact approval. */
-export function resolvePersonalCalendarTemporal(input: PersonalIntentInput, rawProposal: string, actionId: string,
-  untrustedContext: PersonalTemporalContext): PersonalTemporalResult {
+function resolvePersonalCalendarTemporalInternal(input: PersonalIntentInput, rawProposal: string, actionId: string,
+  untrustedContext: PersonalTemporalContext, override?: { slot: "START" | "END"; hour: number; minute: number }): PersonalTemporalResult {
   let inspected: ReturnType<typeof inspectPersonalIntentCandidate>;
   try { inspected = inspectPersonalIntentCandidate(rawProposal, input); } catch { return clarify("INVALID_INPUT"); }
   let context: PersonalTemporalContext; let format: Intl.DateTimeFormat; let today: CalendarDate;
@@ -184,9 +204,9 @@ export function resolvePersonalCalendarTemporal(input: PersonalIntentInput, rawP
     const date = quote === "demain" ? nextDate(today) : today;
     starts = { ...date, hour: 0, minute: 0 }; ends = { ...nextDate(date), hour: 0, minute: 0 };
   } else if (action.kind === "PREPARE_CALENDAR_EVENT") {
-    starts = parseWall(action.starts.quote, today);
+    starts = parseWall(action.starts.quote, today, undefined, override?.slot === "START" ? override : undefined);
     if ("status" in starts) return starts;
-    ends = parseWall(action.ends.quote, today, starts);
+    ends = parseWall(action.ends.quote, today, starts, override?.slot === "END" ? override : undefined);
   } else return clarify("UNSUPPORTED_ACTION");
   if ("status" in ends) return ends;
   const start = uniqueUtc(starts, format); if ("status" in start) return start;
@@ -197,4 +217,31 @@ export function resolvePersonalCalendarTemporal(input: PersonalIntentInput, rawP
     startsAtUtc: start.instant, endsAtUtc: end.instant, timezone: context.timezone, anchorReceivedAt: context.receivedAt,
     grammarVersion: PERSONAL_TEMPORAL_GRAMMAR_VERSION, sourceAuthority: "NOT_AUTHENTICATED_BY_THIS_PURE_RESOLVER",
     ...(action.kind === "PREPARE_CALENDAR_EVENT" ? { title: action.title.quote } : {}) });
+}
+
+/** Legacy single-source contract and behavior remain unchanged. */
+export function resolvePersonalCalendarTemporal(input: PersonalIntentInput, rawProposal: string, actionId: string,
+  untrustedContext: PersonalTemporalContext): PersonalTemporalResult {
+  return resolvePersonalCalendarTemporalInternal(input, rawProposal, actionId, untrustedContext);
+}
+
+const clarificationTimeSchema = z.object({ slot: z.enum(["START", "END"]), hour: z.number().int().min(0).max(23), minute: z.number().int().min(0).max(59) }).strict();
+/** Low-level pure temporal primitive, NOT authentication of an SMS reply. The
+ * correlated gateway entry must first inspect both exact source packets. This
+ * independently refuses any attempt to replace an explicit or non-unique slot. */
+export function resolvePersonalCalendarTemporalClarifiedSlot(input: PersonalIntentInput, rawProposal: string, actionId: string,
+  context: PersonalTemporalContext, untrustedOverride: Readonly<z.infer<typeof clarificationTimeSchema>>): PersonalTemporalResult {
+  const override = clarificationTimeSchema.safeParse(untrustedOverride);
+  if (!override.success) return clarify("INVALID_INPUT");
+  const original = resolvePersonalCalendarTemporal(input, rawProposal, actionId, context);
+  if (original.status !== "CLARIFY" || original.reason !== "AMBIGUOUS_TIME") return clarify("UNSUPPORTED_ACTION");
+  let inspected: ReturnType<typeof inspectPersonalIntentCandidate>;
+  try { inspected = inspectPersonalIntentCandidate(rawProposal, input); } catch { return clarify("INVALID_INPUT"); }
+  const action = inspected.proposal.actions[0];
+  if (inspected.proposal.actions.length !== 1 || action.id !== actionId || action.kind !== "PREPARE_CALENDAR_EVENT" || action.dependsOn.length) return clarify("UNSUPPORTED_ACTION");
+  const start = classifyPersonalCalendarTemporalSlot(action.starts.quote, "START", context);
+  const end = classifyPersonalCalendarTemporalSlot(action.ends.quote, "END", context);
+  if (start === "UNSUPPORTED" || end === "UNSUPPORTED" || (start === "AMBIGUOUS") === (end === "AMBIGUOUS")
+    || override.data.slot !== (start === "AMBIGUOUS" ? "START" : "END")) return clarify("UNSUPPORTED_ACTION");
+  return resolvePersonalCalendarTemporalInternal(input, rawProposal, actionId, context, override.data);
 }

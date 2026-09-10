@@ -15,7 +15,7 @@ Status: design only, 2026-09-10. No schema, flags, DB adapters, dispatch or prov
 
 | Immutable binding | Purpose |
 | --- | --- |
-| id, workspaceId, userId, identityId, namespace | Owner and permanent verified sender/service-pair scope. Namespace includes workspace/user and the phone pair; re-pairing does not reset limits. |
+| id, workspaceId, userId, identityId, namespace | Owner-scoped access, but namespace is the permanent visible sender/service pair ONLY, exactly matching legacy confirmation. Workspace/actor moves and re-pairing must not reset limits or allow concurrent visible questions. |
 | sourceOperationId, modelChildOperationId, modelGatewayOperationId, actionId | Exact existing source/candidate lineage, not caller-supplied substitutes. |
 | questionOutboundOperationId, questionRequestHash | Existing ordinary self-reply, unique; never a second question SMS. |
 | preparedJson, preparedHash, bindingHash, reviewSnapshot | Strict pure packet, current permission epochs, exact single-action review frozen at source commit. |
@@ -102,4 +102,6 @@ MISSING_END_TIME is currently often a CLARIFY-only proposal; v1 `PREPARE_CALENDA
 - Gateway pure tests: midnight rollover anchored to original day; DST gap/fold; two ambiguous slots; incomplete CLARIFY; missing date/title/end; source-boundary/Unicode/hash tampering; negation/conditional/date/timezone injection in either message; same source/SID replay.
 - One model interpretation maximum per source; no extra candidate call to fill missing template. Correlated evidence is not an event draft. A later exact draft remains subject to existing deterministic review and current Google approval/confirmation gateway.
 
-Current result: pure formatting/correlation only. The receipt audit found no immutable acceptance instant for ordinary replies; the atomic WAITING hook is a prerequisite. Persistence, shared namespace arbitration, two-source resolution and real SMS/device/provider observations remain unimplemented or unobserved. No readiness metric changes follow from this document.
+Follow-up local implementation: `SMS_TEMPORAL_MULTISOURCE_EVIDENCE.md` and `SMS_TEMPORAL_MULTISOURCE_RESOLUTION_PLAN.md` describe the pure inspection and single-ambiguous-slot resolver added after this initial design. The latter reuses the existing temporal primitives and returns no draft or authority. This does not implement the durable table or the transactions above.
+
+The receipt audit found no immutable acceptance instant for ordinary replies; the atomic WAITING hook remains a prerequisite. Persistence, shared namespace arbitration and real SMS/device/provider observations remain unimplemented or unobserved. No readiness metric changes follow from this document.
