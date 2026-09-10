@@ -153,7 +153,7 @@ export async function createVoiceIntakeSession(input: Parameters<typeof prepareV
   const prepared = prepareVoiceSessionCreation(input);
   const id = `vis_${randomUUID().replaceAll("-", "")}`;
   const rows = await prisma.$queryRawUnsafe<Array<VoiceSessionAccessShape & PreparedVoiceSession>>(
-    `INSERT INTO "VoiceIntakeSession" (id,"clientId",status,"languageHint","consentVersion","consentedAt","maxDurationMs","maxSegmentDurationMs","maxSegmentBytes","maxSegments","maxTotalBytes","maxTotalCostMicros","expiresAt","createdAt","updatedAt") VALUES ($1,$2,'open',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$13) RETURNING *`,
+    `INSERT INTO "VoiceIntakeSession" (id,"clientId",status,"languageHint","consentVersion","consentedAt","maxDurationMs","maxSegmentDurationMs","maxSegmentBytes","maxSegments","maxTotalBytes","maxTotalCostMicros","expiresAt","createdAt","updatedAt") VALUES ($1,$2,'open',$3::"VoiceIntakeLanguage",$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$13) RETURNING *`,
     id,
     prepared.clientId,
     prepared.languageHint,

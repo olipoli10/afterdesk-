@@ -29,6 +29,7 @@ export { checkVoiceSessionSpendHeadroom } from "./operations";
 import type { VoiceActor } from "./sessions";
 import { isBoundedVoiceUsage, type VoiceModelGatewayAdapter } from "./adapters/contract";
 import { prepareProjectBrainVoiceAdmission, type ProjectBrainVoiceAdmissionInput, type ProjectBrainVoiceAdmissionOptions } from "./project-brain-admission";
+import { dispatchProjectBrainVoiceAttempt, type ProjectBrainVoiceDispatchInput } from "./project-brain-dispatch";
 
 export type VoiceRolloutGateInput = Readonly<{
   environment?: string;
@@ -399,15 +400,22 @@ async function admitLegacyGatewayVoiceSegment(input: LegacyVoiceAdmissionInput):
 // Non-terminal result: future callers must not turn a lost claim into cleanup.
 const voiceClaimLostResult = Object.freeze({ status: "superseded" as const, reasonClass: "attempt_claim_lost" as const });
 
-export async function dispatchVoiceGatewayAttempt(input: {
+type LegacyVoiceDispatchInput = {
   admission: AuthorizedVoiceGatewayAdmission;
   actor: VoiceActor;
   adapter: VoiceModelGatewayAdapter;
   rollout?: VoiceRolloutGateInput;
   abortSignal: AbortSignal;
-}) {
+};
+export function dispatchVoiceGatewayAttempt(input: LegacyVoiceDispatchInput): ReturnType<typeof dispatchLegacyVoiceGatewayAttempt>;
+export function dispatchVoiceGatewayAttempt(input: ProjectBrainVoiceDispatchInput): ReturnType<typeof dispatchProjectBrainVoiceAttempt>;
+export function dispatchVoiceGatewayAttempt(input: ProjectBrainVoiceDispatchInput | LegacyVoiceDispatchInput) {
+  if ("kind" in input.actor) return dispatchProjectBrainVoiceAttempt(input as ProjectBrainVoiceDispatchInput);
+  return dispatchLegacyVoiceGatewayAttempt(input as LegacyVoiceDispatchInput);
+}
+async function dispatchLegacyVoiceGatewayAttempt(input: LegacyVoiceDispatchInput) {
   const { admission } = input;
-  // PB has its own stricter branch at this same entry point (next tranche).
+  // PB has its own stricter branch at this same entry point.
   // Never let a forged legacy type release or retry its held one-use operation.
   if (admission.request.subject.kind !== "voice_intake_segment") {
     return Object.freeze({ status: "refused" as const, reasonClass: "voice_subject_not_supported" as const });

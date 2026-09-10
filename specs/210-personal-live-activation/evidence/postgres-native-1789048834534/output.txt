@@ -1,0 +1,49 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-gateway.postgres.test.ts (12 tests | 1 failed) 1919ms
+     ✓ real gateway transaction lifecycle and instant round-trip under UTC  371ms
+     ✓ real gateway transaction lifecycle and instant round-trip under America/New_York 200ms
+     ✓ real gateway transaction lifecycle and instant round-trip under Asia/Tokyo 171ms
+     ✓ two concurrent admissions leave exactly one claim/hold and cannot reset source budget 179ms
+     ✓ two concurrent dispatchers can persist only one synthetic result and replay never retries 266ms
+     ✓ current cap withdrawal before dispatch leaves prepared exposure untouched 116ms
+     ✓ revoked owner cannot dispatch and durable source/holds survive 97ms
+     ✓ closed UNKNOWN scenario retains full hold with one terminal nonretryable operation 139ms
+     ✓ wrong actor/policy and no explicit synthetic cap cannot create an AI operation 81ms
+     ✓ generic Task/CLIENT claim, success, failure and usage paths cannot touch the persisted PB claim 111ms
+     ✓ forged legacy label cannot release the PB hold through the rollout-off cleanup 92ms
+     × a real owned CLIENT session cannot be substituted for the PB operation during positive acquisition 94ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  10:00:48
+   Duration  2.83s (transform 508ms, setup 0ms, import 747ms, tests 1.92s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-gateway.postgres.test.ts > native PB existing-gateway synthetic admission/dispatch (no provider) > a real owned CLIENT session cannot be substituted for the PB operation during positive acquisition
+PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42804`. Message: `ERROR: column "languageHint" is of type "VoiceIntakeLanguage" but expression is of type text
+HINT: You will need to rewrite or cast the expression.`
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7268
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ Module.createVoiceIntakeSession src/server/model-gateway/voice/sessions.ts:155:16
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-gateway.postgres.test.ts:209:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-50f16ce5e6e546faa3ac0b630ed96c50
