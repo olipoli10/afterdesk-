@@ -1,5 +1,23 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 19:11Z — current approval gate and historical result verified
+
+C2a current namespace/proof/OWNER/READ+WRITE/committed-phase gate and C3 REVIEW-only
+historical reader passed controller and separate peer reviews. No authority is
+granted by either reader. Retained native139/7 failure was missing REVIEW in the
+new test fixture; fixture-only correction gave146 PASS19:05:17.619Z. Strengthened
+grant/epoch assertions then passed full342 tests across20 native database clones,
+finished19:10:19.676Z/STOPPED, all79 fingerprints identical. Root5557 PASS/3 old
+skips19:07:16.323Z; TypeScript and scoped lint PASS. Exact receipts and boundaries
+are in audits/SMS_CORRELATED_APPROVAL_CONTROLLER_C2A_C3.md.
+
+Continue C2b atomic approval/claim then C2c same existing executor; separate agent
+implements private C3 result GET. Peer reviews follow, main owns native integration.
+No new APK, provider call, secret access, remote migration, deployment or spend.
+Timer ACTIVE3min freshly read15:04; goal API's old blocked state is not falsely
+resumed. Dashboard unchanged22% roadmap,46.75% localbuild,C2 18of18,
+real-test NO-GO,Verified-E2E0%. This rolling tranche is not campaign completion.
+
 ## 2026-09-10 18:38Z — exact schema leaf and typed recovery verified; executor follows
 
 C0 preserves the calendar schema grammar and legacy re-export identity while

@@ -1,0 +1,254 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_e8c8456fff524fd19977a0d946042648","template":"endvera_personal_210_6ec6ef62af6742a0aec9b516e8bf5ba2","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T18:57:25.3037147Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (146 tests | 7 failed) 80095ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'UTC', preserving approval and sources  2014ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'America/New_York', preserving approval and sources  1586ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'Asia/Tokyo', preserving approval and sources  1568ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'UTC', preserving approval and sources  1665ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'America/New_York', preserving approval and sources  1740ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'Asia/Tokyo', preserving approval and sources  1672ms
+     ✓ expiry recovery does not need to reopen an expired original SMS review  2045ms
+     ✓ recovers typed and ordinary expired claims in the same bounded batch without changing legacy JSON  1575ms
+     ✓ two overlapping native recovery backends close one expired approval once  1381ms
+     ✓ actually skips an expired approval held locked by another live backend, then recovers it after release  1244ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in UTC, without reopening authority  1894ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in America/New_York, without reopening authority  1889ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in Asia/Tokyo, without reopening authority  1898ms
+     ✓ reads an expired unattempted review without inventing an approval or re-enabling its offer  1177ms
+     ✓ reads expired processing as unknown without maintenance writes, then retains that outcome after actual C1 recovery  1472ms
+     ✓ keeps a recorded unknown transport outcome unknown without asserting that nothing happened  511ms
+     ✓ does not require old owner epochs, but refuses old and new owners after an actual ownership transfer  559ms
+     ✓ holds current owner read authority against a real concurrent revocation, then refuses the next history read  578ms
+     × reconstructs the unchanged exact offer and authority under UTC without approving 486ms
+     × reconstructs the unchanged exact offer and authority under America/New_York without approving 502ms
+     × reconstructs the unchanged exact offer and authority under Asia/Tokyo without approving 452ms
+     × requires actual READ consent in addition to the existing WRITE consent 502ms
+     × locks and rechecks the committed immutable CLAIMED claim, then refuses current READ revocation 424ms
+     × locks and rechecks the committed immutable DISPATCH_CLAIMED claim, then refuses current READ revocation 441ms
+     × does not offer a calendar tuple rewritten inside its own transaction snapshot 403ms
+     ✓ refuses preparing and approving in one transaction after TOP_XID  443ms
+     ✓ refuses preparing and approving in one transaction after SAVEPOINT  391ms
+     ✓ refuses preparing and approving in one transaction after RELEASED_SAVEPOINT  369ms
+     ✓ refuses preparing and approving in one transaction after OUTER_WRITE  470ms
+     ✓ refuses dispatching a SAVEPOINT claim before its parent commits  413ms
+     ✓ refuses confirming a SAVEPOINT dispatch before its parent commits  469ms
+     ✓ two native sessions cannot commit two approvals for the same review  404ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in UTC  586ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in America/Toronto  403ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in Pacific/Auckland  441ms
+     ✓ rolls back approval and leaves pending unchanged for MISSING_CLAIM  393ms
+     ✓ rolls back approval and leaves pending unchanged for NULL_AUTHORITY  441ms
+     ✓ rolls back approval and leaves pending unchanged for WRONG_ORIGIN  449ms
+     ✓ refuses an unapproved status mutation without a row or nonce  478ms
+     ✓ refuses a duplicate approval and protects its immutable nonce and scope  662ms
+     ✓ permits one dispatch transition and an exact synthetic terminal receipt, never reopening it  538ms
+     ✓ commits the accepted reply and one private draft through the production hook, not a direct test preparer  516ms
+     ✓ OFF at source processing leaves the completed reply and acknowledgement without a calendar review  325ms
+     ✓ an ambiguous refused answer remains completed but does not produce a calendar review even with preparation ON 290ms
+     ✓ preserves actual committed source and acknowledgement after revocation between consumption and preparation  381ms
+     ✓ preserves actual committed source and acknowledgement after expiry between consumption and preparation  1177ms
+     ✓ returns an authorized empty collection but refuses a foreign or revoked member 41ms
+     ✓ projects the real committed two-SMS draft without any manual review identifier  466ms
+     ✓ does not turn a damaged current authorization into an empty success  383ms
+     ✓ does not recreate expired history or reset its preparation window  1192ms
+     ✓ two actual readers preserve the same single immutable review  503ms
+     ✓ an already cancelled caller never receives even an empty list 27ms
+     ✓ a concurrently revoked owner cannot publish the old empty-list snapshot 54ms
+     ✓ commits exactly one isolated pending review and stable replay in UTC  533ms
+     ✓ commits exactly one isolated pending review and stable replay in America/New_York  434ms
+     ✓ commits exactly one isolated pending review and stable replay in Asia/Tokyo  593ms
+     ✓ remains OFF without writing a draft or changing sources  313ms
+     ✓ refuses a preexisting generic operation instead of adopting its request UUID  480ms
+     ✓ a marked operation without its review cannot commit  373ms
+     ✓ rolls back both new rows on a failure after provisional preparation  356ms
+     ✓ a committed review and marker cannot be rewritten or removed  447ms
+     ✓ current revocation refuses even a known replay without changing the saved review  408ms
+     ✓ cannot commit a just-prepared draft already claimed in that same transaction  479ms
+     ✓ refuses an expired replay while keeping the original draft and provenance  1186ms
+     ✓ serializes two actual backend preparations on the same receipt without duplicating  683ms
+     ✓ returns the two full sources and exact current draft without writes in UTC  440ms
+     ✓ returns the two full sources and exact current draft without writes in America/New_York  565ms
+     ✓ returns the two full sources and exact current draft without writes in Asia/Tokyo  483ms
+     ✓ does not prepare a review when missing or OFF and does not disclose it to a foreign owner  504ms
+     ✓ refuses expired proof without resetting the saved preparation window  1215ms
+     ✓ current revoked Google authority refuses the read without altering immutable history  599ms
+     ✓ reads a synthetic current uncertain state as uncertain, never re-preparing pending  552ms
+     ✓ bounds the first discovery against a real exclusive table lock  765ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  336ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  486ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  389ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  392ms
+     ✓ a genuine refused ambiguous answer is not recast as a consumed accepted receipt 293ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  337ms
+     ✓ current MODEL grant revocation refuses without changing the historical receipt  328ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1177ms
+     ✓ keeps a later active question intact while inspecting the earlier inactive receipt  576ms
+     ✓ holds current owner authority against a real concurrent revocation, then refuses the next read  384ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate 210ms
+     ✓ STORE_OFF preserves evidence while selecting the correct oldest candidate 170ms
+     ✓ BRIDGE_OFF preserves evidence while selecting the correct oldest candidate 215ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1203ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1216ms
+     ✓ GOOGLE_REVOKED preserves evidence while selecting the correct oldest candidate 207ms
+     ✓ MODEL_REVOKED preserves evidence while selecting the correct oldest candidate 267ms
+     ✓ IDENTITY_REVISED preserves evidence while selecting the correct oldest candidate 214ms
+     ✓ OWNER_REVISED preserves evidence while selecting the correct oldest candidate 210ms
+     ✓ an orphan bare hour stays deterministic and never completes a source 66ms
+     ✓ a retained calendar confirmation reserves 14h without interpreting it 274ms
+     ✓ a retained calendar confirmation reserves Ajoute inspection vendredi à 14h without interpreting it 250ms
+     ✓ two distinct live reply backends commit at most one canonical receipt and acknowledgment 262ms
+     ✓ 14h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 278ms
+     ✓ 3h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 195ms
+     ✓ independent or reserved message Qu’est-ce que j’ai demain? does not consume a pending answer 245ms
+     ✓ independent or reserved message Ajoute inspection vendredi à 14h does not consume a pending answer 164ms
+     ✓ independent or reserved message CONFIRME ENDVERA AGENDA bois lac lune sable does not consume a pending answer 164ms
+     ✓ OFF cannot consume or prepare an acknowledgment 142ms
+     ✓ BEFORE_ACCEPTANCE cannot consume or prepare an acknowledgment 133ms
+     ✓ REVOKED cannot consume or prepare an acknowledgment 215ms
+     ✓ AFTER_INSERT_FAILURE rolls back the real consumer/source CAS and acknowledgment insert 201ms
+     ✓ AFTER_INSERT_REVOKED rolls back the real consumer/source CAS and acknowledgment insert 217ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1185ms
+     ✓ expires WAITING once, retains source/question/budget/history  1279ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1192ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1167ms
+     ✓ existing ingress worker routes 14h without another model or source completion  408ms
+     ✓ existing ingress worker routes 3h without another model or source completion 286ms
+     ✓ existing ingress worker routes Ajoute une visite vendredi without another model or source completion 217ms
+     ✓ existing ingress worker routes OFF without another model or source completion 291ms
+     ✓ retains atomic source/question/registry with preparation ON 273ms
+     ✓ retains atomic source/question/registry with preparation OFF 135ms
+     ✓ retains atomic source/question/registry with preparation REVOKED_AFTER_SOURCE_CAS 170ms
+     ✓ prepares only START ambiguity and commits exact question plus source CAS 95ms
+     ✓ prepares only END ambiguity and commits exact question plus source CAS 108ms
+     ✓ missing-end model template requests full reformulation before any misleading question is inserted 155ms
+     ✓ current grant changed after inspection rolls back the inserted question and source state 98ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only 286ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only 237ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only 233ms
+     ✓ attached but OFF refuses the ordinary approval path 200ms
+     ✓ post-response Google revocation keeps the entire exposure and never creates WAITING 194ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry 188ms
+     ✓ OFF does not require valid input or mutate the DB 2ms
+     ✓ commits exact complete wire + shared ledger without calendar draft or additional provider work 115ms
+     ✓ rolls registry, question and shared ledger back if source completion is omitted 106ms
+     ✓ rejects lease replacement after registry insertion even if a raw UPDATE tries to complete 101ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1735ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in UTC 238ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in America/New_York 278ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo 222ms
+     ✓ missing immutable acceptedAt refuses; historical updatedAt is never substituted 168ms
+     ✓ an SMS received before the durable question receipt cannot become its answer later 231ms
+     ✓ another actor cannot load the question or consume its reply 288ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  497ms
+     ✓ revocation remains possible but prevents attaching or consuming evidence  357ms
+     ✓ rejects a minimal forged ACCEPTED packet at the actual INSERT trigger 172ms
+     ✓ competing consumption of the same SMS commits at most one permanent receipt 165ms
+     ✓ five creations across both types share one permanent hourly cap  735ms
+     ✓ keeps one visible pair namespace after re-pairing into another workspace/owner 212ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  639ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends 201ms
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 139 passed (146)
+   Start at  14:56:02
+   Duration  83.00s (transform 1.48s, setup 0ms, import 2.74s, tests 80.09s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > current canonical correlated approval gate on PostgreSQL without an executor call > reconstructs the unchanged exact offer and authority under UTC without approving
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > current canonical correlated approval gate on PostgreSQL without an executor call > reconstructs the unchanged exact offer and authority under America/New_York without approving
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > current canonical correlated approval gate on PostgreSQL without an executor call > reconstructs the unchanged exact offer and authority under Asia/Tokyo without approving
+Error: CORRELATED_CALENDAR_APPROVAL_GATE_REFUSED
+ ❯ refused src/server/personal-assistant/correlated-calendar-approval-gate.ts:37:35
+     35| const enabled = (env: ConnectorEnvironment) => env.ENDVERA_PERSONAL_SM…
+     36| const disabled = () => Object.freeze({ status: "DISABLED" as const, ex…
+     37| function refused(): never { throw new Error("CORRELATED_CALENDAR_APPRO…
+       |                                   ^
+     38| function freeze<T>(value: T): T { if (value && typeof value === "objec…
+     39| function contextSnapshot(context: TemporalRegistryContext) {
+ ❯ live src/server/personal-assistant/correlated-calendar-approval-gate.ts:48:141
+ ❯ inspect src/server/personal-assistant/correlated-calendar-approval-gate.ts:58:3
+ ❯ inspectCorrelatedCalendarApprovalOfferInTransaction src/server/personal-assistant/correlated-calendar-approval-gate.ts:168:73
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:565:10
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:572:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > current canonical correlated approval gate on PostgreSQL without an executor call > requires actual READ consent in addition to the existing WRITE consent
+Error: CORRELATED_CALENDAR_APPROVAL_GATE_REFUSED
+ ❯ refused src/server/personal-assistant/correlated-calendar-approval-gate.ts:37:35
+     35| const enabled = (env: ConnectorEnvironment) => env.ENDVERA_PERSONAL_SM…
+     36| const disabled = () => Object.freeze({ status: "DISABLED" as const, ex…
+     37| function refused(): never { throw new Error("CORRELATED_CALENDAR_APPRO…
+       |                                   ^
+     38| function freeze<T>(value: T): T { if (value && typeof value === "objec…
+     39| function contextSnapshot(context: TemporalRegistryContext) {
+ ❯ live src/server/personal-assistant/correlated-calendar-approval-gate.ts:48:141
+ ❯ inspect src/server/personal-assistant/correlated-calendar-approval-gate.ts:58:3
+ ❯ inspectCorrelatedCalendarApprovalOfferInTransaction src/server/personal-assistant/correlated-calendar-approval-gate.ts:168:73
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:565:10
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:587:44
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > current canonical correlated approval gate on PostgreSQL without an executor call > locks and rechecks the committed immutable CLAIMED claim, then refuses current READ revocation
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > current canonical correlated approval gate on PostgreSQL without an executor call > locks and rechecks the committed immutable DISPATCH_CLAIMED claim, then refuses current READ revocation
+Error: CORRELATED_CALENDAR_APPROVAL_GATE_REFUSED
+ ❯ refused src/server/personal-assistant/correlated-calendar-approval-gate.ts:37:35
+     35| const enabled = (env: ConnectorEnvironment) => env.ENDVERA_PERSONAL_SM…
+     36| const disabled = () => Object.freeze({ status: "DISABLED" as const, ex…
+     37| function refused(): never { throw new Error("CORRELATED_CALENDAR_APPRO…
+       |                                   ^
+     38| function freeze<T>(value: T): T { if (value && typeof value === "objec…
+     39| function contextSnapshot(context: TemporalRegistryContext) {
+ ❯ live src/server/personal-assistant/correlated-calendar-approval-gate.ts:48:141
+ ❯ inspect src/server/personal-assistant/correlated-calendar-approval-gate.ts:58:3
+ ❯ lockCorrelatedCalendarApprovalWriteInTransaction src/server/personal-assistant/correlated-calendar-approval-gate.ts:177:10
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:595:50
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8126
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:596:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > current canonical correlated approval gate on PostgreSQL without an executor call > does not offer a calendar tuple rewritten inside its own transaction snapshot
+AssertionError: expected Error: CORRELATED_CALENDAR_APPROVAL_GATE_… to match object { name: 'ZodError', …(1) }
+
+- Expected
++ Received
+
+- {
+-   "issues": ArrayContaining [
+-     ObjectContaining {
+-       "path": [
+-         "operationCommitted",
+-       ],
+-     },
+-   ],
+-   "name": "ZodError",
++ Error {
++   "message": "CORRELATED_CALENDAR_APPROVAL_GATE_REFUSED",
+  }
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:613:19
+    611|       await tx.personalAssistantOperation.update({ where: { id: review…
+    612|       return inspectCorrelatedCalendarApprovalOfferInTransaction(tx, {…
+    613|     }, txOptions)).rejects.toMatchObject({ name: "ZodError", issues: e…
+       |                   ^
+    614|     expect(await historicalSnapshot(x)).toEqual(before);
+    615|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-c7e6b157c60641719d654f6629091422
