@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "ENDVERA-PERSONAL-20260910-100CAD",
+  "owner": "Olivier",
+  "source": "Direct user GO accepting the immediately preceding 100 CAD / 30 days personal-pilot proposal in this task",
+  "recordedAt": "2026-09-10T01:18:26Z",
+  "expiresAt": "2026-10-10T01:18:26Z",
+  "currency": "CAD",
+  "totalCeiling": "100.00",
+  "automaticRenewal": false,
+  "envelopes": { "twilioIncludingNumber": "30.00", "backendAndDatabase": "30.00", "openRouter": "20.00", "taxFxContingency": "20.00" },
+  "recipientScope": "Verified Olivier personal number only; no third-party SMS or calls",
+  "permitted": ["Reconcile existing accounts", "Dedicated personal HTTPS backend configuration and deployment", "Internal Android APK with configured backend", "Bounded Twilio number, self-SMS and short self-call pilot", "Owner-controlled Google consent and calendar actions", "OpenRouter candidate behind deterministic action gateway within its fresh 20 CAD envelope"],
+  "notPermitted": ["Unlimited spending", "Renewing or replenishing the budget automatically", "Customer or employee messaging", "Bulk sends", "Publishing to app stores", "Replacing the public Afterdesk site", "Reusing an old R37 budget", "Fabricating consent or observation", "Treating an AI output as action authority"],
+  "secretPolicy": "Credentials remain local/server-side; never displayed, committed or included in model prompts",
+  "activationCondition": "Verify credentials, provider pricing/taxes/FX, billing controls and destination ownership before chargeable operation. Preserve headroom for costs not covered by the outgoing reservation ledger.",
+  "accounting": { "confirmedNewSpendCad": "0.00", "newPurchases": [], "reservedExternalCharges": [] },
+  "status": "AUTHORIZED_SETUP_IN_PROGRESS"
+}

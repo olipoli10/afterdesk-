@@ -1,0 +1,19 @@
+# Deployment source only. Never upload local evidence, secrets, native builds,
+# dependency junctions, or prior Next output to the dedicated backend.
+.git
+.codex
+.agents
+.scratch
+.env*
+!.env.example
+node_modules
+.prisma-client
+.next*
+apps
+docs
+specs
+tests
+coverage
+storage
+*.log
+*.tsbuildinfo

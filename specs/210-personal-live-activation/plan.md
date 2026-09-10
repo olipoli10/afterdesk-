@@ -40,6 +40,14 @@ approval and history. No personal-SIM SMS access is required.
 
 ## Authority and completion
 
+Current authorization: authorization.json, ENDVERA-PERSONAL-20260910-100CAD.
+User accepted 100 CAD TOTAL for 30 days, recorded 2026-09-10T01:18:26Z,
+expires 2026-10-10T01:18:26Z, no automatic renewal, only the verified owner phone.
+Twilio30/backend30/OpenRouter20/contingency20 CAD envelopes; these are not four
+additional budgets. Continue setup with accounts already available; do not ask
+for this budget or a routine GO again. Secrets/consent and billing reconciliation
+still require genuine access, not inferred presence or fabricated observations.
+
 The user requested personal go-live and the timer. Continue local work and
 prepare concrete external configuration without routine GO requests. No old
 R37 budget applies. No number purchase or paid trial without a current CAD

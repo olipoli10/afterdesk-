@@ -9,9 +9,11 @@ yet authorize employees, customer numbers, bulk sends, inbound voice conversatio
 arbitrary device control, or an external AI provider. Existing local intent routing
 is not evidence of an OpenRouter conversation. Do not reuse historical R37 budgets.
 
-A current owner-approved total CAD ceiling, pilot deadline and account setup are
-still required. No number purchase, paid build, deployment, SMS/call, OAuth consent
-or external AI request was executed by this local-validation campaign.
+Current authority is authorization.json: 100 CAD TOTAL through 2026-10-10T01:18:26Z,
+no automatic renewal, owner-recipient only. The budget is accepted; account access
+and genuine owner consent are still required. Historical local validation did not
+perform purchases, deployment, SMS/calls, OAuth consent or external AI requests.
+Current external setup is recorded separately in backend-provisioning.json.
 
 ## Existing projects verified read-only
 

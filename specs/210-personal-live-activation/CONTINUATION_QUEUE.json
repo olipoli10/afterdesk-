@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "objective": "PERSONAL_SMS_CALENDAR_VOICE_LIVE",
-  "status": "AWAITING_EXTERNAL_CONFIGURATION",
+  "status": "IN_PROGRESS",
   "projectComplete": false,
   "automationId": "endvera-mise-en-service-personnelle",
   "entries": [
@@ -10,16 +10,18 @@
     {"id":"GOOGLE_OAUTH","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","liveObserved":false,"limitations":["Google account consent not performed","Remote Google grant revocation not yet implemented; local encrypted credentials are cleared"]},
     {"id":"GUARDED_SMS_WORKER","status":"DONE_LOCAL","dependencies":["SIGNED_SMS_INGRESS","SMS_POSTGRES_CONCURRENCY"],"evidence":"progress.md","liveObserved":false},
     {"id":"APPROVED_SMS_VOICE_DELIVERY","status":"DONE_LOCAL","dependencies":["GUARDED_SMS_WORKER"],"evidence":"progress.md","liveObserved":false,"limitations":["Self-recipient pilot only","Tariff-reviewed reservations are not a ceiling on all provider invoice charges"]},
-    {"id":"HTTPS_ANDROID_CONFIGURATION","status":"PREPARED_NOT_DEPLOYED","dependencies":[],"evidence":"deployment/ACTIVATION.md","remaining":["Configure dedicated backend and secrets","Set verified HTTPS mobile API origin","Build and validate an installable internal APK"]},
+    {"id":"HTTPS_ANDROID_CONFIGURATION","status":"IN_PROGRESS","dependencies":[],"evidence":"deployment/backend-provisioning.json","remaining":["Deploy and verify dedicated backend against migrated isolated database","Build and validate connected Android versionCode 4 APK"]},
     {"id":"PHONE_BINDING_AND_CALENDAR_APPROVAL","status":"DONE_LOCAL","dependencies":["GOOGLE_OAUTH"],"evidence":"progress.md","liveObserved":false},
-    {"id":"PERSONAL_EXTERNAL_SETUP","status":"WAITING_OWNER_CONFIGURATION","dependencies":["GOOGLE_OAUTH","HTTPS_ANDROID_CONFIGURATION"]},
+    {"id":"PERSONAL_EXTERNAL_SETUP","status":"IN_PROGRESS","dependencies":["GOOGLE_OAUTH"],"authorization":"authorization.json"},
     {"id":"LIVE_OBSERVATION","status":"PENDING","dependencies":["PERSONAL_EXTERNAL_SETUP","APPROVED_SMS_VOICE_DELIVERY"]}
   ],
   "ownerInputs": {
-    "twilioBudgetCad": null,
+    "totalPilotBudgetCad": 100,
+    "twilioBudgetCad": 30,
+    "pilotExpiresAt": "2026-10-10T01:18:26Z",
     "twilioAccountAndNumber": "NOT_VERIFIED",
     "googleOAuthConnection": "NOT_CONFIGURED",
-    "deploymentAccountAndOrigin": "EXISTING_SANDBOX_PROJECT_VERIFIED_READ_ONLY_ORIGIN_NOT_CONFIGURED",
+    "deploymentAccountAndOrigin": "VERCEL_AUTHENTICATED_DEDICATED_PILOT_DATABASE_MIGRATED_CONFIGURED_EXECUTION_DISABLED",
     "approvedPilotRecipient": "NOT_BOUND"
   },
   "resumeRule": "Recheck changed owner configuration and Git. Continue eligible work without GO. No repeated paid attempts, old R37 budget, fabricated observation or routine unchanged notification. Keep timer active; projectComplete remains false."
