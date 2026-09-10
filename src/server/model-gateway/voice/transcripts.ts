@@ -55,36 +55,41 @@ export async function persistVoiceTranscriptSegment(input: {
   measuredCostMicros?: bigint | null;
   now?: Date;
 }): Promise<VoiceTranscriptSuccess> {
-  const now = input.now ?? new Date();
-  if (input.text.length < 1 || input.text.length > VOICE_LIMITS.maxTranscriptCharsPerSegment) {
+  // Capture the evidence and identity before any await. The INSERT must use
+  // exactly the same immutable primitive values that were hashed/authorized.
+  const { segmentId, gatewayAttemptId, text, reportedAudioSeconds = null,
+    measuredCostMicros = null } = input;
+  const actor = { id: input.actor.id, role: input.actor.role };
+  const now = new Date(input.now?.getTime() ?? Date.now());
+  if (typeof text !== "string" || text.length < 1 || text.length > VOICE_LIMITS.maxTranscriptCharsPerSegment) {
     throw new Error("voice_transcript_unavailable");
   }
-  const textFingerprint = canonicalFingerprint(input.text);
+  const textFingerprint = canonicalFingerprint(text);
   return prisma.$transaction(async (tx) => {
     const authority = await authorizeAcceptedAttempt(tx, {
-      actor: input.actor,
-      segmentId: input.segmentId,
-      gatewayAttemptId: input.gatewayAttemptId,
+      actor,
+      segmentId,
+      gatewayAttemptId,
       now,
     });
     await tx.$executeRawUnsafe(
       `INSERT INTO "VoiceTranscriptSegment" (id,"segmentId","gatewayAttemptId",text,"textFingerprint","characterCount","reportedAudioSeconds","measuredCostMicros","expiresAt","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT ("segmentId") DO NOTHING`,
       `vts_${randomUUID().replaceAll("-", "")}`,
-      input.segmentId,
-      input.gatewayAttemptId,
-      input.text,
+      segmentId,
+      gatewayAttemptId,
+      text,
       textFingerprint,
-      input.text.length,
-      input.reportedAudioSeconds ?? null,
-      input.measuredCostMicros ?? null,
+      text.length,
+      reportedAudioSeconds,
+      measuredCostMicros,
       authority.sessionExpiresAt,
       now
     );
     const [row] = await tx.$queryRawUnsafe<ProtectedTranscriptRow[]>(
       `SELECT t."segmentId",s.ordinal,t.text,t."textFingerprint",t."purgedAt" FROM "VoiceTranscriptSegment" t JOIN "VoiceIntakeSegment" s ON s.id=t."segmentId" WHERE t."segmentId"=$1`,
-      input.segmentId
+      segmentId
     );
-    if (!row || row.purgedAt !== null || row.textFingerprint !== textFingerprint || row.text !== input.text) {
+    if (!row || row.purgedAt !== null || row.textFingerprint !== textFingerprint || row.text !== text) {
       throw new Error("voice_segment_conflict");
     }
     return Object.freeze({
@@ -114,7 +119,9 @@ export async function loadVoiceTranscriptSegment(input: {
     throw new Error("voice_session_not_owned");
   }
   if (row.expiresAt.getTime() <= now.getTime()) throw new Error("voice_session_expired");
-  if (row.purgedAt !== null || row.text.length === 0) throw new Error("voice_transcript_unavailable");
+  if (row.purgedAt !== null || typeof row.text !== "string" || row.text.length === 0 ||
+      row.text.length > VOICE_LIMITS.maxTranscriptCharsPerSegment ||
+      canonicalFingerprint(row.text) !== row.textFingerprint) throw new Error("voice_transcript_unavailable");
   return Object.freeze({
     status: "succeeded" as const,
     segmentId: row.segmentId,

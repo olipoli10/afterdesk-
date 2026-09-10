@@ -29,7 +29,12 @@ export async function createVoiceSession(input: {
   consentAccepted: true;
 }): Promise<VoiceCreateResult> {
   const user = await requireRole("CLIENT");
-  return createPortalVoiceSession({ actor: { id: user.id, role: user.role }, ...input });
+  return createPortalVoiceSession({
+    actor: { id: user.id, role: user.role },
+    languageHint: input.languageHint,
+    consentVersion: input.consentVersion,
+    consentAccepted: input.consentAccepted,
+  });
 }
 
 export async function submitVoiceSegment(input: {
@@ -42,7 +47,16 @@ export async function submitVoiceSegment(input: {
   audio: ArrayBuffer;
 }): Promise<VoiceCommandResult> {
   const user = await requireRole("CLIENT");
-  return registerPortalVoiceSegment({ actor: { id: user.id, role: user.role }, ...input });
+  return registerPortalVoiceSegment({
+    actor: { id: user.id, role: user.role },
+    sessionId: input.sessionId,
+    ordinal: input.ordinal,
+    format: input.format,
+    mimeType: input.mimeType,
+    durationMs: input.durationMs,
+    bytes: input.bytes,
+    audio: input.audio,
+  });
 }
 
 export async function finishVoiceSession(input: {
@@ -50,19 +64,29 @@ export async function finishVoiceSession(input: {
   expectedSegmentCount: number;
 }): Promise<VoiceCommandResult> {
   const user = await requireRole("CLIENT");
-  return finishPortalVoiceSession({ actor: { id: user.id, role: user.role }, ...input });
+  return finishPortalVoiceSession({
+    actor: { id: user.id, role: user.role },
+    sessionId: input.sessionId,
+    expectedSegmentCount: input.expectedSegmentCount,
+  });
 }
 
 export async function assembleVoiceTranscript(input: {
   sessionId: string;
 }): Promise<VoiceTranscriptResult> {
   const user = await requireRole("CLIENT");
-  return assemblePortalVoiceTranscript({ actor: { id: user.id, role: user.role }, ...input });
+  return assemblePortalVoiceTranscript({
+    actor: { id: user.id, role: user.role },
+    sessionId: input.sessionId,
+  });
 }
 
 export async function cancelVoiceSession(input: {
   sessionId: string;
 }): Promise<VoiceCommandResult> {
   const user = await requireRole("CLIENT");
-  return cancelPortalVoiceSession({ actor: { id: user.id, role: user.role }, ...input });
+  return cancelPortalVoiceSession({
+    actor: { id: user.id, role: user.role },
+    sessionId: input.sessionId,
+  });
 }

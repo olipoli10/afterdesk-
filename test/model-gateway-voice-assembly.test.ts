@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { assembleVoiceTranscriptDraft } from "@/server/model-gateway/voice/assembly";
+import { canonicalFingerprint } from "@/server/model-gateway/evidence";
 
 const segment = (ordinal: number, text: string) => ({
   ordinal,
   status: "succeeded" as const,
   audioFingerprint: `sha256:${String(ordinal).padStart(64, "a")}`,
   text,
-  textFingerprint: `sha256:${String(ordinal).padStart(64, "b")}`,
+  textFingerprint: canonicalFingerprint(text),
   purgedAt: null,
 });
 

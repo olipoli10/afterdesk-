@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { assembleVoiceTranscriptDraft } from "@/server/model-gateway/voice/assembly";
 import { nextVoiceSessionStatus } from "@/server/model-gateway/voice/sessions";
+import { canonicalFingerprint } from "@/server/model-gateway/evidence";
 
 const segment = {
   ordinal: 0, status: "succeeded", audioFingerprint: `sha256:${"a".repeat(64)}`,
-  text: "done", textFingerprint: `sha256:${"b".repeat(64)}`, purgedAt: null,
+  text: "done", textFingerprint: canonicalFingerprint("done"), purgedAt: null,
 };
 
 describe("voice cancellation and incomplete outcomes", () => {

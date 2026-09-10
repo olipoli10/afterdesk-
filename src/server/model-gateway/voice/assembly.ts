@@ -51,8 +51,10 @@ export function assembleVoiceTranscriptDraft(input: {
     if (!segment || segment.ordinal !== ordinal || segment.status !== "succeeded") {
       throw new Error("voice_transcript_incomplete");
     }
-    if (segment.purgedAt !== null || segment.text.length === 0 ||
-        segment.text.length > VOICE_LIMITS.maxTranscriptCharsPerSegment) {
+    if (segment.purgedAt !== null || typeof segment.text !== "string" || segment.text.length === 0 ||
+        segment.text.length > VOICE_LIMITS.maxTranscriptCharsPerSegment ||
+        !/^sha256:[a-f0-9]{64}$/.test(segment.audioFingerprint) ||
+        canonicalFingerprint(segment.text) !== segment.textFingerprint) {
       throw new Error("voice_transcript_unavailable");
     }
   }
