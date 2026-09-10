@@ -1,0 +1,51 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/sms-inbound-recovery.postgres.test.ts (6 tests) 435ms
+ ✓ specs/210-personal-live-activation/confirmation.postgres.test.ts (22 tests) 10911ms
+     ✓ selects the newer ordinary reply ahead of a retained expired bridge without rewriting either  5544ms
+     ✓ selects the newer ordinary reply ahead of a retained revoked bridge without rewriting either  323ms
+     ✓ selects the newer ordinary reply ahead of a retained identity-revised bridge without rewriting either  418ms
+     ✓ consumes the exact verified phrase and calendar claim once in one transaction without execution  403ms
+     ✓ counts a wrong phrase once per completed source, never a write or replay  301ms
+     ✓ expires by the DB clock without deleting or resetting the permanent phrase registry  1192ms
+ ✓ specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts (7 tests) 5076ms
+     ✓ expires PREPARED and WAITING by DB time without touching another owner, summary or permanent nonce  3597ms
+ ✓ specs/210-personal-live-activation/confirmation-worker.postgres.test.ts (6 tests) 1667ms
+     ✓ commits one exact review/draft/challenge plus two distinct pending messages; only the dedicated fake-HTTP bridge reaches WAITING  482ms
+ ✓ specs/210-personal-live-activation/project-brain-voice.postgres.test.ts (12 tests) 830ms
+ ✓ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests) 1278ms
+     ✓ finishes SMS source and stored review atomically, without pretending to fetch Google  307ms
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone UTC without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"UTC","mixedEquality":true,"explicitUtcEquality":true,"inferredDateEquality":true,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":true,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-01T16:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-01T16:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone America/New_York without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"America/New_York","mixedEquality":false,"explicitUtcEquality":true,"inferredDateEquality":false,"mixedExpiredAppearsLive":true,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":true,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":true,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-01T12:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-01T12:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone Asia/Tokyo without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"Asia/Tokyo","mixedEquality":false,"explicitUtcEquality":true,"inferredDateEquality":false,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":false,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-02T01:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-02T01:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+CALENDAR_CONCURRENCY_DIAGNOSTIC {"events":["1:1:BEGIN","2:1:BEGIN","1:1:CALLBACK_ENTER","2:2:CALLBACK_ENTER","1:5:CALLBACK_RETURN","1:5:COMMITTED","3:5:BEGIN","2:7:CALLBACK_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:7:CALLBACK_ENTER","2:8:TRANSACTION_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:12:CALLBACK_RETURN","3:13:COMMITTED","4:17:BEGIN","4:18:CALLBACK_ENTER","4:23:CALLBACK_RETURN","4:23:COMMITTED","5:23:BEGIN","5:24:CALLBACK_ENTER","5:28:CALLBACK_RETURN","5:28:COMMITTED"],"outcomes":["FULFILLED","P2010_PrismaClientKnownRequestError_40001_SERIALIZATION"],"elapsedMs":28}
+
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (14 tests) 874ms
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (10 tests) 798ms
+ ✓ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests) 518ms
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 455ms
+ ✓ specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts (3 tests) 393ms
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 469ms
+ ✓ specs/210-personal-live-activation/recovery.postgres.test.ts (5 tests) 301ms
+ ✓ specs/210-personal-live-activation/utc-datetime.postgres.test.ts (4 tests) 73ms
+
+ Test Files  14 passed (14)
+      Tests  126 passed (126)
+   Start at  04:30:24
+   Duration  37.91s (transform 1.42s, setup 0ms, import 11.61s, tests 24.08s, environment 1ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-811e824590a849a3bf7a51c2c5cef498

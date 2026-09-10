@@ -29,6 +29,39 @@ const formats: Record<(typeof VOICE_MEDIA_FORMATS)[number], readonly string[]> =
   webm: ["audio/webm"], flac: ["audio/flac", "audio/x-flac"],
 };
 
+const storedSegmentSchema = segmentSchema.omit({ bytes: true }).extend({
+  byteCount: z.number().int().positive().max(VOICE_LIMITS.maxSegmentBytes),
+}).strict();
+
+/** Revalidates recorded metadata only: no fabricated byte buffer or decoder proof. */
+export function inspectStoredProjectBrainVoiceManifest(input: unknown, expectedHash: string) {
+  const candidates = input && typeof input === "object" ? (input as { segments?: unknown }).segments : null;
+  if (!Array.isArray(candidates) || candidates.length < 1 || candidates.length > VOICE_LIMITS.maxSegments) {
+    throw new Error("PROJECT_BRAIN_VOICE_SEGMENT_COUNT_REFUSED");
+  }
+  const parsed = z.object({
+    schemaVersion: z.literal(1), subject: projectBrainVoiceSourceSubjectSchema, subjectFingerprint: fingerprint,
+    transformer: transformerSchema, segments: z.array(storedSegmentSchema).min(1).max(VOICE_LIMITS.maxSegments),
+    totalBytes: z.number().int().positive().max(VOICE_LIMITS.maxSessionBytes),
+    totalDurationMs: z.number().int().positive().max(VOICE_LIMITS.maxSessionDurationMs),
+    mediaDecodingVerified: z.literal(false),
+  }).strict().parse(input);
+  if (sha256Canonical(parsed) !== fingerprint.parse(expectedHash)
+    || sha256Canonical(parsed.subject) !== parsed.subjectFingerprint) throw new Error("VOICE_PB_STORED_MANIFEST_HASH_REFUSED");
+  let nextStart = 0, totalBytes = 0;
+  for (const [ordinal, segment] of parsed.segments.entries()) {
+    if (segment.ordinal !== ordinal || segment.startMs !== nextStart || segment.endMs - segment.startMs !== segment.durationMs
+      || !formats[segment.mediaFormat].includes(segment.mimeType)) throw new Error("VOICE_PB_STORED_MANIFEST_COVERAGE_REFUSED");
+    nextStart = segment.endMs;
+    totalBytes += segment.byteCount;
+  }
+  if (nextStart !== parsed.subject.sourceDurationMs || nextStart !== parsed.totalDurationMs || totalBytes !== parsed.totalBytes) {
+    throw new Error("VOICE_PB_STORED_MANIFEST_COVERAGE_REFUSED");
+  }
+  return Object.freeze({ ...parsed, subject: Object.freeze(parsed.subject), transformer: Object.freeze(parsed.transformer),
+    segments: Object.freeze(parsed.segments.map(segment => Object.freeze(segment))) });
+}
+
 /** Pure inspection only: injected segment metadata/bytes never establish media or actor authority. */
 export function inspectProjectBrainSourceSegments(input: unknown, options: { enabled?: boolean } = {}) {
   if (options.enabled !== true) return Object.freeze({ status: "DISABLED" as const, executionAuthorized: false as const });

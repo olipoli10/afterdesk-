@@ -1,0 +1,18 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice.postgres.test.ts (15 tests) 6425ms
+     ✓ database-clock expiry refuses the read without extending or rewriting persisted evidence  5153ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  04:43:45
+   Duration  7.52s (transform 401ms, setup 0ms, import 939ms, tests 6.43s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-b9dd4c83557d4be482601113ccb0a5a2

@@ -1,0 +1,18 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice.postgres.test.ts (12 tests) 1402ms
+     ✓ actual source -> consent -> session and exact segment without download audit, AiOperation, fact or provider  316ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  04:29:25
+   Duration  2.77s (transform 545ms, setup 0ms, import 1.17s, tests 1.40s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-101146b1413240f39430efdbb2e33b29

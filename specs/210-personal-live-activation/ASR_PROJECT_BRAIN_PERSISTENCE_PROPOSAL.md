@@ -1,7 +1,22 @@
 # Proposition de persistance — tranche Project Brain voix OFF
 
-Statut : PROPOSED, pas une migration appliquée ou une autorisation d'activation.
+Statut : IMPLEMENTED_LOCAL_OFF. Migration75 appliquée uniquement dans des bases
+PostgreSQL natives jetables, jamais sur la base distante; aucune activation.
 Base de la tranche : `8a9ee0b4749903607539f58b6e095c5aa584f8e0`.
+
+Preuves distinctes : première migration75 refusée42601 avant tout test dans
+`evidence/postgres-native-1789028796787`; parenthésage PL/pgSQL corrigé puis
+contre-revu. Retest source/session12/12 dans `postgres-native-1789028950461`;
+suite native complète126/126,14fichiers,75migrations dans
+`postgres-native-1789029010377`, terminée08:31:04.310Z. Aucun échec n'est réécrit.
+
+Projection propriétaire ajoutée OFF :89tests ciblés rerun par un autre agent,
+revue GREEN. Parent a ensuite ajouté trois scénarios natifs de lecture exacte,
+tenant/révocation et expiration réelle sans réécriture :15/15 au total dans
+`postgres-native-1789029811139`, terminé08:43:54.181Z. Les bases ont toutes été
+arrêtées et conservées localement pour diagnostic. Stockage des octets source
+simulé en mémoire; SQL/transactions/contraintes et horloge sont natifs.
+Ce n'est ni une transcription ni une autorisation fournisseur.
 
 ## Tranche locale déjà codée
 
@@ -45,8 +60,9 @@ Dans `VoiceIntakeSession` :
   et tous les nouveaux champs NON NULL. Aucun propriétaire ne devient CLIENT.
 - UNIQUE `(requestedByUserId, workspaceId, requestCommandId)` pour rejouer
   exactement une commande ; conflit de hash refusé, pas une nouvelle session.
-- Première version volontairement bornée : UNIQUE partielle
-  `(projectBrainSourceId) WHERE subjectKind='project_brain_voice'`. Elle évite
+- Première version volontairement bornée : UNIQUE simple `(projectBrainSourceId)`
+  avec `@unique` Prisma correspondant. Le CHECK impose NULL aux sessions legacy,
+  et PostgreSQL permet plusieurs NULL. Cette contrainte évite
   qu'une nouvelle commande fasse repartir les coûts d'une source incertaine.
   Une nouvelle transcription après terminal/purge ne sera pas supportée dans
   cette tranche ; elle exigera une politique distincte de reprise et budget

@@ -455,7 +455,8 @@ model User {
   accountContextNotesAuthored AccountContextNote[]                @relation("AccountContextNoteAuthor")
   standingCapacityPayouts     StandingCapacityPayout[]            @relation("StandingCapacityPayoutWorker")
   assistantMessages           AssistantMessage[]
-  voiceIntakeSessions         VoiceIntakeSession[]
+  voiceIntakeSessions         VoiceIntakeSession[] @relation("VoiceIntakeClient")
+  projectBrainVoiceSessions  VoiceIntakeSession[] @relation("ProjectBrainVoiceRequester")
   constructionWorkspacesOwned ConstructionWorkspace[]             @relation("ConstructionWorkspaceOwner")
   constructionMemberships     ConstructionWorkspaceMember[]       @relation("ConstructionWorkspaceMemberUser")
   constructionIdentities      ConstructionCommunicationIdentity[] @relation("ConstructionIdentityUser")
@@ -2745,8 +2746,21 @@ enum CalibrationStratumDimension {
 /// Raw audio is deliberately absent: only bounded metadata is durable.
 model VoiceIntakeSession {
   id                   String                   @id @default(cuid())
-  clientId             String
-  client               User                     @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  clientId             String?
+  client               User?                    @relation("VoiceIntakeClient", fields: [clientId], references: [id], onDelete: Restrict)
+  subjectKind          String                   @default("voice_intake")
+  requestedByUserId    String?
+  requestedBy          User?                    @relation("ProjectBrainVoiceRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  workspaceId          String?
+  projectId            String?
+  intakeId             String?
+  projectBrainSourceId String?                  @unique(map: "voice_pb_one_session_per_source_key")
+  projectBrainSource   ConstructionProjectBrainSource? @relation("ProjectBrainVoiceSource", fields: [projectBrainSourceId, workspaceId, projectId, intakeId], references: [id, workspaceId, projectId, intakeId], onDelete: Restrict, onUpdate: Restrict, map: "voice_pb_source_tenant_fkey")
+  requestCommandId     String?                  @db.Uuid
+  sourceBinding        Json?
+  sourceBindingHash    String?
+  segmentManifest      Json?
+  segmentManifestHash String?
   status               VoiceIntakeSessionStatus @default(open)
   languageHint         VoiceIntakeLanguage
   consentVersion       String
@@ -2764,13 +2778,14 @@ model VoiceIntakeSession {
   expiresAt            DateTime
   cancelledAt          DateTime?
   finishedAt           DateTime?
-  createdAt            DateTime                 @default(now())
+  createdAt            DateTime                 @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   updatedAt            DateTime                 @updatedAt
 
   segments VoiceIntakeSegment[]
 
   @@index([clientId, status])
   @@index([expiresAt, status])
+  @@unique([requestedByUserId, workspaceId, requestCommandId], map: "voice_pb_owner_command_key")
 }
 
 /// Immutable identity and byte-derived metadata for one bounded audio chunk.
@@ -2786,7 +2801,7 @@ model VoiceIntakeSegment {
   byteCount        Int
   audioFingerprint String
   languageHint     VoiceIntakeLanguage
-  createdAt        DateTime                 @default(now())
+  createdAt        DateTime                 @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   updatedAt        DateTime                 @updatedAt
 
   aiOperation AiOperation?
@@ -3813,9 +3828,11 @@ model ConstructionProjectBrainSource {
   createdAt                  DateTime                       @default(now())
 
   factCandidates ConstructionProjectBrainFactCandidate[]
+  voiceSessions VoiceIntakeSession[] @relation("ProjectBrainVoiceSource")
 
   @@unique([workspaceId, commandId], map: "CPBS_workspace_command_key")
   @@unique([intakeId, ordinal], map: "CPBS_intake_ordinal_key")
+  @@unique([id, workspaceId, projectId, intakeId], map: "CPBS_voice_tenant_identity_key")
   @@index([workspaceId, projectId, createdAt], map: "CPBS_project_created_idx")
   @@index([fileId], map: "CPBS_file_idx")
 }
