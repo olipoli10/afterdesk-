@@ -3,6 +3,9 @@ const m = vi.hoisted(() => ({ find: vi.fn(), claim: vi.fn(), tx: vi.fn(), admiss
 vi.mock("@/lib/db", () => ({ prisma: { personalAssistantOperation: { findUnique: m.find }, $executeRawUnsafe: m.claim,
   $transaction: m.tx, constructionWorkspace: { findUniqueOrThrow: async () => ({ defaultTimezone: "America/Toronto" }) } } }));
 vi.mock("@/server/personal-assistant/sms-inbox", () => ({ enqueuePersonalSms: m.admission }));
+// These creation tests model an ordinary new command with no prior question.
+// Incoming reservation/consumption is exercised in its own real-worker suite.
+vi.mock("@/server/personal-assistant/sms-temporal-reply-worker", () => ({ processSmsTemporalReply: async () => ({ status: "NOT_TEMPORAL_CONTEXT", sourceCompleted: false, executionAuthorized: false, committed: true }) }));
 vi.mock("@/server/personal-assistant/sms-temporal-clarification-authority", async importOriginal => ({
   ...await importOriginal<typeof import("@/server/personal-assistant/sms-temporal-clarification-authority")>(),
   temporalRegistryTransaction: m.guard, temporalLockSourceNamespace: m.namespace }));

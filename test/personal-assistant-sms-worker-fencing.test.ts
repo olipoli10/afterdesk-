@@ -6,6 +6,9 @@ vi.mock("@/lib/db", () => ({ prisma: {
   constructionWorkspace: { findUniqueOrThrow: mocks.workspace }, $executeRawUnsafe: mocks.execute, $transaction: mocks.transaction,
 } }));
 vi.mock("@/server/personal-assistant/sms-inbox", () => ({ enqueuePersonalSms: mocks.admission }));
+// These original fencing fixtures have no temporal expectation; preserve their
+// interpreter assertions while dedicated wiring tests cover every disposition.
+vi.mock("@/server/personal-assistant/sms-temporal-reply-worker", () => ({ processSmsTemporalReply: async () => ({ status: "NOT_TEMPORAL_CONTEXT", sourceCompleted: false, executionAuthorized: false, committed: true }) }));
 vi.mock("@/server/construction-operating-assistant-r36c/orchestrator", () => ({ processUnifiedAssistantRequest: mocks.engine }));
 vi.mock("@/server/personal-assistant/google-connection", () => ({ readGoogleCalendarWithAuthority: mocks.calendar, requireGoogleReadAuthority: mocks.googleAuthority }));
 vi.mock("@/server/personal-assistant/outbox", () => ({ sendAutomaticPersonalReply: mocks.send, sendAutomaticCalendarConfirmationSummary: mocks.sendSummary }));

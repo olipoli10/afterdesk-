@@ -1,0 +1,31 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_e9e1eaf99915453793e9c1563bd1cdbc","template":"endvera_personal_210_58c39eb8e90246bdaf9975a0193b4122","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:54:40.1797567Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (55 tests) 17152ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate  481ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1199ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1205ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1164ms
+     ✓ expires WAITING once, retains source/question/budget/history  1156ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1160ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1237ms
+     ✓ retains atomic source/question/registry with preparation ON  314ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1644ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  313ms
+     ✓ five creations across both types share one permanent hourly cap  529ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  471ms
+
+ Test Files  1 passed (1)
+      Tests  55 passed (55)
+   Start at  10:54:20
+   Duration  19.38s (transform 964ms, setup 0ms, import 2.07s, tests 17.15s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-b84429ed9eb74de3aabaa30ea1dbe603

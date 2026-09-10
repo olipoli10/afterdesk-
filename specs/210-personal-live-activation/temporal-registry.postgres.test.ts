@@ -19,6 +19,7 @@ import { inspectSmsTemporalQuestionPreparationInTransaction, attachSmsTemporalQu
 import { processPersonalSms, type PersonalSmsSourceClaim } from "@/server/personal-assistant/sms-worker";
 import { maintainSmsTemporalClarifications, maintainSmsTemporalClarificationsInTransaction } from "@/server/personal-assistant/sms-temporal-maintenance";
 import { selectPersonalAutomaticOutboundCandidates } from "@/server/personal-assistant/outbound-queue";
+import { processSmsTemporalReply } from "@/server/personal-assistant/sms-temporal-reply-worker";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -203,6 +204,109 @@ describe("native temporal scheduling excludes retained invalid questions before 
   });
 });
 
+describe("native incoming temporal lower commits receipt and acknowledgment together", () => {
+  const flags = (f: Fixture) => ({ ...f.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_SMS_TEMPORAL_CLARIFICATION_BRIDGE_ENABLED: "true", ENDVERA_SMS_TEMPORAL_REPLY_WORKER_ENABLED: "true" });
+  const snapshot = async (f: Fixture, p: Prepared) => ({ entry: await stored(p.id), budget: await budget(),
+    operations: await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId }, orderBy: { id: "asc" } }),
+    receipts: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1 ORDER BY id', p.id) });
+  it("an orphan bare hour stays deterministic and never completes a source", async () => {
+    const f = await fixture(), claim = await reply(f), before = await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId }, orderBy: { id: "asc" } });
+    expect(await processSmsTemporalReply({ claim, deadlineAt: Date.now() + 5000 }, flags(f))).toMatchObject({ status: "TEMPORAL_REPLY_FIXED_RESPONSE", reason: "NO_WAITING_QUESTION", sourceCompleted: false });
+    expect(await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId }, orderBy: { id: "asc" } })).toEqual(before);
+  });
+  it.each(["14h", "Ajoute inspection vendredi à 14h"])("a retained calendar confirmation reserves %s without interpreting it", async body => {
+    const f = await fixture(); await prepare(f, await f.candidate("calendar")); const claim = await reply(f, body);
+    const before = await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId }, orderBy: { id: "asc" } });
+    expect(await processSmsTemporalReply({ claim, deadlineAt: Date.now() + 5000 }, flags(f))).toMatchObject({ status: "TEMPORAL_REPLY_FIXED_RESPONSE", reason: "OTHER_CONTEXT", sourceCompleted: false });
+    expect(await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId }, orderBy: { id: "asc" } })).toEqual(before);
+  });
+  it("two distinct live reply backends commit at most one canonical receipt and acknowledgment", async () => {
+    const f = await fixture(), p = await prepare(f, await f.candidate("temporal", true)); await syntheticAccepted(f, p);
+    const claims = [await reply(f), await reply(f)], nativeTransaction = prisma.$transaction.bind(prisma), pids: number[] = [];
+    let release!: () => void, timedOut = false;
+    const ready = new Promise<void>(resolve => { release = resolve; }), timer = setTimeout(() => { timedOut = true; release(); }, 750);
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: (tx: Prisma.TransactionClient) => Promise<unknown>, options: Parameters<typeof prisma.$transaction>[1]) => nativeTransaction(async tx => {
+      const [backend] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); pids.push(backend.pid); if (pids.length === 2) release();
+      await ready; return work(tx);
+    }, options)) as typeof prisma.$transaction);
+    let outcomes: PromiseSettledResult<Awaited<ReturnType<typeof processSmsTemporalReply>>>[];
+    try { outcomes = await Promise.allSettled(claims.map(claim => processSmsTemporalReply({ claim, deadlineAt: Date.now() + 5000 }, flags(f)))); }
+    finally { clearTimeout(timer); release(); wrapped.mockRestore(); }
+    expect(timedOut).toBe(false); expect(new Set(pids).size).toBe(2);
+    let handled = 0;
+    for (const outcome of outcomes) {
+      if (outcome.status === "fulfilled") {
+        if (outcome.value.status === "TEMPORAL_REPLY_HANDLED_NOT_EXECUTED") { handled++; expect(outcome.value.committed).toBe(true); }
+        else expect(outcome.value).toMatchObject({ status: "TEMPORAL_REPLY_FIXED_RESPONSE", sourceCompleted: false });
+      } else {
+        const e = outcome.reason as { code?: string; meta?: { code?: string } };
+        expect(e.code === "P2034" || e.code === "P2010" && e.meta?.code === "40001").toBe(true);
+      }
+    }
+    expect(handled).toBe(1);
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1', p.id)).toHaveLength(1);
+    expect(await prisma.personalAssistantOperation.count({ where: { idempotencyKey: { in: claims.map(claim => `reply:${claim.operationId}`) } } })).toBe(1);
+    expect((await stored(p.id)).phase).toBe("CONSUMED");
+  });
+  it.each(["14h", "3h"])("%s uses the canonical consumer once and creates exactly one matching unsent acknowledgment", async body => {
+    const f = await fixture(), p = await prepare(f, await f.candidate("temporal", true)); await syntheticAccepted(f, p);
+    const claim = await reply(f, body), beforeBudget = await budget();
+    const result = await processSmsTemporalReply({ claim, deadlineAt: Date.now() + 5000 }, flags(f));
+    expect(result).toMatchObject({ status: "TEMPORAL_REPLY_HANDLED_NOT_EXECUTED", outcome: body === "14h" ? "CORRELATED_NOT_EXECUTED" : "REFUSED", committed: true, sourceCompleted: true, executionAuthorized: false });
+    const source = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: claim.operationId } });
+    const acks = await prisma.personalAssistantOperation.findMany({ where: { idempotencyKey: `reply:${claim.operationId}` } });
+    expect(source).toMatchObject({ status: "completed", attempts: 1, leaseUntil: null }); expect(acks).toHaveLength(1);
+    expect(acks[0]).toMatchObject({ status: "pending", attempts: 0, externalTransportPerformed: false,
+      request: { to: f.from, from: f.env.TWILIO_PHONE_NUMBER, sourceOperationId: claim.operationId, text: (source.result as { reply: string }).reply } });
+    expect(await budget()).toEqual(beforeBudget);
+    const after = await snapshot(f, p);
+    await expect(processSmsTemporalReply({ claim, deadlineAt: Date.now() + 5000 }, flags(f))).rejects.toThrow("SOURCE_CLAIM_REQUIRED");
+    expect(await snapshot(f, p)).toEqual(after);
+  });
+  it.each(["Qu’est-ce que j’ai demain?", "Ajoute inspection vendredi à 14h", "CONFIRME ENDVERA AGENDA bois lac lune sable"])("independent or reserved message %s does not consume a pending answer", async body => {
+    const f = await fixture(), p = await prepare(f, await f.candidate("temporal", true)); await syntheticAccepted(f, p);
+    const claim = await reply(f, body), before = await snapshot(f, p);
+    const result = await processSmsTemporalReply({ claim, deadlineAt: Date.now() + 5000 }, flags(f));
+    expect(result).toMatchObject({ sourceCompleted: false, executionAuthorized: false });
+    expect(result.status).toBe(body.startsWith("Qu") ? "INDEPENDENT_CALENDAR_DAY_READ" : body.startsWith("CONFIRME") ? "RESERVED_CALENDAR_CONFIRMATION" : "TEMPORAL_REPLY_FIXED_RESPONSE");
+    expect(await snapshot(f, p)).toEqual(before);
+  });
+  it.each(["OFF", "BEFORE_ACCEPTANCE", "REVOKED"])("%s cannot consume or prepare an acknowledgment", async mode => {
+    const f = await fixture(), p = await prepare(f, await f.candidate("temporal", true));
+    if (mode !== "BEFORE_ACCEPTANCE") await syntheticAccepted(f, p);
+    const claim = await reply(f), env = flags(f);
+    if (mode === "OFF") env.ENDVERA_SMS_TEMPORAL_REPLY_WORKER_ENABLED = "false";
+    if (mode === "REVOKED") await prisma.constructionConnectorGrant.update({ where: { id: f.modelGrantId }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+    const before = await snapshot(f, p);
+    const run = processSmsTemporalReply({ claim, deadlineAt: Date.now() + 5000 }, env);
+    if (mode === "REVOKED") await expect(run).rejects.toThrow();
+    else expect(await run).toMatchObject({ status: "TEMPORAL_REPLY_FIXED_RESPONSE", sourceCompleted: false });
+    expect(await snapshot(f, p)).toEqual(before);
+  });
+  it.each(["AFTER_INSERT_FAILURE", "AFTER_INSERT_REVOKED"])("%s rolls back the real consumer/source CAS and acknowledgment insert", async mode => {
+    const f = await fixture(), p = await prepare(f, await f.candidate("temporal", true)); await syntheticAccepted(f, p);
+    const claim = await reply(f), env = flags(f), before = await snapshot(f, p);
+    const nativeTransaction = prisma.$transaction.bind(prisma);
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: (tx: Prisma.TransactionClient) => Promise<unknown>, options: Parameters<typeof prisma.$transaction>[1]) => nativeTransaction(async tx => {
+      const proxy = new Proxy(tx, { get(target, key) {
+        if (key === "personalAssistantOperation") return new Proxy(target.personalAssistantOperation, { get(delegate, method) {
+          if (method === "create") return async (args: Parameters<typeof delegate.create>[0]) => {
+            const row = await delegate.create(args);
+            if (mode === "AFTER_INSERT_FAILURE") throw new Error("SYNTHETIC_AFTER_ACK_INSERT");
+            env.ENDVERA_SMS_TEMPORAL_REPLY_WORKER_ENABLED = "false"; return row;
+          };
+          return Reflect.get(delegate, method);
+        } });
+        const value = Reflect.get(target, key); return typeof value === "function" ? value.bind(target) : value;
+      } });
+      return work(proxy);
+    }, options)) as typeof prisma.$transaction);
+    try { await expect(processSmsTemporalReply({ claim, deadlineAt: Date.now() + 5000 }, env)).rejects.toThrow(mode === "AFTER_INSERT_FAILURE" ? "SYNTHETIC_AFTER_ACK_INSERT" : "PROCESSING_DISABLED"); }
+    finally { wrapped.mockRestore(); }
+    expect(await snapshot(f, p)).toEqual(before);
+  });
+});
+
 describe("native temporal expiry preserves evidence and frees only the active ledger mirror", () => {
   it.each(["PREPARED", "WAITING", "REVOKED"])("expires %s once, retains source/question/budget/history", async mode => {
     const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c, { ttlMs: 1000 });
@@ -250,6 +354,28 @@ describe("native temporal expiry preserves evidence and frees only the active le
 });
 
 describe("real SMS worker prepares its temporal question with a synthetic-only candidate", () => {
+  it.each(["14h", "3h", "Ajoute une visite vendredi", "OFF"])("existing ingress worker routes %s without another model or source completion", async mode => {
+    const x = await outboundFixture(), { f, p } = x; await syntheticAccepted(f, p);
+    const body = mode === "OFF" ? "14h" : mode;
+    await prisma.$queryRawUnsafe("SELECT pg_sleep(0.005)::text");
+    const wire = { accountSid: f.accountSid, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from: f.from, to: x.env.TWILIO_PHONE_NUMBER!, body };
+    const incoming = await enqueuePersonalSms({ ...wire, contentHash: sha(JSON.stringify(wire)) });
+    const env = { ...x.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true", ENDVERA_SMS_TEMPORAL_REPLY_WORKER_ENABLED: mode === "OFF" ? "false" : "true" };
+    const model = vi.fn(async () => { throw new Error("UNEXPECTED_SECOND_MODEL"); }), engine = vi.fn(async () => { throw new Error("UNEXPECTED_LEGACY_ENGINE"); });
+    const beforeBudget = await budget(), beforeQuestion = await stored(p.id);
+    expect(await processPersonalSms(incoming.operationId, env, { model, engine })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(model).not.toHaveBeenCalled(); expect(engine).not.toHaveBeenCalled();
+    const source = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: incoming.operationId } });
+    const acks = await prisma.personalAssistantOperation.findMany({ where: { idempotencyKey: `reply:${incoming.operationId}` } });
+    expect(source).toMatchObject({ status: "completed", attempts: 1, leaseUntil: null }); expect(acks).toHaveLength(1);
+    expect(acks[0]).toMatchObject({ status: "pending", attempts: 0, externalTransportPerformed: false, request: { text: (source.result as { reply: string }).reply } });
+    const correlated = mode === "14h" || mode === "3h";
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1', p.id)).toHaveLength(correlated ? 1 : 0);
+    if (!correlated) expect(await stored(p.id)).toEqual(beforeQuestion);
+    expect(await budget()).toEqual(beforeBudget);
+    expect(await processPersonalSms(incoming.operationId, env, { model, engine })).toMatchObject({ status: "NOT_PENDING" });
+    expect(await prisma.personalAssistantOperation.count({ where: { idempotencyKey: `reply:${incoming.operationId}` } })).toBe(1);
+  });
   it.each(["ON", "OFF", "REVOKED_AFTER_SOURCE_CAS"])("retains atomic source/question/registry with preparation %s", async mode => {
     const f = await fixture();
     const env: NodeJS.ProcessEnv = { ...f.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED",

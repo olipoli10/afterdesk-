@@ -80,7 +80,8 @@ describe("PostgreSQL phone pairing, immutable approval and outbound reservation"
   });
   it("automatically replies only to the original sender with standing self-SMS consent", async () => {
     const f = await fixture(); const workerEnv = { ...f.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" };
-    const inbound = await enqueuePersonalSms({ ...f.envelope, messageSid: `SM${randomUUID().replaceAll("-", "")}`, body: "Bonjour", contentHash: "a".repeat(64) });
+    const wire = { accountSid: f.envelope.accountSid, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from: f.envelope.from, to: f.envelope.to, body: "Bonjour" };
+    const inbound = await enqueuePersonalSms({ ...wire, contentHash: createHash("sha256").update(JSON.stringify(wire)).digest("hex") });
     await processPersonalSms(inbound.operationId, workerEnv, { engine: async () => ({ reply: "Bonjour, réponse synthétique." }) });
     const reply = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { idempotencyKey: `reply:${inbound.operationId}` } });
     await sendAutomaticPersonalReply(reply.id, workerEnv, f.transport);

@@ -111,15 +111,24 @@ const correlationSchema = z.object({
   currentPhase: z.enum(["WAITING", "CONSUMED", "EXPIRED", "REFUSED"]), activeQuestionCount: z.number().int().nonnegative().max(25),
   reply: replySchema, now: instant,
 }).strict();
-/** This is deliberately only a lexical subset, not a second calendar/date resolver. */
-function explicitTimeLiteral(body: string) {
+/** Shared closed routing grammar, never a date resolver or action authority.
+ * Keep the original normalization/regex/bounds identical to the correlator. */
+export function classifySmsTemporalTimeLiteral(body: string) {
+  if (typeof body !== "string") return Object.freeze({ status: "NOT_TIME_LITERAL" as const });
   const normalized = body.trim().replace(/[\u00a0\u202f]/g, " ");
   const colon = /^(\d{2}):(\d{2})$/.exec(normalized);
   const french = /^(\d{1,2})\s*h(?:\s*(\d{2}))?$/.exec(normalized);
-  if (!colon && !french) throw new Error("SMS_CLARIFICATION_EXPLICIT_TIME_REQUIRED");
+  if (!colon && !french) return Object.freeze({ status: "NOT_TIME_LITERAL" as const });
   const hour = Number((colon ?? french)![1]), minute = Number((colon ?? french)![2] ?? 0);
-  if (hour > 23 || minute > 59 || !colon && hour >= 1 && hour <= 12) throw new Error("SMS_CLARIFICATION_AMBIGUOUS_OR_INVALID_TIME");
-  return { hour, minute };
+  if (hour > 23 || minute > 59 || !colon && hour >= 1 && hour <= 12) return Object.freeze({ status: "AMBIGUOUS_OR_INVALID_TIME_LITERAL" as const });
+  return Object.freeze({ status: "EXACT_TIME_LITERAL" as const, hour, minute });
+}
+/** Preserve the existing correlator's return shape and exact refusal codes. */
+function explicitTimeLiteral(body: string) {
+  const classified = classifySmsTemporalTimeLiteral(body);
+  if (classified.status === "NOT_TIME_LITERAL") throw new Error("SMS_CLARIFICATION_EXPLICIT_TIME_REQUIRED");
+  if (classified.status === "AMBIGUOUS_OR_INVALID_TIME_LITERAL") throw new Error("SMS_CLARIFICATION_AMBIGUOUS_OR_INVALID_TIME");
+  return { hour: classified.hour, minute: classified.minute };
 }
 
 export function correlateSmsTemporalClarification(untrusted: z.infer<typeof correlationSchema>) {

@@ -24,6 +24,7 @@ afterAll(() => prisma.$disconnect());
 describe("real local PostgreSQL personal SMS queue", () => {
   it("processes through the guarded engine once and durably prepares one unsent reply", async () => {
     const message = { ...envelope, messageSid: `SM${"d".repeat(32)}`, body: "Note le suivi de chantier", contentHash: "d".repeat(64) };
+    message.contentHash = createHash("sha256").update(JSON.stringify({ accountSid: message.accountSid, messageSid: message.messageSid, from: message.from, to: message.to, body: message.body })).digest("hex");
     const { operationId } = await enqueuePersonalSms(message);
     const engine = vi.fn().mockResolvedValue({ reply: "Suivi préparé." });
     const results = await Promise.allSettled(Array.from({ length: 3 }, () => processPersonalSms(operationId, workerEnv, { engine })));
@@ -36,6 +37,7 @@ describe("real local PostgreSQL personal SMS queue", () => {
   });
   it("holds an uncertain engine outcome without silently retrying it", async () => {
     const message = { ...envelope, messageSid: `SM${"e".repeat(32)}`, body: "Note ce chantier", contentHash: "e".repeat(64) };
+    message.contentHash = createHash("sha256").update(JSON.stringify({ accountSid: message.accountSid, messageSid: message.messageSid, from: message.from, to: message.to, body: message.body })).digest("hex");
     const { operationId } = await enqueuePersonalSms(message); const engine = vi.fn().mockRejectedValue(new Error("synthetic-uncertain-outcome"));
     expect(await processPersonalSms(operationId, workerEnv, { engine })).toEqual({ status: "REVIEW_REQUIRED", recorded: true, automaticRetry: false, engineCancellationConfirmed: false });
     expect(await processPersonalSms(operationId, workerEnv, { engine })).toEqual({ status: "NOT_PENDING" });

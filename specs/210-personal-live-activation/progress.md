@@ -1,5 +1,224 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 15:15Z — incoming replies native PASS; continue durable review
+
+Incoming temporal lower and actual SMS worker are connected, default OFF.
+Known receipt/source/ack commit returns before a second source CAS; no-context
+requires exact false sourceCompleted and fixed replies cannot fall into model
+interpretation. Reserved confirmations/day reads retain their existing paths.
+Peer CAL-context and malformed-fixed-text REDs remain recorded and corrected.
+
+Controller `postgres-native-1789053125955`:221/221 PASS across17 isolated
+database clones, all77-migration fingerprints identical, exit0 and owned server
+STOPPED at15:14:51.941Z. Earlier `postgres-native-1789052543146`:218 PASS/3 FAIL
+retained. Those legacy inbox/outbox worker fixtures used invented repeated-byte
+SMS hashes; they now use the exact real wire JSON hash. No source guard changed.
+Temporal63 includes actual worker4 plus concurrency, rollback and replay cases.
+
+Root `root-1789052607555`:4609 PASS/1 legacy5000ms timeout/3 skips under concurrent
+native load. Sequential `root-1789052764850`:4667 PASS/1 new voice fixture enum
+failure/3 skips; author corrected invented dataClass to the actual enum during
+that run. Neither receipt is a global PASS; stable root rerun is in progress.
+
+Protected synthetic transcript R1 is implemented OFF and under native review.
+Next receipt-to-calendar tranche is phase-independent proof plus owner-only
+durable loader, no new draft/schema/caller yet. A purge UTC defect is being
+reproduced separately; no real stored content is purged. Applied76/77 frozen.
+Queue stays IN_PROGRESS, projectComplete false. No provider call, new APK,
+deployment, external migration or metric promotion in this continuation.
+Roadmap22%, build46.75%, C2 18/18, real-test NO-GO, Verified-E2E0% unchanged.
+
+## 2026-09-10 14:44Z — full isolated PostgreSQL PASS; continue incoming SMS/voice
+
+Follow-up root `root-1789051560605`:4530 PASS/3 historical skips,365 passing
+files at14:47:03.515Z, exit0. Root TypeScript and scoped ESLint PASS after
+fixture type correction. This working snapshot includes concurrent OFF voice
+recovery/classifier work, not a deployed service or independent model benchmark.
+
+Controller `postgres-native-1789051241146`:16 files/192 tests PASS, exit0,
+STOPPED at14:43:22.077Z;16 distinct clones with identical77-migration digest.
+Temporal45 includes worker3, maintenance4 and selector9 new cases. Historical
+173/176 and179/179-with-cleanup-exit1 receipts remain intact.
+
+Root snapshot `root-1789051251112`:4489 assertions PASS/3 historical skips but
+one suite fails to load because its calendar-actions mock omitted the real
+draft schema export. Partial mock corrected; provenance+day-read5/5 PASS at
+14:43:47Z, full rerun pending. A selector fixture environment type was fixed.
+
+Voice recovery local module remains OFF/unwired. Main found its raw AiUsage
+SQL used a nonexistent aiOperationId column; actual Prisma/SQL operationId
+must be used. Unit-only review did not detect this; correction/native proof
+are assigned. Incoming clarification router remains under construction; pure
+day-read classifier extracted identically with legacy re-export/peer proof.
+
+No real provider calls, paid test, new APK or activation. Queue remains
+IN_PROGRESS; roadmap22%, build46.75%, C2 18/18, real-test NO-GO,
+Verified-E2E0% unchanged. Existing3-minute continuation stays ACTIVE.
+
+## 2026-09-10 14:16Z — native voice dispatch and SMS hook; work continues
+
+Native receipts retained: registry19/19 at13:48Z then actual outbox hook25/25
+at13:57Z. Expanded lower question preparation29/29 and PB gateway12/12 PASS
+inside full snapshot `postgres-native-1789049425151` at14:11:36Z. That complete
+run is173/176, not PASS: three global SMS recovery count oracles encountered
+expired fixtures from prior suites. Isolated cloned native databases per file
+are being prepared; no production recovery filter or assertion is weakened.
+Initial voice11/12 receipt42804 retained, explicit VoiceIntakeLanguage cast
+corrected and separately reviewed. Applied migrations76/77 stay immutable.
+
+Root working-tree snapshot4307 PASS/3 historical skips at14:00:22Z. New worker
+question wiring74 focused tests PASS at14:13:08Z, peer review/native pending.
+Question lower33 author/peer tests PASS; namespace before source locks; genuine
+single-calendar ambiguity only. Generic CLARIFY/SMS/voice/read are not recast
+as calendar requests. Expired temporal expectation bookkeeping is another
+bounded OFF slice now assigned. No real provider, SMS, ASR or activation.
+
+Same queue remains IN_PROGRESS, projectComplete false; no metrics raised.
+All completed native clusters stopped and retained, never deleted/reset.
+
+## 2026-09-10 13:44Z — voice admission checkpoint and native SMS correction
+
+7f48e3d5 commits B synthetic-only admission into the existing voice gateway and
+durable CLIENT ownership checks on both legacy cleanup and positive dispatch.
+Two peer counterexamples are retained in PROJECT_BRAIN_VOICE_ADMISSION_B_REVIEW;
+peer64/64 and controller64/64 at09:40:48 local PASS. C's actual synthetic dispatch
+and native B/C evidence remain separate ongoing work.
+
+Registry native sequence is preserved, not collapsed into PASS:
+- postgres-native-1789047345889:1/17 PASS, fixture Google connected hash missing.
+- postgres-native-1789047473968:5/17 PASS; real trigger error accessing NEW's
+  nonexistent clarificationId via CASE. Migration76 left unchanged.
+- Forward77 reviewed, replacing only trigger table dispatch with IF/ELSIF.
+  postgres-native-1789047793676:16/17 PASS; last failure is the revocation fixture
+  retaining granted scopes contrary to an existing constraint. Fix pending.
+All owned native servers stopped and clusters retained. No production DB touched.
+Ordinary receipt checkpoint415cfdf9 remains16/16 native PASS. Hook plan links
+exact question/outbox/UTC receipt atomically before WAITING; integration pending.
+Same project queue continues, no readiness increase or terminal report.
+
+## 2026-09-10 13:29Z — native outbound acceptance receipt verified
+
+Receipt correction: 123 focused tests, separate review69, then native PostgreSQL
+16/16 with76 migrations PASS (`postgres-native-1789046929790`). Three timezone
+cases verify real UTC receipt storage and reject forged response dates; three
+negative status cases retain uncertain exposure with no retry. Ten existing
+outbox cases also pass. Owned cluster stopped and retained. No actual Twilio
+request or delivery claim. The ordinary SMS clarification WAITING hook remains
+unimplemented; this is a prerequisite checkpoint, not registry completion.
+
+Peer review continues PB voice admission: caller subject/session substitutions
+must not enter legacy cleanup or legacy dispatch with a persisted PB claim.
+New counterexamples are retained; this block is not approved until corrected.
+Agents continue registry-native fixtures and synthetic-only voice dispatch.
+No readiness rubric change, no deployment, no new APK, no campaign closure.
+
+## 2026-09-10 13:25Z — resumed after usage interruption; saved mobile and voice primitives
+
+At09:26Z all three agents failed on account usage limits. Repeated heartbeat
+events afterward are not proof of continuous coding. Olivier requested continue;
+at13:23Z the usage tool no longer reported an active limit. The three existing
+agents resumed their same ownership. No reset credit was used or purchased.
+Same ACTIVE3min heartbeat, no second automation or terminal-goal claim.
+
+Product HEAD e5be74bf2b22705942997359e830fbcbf8f2da46,
+tree1bdb4e90f567b8afa682b6f99bd3f7fe2fd73a4e. Previous aae24821 records mobile
+connection clarity: shared navigation-only access/setup links, no unverified
+unsigned-package or all-providers-disabled runtime claim. Mobile467/467,
+peer23/23, TypeScript/lint and local Android Hermes export PASS; no new APK.
+e5be74bf records private audio snapshots, strict dedicated synthetic budget,
+persisted PB generic-runner exclusion and composable session inspector, reviewed
+52/145 subsets. Its point-of-use helper is not itself provider authorization.
+
+Recovered full root result at09:22:32.777Z:4222 PASS/3 historical skips across
+345 passing files. Earlier4084pass/2staticfailures remains separately retained.
+The later run is a working-tree snapshot, not final proof of evolving registry76
+or PB dispatch. Main outbox correction is reviewed but still awaiting native:
+19 adapter failure reproductions plus missing DB timestamp; now123 targeted
+PASS/peer69. Six native cases are prepared; they have not run.
+
+Registry76 native fixture and PB admission/dispatch counter-review continue.
+No remote migration, provider, secret access, SMS/call, release or metric change.
+Same missing external credential coordination, phone pairing and Google consent.
+Dashboard remains22% roadmap/46.75% localbuild/C2 18of18/real-test NO-GO/
+Verified-E2E0%. Continue useful authorized work, not a campaign closeout.
+
+## 2026-09-10 08:50Z — durable voice, exact SMS dates and integrity corrections committed
+
+New local commits: `77ade99f` voice action identity allowlists and exact
+transcript hashes; `0e74d5fe` source-bound OFF voice persistence and owner
+metadata projection; `b8ac4196` typed Project Brain voice ledger bindings;
+`c3981bd0` two-source temporal resolution preserving the original date/anchor.
+The latter HEAD is `c3981bd05309fa33b55c4248cfc0f007d8f4dfc6`, tree
+`08bea192d5c02d456d6bb79c1f2bb0ae98c3b0b7`. Subsequent registry/admission work
+is IN_PROGRESS; this is not a release-ready or full-campaign closeout.
+
+Native PostgreSQL: first migration75 failed42601 before tests; evidence remains
+`postgres-native-1789028796787`. Reviewed parentheses-only correction passed
+12/12, then the full native126/126 across14files/75migrations at08:31:04.310Z.
+Three added genuine owner-read/revocation/clock-expiry cases passed in expanded
+15/15 file at08:43:54.181Z (`postgres-native-1789029811139`). Owned servers were
+stopped; clusters retained. Source object bytes are injected synthetic fixtures,
+while source admission, SQL, constraints, locks and clocks are native.
+
+Identity/hash regressions: actual exported Server Actions forwarded an injected
+actor under mocks; producer mutation after awaited authorization mismatched
+text and hash. Six peer RED cases now GREEN,26 independent regressions plus
+the controller59-test affected suite pass. Actual portal runtime remains OFF.
+No public exploitation or semantic transcript accuracy is claimed.
+
+Two-source SMS inspection/resolution:195 focused tests including25 independently
+authored cases pass. Only one demonstrated ambiguous slot can receive the new
+hour; incomplete templates, negated/conditional source and invalid/DST ambiguous
+intervals remain refused. Resolution is not a draft, persisted consumption or
+approval. The next OFF registry must share the existing visible phone-pair
+namespace and count history across clarification and confirmation.
+
+Typed voice binding:378 focused tests pass with peer review. It adds identity
+integrity to the existing gateway ledger, no parallel engine or fake CLIENT.
+Next admission must check policy/route before reserve, enforce one attempt and
+exclude generic terminal/usage paths, rehash private bytes at use and preserve
+uncertain exposure. STT OpenRouter remains hard OFF. Root suite launched at
+08:49Z; its outcome will be recorded separately, not assumed here.
+
+Heartbeat inspected08:49:59Z: ACTIVE, three-minute interval, same thread; no
+duplicate created or pause. No product provider call, secret access, external
+SMS, remote migration/deployment, APK build or metric promotion in this block.
+Dashboard unchanged:22% roadmap /46.75% local build /C2 18of18 /real-test NO-GO
+/Verified-E2E0%. Credential coordination remains external; independent local
+implementation continues without a routine founder confirmation.
+
+## 2026-09-10 08:24Z — native ten-minute decode PASS; durable voice and SMS work continues
+
+Controller native probe evidence/audio-probe-4a5ac2ed-74e9-409f-a29e-6468bd239f6a
+finished08:22:51.714Z: fixed synthetic AAC/M4A3759037bytes,600seconds,
+9600000 decoded samples/19200000PCM bytes,14 WAV segments. All18 native stages
+exited0, repeated decode and exact reassembly matched. Peer-reviewed fixed-input
+runner validates real artifact paths, pinned local binaries, narrow environment,
+timeouts/output limits and no network media protocol. This is not a production
+decoder sandbox, publisher authentication, ASR or personal/Samsung observation.
+The first PCM unit run OOM on deep Buffer comparison is retained in the plan;
+Buffer.equals preserves the exact assertion without a larger heap or fewer samples.
+
+Fresh controller targeted suite04:24:06 local:115/115 across6files, comprising
+SMS formatter/correlation90 and pure/native-probe-review25. The native runner
+was not imported or executed by those static/unit reviews. Root TypeScript also
+passes after isolated Prisma6.19.3 generation into the real local .prisma-client
+directory; shared node_modules unchanged. New voice migration is not applied yet.
+
+Earlier snapshots saved:29749a7c STT adapter/policy hard refusal + measured versus
+reported usage separation,77tests/review;9e41cefe immutable source/manifest
+resolver, root3728PASS+3historical skips, boundary6303modules/0violations. Those
+root/boundary counts predate the new SMS and persistence work and are not final
+campaign proof. Mobile460 and Android Hermes export are saved, not a new APK.
+
+Next ready work remains active: native voice persistence proof, typed existing
+gateway integration, protected review, and exact two-source SMS inspection then
+durable correlation. A CLARIFY-only model result cannot supply a missing calendar
+template; ordinary outbox acceptance time must be recorded atomically, not guessed
+from updatedAt. No provider call, credentials, remote migration/deployment, new
+APK or metric promotion in this continuation. Same100CAD scope, ACTIVE3min
+heartbeat,22%/46.75%/C2 18of18/real-test NO-GO/Verified-E2E0%.
+
 ## 2026-09-10 07:58Z — ten-minute mobile recording saved locally; next lanes continue
 
 Fresh controller evidence/mobile-1789027036849 confirms **460/460 mobile tests,

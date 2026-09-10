@@ -9,6 +9,9 @@ vi.mock("@/lib/db", () => ({ prisma: {
   constructionCalendarItem: { findFirst: mocks.legacyItem }, $transaction: mocks.transaction,
 } }));
 vi.mock("@/server/personal-assistant/sms-inbox", () => ({ enqueuePersonalSms: mocks.admission }));
+// This legacy-projection test has no registered temporal question. The new
+// routing guard is independently exercised with real worker + lower tests.
+vi.mock("@/server/personal-assistant/sms-temporal-reply-worker", () => ({ processSmsTemporalReply: async () => ({ status: "NOT_TEMPORAL_CONTEXT", sourceCompleted: false, executionAuthorized: false, committed: true }) }));
 vi.mock("@/server/personal-assistant/calendar-actions", async importOriginal => ({
   ...await importOriginal<typeof import("@/server/personal-assistant/calendar-actions")>(), preparePersonalCalendar: mocks.prepareGoogle,
 }));

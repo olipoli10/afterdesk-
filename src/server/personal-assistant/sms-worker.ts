@@ -19,6 +19,7 @@ import { selectPersonalAutomaticOutboundCandidates } from "./outbound-queue";
 import { canonicalJson } from "@/server/model-gateway/evidence";
 import { temporalLockSourceNamespace, temporalRegistryTransaction } from "./sms-temporal-clarification-authority";
 import { inspectSmsTemporalQuestionPreparationInTransaction, attachSmsTemporalQuestionInTransaction } from "./sms-temporal-question-preparation";
+import { processSmsTemporalReply } from "./sms-temporal-reply-worker";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -105,13 +106,31 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
     const workspace = await prisma.constructionWorkspace.findUniqueOrThrow({ where: { id: row.workspaceId }, select: { defaultTimezone: true } });
     requireLive();
     const day = smsCalendarDay(received.body);
+    const reservedCalendar = isReservedCalendarConfirmationMessage(received.body);
+    let temporalFixedReply: string | undefined;
+    if (!reservedCalendar && !day) {
+      // Inspect persisted context even with temporal processing OFF. A missing
+      // schema/failed lookup cannot grant permission to use another interpreter.
+      const temporal = await processSmsTemporalReply(Object.freeze({ claim, signal: controller.signal, deadlineAt }), env);
+      if (temporal.status === "TEMPORAL_REPLY_HANDLED_NOT_EXECUTED" && temporal.sourceCompleted === true) {
+        // Known commit already includes source CAS, receipt and exact ack. No
+        // postcommit deadline check, second CAS, model or provider invocation.
+        return { status: "COMPLETED_REPLY_PREPARED" as const };
+      }
+      requireLive();
+      if (temporal.status === "TEMPORAL_REPLY_FIXED_RESPONSE" && temporal.sourceCompleted === false) {
+        if (typeof temporal.reply !== "string" || temporal.reply.length < 1 || temporal.reply.length > 1500) throw new Error("SMS_TEMPORAL_ROUTING_CHANGED");
+        temporalFixedReply = temporal.reply;
+      }
+      else if (temporal.status !== "NOT_TEMPORAL_CONTEXT" || temporal.sourceCompleted !== false) throw new Error("SMS_TEMPORAL_ROUTING_CHANGED");
+    }
     let reply: string; let source: "GOOGLE_CALENDAR" | "ENDVERA_LOCAL" | "CLARIFICATION" | "MODEL_REVIEW_ONLY";
     let finalizeReview: PersonalModelSmsResult["finalizeReview"];
     let googleReadAuthority: GoogleReadAuthority | undefined;
     let googleReadRange: { start: string; end: string } | undefined;
     // Only the closed whole-message day grammar bypasses interpretation. No
     // model call or legacy fallback is needed for this explicit read request.
-    if (isReservedCalendarConfirmationMessage(received.body)) {
+    if (reservedCalendar) {
       if (env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true"
         && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true"
         && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true") {
@@ -141,6 +160,8 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       reply = result.events.length === 0 ? `${label} : aucun rendez-vous dans ton Google Agenda principal (${workspace.defaultTimezone}).`
         : `${label}, Google Agenda (${workspace.defaultTimezone}) :\n${result.events.map(event => `${event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString("fr-CA", { timeZone: workspace.defaultTimezone, hour: "2-digit", minute: "2-digit" }) : "Toute la journée"} — ${event.summary}`).join("\n")}`;
       source = "GOOGLE_CALENDAR";
+    } else if (temporalFixedReply !== undefined) {
+      reply = temporalFixedReply; source = "CLARIFICATION";
     } else if (env.ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED === "true") {
       const result = await (deps.model ?? processPersonalModelSms)(Object.freeze({ claim, signal: controller.signal, deadlineAt }), env);
       requireLive();

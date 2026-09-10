@@ -6,6 +6,24 @@
   "automationId": "endvera-mise-en-service-personnelle",
   "entries": [
     {
+      "id": "MOBILE_CONNECTION_CLARITY",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "MOBILE_CONNECTION_CLARITY_PLAN.md",
+      "completed": ["aae24821 removes unverified unsigned/disabled blanket claims, adds device access and owner-only SMS setup links", "Rendered7 regressions and peer23 pass; full mobile467/467, TypeScript/lint and Android Hermes export pass"],
+      "remaining": ["No newly signed/distributed APK or observed Samsung connection is implied"],
+      "liveObserved": false
+    },
+    {
+      "id": "OUTBOUND_ACCEPTANCE_RECEIPT",
+      "status": "DONE_LOCAL",
+      "dependencies": ["SIGNED_SMS_INGRESS"],
+      "evidence": "OUTBOUND_ACCEPTANCE_RECEIPT_PLAN.md",
+      "completed": ["Reproduced19 negative/unknown REST acceptance failures and missing DB receipt time; conservative correction passes123 targeted tests with peer69", "415cfdf9 persists DB UTC clock in exact completion CAS; native16/16 including6 new timestamp/negative-response cases PASS with76 migrations"],
+      "remaining": ["Ordinary clarification WAITING hook belongs to SMS_CLARIFICATION_CORRELATION and remains in progress; no provider activation or observed delivery"],
+      "liveObserved": false
+    },
+    {
       "id": "LONG_DICTATION_LOCAL_600S",
       "status": "DONE_LOCAL",
       "dependencies": ["ANDROID_VOICE_CONTEXT_BINDING"],
@@ -19,16 +37,36 @@
       "status": "IN_PROGRESS",
       "dependencies": ["LONG_DICTATION_LOCAL_600S"],
       "evidence": "ASR_PROJECT_BRAIN_INTEGRATION_PLAN.md",
-      "completed": ["Existing gateway/source immutability audit and typed-subject/derived-review plan", "Official STT routing mismatch reproduced in code; candidate hard-disable, wire seconds mapping and non-settling reported-cost parser under independent review"],
-      "remaining": ["Owner/source/manifest resolver and tests, review-only persistence and integration, proportional validation; no live ASR or provider routing certification"],
+      "completed": ["Existing gateway/source immutability audit and typed-subject/derived-review plan", "Reviewed STT policy/adapter hard refusal and non-settling reported usage;77/77 targeted PASS at29749a7c", "Reviewed owner/source/manifest resolver saved at9e41cefe; full-root3728 PASS snapshot; no fake CLIENT or source transcription promotion", "Source-bound durable OFF sessions and owner projection at0e74d5fe; native75migrations126/126 then expanded owner/expiry file15/15; first42601 migration failure retained", "Typed PB subject and both existing ledger bindings atb8ac4196, peer review and378/378 focused tests", "e5be74bf private audio snapshot, strict synthetic budget and persisted generic-runner exclusion; reviewed A primitives", "7f48e3d5 adds synthetic-only existing gateway admission and one-attempt claim; two peer legacy-boundary REDs fixed, controller64/64 and peer64/64 PASS"],
+      "checkpoint": "c90ada4c commits C existing-gateway fixed synthetic dispatch, current source/owner/hold and private bytes recheck; native12/12 PASS after retained enum42804 correction; full173/176 snapshot is not a global PASS",
+      "remaining": ["Protected transcript R1 owner-only server projection underway; cb4f10a6 saves OFF lease-expiry recovery with11/11 native PASS after retained AiUsage SQL-field correction; no recovery scheduling activation", "No live ASR, privacy/routing certification, hosted decoder or personal-audio observation"],
+      "liveObserved": false
+    },
+    {
+      "id": "SYNTHETIC_NATIVE_AUDIO_SEGMENTATION",
+      "status": "DONE_LOCAL",
+      "dependencies": ["LONG_DICTATION_LOCAL_600S"],
+      "evidence": "evidence/audio-probe-4a5ac2ed-74e9-409f-a29e-6468bd239f6a/result.json",
+      "completed": ["Pure sample-preserving PCM/WAV segmenter12 tests and independent13 tests PASS", "Pinned local fixed600s AAC/M4A native probe:18 stages PASS,9600000 samples,14 WAV segments, repeated decode and exact PCM reassembly", "Pre-execution peer review fixed artifact realpath guard; first unit deep-Buffer-comparison OOM retained and bounded exact comparison fixed"],
+      "remaining": ["Not an untrusted-media decoder sandbox, Samsung recording test, ASR result or source-derived authorization; fractional-ms manifest integration separate"],
       "liveObserved": false
     },
     {
       "id": "SMS_CLARIFICATION_CORRELATION",
       "status": "IN_PROGRESS",
-      "dependencies": ["SMS_TEMPORAL_CLARIFICATION"],
-      "completed": [],
-      "remaining": ["Pure exact-actor/source/proposal/question/expiry contract, independent review; durable two-source correlation and gateway integration without manufactured dates or approval"],
+      "dependencies": ["SMS_TEMPORAL_CLARIFICATION", "OUTBOUND_ACCEPTANCE_RECEIPT"],
+      "completed": ["Reviewed pure exact-actor/source/proposal/question/expiry correlation and full-wire formatter parity;90/90 targeted PASS", "Two-source inspection and closed temporal resolution atc3981bd0;195/195 focused tests including25 independently authored; original date/anchor and both SMS preserved", "Durable registry76 SQL plan accepted: shared exact visible-pair namespace, permanent receipts/history, global five/hour and one-active, current authority and final source CAS"],
+      "checkpoint": "25fec824 persists question registry/hook/worker/maintenance/selector with full192 native PASS. Incoming standalone55 then59 native PASS; actual reply worker63 PASS15:01:44Z. Two independent CAL-context/missing-fixed-text REDs corrected, main50 wiring/question tests PASS15:03:22. Applied76/77 frozen",
+      "remaining": ["Incoming lower/wiring182 targeted PASS and integrated native221/221 across17files PASS15:14:51Z; root4685 PASS with one known adjacent purgeUTC RED, retained. Save incoming-reply commit then continue approved phase-independent proof and owner-only durable receipt loader; no draft, new schema, caller or execution yet", "No manufactured dates, title, duration, approval or extra model call; incomplete original template remains insufficient"],
+      "liveObserved": false
+    },
+    {
+      "id": "VOICE_TRANSCRIPT_AND_ACTOR_INTEGRITY",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "audits/VOICE_TRANSCRIPT_INTEGRITY_REVIEW.md",
+      "completed": ["Reproduced two corrupt-text reads, five actor-overwrite wrappers and producer text/hash mutation; exact failures retained", "Explicit authenticated action allowlists, immutable pre-await producer snapshot and consumer hash verification at77ade99f", "Controller59/59 affected tests plus peer26/26 regressions, TypeScript and lint PASS"],
+      "remaining": ["Runtime remains OFF; no public exploit, live ASR quality or deployed fix is claimed"],
       "liveObserved": false
     },
     {
@@ -312,12 +350,12 @@
         "ANDROID_DOCUMENT_PICKER_RECOVERY"
       ],
       "remaining": [
-        "Physical Samsung permission/recording observation; ten-minute dictation not implemented"
+        "Physical Samsung permission/recording observation; ten-minute local capture now covered by LONG_DICTATION_LOCAL_600S, not by the old APK"
       ],
       "liveObserved": false,
       "completed": [
         "Recording bound to starting workspace/project/intake/version and matching native completion receipt",
-        "Failed stop retains session gate for cleanup; two-minute limit at c1f96bfb/mobile398; separate600s wave in progress"
+        "Failed stop retains session gate for cleanup; historical two-minute limit at c1f96bfb/mobile398 superseded locally by reviewed600s wave7176862d/mobile460"
       ]
     },
     {
@@ -369,7 +407,7 @@
         "PGlite7/7 SQL PASS and independent review, prior5/7 fixture failure retained"
       ],
       "remaining": [
-        "Native multi-backend proof and live observation remain separate"
+        "Native7/7 PASS in full114 suite; live observation remains absent"
       ],
       "liveObserved": false
     },

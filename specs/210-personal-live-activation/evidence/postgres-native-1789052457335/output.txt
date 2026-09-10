@@ -1,0 +1,39 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_9056faf46c2142dc8792ce60985a1ebe","template":"endvera_personal_210_125d8bd6e5e847518cbd9fe773d3f671","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T15:01:40.3666282Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (63 tests) 22460ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate  655ms
+     ✓ STORE_OFF preserves evidence while selecting the correct oldest candidate  325ms
+     ✓ BRIDGE_OFF preserves evidence while selecting the correct oldest candidate  348ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1286ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1244ms
+     ✓ GOOGLE_REVOKED preserves evidence while selecting the correct oldest candidate  379ms
+     ✓ two distinct live reply backends commit at most one canonical receipt and acknowledgment  310ms
+     ✓ 14h uses the canonical consumer once and creates exactly one matching unsent acknowledgment  525ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1235ms
+     ✓ expires WAITING once, retains source/question/budget/history  1192ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1190ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1200ms
+     ✓ existing ingress worker routes 14h without another model or source completion  338ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  340ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only  351ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry  304ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1668ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  481ms
+     ✓ five creations across both types share one permanent hourly cap  670ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  553ms
+
+ Test Files  1 passed (1)
+      Tests  63 passed (63)
+   Start at  11:01:15
+   Duration  24.87s (transform 1.03s, setup 0ms, import 2.25s, tests 22.46s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-62a2396cef7942b2acf88ddd93ab8535
