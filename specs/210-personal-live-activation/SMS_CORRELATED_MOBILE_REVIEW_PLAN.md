@@ -1,5 +1,60 @@
 # Two-SMS calendar review in the existing mobile workflow
 
+## Controller execution decision — 2026-09-10 16:53Z
+
+The item reader and standalone card have been implemented and cross-reviewed.
+Native receipt `postgres-native-1789058422654` passes93 cases, including8 new
+item-reader cases; it uses actual persisted synthetic SMS processing under78.
+The owned PostgreSQL server stopped. The initial table-discovery SELECT is now
+bounded before executing; a real exclusive-table-lock test confirms refusal
+inside the original short deadline. This is not live-provider/Samsung proof.
+
+The next authorized local tranche connects that same read-only representation
+to the existing owner personal-service screen. Controller owns the private GET
+and native integration; separate author owns the list transaction, mobile author
+owns screen/API cancellation and rendering, and a peer reviews both boundaries.
+No credential, provider, permission activation or deployment is included.
+
+Selected endpoint: GET `/api/endvera/v1/personal/model/correlated-calendar-reviews`.
+Its only query field is workspaceId; actor comes from the verified session.
+REVIEW switch OFF returns404 before authentication. All responses are private,
+no-store; errors never echo source text/SQL or become a successful empty list.
+Only a strict versioned list DTO can cross the route. Existing V1 stays unchanged.
+
+For this bounded first tranche, choose one SERIALIZABLE transaction (five-second
+database budget), latest five scoped rows ordered createdAt descending/id
+descending and a sixth row solely for hasMore. Every displayed item reuses the
+frozen reader. Initial active owner/member check precedes discovery; final
+shared-lock owner/member epoch check follows canonical item locks. Final DB time
+and conservative monotonic elapsed time guard every expiry through publication.
+No nested transactions, autonomous retries, preparation or partial successes.
+
+This deliberately replaces the earlier proposed per-item partial-list design
+with **all-or-unavailable**. One expired/revoked/corrupt item rejects this small
+list; it is not skipped or falsely called absent. It is not permanent history:
+the original short preparation window still applies. Latest-order locking can
+contend across unusual multiple historical namespaces; bounded rollback is an
+availability limitation, not proof that deadlocks are impossible. A future
+history reader or typed approval path requires its own explicit design/review.
+
+The phone validates <=5 unique reviews and exact workspace, clears stale values
+before reload/scope/background changes, discards late responses and supports
+request cancellation. An expiry timer may hide data, never poll or trigger an
+action. A local clock check is only presentation freshness, not action authority.
+The screen will show both original texts and the exact draft with no approval
+button, manual identifier entry or new permission. Common API cancellation
+changes require regression tests and a separate peer review.
+
+Verification gates: native empty/nonowner/revoked/expired/concurrent reads;
+strict endpoint auth/query/kill-switch/abort/deadline/no-store tests; actual DTO
+compatibility and mobile lifecycle/cancellation tests; root/mobile build checks.
+First GET run47 PASS/3 positive503 failures was an integration import-name
+mismatch (ResponseSchema vs Schema). Corrected import passes64 author+peer
+tests at12:53:24 local. No validation was relaxed; failures remain recorded.
+
+Campaign remains IN_PROGRESS. A working local reader is not an activated phone,
+Google event, new APK, live model, delivery receipt or project completion.
+
 Date: 2026-09-10. Status: **PROPOSED — DESIGN ONLY, NO ACTIVATION**.
 Decision owner: campaign controller. Schema design is coordinated with `SMS_CORRELATED_CALENDAR_SCHEMA_PLAN.md`; this document does not reserve or modify a migration.
 

@@ -24,6 +24,8 @@ import { loadCorrelatedPersonalReceiptSubject } from "@/server/model-gateway/per
 import { prepareCorrelatedPersonalCalendarReview, prepareCorrelatedPersonalCalendarReviewInTransaction } from "@/server/model-gateway/personal-intent/correlated-calendar-review";
 import { personalCalendarActions, preparePersonalCalendar, preparePersonalCalendarInTransaction, claimPersonalCalendarWriteInTransaction } from "@/server/personal-assistant/calendar-actions";
 import { personalCorrelatedCalendarRequestId } from "@/server/model-gateway/personal-intent/correlated-calendar-id";
+import { loadCorrelatedPersonalCalendarReviewInTransaction, readCorrelatedPersonalCalendarReview } from "@/server/model-gateway/personal-intent/correlated-calendar-projection";
+import { readCorrelatedPersonalCalendarReviewList } from "@/server/model-gateway/personal-intent/correlated-calendar-review-list";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -195,6 +197,9 @@ async function actualAnsweredQuestion(body = "14h", ttlMs?: number) {
   return { ...x, env, source, receipt: receipts[0], transport };
 }
 type Answered = Awaited<ReturnType<typeof actualAnsweredQuestion>>;
+const readReviewList = (f: Fixture, env = f.env, actor = f.actor, readContext = context()) =>
+  readCorrelatedPersonalCalendarReviewList({ enabled: true, actor },
+    { ...env, ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_REVIEW_ENABLED: "true" }, readContext);
 const calendarReviewInput = (x: Answered) => ({ enabled: true, actor: x.f.actor, subject: { kind: "personal_sms_temporal_receipt" as const, receiptId: x.receipt.id } });
 const calendarReviewEnv = (x: Answered) => ({ ...x.env, ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_PREPARE_ENABLED: "true" });
 const prepareAnsweredCalendar = (x: Answered, zone = "UTC") => prisma.$transaction(async tx => {
@@ -202,6 +207,11 @@ const prepareAnsweredCalendar = (x: Answered, zone = "UTC") => prisma.$transacti
   const result = await prepareCorrelatedPersonalCalendarReviewInTransaction(tx, calendarReviewInput(x), calendarReviewEnv(x), context());
   await tx.$executeRawUnsafe("SET CONSTRAINTS ALL IMMEDIATE");
   return result;
+}, txOptions);
+const readCalendarReview = (x: Answered, reviewId: string, zone = "UTC", actor = x.f.actor) => prisma.$transaction(async tx => {
+  await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone);
+  return loadCorrelatedPersonalCalendarReviewInTransaction(tx, { enabled: true, actor, reviewId },
+    { ...x.env, ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_REVIEW_ENABLED: "true" }, context());
 }, txOptions);
 const inspectAnswered = (x: Answered, zone = "UTC", actor = x.f.actor) => prisma.$transaction(async tx => {
   await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone);
@@ -213,6 +223,93 @@ async function answeredSnapshot(x: Answered) {
     receipts: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1 ORDER BY id', x.p.id),
     expectations: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsConversationExpectation" WHERE namespace=$1 ORDER BY id', (await stored(x.p.id)).namespace) };
 }
+describe("private latest correlated calendar list against actual PostgreSQL", () => {
+  it("returns an authorized empty collection but refuses a foreign or revoked member", async () => {
+    const f = await fixture();
+    expect(await readReviewList(f)).toEqual({ version: "personal-correlated-calendar-review-list-v1", workspaceId: f.workspaceId,
+      readOnly: true, approvalAvailable: false, executionAuthorized: false, reviews: [], hasMore: false });
+    await expect(readReviewList(f, f.env, { ...f.actor, userId: "foreign" })).rejects.toThrow("CORRELATED_CALENDAR_REVIEW_LIST_UNAVAILABLE");
+    await prisma.constructionWorkspaceMember.update({ where: { workspaceId_userId: { workspaceId: f.workspaceId, userId: f.userId } }, data: { status: "revoked" } });
+    await expect(readReviewList(f)).rejects.toThrow("CORRELATED_CALENDAR_REVIEW_LIST_UNAVAILABLE");
+  });
+  it("projects the real committed two-SMS draft without any manual review identifier", async () => {
+    const x = await actualAnsweredQuestion(), prepared = await prepareAnsweredCalendar(x);
+    if (prepared.status === "DISABLED") throw new Error("NATIVE_CALENDAR_PREPARATION_REQUIRED");
+    const before = await answeredSnapshot(x), result = await readReviewList(x.f, x.env);
+    expect(result).toMatchObject({ workspaceId: x.f.workspaceId, readOnly: true, approvalAvailable: false, executionAuthorized: false,
+      hasMore: false, reviews: [{ reviewId: prepared.reviewId, currentStatus: "pending", evidence: { provenance: "UNKNOWN" } }] });
+    if ("status" in result) throw new Error("NATIVE_LIST_REQUIRED");
+    expect(result.reviews).toHaveLength(1);
+    expect(result.reviews[0].evidence.sources.map(source => source.text)).toEqual([temporalBody, "14h"]);
+    expect(result.reviews[0].evidence.draft).toEqual(prepared.draft);
+    expect(JSON.stringify(result)).not.toContain(prepared.operationId);
+    expect(await answeredSnapshot(x)).toEqual(before); expect(x.transport).toHaveBeenCalledOnce();
+  });
+  it("does not turn a damaged current authorization into an empty success", async () => {
+    const x = await actualAnsweredQuestion(); await prepareAnsweredCalendar(x);
+    await prisma.constructionConnectorGrant.update({ where: { id: x.f.google.grants[0].id },
+      data: { status: "revoked", revokedAt: new Date(), stateVersion: { increment: 1 }, grantedScopes: [] } });
+    const before = await answeredSnapshot(x);
+    await expect(readReviewList(x.f, x.env)).rejects.toThrow("CORRELATED_CALENDAR_REVIEW_LIST_UNAVAILABLE");
+    expect(await answeredSnapshot(x)).toEqual(before); expect(x.transport).toHaveBeenCalledOnce();
+  });
+  it("does not recreate expired history or reset its preparation window", async () => {
+    const x = await actualAnsweredQuestion("14h", 1000); await prepareAnsweredCalendar(x);
+    await waitForQuestionExpiry(x.p.id); const before = await answeredSnapshot(x);
+    await expect(readReviewList(x.f, x.env)).rejects.toThrow("CORRELATED_CALENDAR_REVIEW_LIST_UNAVAILABLE");
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(1);
+  });
+  it("two actual readers preserve the same single immutable review", async () => {
+    const x = await actualAnsweredQuestion(), prepared = await prepareAnsweredCalendar(x);
+    if (prepared.status === "DISABLED") throw new Error("NATIVE_CALENDAR_PREPARATION_REQUIRED");
+    const before = await answeredSnapshot(x);
+    const results = await Promise.all([readReviewList(x.f, x.env), readReviewList(x.f, x.env)]);
+    for (const result of results) expect(result).toHaveProperty("reviews.0.reviewId", prepared.reviewId);
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(1);
+  });
+  it("an already cancelled caller never receives even an empty list", async () => {
+    const f = await fixture(), abort = new AbortController(); abort.abort();
+    await expect(readCorrelatedPersonalCalendarReviewList({ enabled: true, actor: f.actor },
+      { ...f.env, ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_REVIEW_ENABLED: "true" },
+      { deadlineAt: Date.now() + 5000, signal: abort.signal })).rejects.toThrow("CORRELATED_CALENDAR_REVIEW_LIST_UNAVAILABLE");
+  });
+  it("a concurrently revoked owner cannot publish the old empty-list snapshot", async () => {
+    const f = await fixture();
+    let unlock!: () => void, ready!: () => void, guardFired = false;
+    const held = new Promise<void>(resolve => { unlock = resolve; });
+    const locked = new Promise<void>(resolve => { ready = resolve; });
+    const guard = setTimeout(() => { guardFired = true; unlock(); }, 4000);
+    const holder = prisma.$transaction(async tx => {
+      await tx.constructionWorkspaceMember.update({ where: { workspaceId_userId: { workspaceId: f.workspaceId, userId: f.userId } }, data: { status: "revoked" } });
+      ready(); await held;
+    }, txOptions);
+    let reading: Promise<unknown> | undefined;
+    try {
+      await locked;
+      // The initial MVCC owner SELECT sees active, but the final SHARE recheck
+      // must wait on this real uncommitted member change before publishing [].
+      reading = readReviewList(f).then(value => ({ value }), error => ({ error }));
+      let waiter = false;
+      const stop = Date.now() + 1200;
+      while (!waiter && Date.now() < stop) {
+        const [row] = await prisma.$queryRawUnsafe<Array<{ waiting: boolean }>>(`SELECT EXISTS (
+          SELECT 1 FROM pg_stat_activity a WHERE a.datname=current_database() AND a.pid<>pg_backend_pid()
+            AND a.wait_event_type='Lock' AND a.query LIKE '%FOR SHARE OF w,m%') AS waiting`);
+        waiter = row?.waiting === true;
+        if (!waiter) await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      expect(waiter).toBe(true); expect(guardFired).toBe(false);
+      unlock(); await holder;
+      const outcome = await reading as { error?: Error; value?: unknown };
+      expect(outcome.value).toBeUndefined(); expect(outcome.error?.message).toBe("CORRELATED_CALENDAR_REVIEW_LIST_UNAVAILABLE");
+    } finally {
+      clearTimeout(guard); unlock(); await holder; if (reading) await reading;
+    }
+  });
+});
+
 describe("atomic correlated calendar preparation from two real persisted synthetic SMS sources", () => {
   it.each(["UTC", "America/New_York", "Asia/Tokyo"])("commits exactly one isolated pending review and stable replay in %s", async zone => {
     const x = await actualAnsweredQuestion(), before = await answeredSnapshot(x);
@@ -348,6 +445,93 @@ describe("atomic correlated calendar preparation from two real persisted synthet
     expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(1);
     expect(await prisma.personalAssistantOperation.count({ where: { correlatedTemporalReceiptId: x.receipt.id } })).toBe(1);
     expect(x.transport).toHaveBeenCalledOnce();
+  });
+});
+
+describe("private correlated calendar read from actually committed preparation", () => {
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("returns the two full sources and exact current draft without writes in %s", async zone => {
+    const x = await actualAnsweredQuestion(), prepared = await prepareAnsweredCalendar(x);
+    if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
+    const before = await answeredSnapshot(x), saved = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { id: prepared.reviewId } });
+    const actual = await readCalendarReview(x, prepared.reviewId, zone);
+    expect(actual).toMatchObject({ status: "CORRELATED_CALENDAR_REVIEW_INSPECTED_NOT_AUTHORIZED", committed: false,
+      review: { version: "personal-correlated-calendar-review-v1", reviewId: prepared.reviewId, currentStatus: "pending", readOnly: true,
+        approvalAvailable: false, executionAuthorized: false, semanticInterpretationVerified: false,
+        evidence: { provenance: "UNKNOWN", approvalAvailable: false, draft: prepared.draft } } });
+    if (actual.status === "DISABLED") throw new Error("NATIVE_REVIEW_REQUIRED");
+    expect(actual.review.evidence.sources.map(s => s.text)).toEqual([temporalBody, "14h"]);
+    expect(actual.review.evidence.citations).toEqual((x.receipt.packet as { citations: unknown }).citations);
+    expect(actual.review.preparedAt).toBe(saved.createdAt.toISOString());
+    expect(actual.review.preparationExpiresAt).toBe(saved.preparationExpiresAt.toISOString());
+    expect(actual.review).not.toHaveProperty("operationId"); expect(actual.review).not.toHaveProperty("requestHash");
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { id: prepared.reviewId } })).toEqual(saved);
+    expect(x.transport).toHaveBeenCalledOnce();
+  });
+  it("does not prepare a review when missing or OFF and does not disclose it to a foreign owner", async () => {
+    const x = await actualAnsweredQuestion(), prepared = await prepareAnsweredCalendar(x);
+    if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
+    const before = await answeredSnapshot(x);
+    expect(await readCorrelatedPersonalCalendarReview({ enabled: true, actor: x.f.actor, reviewId: prepared.reviewId }, x.env))
+      .toEqual({ status: "DISABLED", executionAuthorized: false });
+    await expect(readCalendarReview(x, "nonexistent-review")).rejects.toThrow("CORRELATED_CALENDAR_READ_CHANGED_OR_UNAVAILABLE");
+    await expect(readCalendarReview(x, prepared.reviewId, "UTC", { ...x.f.actor, userId: "foreign-owner" }))
+      .rejects.toThrow("CORRELATED_CALENDAR_READ_CHANGED_OR_UNAVAILABLE");
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(1);
+  });
+  it("refuses expired proof without resetting the saved preparation window", async () => {
+    const x = await actualAnsweredQuestion("14h", 1000), prepared = await prepareAnsweredCalendar(x);
+    if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
+    const before = await answeredSnapshot(x), saved = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { id: prepared.reviewId } });
+    await waitForQuestionExpiry(x.p.id);
+    await expect(readCalendarReview(x, prepared.reviewId)).rejects.toThrow(/EXPIRED/);
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { id: prepared.reviewId } })).toEqual(saved);
+  });
+  it("current revoked Google authority refuses the read without altering immutable history", async () => {
+    const x = await actualAnsweredQuestion(), prepared = await prepareAnsweredCalendar(x);
+    if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
+    await prisma.constructionConnectorGrant.update({ where: { id: x.f.google.grants[0].id }, data: { status: "revoked", revokedAt: new Date(), stateVersion: { increment: 1 }, grantedScopes: [] } });
+    const before = await answeredSnapshot(x);
+    await expect(readCalendarReview(x, prepared.reviewId)).rejects.toThrow(/BINDING|GRANT|AUTHORITY|REVOKED/);
+    expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("reads a synthetic current uncertain state as uncertain, never re-preparing pending", async () => {
+    const x = await actualAnsweredQuestion(), prepared = await prepareAnsweredCalendar(x);
+    if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
+    // Deliberate synthetic status mutation tests display only, NOT a provider outcome.
+    await prisma.personalAssistantOperation.update({ where: { id: prepared.operationId }, data: { status: "uncertain" } });
+    const before = await answeredSnapshot(x);
+    const actual = await readCorrelatedPersonalCalendarReview({ enabled: true, actor: x.f.actor, reviewId: prepared.reviewId },
+      { ...x.env, ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_REVIEW_ENABLED: "true" });
+    expect(actual).toMatchObject({ committed: true, review: { currentStatus: "uncertain", approvalAvailable: false, executionAuthorized: false } });
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(1);
+  });
+  it("bounds the first discovery against a real exclusive table lock", async () => {
+    const x = await actualAnsweredQuestion(), prepared = await prepareAnsweredCalendar(x);
+    if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
+    let ready!: () => void, release!: () => void, timedOut = false;
+    const acquired = new Promise<void>(resolve => { ready = resolve; }), held = new Promise<void>(resolve => { release = resolve; });
+    const timer = setTimeout(() => { timedOut = true; ready(); release(); }, 2000);
+    const holding = prisma.$transaction(async tx => {
+      await tx.$executeRawUnsafe('LOCK TABLE "PersonalSmsCorrelatedCalendarReview" IN ACCESS EXCLUSIVE MODE');
+      ready(); await held;
+    }, txOptions).then(() => ({ ok: true as const }), error => { ready(); return { ok: false as const, error }; });
+    let failed: unknown, elapsed = 0;
+    try {
+      await acquired; const start = Date.now();
+      try {
+        await prisma.$transaction(tx => loadCorrelatedPersonalCalendarReviewInTransaction(tx, { enabled: true, actor: x.f.actor, reviewId: prepared.reviewId },
+          { ...x.env, ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_REVIEW_ENABLED: "true" }, { deadlineAt: Date.now() + 200 }), txOptions);
+      } catch (error) { failed = error; }
+      elapsed = Date.now() - start;
+    } finally { release(); clearTimeout(timer); }
+    const outcome = await holding; if (!outcome.ok) throw outcome.error;
+    expect(timedOut).toBe(false); expect(elapsed).toBeLessThan(1200);
+    expect(String(failed)).toMatch(/55P03|57014|lock timeout|statement timeout/);
+    expect(await readCalendarReview(x, prepared.reviewId)).toHaveProperty("review.currentStatus", "pending");
   });
 });
 

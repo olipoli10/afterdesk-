@@ -8,6 +8,7 @@ import { personalGoogleStatusSchema, personalGoogleDisconnectSchema, personalGoo
 import { personalOutboxSchema, personalPairingSchema, personalPhoneSchema } from "@/lib/personal-service";
 import { personalModelCommand, personalModelStatusSchema, personalModelPreparedSchema, personalModelConsentSchema, personalModelDisconnectedSchema } from "@/lib/personal-model";
 import { personalModelReviewsSchema } from "@/lib/personal-model-reviews";
+import { parsePersonalCorrelatedCalendarList } from "@/lib/personal-correlated-calendar-list";
 import { mobileCommandSchema } from "@/lib/commands";
 import {
   mobileAssistantHistorySchema,
@@ -146,6 +147,15 @@ function statusCode(status: number): MobileApiErrorCode {
 }
 
 export class MobileApi {
+  async personalCorrelatedCalendarReviews(workspaceId: string, signal?: AbortSignal) {
+    const value = await this.request(`/api/endvera/v1/personal/model/correlated-calendar-reviews?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET", signal }, 15_000);
+    if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");
+    let list: ReturnType<typeof parsePersonalCorrelatedCalendarList>;
+    try { list = parsePersonalCorrelatedCalendarList(value, workspaceId); }
+    catch { throw new MobileApiError("INVALID_RESPONSE"); }
+    if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");
+    return list;
+  }
   async personalModelReviews(workspaceId: string) {
     return personalModelReviewsSchema.parse(await this.request(`/api/endvera/v1/personal/model/reviews?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
   }
@@ -213,12 +223,23 @@ export class MobileApi {
 
   private async request(path: string, init: RequestInit, boundedTimeoutMs?: number) {
     const controller = new AbortController();
+    let removeCallerAbort: (() => void) | undefined;
     let rejectBoundedDeadline: ((reason: unknown) => void) | undefined;
     const boundedDeadline = boundedTimeoutMs === undefined ? null : new Promise<never>((_, reject) => { rejectBoundedDeadline = reject; });
     const timeout = setTimeout(() => { controller.abort(); rejectBoundedDeadline?.(new MobileApiError("OUTCOME_UNKNOWN")); }, boundedTimeoutMs ?? this.options.timeoutMs ?? 15_000);
     const browserManagedCredentials = this.options.browserManagedCredentials === true;
     try {
+      if (init.signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");
+      const callerAbort = init.signal ? new Promise<never>((_, reject) => {
+        const signal = init.signal!;
+        const abort = () => { controller.abort(); reject(new MobileApiError("OUTCOME_UNKNOWN")); };
+        signal.addEventListener("abort", abort, { once: true });
+        removeCallerAbort = () => signal.removeEventListener("abort", abort);
+      }) : null;
+      // Mark handled even when a synchronous cookie/transport failure wins first.
+      void callerAbort?.catch(() => undefined);
       const cookie = browserManagedCredentials ? "" : this.options.getCookie();
+      if (init.signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");
       const readResponse = async () => {
       const response = await (this.options.fetchImpl ?? fetch)(
         `${this.options.baseUrl ?? mobileApiBaseUrl()}${path}`,
@@ -245,12 +266,18 @@ export class MobileApi {
       };
       // A stalled native transport/body must not retain this source-upload UI forever.
       // The outcome stays unknown; abort is not evidence that server admission was undone.
-      return boundedDeadline ? await Promise.race([readResponse(), boundedDeadline]) : await readResponse();
+      const pending = readResponse();
+      const result = boundedDeadline || callerAbort
+        ? await Promise.race([pending, ...(boundedDeadline ? [boundedDeadline] : []), ...(callerAbort ? [callerAbort] : [])])
+        : await pending;
+      if (init.signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");
+      return result;
     } catch (error) {
       if (error instanceof MobileApiError) throw error;
       throw new MobileApiError("OUTCOME_UNKNOWN");
     } finally {
       clearTimeout(timeout);
+      removeCallerAbort?.();
     }
   }
 

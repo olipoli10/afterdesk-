@@ -1,0 +1,73 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_b19a2730401b4f9cbea94c363779504d","template":"endvera_personal_210_4929a74a35514a32a4c93a82b50976e8","migrationFingerprint":"78:9d69f861d1884ca2b789ed72a691b5c2","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T16:38:28.5636926Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (92 tests) 42340ms
+     ✓ commits exactly one isolated pending review and stable replay in UTC  589ms
+     ✓ commits exactly one isolated pending review and stable replay in America/New_York  658ms
+     ✓ commits exactly one isolated pending review and stable replay in Asia/Tokyo  505ms
+     ✓ remains OFF without writing a draft or changing sources  334ms
+     ✓ refuses a preexisting generic operation instead of adopting its request UUID  491ms
+     ✓ a marked operation without its review cannot commit  433ms
+     ✓ rolls back both new rows on a failure after provisional preparation  636ms
+     ✓ a committed review and marker cannot be rewritten or removed  643ms
+     ✓ current revocation refuses even a known replay without changing the saved review  685ms
+     ✓ cannot commit a just-prepared draft already claimed in that same transaction  487ms
+     ✓ refuses an expired replay while keeping the original draft and provenance  1283ms
+     ✓ serializes two actual backend preparations on the same receipt without duplicating  776ms
+     ✓ returns the two full sources and exact current draft without writes in UTC  574ms
+     ✓ returns the two full sources and exact current draft without writes in America/New_York  482ms
+     ✓ returns the two full sources and exact current draft without writes in Asia/Tokyo  477ms
+     ✓ does not prepare a review when missing or OFF and does not disclose it to a foreign owner  422ms
+     ✓ refuses expired proof without resetting the saved preparation window  1195ms
+     ✓ current revoked Google authority refuses the read without altering immutable history  587ms
+     ✓ reads a synthetic current uncertain state as uncertain, never re-preparing pending  541ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  580ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  551ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  557ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  452ms
+     ✓ a genuine refused ambiguous answer is not recast as a consumed accepted receipt  439ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  459ms
+     ✓ current MODEL grant revocation refuses without changing the historical receipt  402ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1266ms
+     ✓ keeps a later active question intact while inspecting the earlier inactive receipt  757ms
+     ✓ holds current owner authority against a real concurrent revocation, then refuses the next read  543ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate  352ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1286ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1358ms
+     ✓ GOOGLE_REVOKED preserves evidence while selecting the correct oldest candidate  325ms
+     ✓ 14h uses the canonical consumer once and creates exactly one matching unsent acknowledgment  301ms
+     ✓ 3h uses the canonical consumer once and creates exactly one matching unsent acknowledgment  323ms
+     ✓ AFTER_INSERT_FAILURE rolls back the real consumer/source CAS and acknowledgment insert  315ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1234ms
+     ✓ expires WAITING once, retains source/question/budget/history  1255ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1217ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1212ms
+     ✓ existing ingress worker routes 14h without another model or source completion  328ms
+     ✓ existing ingress worker routes 3h without another model or source completion  302ms
+     ✓ existing ingress worker routes Ajoute une visite vendredi without another model or source completion  307ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  394ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only  348ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only  347ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1699ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in UTC  316ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in America/New_York  338ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo  333ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  499ms
+     ✓ five creations across both types share one permanent hourly cap  959ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  757ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends  327ms
+
+ Test Files  1 passed (1)
+      Tests  92 passed (92)
+   Start at  12:37:43
+   Duration  44.78s (transform 1.15s, setup 0ms, import 2.27s, tests 42.34s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-c13240f1d508466085a5abe35e53f418

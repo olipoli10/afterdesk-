@@ -1,5 +1,48 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 17:07Z — private correlated review connected locally; verification continues
+
+New immutable item projection, latest-five all-or-unavailable owner collection
+and private GET are implemented. No manual review ids, no preparation from GET,
+no action handles or approval. Existing V1/generic isolation remain unchanged.
+The mobile owner personal-service screen now imports a strict read-only list;
+session/workspace/background/reload invalidates old text and cancels its request.
+Provenance remains UNKNOWN; this is not a recorded real-phone/model/Google result.
+
+Native item92 then93 PASS, list99 PASS, and full296 PASS/20 clones at17:01:55.365Z
+are retained. The temporal file now100 PASS includes real table-lock discovery
+timeout and final owner-revocation lock barrier: old MVCC authorization cannot
+publish even an empty list. Schema78 fingerprint unchanged; owned servers STOPPED.
+Root5119 PASS/3 historical skips at16:57:43.616Z. Item peer71 and collection/GET
+113 targeted tests pass. Controller integration audit gives exact receipt names.
+
+Known construction failures retained: route export-name mismatch produced
+positive503 errors, resolved without weakening strict schemas. Mobile unit races
+reproduced: reentrant pause/reload during LOADING; abort between private request
+cleanup and public caller; phone clock24h late retaining old text beyond the
+server-reported remaining window. Corrected callback ordering, public signal
+checks and conservative relative/absolute display deadline all pass peer71/71
+at13:05:04. No native-device behavior is inferred from these mocks.
+
+Next build `build-1789059753208` PASS17:06:06.600Z. Actual built HTTP OFF
+probe `correlated-calendar-review-http-1789060078877` passes7 method/header
+checks17:07:58.876Z; owned server stopped and TCP port refused. No authenticated
+HTTP/device proof follows. Mobile `mobile-1789060008457`:637 PASS/64 files
+17:06:55.031Z, TypeScript/lint PASS. Android Hermes bundle
+`mobile-export-1789060079952` PASS17:08:40.296Z; not a signed/installable APK.
+Worker-hook helper work is
+separate and not yet integrated: known receipt/source completion must survive
+postcommit preparation failures, with no source retry or changed acknowledgment.
+Inline preparation is the selected first scope; automatic crash recovery would
+need separately designed durable intent and is not smuggled into schema78.
+
+Heartbeat ACTIVE3min re-read13:01, unchanged/no duplicate. Runtime legacy goal
+still reports blocked; this controller is actively executing local work and has
+not marked that goal complete or claimed to resume it via an unsupported API.
+Same authorization/budget, zero new provider calls, secret access, real SMS/calls,
+remote migrations, APK publication, push or deployment. Dashboard unchanged:
+roadmap22%, local build46.75%, C2 18/18, real-test NO-GO, Verified-E2E0%.
+
 ## 2026-09-10 16:30Z — actual atomic calendar preparation, local only
 
 Forward78 is applied only to new disposable native PostgreSQL databases;
