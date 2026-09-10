@@ -1,5 +1,17 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 19:43Z — individual offer verified; same-executor implementation continues
+
+Selected-card offer reader/GET fully reviewed,103 author+15 peer PASS. Actual
+native162 PASS19:41:55.178Z/STOPPED adds eight reader/authority/expiry/commit cases
+and strengthens two earlier C2b negative oracles to exact codes and callback entry.
+Receipt postgres-native-1789069214442; source freeze excluded in-progress C2c.
+Fresh types/scoped lint PASS. The new GET is not yet included in a built HTTP run.
+Audit SMS_CORRELATED_INDIVIDUAL_OFFER_NATIVE.md records exact scope/limitations.
+
+Continue C2c same executor, typed POST, mobile selected-card integration and final
+combined checks. No rubric transition, provider, deploy, new APK or remote change.
+
 ## 2026-09-10 19:33Z — atomic approval and private result HTTP verified; execution continues
 
 C2b real transaction-only claim passes154 native PostgreSQL tests, finished

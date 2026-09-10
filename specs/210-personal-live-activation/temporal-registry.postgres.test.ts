@@ -34,6 +34,7 @@ import { recoverExpiredPersonalActionClaims } from "@/server/personal-assistant/
 import { readCorrelatedCalendarApprovalResult } from "@/server/personal-assistant/correlated-calendar-approval-result";
 import { inspectCorrelatedCalendarApprovalOfferInTransaction, lockCorrelatedCalendarApprovalWriteInTransaction } from "@/server/personal-assistant/correlated-calendar-approval-gate";
 import { createCorrelatedCalendarApprovalClaimBudget, claimCorrelatedCalendarApprovalInTransaction } from "@/server/personal-assistant/correlated-calendar-approval";
+import { readCorrelatedCalendarApprovalOffer, correlatedCalendarApprovalOfferSchema } from "@/server/personal-assistant/correlated-calendar-approval-offer";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -697,7 +698,7 @@ describe("actual transaction-only command approval on PostgreSQL, synthetic choi
     const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
     const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
     const command = await actualClaimCommand(x, review.id), before = await historicalSnapshot(x);
-    await expect(nativeCommandClaim(x, { ...command, expectedRequestHash: "f".repeat(64) })).rejects.toThrow();
+    await expect(nativeCommandClaim(x, { ...command, expectedRequestHash: "f".repeat(64) })).rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_BINDING_CHANGED");
     expect(await historicalSnapshot(x)).toEqual(before);
   });
   it("two real overlapping command transactions commit at most one immutable choice", async () => {
@@ -736,8 +737,97 @@ describe("actual transaction-only command approval on PostgreSQL, synthetic choi
     const command = await actualClaimCommand(x, review.id), before = await historicalSnapshot(x);
     const budget = createCorrelatedCalendarApprovalClaimBudget({ deadlineAt: Date.now() + 50 });
     await prisma.$queryRawUnsafe("SELECT pg_sleep(0.07)::text");
-    await expect(prisma.$transaction(tx => claimCorrelatedCalendarApprovalInTransaction(tx, command, x.f.actor, approvalGateEnvironment(x), budget), budget.transactionOptions)).rejects.toThrow();
+    let callbackEntered = false;
+    await expect(prisma.$transaction(tx => {
+      callbackEntered = true;
+      return claimCorrelatedCalendarApprovalInTransaction(tx, command, x.f.actor, approvalGateEnvironment(x), budget);
+    }, budget.transactionOptions)).rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_CLAIM_REFUSED");
+    expect(callbackEntered).toBe(true);
     expect(await historicalSnapshot(x)).toEqual(before);
+  });
+});
+
+async function readIndividualOffer(x: Answered, reviewId: string, zone = "UTC", actor = x.f.actor) {
+  const original = prisma.$transaction.bind(prisma);
+  const wrapped = vi.spyOn(prisma, "$transaction").mockImplementationOnce((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) =>
+    original(async tx => { await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone); return work(tx); }, options)) as typeof prisma.$transaction);
+  try { return await readCorrelatedCalendarApprovalOffer({ enabled: true, actor, reviewId }, approvalGateEnvironment(x), context()); }
+  finally { wrapped.mockRestore(); }
+}
+describe("selected-card public offer from actual PostgreSQL and current canonical gate", () => {
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("returns the exact selected immutable card without a claim in %s", async zone => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const expected = await nativeApprovalOffer(x, review.id, zone);
+    if (expected.status !== "CORRELATED_CALENDAR_APPROVAL_GATE_INSPECTED") throw new Error("SYNTHETIC_CURRENT_GATE_REQUIRED");
+    const before = await historicalSnapshot(x), result = correlatedCalendarApprovalOfferSchema.parse(await readIndividualOffer(x, review.id, zone));
+    expect(result).toMatchObject({ version: "personal-correlated-calendar-approval-offer-v1", workspaceId: x.f.workspaceId,
+      readOnly: true, executionAuthorized: false, explicitApprovalRequired: true,
+      approvalOffer: { reviewId: review.id, expectedRequestHash: review.calendarRequestHash, expectedReviewFingerprint: expected.fingerprint,
+        approvalExpiresAt: expected.approvalExpiresAt, executionAuthorized: false } });
+    expect({ ...result.review, inspectedAt: expected.review.inspectedAt }).toEqual(expected.review);
+    expect(Date.parse(result.approvalOffer.inspectedAt)).toBeGreaterThanOrEqual(Date.parse(result.review.inspectedAt));
+    expect(Date.parse(result.approvalOffer.inspectedAt)).toBeLessThan(Date.parse(result.approvalOffer.approvalExpiresAt));
+    expect(result).not.toHaveProperty("claim"); expect(result).not.toHaveProperty("operationId");
+    expect(JSON.stringify(result)).not.toContain(review.calendarOperationId);
+    expect(result.review.evidence.sources.map(source => source.operationId)).toEqual(expected.review.evidence.sources.map(source => source.operationId));
+    expect(await historicalSnapshot(x)).toEqual(before); expect(before.approvals).toHaveLength(0); expect(x.transport).toHaveBeenCalledOnce();
+  });
+  it("missing READ refuses, actual grant enables, and actual revocation refuses without mutation", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const before = await historicalSnapshot(x);
+    await expect(readIndividualOffer(x, review.id)).rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE");
+    const grant = await addSyntheticReadGrant(x);
+    expect(await readIndividualOffer(x, review.id)).toHaveProperty("approvalOffer.status", "ELIGIBLE_FOR_EXPLICIT_APPROVAL");
+    await prisma.constructionConnectorGrant.update({ where: { id: grant.id }, data: { status: "revoked", revokedAt: new Date(), stateVersion: { increment: 1 }, grantedScopes: [] } });
+    await expect(readIndividualOffer(x, review.id)).rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE");
+    expect(await historicalSnapshot(x)).toEqual(before);
+  });
+  it("foreign actor or workspace and a revoked owner cannot read or select a fallback card", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const before = await historicalSnapshot(x);
+    for (const actor of [{ ...x.f.actor, userId: "synthetic-other-owner" }, { ...x.f.actor, workspaceId: "synthetic-other-workspace" }]) {
+      await expect(readIndividualOffer(x, review.id, "UTC", actor)).rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE");
+    }
+    await prisma.constructionWorkspaceMember.update({ where: { workspaceId_userId: x.f.actor }, data: { status: "revoked" } });
+    await expect(readIndividualOffer(x, review.id)).rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE");
+    expect(await historicalSnapshot(x)).toEqual(before);
+  });
+  it("an actual earlier claim is not offered again or executed by a read", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const claimed = await nativeCommandClaim(x, await actualClaimCommand(x, review.id));
+    if (claimed.status !== "CLAIM_CREATED_NOT_COMMITTED") throw new Error("SYNTHETIC_NEW_CLAIM_REQUIRED");
+    const before = await historicalSnapshot(x);
+    await expect(readIndividualOffer(x, review.id)).rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE");
+    expect(await historicalSnapshot(x)).toEqual(before); expect(x.transport).toHaveBeenCalledOnce(); await closeTestCreatedClaim(claimed.claim);
+  });
+  it("expiry during the real commit acknowledgement interval prevents disclosure", async () => {
+    const x = await actualAnsweredQuestion("14h", 1700, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const before = await historicalSnapshot(x), original = prisma.$transaction.bind(prisma); let returnedFromCommit = false;
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementationOnce((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) => {
+      const result = await original(work, options); returnedFromCommit = true;
+      await waitForQuestionExpiry(x.p.id); return result;
+    }) as typeof prisma.$transaction);
+    try { await expect(readCorrelatedCalendarApprovalOffer({ enabled: true, actor: x.f.actor, reviewId: review.id }, approvalGateEnvironment(x), context()))
+      .rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE"); }
+    finally { wrapped.mockRestore(); }
+    expect(returnedFromCommit).toBe(true); expect(await historicalSnapshot(x)).toEqual(before);
+  });
+  it("an injected lost acknowledgement after a real read commit does not publish the provisional offer", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const before = await historicalSnapshot(x), original = prisma.$transaction.bind(prisma); let returnedFromCommit = false;
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementationOnce((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) => {
+      await original(work, options); returnedFromCommit = true; throw new Error("SYNTHETIC_LOST_ACK_AFTER_READ_COMMIT");
+    }) as unknown as typeof prisma.$transaction);
+    try { await expect(readCorrelatedCalendarApprovalOffer({ enabled: true, actor: x.f.actor, reviewId: review.id }, approvalGateEnvironment(x), context()))
+      .rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE"); }
+    finally { wrapped.mockRestore(); }
+    expect(returnedFromCommit).toBe(true); expect(await historicalSnapshot(x)).toEqual(before);
   });
 });
 
