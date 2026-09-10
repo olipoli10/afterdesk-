@@ -1,0 +1,11 @@
+{
+  "kind": "postgres-native",
+  "databaseRuntime": "NATIVE_POSTGRESQL",
+  "postgresTestFile": "correlated-calendar-serialization.postgres.test.ts",
+  "exitCode": 0,
+  "finishedAt": "2026-09-10T16:02:17.201Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\postgres-native-1789056118672",
+  "buildDirectory": null
+}

@@ -1,0 +1,61 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"correlated-calendar-serialization.postgres.test.ts","database":"endvera_personal_210_98a44e40607342af8ea97108e643fc31","template":"endvera_personal_210_a3a8b05bd1f9411b9fb37c4cac4ddcac","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T15:59:09.0713728Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/correlated-calendar-serialization.postgres.test.ts (14 tests | 14 skipped) 102ms
+     ↓ matches actual existing preparer request bytes/hash in UTC
+     ↓ matches actual existing preparer request bytes/hash in America/New_York
+     ↓ matches actual existing preparer request bytes/hash in Asia/Tokyo
+     ↓ retains a counterexample against default btrim, without Unicode normalization
+     ↓ matches the permanent request UUID producer for receipt
+     ↓ matches the permanent request UUID producer for reçu-𐐀-🛠️
+     ↓ matches the permanent request UUID producer for xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     ↓ refuses PostgreSQL-unrepresentable JSON string rather than normalizing "\u0000"
+     ↓ refuses PostgreSQL-unrepresentable JSON string rather than normalizing "\ud800"
+     ↓ refuses PostgreSQL-unrepresentable JSON string rather than normalizing "\udfff"
+     ↓ refuses malformed six-field envelope null
+     ↓ refuses malformed six-field envelope undefined
+     ↓ refuses malformed six-field envelope {}
+     ↓ refuses malformed six-field envelope {"title":"x","startsAt":"x","endsAt":"x","timezone":"x","requestId":"x","accountVersion":"1"}
+
+ Test Files  1 failed (1)
+      Tests  14 skipped (14)
+   Start at  11:59:08
+   Duration  948ms (transform 437ms, setup 0ms, import 667ms, tests 102ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/correlated-calendar-serialization.postgres.test.ts [ specs/210-personal-live-activation/correlated-calendar-serialization.postgres.test.ts ]
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/correlated-calendar-serialization.postgres.test.ts:18:45
+
+  15 const user = await prisma.user.create({ data: { email: `serialization-${randomUUID()}@example.invalid`, name: "Synthetic serialization owner", role: "CLIENT", emailVerified: true } });
+  16 const workspace = await initializeConstructionWorkspace({ userId: user.id, name: "Synthetic serialization" });
+  17 actor = { userId: user.id, workspaceId: workspace.workspaceId };
+→ 18 await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvppx38000bi5kgbgu7ssxc, cmtvppx2c0002i5kg37s1ztqq, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, null, null, primary, 1, null, null, cmtvppx1s0000i5kgf4adlg9g, 2026-09-10 15:59:08.996, 2026-09-10 15:59:08.996)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/correlated-calendar-serialization.postgres.test.ts:18:3
+     16|   const workspace = await initializeConstructionWorkspace({ userId: us…
+     17|   actor = { userId: user.id, workspaceId: workspace.workspaceId };
+     18|   await prisma.constructionConnectorAccount.create({ data: { workspace…
+       |   ^
+     19|     provider: "google_calendar", status: "connected", grantedScopes: […
+     20| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-1cb8bc02315c4114b6c6e0ace6fb7aec

@@ -1,5 +1,28 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 16:09Z — minimal preparation proof and Unicode SQL parity
+
+Reviewed helpers retain only eight proof fields; receipt/question/packet keep
+the full source/citation evidence rather than duplicating it. Three pure JSON
+guard defects reproduced (hidden accessor/callback, sparse array before bounds)
+and corrected; same counter-tests pass within70/70 at12:03:11Toronto. Mobile
+read-only two-source utility44 author+18 peer+23 formatter =85 PASS; no import
+by an actual screen/API yet, no authenticated or semantic claim.
+
+Native serialization `postgres-native-1789056118672`:18 PASS16:02:17.201Z,
+STOPPED, SQL77 unchanged. pg_temp proposed six-field serializer matches actual
+existing calendar preparer across9 Unicode/control/trim titles in3 timezones;
+UUIDv8 parity, full ECMAScript trim and malformed/version limits are checked.
+Earlier1789055930946 failed fixture setup (connected account lacked required
+references);1789056034175 had12 PASS/2 wrong test SQLSTATE expectations for
+lone surrogates. NUL is22P05, lone surrogate22P02; exact oracles corrected,
+not production permissiveness. All receipts retained.
+
+Forward78 schema/SQL and six generic-path exclusions are now in development,
+not applied. Main must read full SQL and obtain cross-review before local
+generation/native migration. Actual preparation adapter is the next link;
+no marker/draft/approval, provider, remote schema or metric activation yet.
+
 ## 2026-09-10 15:50Z — durable receipt and protected GET integration PASS locally
 
 Full native PostgreSQL `postgres-native-1789054544302`: 249 tests in19 isolated

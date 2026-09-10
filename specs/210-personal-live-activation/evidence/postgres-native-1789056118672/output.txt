@@ -1,0 +1,19 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"correlated-calendar-serialization.postgres.test.ts","database":"endvera_personal_210_c62cda52dc574ce580a8f260203244eb","template":"endvera_personal_210_d112c8524bee4dd8896e0f14eeb39053","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T16:02:14.8254145Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/correlated-calendar-serialization.postgres.test.ts (18 tests) 296ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  12:02:13
+   Duration  974ms (transform 337ms, setup 0ms, import 521ms, tests 296ms, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-07194b71e20d44258cc43da5ad9b86b5
