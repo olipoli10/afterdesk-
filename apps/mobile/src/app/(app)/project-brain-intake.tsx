@@ -7,12 +7,15 @@ import {
   useAudioRecorderState,
 } from "expo-audio";
 import { router, useLocalSearchParams } from "expo-router";
+import { usePreventRemove } from "expo-router/react-navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { AppState, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button, Card, Heading, Label, Loading, Notice, Screen, colors, sharedStyles } from "@/components/ui";
 import { ProjectBrainPhotoCapture } from "@/components/project-brain-photo-capture";
 import { createProjectBrainNativeActionGate, importReviewedProjectBrainPhoto } from "@/lib/project-brain-photo-selection";
 import { createProjectBrainVoiceCapture, stopProjectBrainVoiceCapture } from "@/lib/project-brain-voice-capture";
+import { beginProjectBrainVoiceJournal, clearProjectBrainVoiceJournal, loadProjectBrainVoiceJournal, projectBrainVoiceJournalAttempt,
+  requireProjectBrainVoiceRetainedAttempt, transitionProjectBrainVoiceJournal, type ProjectBrainVoiceJournal } from "@/lib/project-brain-voice-journal";
 import {
   PROJECT_BRAIN_MAX_SOURCE_BYTES,
   PROJECT_BRAIN_MAX_VOICE_DURATION_MS,
@@ -39,7 +42,7 @@ import { useMobileSession } from "@/state/mobile-session";
 export default function ProjectBrainIntakeScreen() {
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const {
-    activeWorkspace, cockpit, publicError, projectBrainIntake, projectBrainLoadState, projectBrainCommandQueue, projectBrainSourceQueue,
+    bootstrap, activeWorkspace, cockpit, publicError, projectBrainIntake, projectBrainLoadState, projectBrainCommandQueue, projectBrainSourceQueue,
     loadProjectBrainIntake, submitProjectBrainCommand, retryProjectBrainCommand, stageProjectBrainSources,
     uploadProjectBrainSource, retryProjectBrainSource, dismissProjectBrainIntent,
   } = useMobileSession();
@@ -54,8 +57,28 @@ export default function ProjectBrainIntakeScreen() {
   const manualVoiceStop = useRef(false);
   const finalizingVoice = useRef(false);
   const pickerMounted = useRef(true);
+  const appActive = useRef(AppState.currentState === "active");
+  const voiceInterrupted = useRef(false);
+  const invalidVoiceCommands = useRef(new Set<string>());
+  const [voiceInvalidated, setVoiceInvalidated] = useState(false);
+  const stopVoiceRef = useRef<() => Promise<void>>(async () => undefined);
+  const journalRef = useRef<ProjectBrainVoiceJournal | null>(null);
+  const [voiceJournal, setVoiceJournal] = useState<ProjectBrainVoiceJournal | null>(null);
+  const [journalOwner, setJournalOwner] = useState<string | null>(null);
+  const [journalBusy, setJournalBusy] = useState(false);
+  const journalAction = useRef(false);
+  const ownerId = bootstrap?.user.id;
+  const ownerRef = useRef(ownerId);
+  useLayoutEffect(() => { ownerRef.current = ownerId; }, [ownerId]);
+  const journalLoaded = !!ownerId && journalOwner === ownerId;
+  const publishJournal = (value: ProjectBrainVoiceJournal | null) => {
+    journalRef.current = value;
+    if (pickerMounted.current && (!value || value.ownerId === ownerRef.current)) setVoiceJournal(value);
+  };
+  const readJournal = () => journalRef.current;
   // Expo's hook retains its status callback for the recorder lifetime: use current refs, never a render's session.
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY, status => {
+  const recorder = useAudioRecorder({ ...RecordingPresets.HIGH_QUALITY, directory: "document", bitRate: 64_000, numberOfChannels: 1,
+    android: { ...RecordingPresets.HIGH_QUALITY.android, maxFileSize: PROJECT_BRAIN_MAX_SOURCE_BYTES } }, status => {
     const session = voiceCapture.current;
     if (!pickerMounted.current || !session || !session.capture.observeNativeStatus(status)) return;
     if (status.isFinished && !voiceStarting.current && !manualVoiceStop.current && !finalizingVoice.current) void finalizeRecordedVoiceRef.current();
@@ -73,8 +96,23 @@ export default function ProjectBrainIntakeScreen() {
   const [nativeGate] = useState(createProjectBrainNativeActionGate);
   const [nativeBusy, setNativeBusy] = useState(false);
   const [voiceSessionActive, setVoiceSessionActive] = useState(false);
+  usePreventRemove(voiceSessionActive, () => { setLocalError(copy.voiceStay); });
   const pickerContextRef = useRef<ProjectBrainPickerContext | null>(null);
   useEffect(() => { pickerMounted.current = true; return () => { pickerMounted.current = false; }; }, []);
+  useEffect(() => {
+    let current = true;
+    if (ownerId) void loadProjectBrainVoiceJournal(ownerId).then(value => {
+      if (current) { journalRef.current = value; setVoiceJournal(value); setJournalOwner(ownerId); }
+    }).catch(() => { if (current) setLocalError("VOICE_LOCAL_JOURNAL_UNAVAILABLE"); });
+    return () => { current = false; };
+  }, [ownerId]);
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", state => {
+      appActive.current = state === "active";
+      if (!appActive.current) { voiceInterrupted.current = true; void stopVoiceRef.current(); }
+    });
+    return () => { voiceInterrupted.current = true; subscription.remove(); void recorder.stop().catch(() => undefined); };
+  }, [recorder]);
   const recordingSeen = useRef(false);
   const lastBriefHydrationKey = useRef<string | null>(null);
   const briefHydrationKey = projectBrainBriefHydrationKey({
@@ -95,7 +133,7 @@ export default function ProjectBrainIntakeScreen() {
   }, [briefHydrationKey, intake?.ownerBrief]);
 
   const canManage = activeWorkspace?.role === "OWNER" || activeWorkspace?.role === "OFFICE_MANAGER";
-  const busy = nativeBusy || pickerBusy || projectBrainLoadState === "LOADING"
+  const busy = nativeBusy || pickerBusy || journalBusy || projectBrainLoadState === "LOADING"
     || commandQueue.some((item) => item.state === "SENDING")
     || sourceQueue.some((item) => item.state === "SENDING");
   const hasPendingCommand = commandQueue.some((item) => item.state === "READY" || item.state === "SENDING" || item.state === "OUTCOME_UNKNOWN");
@@ -192,26 +230,33 @@ export default function ProjectBrainIntakeScreen() {
   };
   const startVoice = async () => {
     if (Platform.OS === "web") { setLocalError(copy.voiceMobileOnly); return; }
+    if (!ownerId || !journalLoaded || journalRef.current || !appActive.current) { setLocalError(copy.voicePending); return; }
     const release = acquireNativeAction();
     if (!release) return;
     const context = pickerContextRef.current;
     if (!context) { release(); return; }
-    const capture = createProjectBrainVoiceCapture(context, globalThis.crypto.randomUUID(), `memo-${Date.now()}.m4a`);
+    const commandId = globalThis.crypto.randomUUID(), fileName = `memo-${commandId}.m4a`;
+    const capture = createProjectBrainVoiceCapture(context, commandId, fileName);
     let handedToRecording = false;
-    voiceStarting.current = true; setLocalError(null);
+    voiceInterrupted.current = false; voiceStarting.current = true; setVoiceSessionActive(true); setLocalError(null);
     try {
       const permission = await requestRecordingPermissionsAsync();
-      if (!pickerMounted.current || !capture.isCurrent(pickerContextRef.current)) return;
+      if (!pickerMounted.current || voiceInterrupted.current || !appActive.current || ownerRef.current !== ownerId || !capture.isCurrent(pickerContextRef.current)) return;
       if (!permission.granted) { setLocalError(copy.microphoneDenied); return; }
-      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, shouldPlayInBackground: false });
-      if (!pickerMounted.current || !capture.isCurrent(pickerContextRef.current)) {
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, shouldPlayInBackground: false, allowsBackgroundRecording: false });
+      if (!pickerMounted.current || voiceInterrupted.current || !appActive.current || ownerRef.current !== ownerId || !capture.isCurrent(pickerContextRef.current)) {
         await setAudioModeAsync({ allowsRecording: false }); return;
       }
       await recorder.prepareToRecordAsync();
-      if (!pickerMounted.current || !capture.isCurrent(pickerContextRef.current)) {
+      if (!pickerMounted.current || voiceInterrupted.current || !appActive.current || ownerRef.current !== ownerId || !capture.isCurrent(pickerContextRef.current)) {
         await recorder.stop().catch(() => undefined); await setAudioModeAsync({ allowsRecording: false }); return;
       }
       capture.bindNativeRecorder(recorder.id, recorder.uri);
+      publishJournal(await beginProjectBrainVoiceJournal({ schemaVersion: 1, ownerId, ...context, commandId, fileName,
+        recordingId: recorder.id, uri: recorder.uri!, phase: "RECORDING", durationMs: null, sizeBytes: null }));
+      if (!pickerMounted.current || voiceInterrupted.current || !appActive.current || ownerRef.current !== ownerId || !capture.isCurrent(pickerContextRef.current)) {
+        await recorder.stop().catch(() => undefined); return;
+      }
       voiceCapture.current = { capture, release };
       setVoiceSessionActive(true);
       recorder.record({ forDuration: PROJECT_BRAIN_MAX_VOICE_DURATION_MS / 1_000 });
@@ -221,7 +266,21 @@ export default function ProjectBrainIntakeScreen() {
       if (pickerMounted.current) setLocalError(copy.voiceReadFailed);
     } finally {
       voiceStarting.current = false;
-      if (!handedToRecording) { voiceCapture.current = null; if (pickerMounted.current) setVoiceSessionActive(false); release(); }
+      if (!handedToRecording) {
+        voiceInterrupted.current = true;
+        await recorder.stop().catch(() => undefined);
+        let stillRecording = true;
+        try { stillRecording = recorder.getStatus().isRecording; } catch { /* Unknown native state retains Stop and the exclusive session. */ }
+        if (stillRecording && voiceCapture.current?.capture === capture) {
+          if (pickerMounted.current) { setVoiceSessionActive(true); setLocalError(copy.voiceStopFailed); }
+          return;
+        }
+        const interrupted = readJournal();
+        if (interrupted?.commandId === commandId && interrupted.phase === "RECORDING") {
+          await transitionProjectBrainVoiceJournal(interrupted, "INTERRUPTED").then(publishJournal).catch(() => undefined);
+        }
+        voiceCapture.current = null; if (pickerMounted.current) setVoiceSessionActive(false); release();
+      }
     }
   };
   const finalizeRecordedVoice = async () => {
@@ -229,6 +288,7 @@ export default function ProjectBrainIntakeScreen() {
     if (!session) return;
     if (finalizingVoice.current) return;
     finalizingVoice.current = true;
+    let completionAccepted = false;
     try {
       await setAudioModeAsync({ allowsRecording: false });
       const stoppedState = recorder.getStatus();
@@ -236,23 +296,77 @@ export default function ProjectBrainIntakeScreen() {
       const durationMs = stoppedState.durationMillis || recorderState.durationMillis;
       if (!uri || durationMs <= 0) { setLocalError(copy.voiceInvalid); return; }
       if (durationMs > PROJECT_BRAIN_MAX_VOICE_DURATION_MS) { setLocalError(copy.voiceTooLong); return; }
-      await session.capture.import({ uri, durationMs, readCurrentContext: () => pickerContextRef.current,
-        readSize: async localUri => {
-          const blob = await (await fetch(localUri)).blob();
-          if (!blob.size || blob.size > PROJECT_BRAIN_MAX_SOURCE_BYTES) throw new Error("VOICE_TOO_LARGE");
-          return blob.size;
-        }, stage: stageProjectBrainSources, upload: uploadProjectBrainSource });
+      const { File } = await import("expo-file-system");
+      const sizeBytes = new File(uri).size;
+      if (!sizeBytes || sizeBytes > PROJECT_BRAIN_MAX_SOURCE_BYTES) throw new Error("VOICE_TOO_LARGE");
+      const journal = journalRef.current;
+      if (!journal || journal.uri !== uri || journal.recordingId !== recorder.id) throw new Error("VOICE_JOURNAL_CHANGED");
+      if (voiceInterrupted.current || !pickerMounted.current || !appActive.current || !session.capture.isCurrent(pickerContextRef.current)) return;
+      session.capture.assertNativeCompletion();
+      publishJournal(await transitionProjectBrainVoiceJournal(journal, "STOP_CONFIRMED", { durationMs, sizeBytes }));
+      // The local journal retains the confirmed file; only explicit Continue stages and uploads it.
+      session.capture.assertNativeCompletion();
+      completionAccepted = !voiceInterrupted.current && pickerMounted.current && appActive.current && session.capture.isCurrent(pickerContextRef.current);
     } catch (error) {
       if (pickerMounted.current) setLocalError(error instanceof Error && error.message === "VOICE_CONTEXT_CHANGED" ? copy.voiceContextChanged
         : error instanceof Error && error.message === "VOICE_TOO_LARGE" ? copy.voiceTooLarge : copy.voiceReadFailed);
     } finally {
+      if (journalRef.current?.phase === "RECORDING" || !completionAccepted && journalRef.current?.phase === "STOP_CONFIRMED") {
+        invalidVoiceCommands.current.add(journalRef.current.commandId);
+        if (pickerMounted.current) setVoiceInvalidated(true);
+        await transitionProjectBrainVoiceJournal(journalRef.current, "INTERRUPTED").then(publishJournal).catch(() => {
+          if (pickerMounted.current) setLocalError("VOICE_INTERRUPTION_PERSISTENCE_FAILED");
+        });
+      }
       if (voiceCapture.current === session) voiceCapture.current = null;
       if (pickerMounted.current) setVoiceSessionActive(false);
       session.release();
       finalizingVoice.current = false;
     }
   };
+  const removeRecordedFile = async (uri: string) => {
+    const { File, Paths } = await import("expo-file-system");
+    if (!uri.startsWith(`${Paths.document.uri.replace(/\/$/, "")}/`)) throw new Error("VOICE_FILE_DELETE_REFUSED");
+    const file = new File(uri); if (file.exists) file.delete();
+  };
+  const resumeVoice = async (discarded = false) => {
+    const journal = journalRef.current, context = pickerContextRef.current;
+    if (journalAction.current || !journal || journal.ownerId !== ownerRef.current) return;
+    if (!discarded && invalidVoiceCommands.current.has(journal.commandId) && journal.phase !== "CLEANUP_PENDING") return;
+    if (!discarded && journal.phase !== "CLEANUP_PENDING" && (!context || !ownerId || !appActive.current)) return;
+    journalAction.current = true; setJournalBusy(true);
+    try {
+      if (journal.phase === "CLEANUP_PENDING") {
+        await clearProjectBrainVoiceJournal(journal, { removeFile: removeRecordedFile }); publishJournal(null); setVoiceInvalidated(false); return;
+      }
+      if (discarded) {
+        // Explicit abandonment may remove an interrupted capture; never removes a queued uncertain source.
+        if (journal.phase === "STAGED" || sourceQueue.some(attempt => attempt.command.commandId === journal.commandId)) throw new Error("VOICE_JOURNAL_PENDING");
+        await clearProjectBrainVoiceJournal(journal, { discarded: true, removeFile: removeRecordedFile }); publishJournal(null); setVoiceInvalidated(false); return;
+      }
+      const attempt = projectBrainVoiceJournalAttempt(journal, { ownerId: ownerId!, ...context! });
+      const retained = await stageProjectBrainSources([attempt]);
+      const durable = requireProjectBrainVoiceRetainedAttempt(attempt, retained);
+      if (!pickerMounted.current || !appActive.current || ownerRef.current !== ownerId || pickerContextRef.current !== context) throw new Error("VOICE_CONTEXT_CHANGED");
+      if (journal.phase === "STOP_CONFIRMED") publishJournal(await transitionProjectBrainVoiceJournal(journal, "STAGED"));
+      if (!pickerMounted.current || !appActive.current || ownerRef.current !== ownerId || pickerContextRef.current !== context) throw new Error("VOICE_CONTEXT_CHANGED");
+      const result = ["CONFIRMED", "REPLAYED"].includes(durable.state) ? durable : await uploadProjectBrainSource(durable);
+      if (["CONFIRMED", "REPLAYED"].includes(result.state)) {
+        await clearProjectBrainVoiceJournal(journalRef.current!, { receipt: result, removeFile: removeRecordedFile }); publishJournal(null);
+      }
+    } catch {
+      await loadProjectBrainVoiceJournal(journal.ownerId).then(publishJournal).catch(() => undefined);
+      if (pickerMounted.current) setLocalError(copy.voicePending);
+    }
+    finally { journalAction.current = false; if (pickerMounted.current) setJournalBusy(false); }
+  };
+  const retrySource = async (commandId: string) => {
+    if (journalRef.current?.commandId === commandId) { await resumeVoice(); return; }
+    await retryProjectBrainSource(commandId);
+  };
   const stopVoice = async () => {
+    // Stop is also cancellation while the permission dialog or native prepare is awaiting.
+    if (voiceStarting.current) { voiceInterrupted.current = true; return; }
     if (!voiceCapture.current || finalizingVoice.current || manualVoiceStop.current) return;
     manualVoiceStop.current = true;
     recordingSeen.current = false;
@@ -269,7 +383,13 @@ export default function ProjectBrainIntakeScreen() {
 
   useEffect(() => {
     finalizeRecordedVoiceRef.current = finalizeRecordedVoice;
+    stopVoiceRef.current = stopVoice;
   });
+  useEffect(() => {
+    if (voiceCapture.current && (!pickerContextRef.current || !voiceCapture.current.capture.isCurrent(pickerContextRef.current))) {
+      voiceInterrupted.current = true; void stopVoiceRef.current();
+    }
+  }, [pickerWorkspaceId, projectId, intakeId, intakeStateVersion, canManage, ownerId]);
 
   useEffect(() => {
     if (recorderState.isRecording) {
@@ -284,13 +404,19 @@ export default function ProjectBrainIntakeScreen() {
   return (
     <Screen>
       <Heading eyebrow={copy.eyebrow} title={copy.title} body={copy.body} />
-      <Button tone="ghost" accessibilityRole="button" accessibilityLabel={copy.back} onPress={() => router.back()}>{copy.back}</Button>
+      <Button tone="ghost" disabled={voiceSessionActive} accessibilityRole="button" accessibilityLabel={copy.back} onPress={() => router.back()}>{copy.back}</Button>
       {!canManage ? <Notice danger>{copy.protected}</Notice> : null}
       {projectBrainLoadState === "LOADING" ? <Loading label={copy.loading} /> : null}
       {projectBrainLoadState === "UNAVAILABLE" ? <Notice danger>{copy.unavailable}</Notice> : null}
       {publicError ? <Notice danger>{publicError}</Notice> : null}
       {localError ? <Notice danger>{localError}</Notice> : null}
       {voiceSessionActive ? <Button tone="secondary" accessibilityRole="button" accessibilityLabel={copy.stop} onPress={stopVoice}>{copy.stop}</Button> : null}
+      {voiceSessionActive ? <Notice>{copy.voiceStay} {Math.floor(recorderState.durationMillis / 1000)} / 600 s</Notice> : null}
+      {voiceJournal && voiceJournal.ownerId === ownerId && !voiceSessionActive ? <Card><Notice>{voiceJournal.phase === "CLEANUP_PENDING" ? copy.voiceCleanup : voiceJournal.phase === "INTERRUPTED" ? copy.voiceInterrupted : copy.voicePending}</Notice>
+        {voiceInvalidated ? <Notice>{copy.voiceInterrupted}</Notice> : null}
+        {voiceJournal.phase === "STOP_CONFIRMED" || voiceJournal.phase === "STAGED" || voiceJournal.phase === "CLEANUP_PENDING" ? <Button disabled={busy || voiceInvalidated && voiceJournal.phase !== "CLEANUP_PENDING"} onPress={() => void resumeVoice()}>{voiceJournal.phase === "CLEANUP_PENDING" ? copy.voiceCleanup : copy.continueUpload}</Button> : null}
+        {voiceJournal.phase === "INTERRUPTED" || voiceJournal.phase === "STOP_CONFIRMED" ? <Button tone="danger" disabled={busy} onPress={() => void resumeVoice(true)}>{copy.voiceDiscard}</Button> : null}
+      </Card> : null}
       {commandQueue.length ? <Card><Label>{copy.pendingCommands}</Label>{commandQueue.map((attempt: ProjectBrainCommandAttempt) => {
         const presentation = projectBrainIntentPresentation(attempt);
         return <View key={attempt.command.commandId} style={styles.source}>
@@ -320,7 +446,7 @@ export default function ProjectBrainIntakeScreen() {
               return <View key={attempt.command.commandId} style={styles.source}>
                 <Text style={sharedStyles.muted}>{attempt.command.fileName} · {stateLabel}</Text>
                 {presentation.publicError ? <Text style={styles.error}>{presentation.publicError}</Text> : null}
-                {presentation.retryable ? <Pressable disabled={busy || (attempt.state === "READY" && hasUnknownSourceOutcome)} accessibilityRole="button" accessibilityLabel={`${actionLabel}: ${attempt.command.fileName}`} onPress={() => retryProjectBrainSource(attempt.command.commandId)}><Text style={styles.link}>{actionLabel}</Text></Pressable> : null}
+                {presentation.retryable ? <Pressable disabled={busy || (attempt.state === "READY" && hasUnknownSourceOutcome)} accessibilityRole="button" accessibilityLabel={`${actionLabel}: ${attempt.command.fileName}`} onPress={() => retrySource(attempt.command.commandId)}><Text style={styles.link}>{actionLabel}</Text></Pressable> : null}
                 {presentation.dismissible ? <Pressable disabled={busy} accessibilityRole="button" accessibilityLabel={`${copy.dismiss}: ${attempt.command.fileName}`} onPress={() => dismissProjectBrainIntent(attempt.command.commandId)}><Text style={styles.link}>{copy.dismiss}</Text></Pressable> : null}
               </View>;
             })}

@@ -301,6 +301,29 @@ describe("R36V Project Brain mobile API", () => {
     expect(mocks.admitSource).not.toHaveBeenCalled();
   });
 
+  it("cancels a stalled multipart reader at the 60-second original-request deadline without admission", async () => {
+    vi.useFakeTimers();
+    try {
+      const cancel = vi.fn(), stream = new ReadableStream<Uint8Array>({ pull() { /* Deliberately stalled synthetic upload. */ }, cancel });
+      const response = POST_SOURCE(new Request("http://localhost/api/endvera/v1/mobile/project-brain-intake/sources", {
+        method: "POST", headers: { "content-type": "multipart/form-data; boundary=stall" }, body: stream, duplex: "half",
+      } as RequestInit & { duplex: "half" }));
+      await vi.advanceTimersByTimeAsync(60001);
+      expect((await response).status).toBe(408); expect(cancel).toHaveBeenCalledTimes(1); expect(mocks.admitSource).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("honors an aborted multipart upload and releases its admission slot", async () => {
+    const controller = new AbortController(), cancel = vi.fn();
+    const response = POST_SOURCE(new Request("http://localhost/api/endvera/v1/mobile/project-brain-intake/sources", {
+      method: "POST", headers: { "content-type": "multipart/form-data; boundary=abort" }, signal: controller.signal,
+      body: new ReadableStream<Uint8Array>({ pull() { /* Synthetic pending read. */ }, cancel }), duplex: "half",
+    } as RequestInit & { duplex: "half" }));
+    await vi.waitFor(() => expect(mocks.consumeRateLimit).toHaveBeenCalled());
+    controller.abort(); expect((await response).status).toBe(408); expect(mocks.admitSource).not.toHaveBeenCalled();
+    expect((await POST_SOURCE(sourceRequest())).status).toBe(201);
+  });
+
   it("bounds concurrent multipart memory before consuming a third source body", async () => {
     const sourceResult = {
       ...commandResult,

@@ -7,11 +7,28 @@
   "entries": [
     {
       "id": "LONG_DICTATION_LOCAL_600S",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": ["ANDROID_VOICE_CONTEXT_BINDING"],
       "evidence": "LONG_DICTATION_LOCAL_PLAN.md",
-      "completed": ["Four duration boundaries harmonized at600s; bounded recording journal and upload deadlines implemented, targeted tests running"],
-      "remaining": ["Independent review, interruption/recovery regression, full mobile and backend validation; no ASR or physical observation yet"],
+      "completed": ["Four600s boundaries, mono64kM4A/document recording, bounded exact-context journal,120s mobile and60s body deadlines", "Independent review20 regressions; full mobile460/460 across55files and backend27/27; failed interruption/cleanup and unknown upload covered", "Fresh controller receipt mobile-1789027036849 confirms460/460; single-runtime and unstaged-restart interruption limits documented"],
+      "remaining": ["Coherent internal APK and actual Samsung observation; capture is not ASR/transcription"],
+      "liveObserved": false
+    },
+    {
+      "id": "PROJECT_BRAIN_VOICE_SUBJECT_AND_ASR_WIRE",
+      "status": "IN_PROGRESS",
+      "dependencies": ["LONG_DICTATION_LOCAL_600S"],
+      "evidence": "ASR_PROJECT_BRAIN_INTEGRATION_PLAN.md",
+      "completed": ["Existing gateway/source immutability audit and typed-subject/derived-review plan", "Official STT routing mismatch reproduced in code; candidate hard-disable, wire seconds mapping and non-settling reported-cost parser under independent review"],
+      "remaining": ["Owner/source/manifest resolver and tests, review-only persistence and integration, proportional validation; no live ASR or provider routing certification"],
+      "liveObserved": false
+    },
+    {
+      "id": "SMS_CLARIFICATION_CORRELATION",
+      "status": "IN_PROGRESS",
+      "dependencies": ["SMS_TEMPORAL_CLARIFICATION"],
+      "completed": [],
+      "remaining": ["Pure exact-actor/source/proposal/question/expiry contract, independent review; durable two-source correlation and gateway integration without manufactured dates or approval"],
       "liveObserved": false
     },
     {

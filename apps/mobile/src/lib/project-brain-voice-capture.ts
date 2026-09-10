@@ -28,6 +28,7 @@ export function createProjectBrainVoiceCapture(context: ProjectBrainPickerContex
     && current.intakeId === captured.intakeId && current.stateVersion === captured.stateVersion;
   return {
     isCurrent,
+    assertNativeCompletion() { requireNativeSuccess(); return nativeBinding!.uri; },
     bindNativeRecorder(id: string, uri: string | null) {
       if (nativeBinding || attempted || !id || !uri || !/^(file|content):\/\/.+/i.test(uri) || uri.length > 8192) throw new Error("VOICE_NATIVE_BINDING_REFUSED");
       nativeBinding = { id, uri };

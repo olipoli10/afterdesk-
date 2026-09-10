@@ -5,7 +5,7 @@ import {
   type ScanResult,
 } from "@/lib/file-security";
 
-const PROJECT_BRAIN_M4A_MAX_DURATION_MS = 120_000;
+const PROJECT_BRAIN_M4A_MAX_DURATION_MS = 600_000;
 const PROJECT_BRAIN_M4A_MAX_BOX_COUNT = 512;
 const PROJECT_BRAIN_M4A_DECLARED_DURATION_TOLERANCE_MS = 2_000;
 const PROJECT_BRAIN_M4A_DECLARED_DURATION_TOLERANCE_RATIO = 0.05;
@@ -613,7 +613,7 @@ function extractM4aAudioDurationMs(buffer: Buffer): number {
   ));
   const durationNumeratorMs = longest.duration * 1_000n;
   if (durationNumeratorMs > BigInt(PROJECT_BRAIN_M4A_MAX_DURATION_MS) * longest.timescale) {
-    throw new FileRejectedError("The M4A voice note exceeds the 120-second limit.");
+    throw new FileRejectedError("The M4A voice note exceeds the 600-second limit.");
   }
   return Number(
     (durationNumeratorMs + longest.timescale / 2n) / longest.timescale,

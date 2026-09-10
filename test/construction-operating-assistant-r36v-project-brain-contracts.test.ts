@@ -449,17 +449,21 @@ describe("R36V Project Brain intake contracts", () => {
       declaredDurationMs: 256,
     })).rejects.toBeInstanceOf(FileRejectedError);
 
+    for (const durationMs of [120_000, 600_000]) {
+      const boundedDuration = writeFirstBoxUInt32(writeFirstBoxUInt32(REAL_AAC_M4A_FIXTURE, "mdhd", 16, durationMs * 8), "stts", 12, durationMs * 4);
+      expect((await inspectProjectBrainSourceLocally({ buffer: boundedDuration, extension: "m4a", declaredDurationMs: durationMs })).actualVoiceDurationMs).toBe(durationMs);
+    }
     const oversizedDuration = writeFirstBoxUInt32(
-      writeFirstBoxUInt32(REAL_AAC_M4A_FIXTURE, "mdhd", 16, 968_000),
+      writeFirstBoxUInt32(REAL_AAC_M4A_FIXTURE, "mdhd", 16, 4_808_000),
       "stts",
       12,
-      484_000,
+      2_404_000,
     );
     await expect(inspectProjectBrainSourceLocally({
       buffer: oversizedDuration,
       extension: "m4a",
-      declaredDurationMs: 121_000,
-    })).rejects.toThrow("exceeds the 120-second limit");
+      declaredDurationMs: 601_000,
+    })).rejects.toThrow("exceeds the 600-second limit");
 
     await expect(inspectProjectBrainSourceLocally({
       buffer: writeFirstBoxUInt32(REAL_AAC_M4A_FIXTURE, "stts", 12, 1_025),

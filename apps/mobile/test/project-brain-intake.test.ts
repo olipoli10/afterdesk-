@@ -390,7 +390,7 @@ describe("R36V Project Brain mobile RED contract", () => {
     expect(surface).toContain("void finalizeRecordedVoiceRef.current()");
     expect(surface).toContain("const stoppedState = recorder.getStatus()");
     expect(futureSource("src/lib/project-brain-voice-capture.ts")).toContain('mimeType: "audio/m4a"');
-    expect(surface).toContain("session.capture.import");
+    expect(surface).toContain('transitionProjectBrainVoiceJournal(journal, "STOP_CONFIRMED"');
     // Starting stays fenced on web/pending work; stopping an active recording remains available.
     expect(surface).toContain('disabled={Platform.OS === "web" || busy || hasPendingCommand || hasUnknownSourceOutcome || intake.status !== "DRAFT"}');
     expect(surface.indexOf("onPress={stopVoice}")).toBeLessThan(surface.indexOf("{!intake ?"));
@@ -420,8 +420,8 @@ describe("R36V Project Brain mobile RED contract", () => {
     const screen = futureSource("src/app/(app)/project-brain-intake.tsx");
     expect(screen).toContain("durationMs > PROJECT_BRAIN_MAX_VOICE_DURATION_MS");
     expect(screen).toContain("setLocalError(copy.voiceTooLong)");
-    expect(screen).toContain("session.capture.import({ uri, durationMs");
-    expect(screen).toContain("return blob.size");
+    expect(screen).toContain('transitionProjectBrainVoiceJournal(journal, "STOP_CONFIRMED", { durationMs, sizeBytes })');
+    expect(screen).toContain("const sizeBytes = new File(uri).size");
     expect(futureSource("src/lib/project-brain-voice-capture.ts")).toContain("sizeBytes, durationMs: input.durationMs");
     expect(screen).not.toContain("Math.min(durationMs, PROJECT_BRAIN_MAX_VOICE_DURATION_MS)");
   });

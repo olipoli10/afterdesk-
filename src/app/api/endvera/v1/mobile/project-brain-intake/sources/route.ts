@@ -10,6 +10,7 @@ import { admitProjectBrainSource } from "@/server/construction-operating-assista
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 120;
 
 const PRIVATE_NO_STORE = { "Cache-Control": "private, no-store" } as const;
 const ALLOWED_FIELDS = new Set(["command", "file"]);
@@ -43,25 +44,41 @@ function tryAcquireSourceAdmission(userId: string): (() => void) | null {
   };
 }
 
-async function readBoundedMultipartBody(request: Request): Promise<Buffer | null> {
+async function readBoundedMultipartBody(request: Request, deadlineAt: number): Promise<Buffer | null> {
+  if (request.signal.aborted || Date.now() >= deadlineAt) throw new Error("SOURCE_BODY_INTERRUPTED");
   if (!request.body) return Buffer.alloc(0);
   const reader = request.body.getReader();
   const chunks: Buffer[] = [];
   let total = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let interrupt!: () => void;
+  const interrupted = new Promise<never>((_, reject) => {
+    interrupt = () => { void reader.cancel().catch(() => undefined); reject(new Error("SOURCE_BODY_INTERRUPTED")); };
+    timer = setTimeout(interrupt, Math.max(1, deadlineAt - Date.now()));
+    request.signal.addEventListener("abort", interrupt, { once: true });
+  });
+  try {
   while (true) {
-    const { done, value } = await reader.read();
+    if (request.signal.aborted || Date.now() >= deadlineAt) throw new Error("SOURCE_BODY_INTERRUPTED");
+    const { done, value } = await Promise.race([reader.read(), interrupted]);
     if (done) break;
     total += value.byteLength;
     if (total > MAX_MULTIPART_BYTES) {
-      await reader.cancel();
+      void reader.cancel().catch(() => undefined);
       return null;
     }
     chunks.push(Buffer.from(value));
   }
+  if (request.signal.aborted || Date.now() >= deadlineAt) throw new Error("SOURCE_BODY_INTERRUPTED");
   return Buffer.concat(chunks, total);
+  } finally {
+    clearTimeout(timer); request.signal.removeEventListener("abort", interrupt);
+    try { reader.releaseLock(); } catch { /* An interrupted read is not a completed admission. */ }
+  }
 }
 
 export async function POST(request: Request) {
+  const bodyDeadlineAt = Date.now() + 60_000;
   const user = await getSessionUser();
   if (!user) return json({ error: "Not signed in." }, 401);
   if (user.role !== "CLIENT" || !user.emailVerified) return json({ error: "Not found." }, 404);
@@ -96,7 +113,7 @@ export async function POST(request: Request) {
 
     let form: FormData;
     try {
-      const body = await readBoundedMultipartBody(request);
+      const body = await readBoundedMultipartBody(request, bodyDeadlineAt);
       if (body === null) return json({ error: "Source request is too large." }, 413);
       form = await new Request(request.url, {
         method: "POST",
@@ -104,6 +121,7 @@ export async function POST(request: Request) {
         body: Uint8Array.from(body),
       }).formData();
     } catch {
+      if (request.signal.aborted || Date.now() >= bodyDeadlineAt) return json({ error: "Source upload interrupted." }, 408);
       return json({ error: "Invalid form." }, 400);
     }
     const entries = [...form.entries()];
@@ -145,10 +163,12 @@ export async function POST(request: Request) {
     }
 
     try {
+      const bytes = Buffer.from(await file.arrayBuffer());
+      if (request.signal.aborted || Date.now() >= bodyDeadlineAt) return json({ error: "Source upload interrupted." }, 408);
       const result = await admitProjectBrainSource({
         userId: user.id,
         command: command.data,
-        bytes: Buffer.from(await file.arrayBuffer()),
+        bytes,
       });
       return json(result, result.replayed ? 200 : 201);
     } catch (error) {

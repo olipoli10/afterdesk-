@@ -3,7 +3,7 @@ import { sha256Canonical } from "@/lib/construction-assistant-v1/canonical";
 
 export const PROJECT_BRAIN_SCHEMA_VERSION = 1 as const;
 export const PROJECT_BRAIN_MAX_SOURCE_BYTES = 10 * 1024 * 1024;
-export const PROJECT_BRAIN_MAX_VOICE_DURATION_MS = 2 * 60 * 1_000;
+export const PROJECT_BRAIN_MAX_VOICE_DURATION_MS = 10 * 60 * 1_000;
 
 const boundedId = z.string().trim().min(1).max(200);
 const commandId = z.string().uuid();

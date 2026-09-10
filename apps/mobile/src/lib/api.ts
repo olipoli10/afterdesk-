@@ -211,12 +211,15 @@ export class MobileApi {
     },
   ) {}
 
-  private async request(path: string, init: RequestInit) {
+  private async request(path: string, init: RequestInit, boundedTimeoutMs?: number) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.options.timeoutMs ?? 15_000);
+    let rejectBoundedDeadline: ((reason: unknown) => void) | undefined;
+    const boundedDeadline = boundedTimeoutMs === undefined ? null : new Promise<never>((_, reject) => { rejectBoundedDeadline = reject; });
+    const timeout = setTimeout(() => { controller.abort(); rejectBoundedDeadline?.(new MobileApiError("OUTCOME_UNKNOWN")); }, boundedTimeoutMs ?? this.options.timeoutMs ?? 15_000);
     const browserManagedCredentials = this.options.browserManagedCredentials === true;
-    const cookie = browserManagedCredentials ? "" : this.options.getCookie();
     try {
+      const cookie = browserManagedCredentials ? "" : this.options.getCookie();
+      const readResponse = async () => {
       const response = await (this.options.fetchImpl ?? fetch)(
         `${this.options.baseUrl ?? mobileApiBaseUrl()}${path}`,
         {
@@ -239,6 +242,10 @@ export class MobileApi {
       } catch {
         throw new MobileApiError("INVALID_RESPONSE", response.status);
       }
+      };
+      // A stalled native transport/body must not retain this source-upload UI forever.
+      // The outcome stays unknown; abort is not evidence that server admission was undone.
+      return boundedDeadline ? await Promise.race([readResponse(), boundedDeadline]) : await readResponse();
     } catch (error) {
       if (error instanceof MobileApiError) throw error;
       throw new MobileApiError("OUTCOME_UNKNOWN");
@@ -1015,7 +1022,7 @@ export class MobileApi {
     const value = await this.request("/api/endvera/v1/mobile/project-brain-intake/sources", {
       method: "POST",
       body: form,
-    });
+    }, 120_000);
     try {
       const result = mobileProjectBrainCommandResultSchema.parse(value);
       if (

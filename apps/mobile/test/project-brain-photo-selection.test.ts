@@ -160,7 +160,7 @@ describe("explicit project photo preview/import", () => {
     expect(document.indexOf("const release = acquireNativeAction()")).toBeLessThan(document.indexOf("await sourcePicker.run"));
     expect(document).toContain("release()"); expect(voice.indexOf("voiceStarting.current = true")).toBeLessThan(voice.indexOf("await requestRecordingPermissionsAsync()"));
     expect(voice).toContain("voiceStarting.current = false;");
-    expect(voice).toContain("if (!handedToRecording) { voiceCapture.current = null;");
+    expect(voice).toMatch(/if \(!handedToRecording\) \{[\s\S]*await recorder\.stop\(\)[\s\S]*voiceCapture\.current = null;[\s\S]*release\(\)/);
     expect(screen).toContain("session.release()");
     expect(screen).toContain("if (release() && pickerMounted.current) setNativeBusy(false)");
     expect(screen).toContain("acquireNativeAction={acquireNativeAction} onImport={importPhoto}");

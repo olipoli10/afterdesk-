@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const PROJECT_BRAIN_MAX_SOURCE_BYTES = 10 * 1024 * 1024;
-export const PROJECT_BRAIN_MAX_VOICE_DURATION_MS = 120_000;
+export const PROJECT_BRAIN_MAX_VOICE_DURATION_MS = 600_000;
 
 const id = z.string().trim().min(1).max(200);
 const commandId = z.string().uuid();

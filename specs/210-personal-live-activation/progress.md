@@ -1,5 +1,31 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 07:58Z — ten-minute mobile recording saved locally; next lanes continue
+
+Fresh controller evidence/mobile-1789027036849 confirms **460/460 mobile tests,
+55 files**. Agent backend27/27, mobile TypeScript/lint and separate-agent20
+regression review pass. 600s capture/mobile/backend/container bounds agree;
+AAC/M4A mono64k,10MiB, foreground only. Exact-context local journal,120s upload
+and60s multipart body deadline retain unknown outcomes without an automatic new
+request. Cleanup intent precedes local file deletion. Unstaged STOP_CONFIRMED
+becomes INTERRUPTED on a new load; file retained, not importable as verified.
+This deliberately does not promise lossless crash recovery, multiprocess CAS,
+real Samsung permission behavior, transcription or an updated installed APK.
+
+ASR and SMS clarification are now independent active coding lanes, not an end
+of campaign. The former reuses the gateway and immutable Project Brain source;
+the latter must retain both original SMS receipts, not fabricate a merged owner
+message or action authorization. Current STT documentation invalidates the old
+provider pin assumption. The candidate is being made non-dispatching at policy
+and adapter levels; pure wire normalization reads usage.seconds and never treats
+a reported optional USD cost as a settled ledger amount. Targeted47 tests pass;
+independent review and full-root validation are still pending for that delta.
+
+No product provider call, credential access, external audio, remote migration,
+deployment, new APK or purchase in this continuation. Existing external setup
+and owner consent blockers unchanged; ACTIVE3min heartbeat and100CAD scope
+preserved. Dashboard unchanged22%/46.75%/C2 18of18/real-test NO-GO/Verified-E2E0%.
+
 ## 2026-09-10 07:42Z — full native suite PASS; dictation continuation stays active
 
 Fresh evidence/postgres-native-1789025960008: **114/114 PASS across13 suites**,

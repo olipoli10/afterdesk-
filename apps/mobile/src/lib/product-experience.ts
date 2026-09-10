@@ -56,6 +56,7 @@ export type MobileProductCopy = {
     save: string; review: string; submit: string; confirm: string; reject: string; none: string; retry: string;
     limitation: string; limits: string; created: string; back: string; protected: string; loading: string; unavailable: string;
     invalidFile: string; microphoneDenied: string; voiceInvalid: string; voiceTooLarge: string; voiceTooLong: string; voiceReadFailed: string; voiceContextChanged: string; voiceStopFailed: string;
+    voiceStay: string; voicePending: string; voiceInterrupted: string; voiceDiscard: string; voiceCleanup: string;
     voiceMobileOnly: string; continueUpload: string; locked: string; version: string; localOnly: string; kilobytes: string;
     newVersion: string; pendingCommands: string; retryCommand: string; dismiss: string; interrupted: string; localQueueUnavailable: string; pendingSignOut: string;
     commandAction: Record<"CREATE_PROJECT_BRAIN_INTAKE" | "ADD_OWNER_BRIEF" | "SUBMIT_PROJECT_BRAIN_INTAKE" | "CONFIRM_PROJECT_BRAIN_INTAKE" | "REJECT_PROJECT_BRAIN_INTAKE", string>;
@@ -164,7 +165,12 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
       unavailable: "La mémoire du chantier est indisponible pour le moment.", invalidFile: "Un fichier a été refusé : type ou taille non permis.",
       microphoneDenied: "Permission microphone refusée.", voiceInvalid: "Aucune note vocale utilisable.",
       voiceTooLarge: "Note vocale vide ou trop volumineuse.", voiceReadFailed: "La note vocale n’a pas pu être lue. Réessaie l’enregistrement.",
-      voiceTooLong: "La note vocale dépasse la limite de 2 minutes. Enregistre une note plus courte.",
+      voiceTooLong: "La note vocale dépasse la limite de 10 minutes. Aucun audio n’a été tronqué ou envoyé.",
+      voiceStay: "Dictée locale, 10 minutes maximum. Garde cet écran ouvert. Quitter l’app arrête la capture; aucune transcription automatique.",
+      voicePending: "Une dictée locale est conservée. Continuer envoie exactement ce fichier au chantier d’origine; aucun nouveau texte n’est transcrit.",
+      voiceCleanup: "Terminer le nettoyage local — aucun nouvel envoi",
+      voiceInterrupted: "Dictée interrompue ou session précédente non vérifiable. Le fichier local est conservé, mais ne peut pas être importé. Aucun fichier n’a été envoyé.",
+      voiceDiscard: "Supprimer cette capture locale",
       voiceContextChanged: "Le chantier ou ses permissions ont changé pendant la dictée. La note n’a pas été envoyée. Reviens au bon chantier avant d’enregistrer à nouveau.",
       voiceStopFailed: "L’arrêt du microphone n’est pas confirmé. Appuie de nouveau sur Arrêter. Aucun fichier n’a été envoyé.",
       voiceMobileOnly: "L’enregistrement vocal est offert dans l’application iOS ou Android.", continueUpload: "Continuer ce fichier",
@@ -289,7 +295,12 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
       unavailable: "Project memory is unavailable right now.", invalidFile: "A file was refused: its type or size is not allowed.",
       microphoneDenied: "Microphone permission was denied.", voiceInvalid: "No usable voice note was recorded.",
       voiceTooLarge: "The voice note is empty or too large.", voiceReadFailed: "The voice note could not be read. Record it again.",
-      voiceTooLong: "The voice note exceeds the 2-minute limit. Record a shorter note.",
+      voiceTooLong: "The voice note exceeds the 10-minute limit. No audio was truncated or uploaded.",
+      voiceStay: "Local recording, up to 10 minutes. Keep this screen open. Leaving the app stops recording; no automatic transcription.",
+      voicePending: "A local recording is retained. Continue uploads this exact file to its original project; no text is transcribed.",
+      voiceCleanup: "Finish local cleanup — no new upload",
+      voiceInterrupted: "Recording interrupted or previous session cannot be verified. The local file is retained but cannot be imported. No file was uploaded.",
+      voiceDiscard: "Delete this local capture",
       voiceContextChanged: "The project or its permissions changed during recording. The note was not sent. Return to the correct project before recording again.",
       voiceStopFailed: "Microphone stop is not confirmed. Press Stop again. No file has been sent.",
       voiceMobileOnly: "Voice recording is available in the iOS or Android app.", continueUpload: "Continue this file",
