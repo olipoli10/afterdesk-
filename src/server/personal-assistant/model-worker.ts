@@ -10,18 +10,13 @@ import { prepareStoredPersonalIntentReview } from "@/server/model-gateway/person
 import { personalModelCredentialForDispatch } from "./model-connection";
 import type { PersonalSmsExecutionContext } from "./sms-worker";
 import type { ConnectorEnvironment } from "./google-client";
+import { formatPersonalModelReviewMessage } from "./model-review-message";
 
 type Review = Awaited<ReturnType<typeof prepareStoredPersonalIntentReview>>;
 export type PersonalModelSmsResult = Readonly<{ reply: string; finalizeReview?: (tx: Prisma.TransactionClient) => Promise<Review> }>;
 
 export function personalModelReviewReply(review: Review): string {
-  if (review.status !== "REVIEW_PREPARED_NOT_AUTHORIZED") throw new Error("PERSONAL_MODEL_REVIEW_DISABLED");
-  const prepared = review.actions.filter(action => action.status === "PREPARED_UNSENT").length;
-  const readOnly = review.actions.some(action => action.status === "READ_REVIEW_ONLY");
-  const questions = review.actions.filter(action => action.status === "CLARIFY").map(action => action.question).filter(Boolean);
-  return [prepared ? `${prepared} action(s) préparée(s) dans ENDVERA. Lis ta demande originale et les détails avant d’approuver dans l’app.` : "Ta demande est conservée dans ENDVERA.",
-    readOnly ? "La période de calendrier est identifiée, mais Google Agenda n’a pas été consulté par cette analyse." : "",
-    ...questions, "Aucun rendez-vous modifié ni message/appel exécuté par ces propositions."].filter(Boolean).join("\n");
+  return formatPersonalModelReviewMessage(review);
 }
 
 /** Exclusive candidate path. Never falls back to the legacy action interpreter.
