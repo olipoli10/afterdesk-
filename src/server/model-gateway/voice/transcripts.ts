@@ -136,14 +136,14 @@ export async function purgeExpiredVoiceIntakeContent(input?: {
   now?: Date;
   batchSize?: number;
 }): Promise<number> {
-  const now = input?.now ?? new Date();
+  const now = new Date(input?.now?.getTime() ?? Date.now());
   const batchSize = input?.batchSize ?? 100;
   if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 500) {
     throw new Error("INVALID_VOICE_PURGE_BATCH");
   }
   return prisma.$transaction(async (tx) => {
     const purged = await tx.$queryRawUnsafe<Array<{ id: string }>>(
-      `WITH due AS (SELECT t.id FROM "VoiceTranscriptSegment" t JOIN "VoiceIntakeSegment" s ON s.id=t."segmentId" JOIN "VoiceIntakeSession" v ON v.id=s."sessionId" WHERE t."purgedAt" IS NULL AND (t."expiresAt" <= $1 OR v.status IN ('cancelled','purged')) ORDER BY t."expiresAt",t.id LIMIT $2 FOR UPDATE OF t SKIP LOCKED) UPDATE "VoiceTranscriptSegment" t SET text='',"purgedAt"=$1 FROM due WHERE t.id=due.id RETURNING t.id`,
+      `WITH due AS (SELECT t.id FROM "VoiceTranscriptSegment" t JOIN "VoiceIntakeSegment" s ON s.id=t."segmentId" JOIN "VoiceIntakeSession" v ON v.id=s."sessionId" WHERE t."purgedAt" IS NULL AND (t."expiresAt" <= ($1::timestamptz AT TIME ZONE 'UTC') OR v.status IN ('cancelled','purged')) ORDER BY t."expiresAt",t.id LIMIT $2 FOR UPDATE OF t SKIP LOCKED) UPDATE "VoiceTranscriptSegment" t SET text='',"purgedAt"=($1::timestamptz AT TIME ZONE 'UTC') FROM due WHERE t.id=due.id RETURNING t.id`,
       now,
       batchSize
     );

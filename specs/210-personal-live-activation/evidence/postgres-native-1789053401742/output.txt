@@ -1,0 +1,64 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"voice-transcript-purge-utc.postgres.test.ts","database":"endvera_personal_210_688acefdcfb64a48825894818ceff00d","template":"endvera_personal_210_3a67dd3b56f74eebb82bc5df78f62416","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T15:16:58.1937667Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts (6 tests | 2 failed) 162ms
+     ✓ retains the falsifiable old Date inference control in UTC 62ms
+     ✓ retains the falsifiable old Date inference control in America/New_York 18ms
+     ✓ retains the falsifiable old Date inference control in Asia/Tokyo 21ms
+     ✓ actual maintenance function expires only the due text and stores UTC in UTC 20ms
+     × actual maintenance function expires only the due text and stores UTC in America/New_York 23ms
+     × actual maintenance function expires only the due text and stores UTC in Asia/Tokyo 16ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  11:16:57
+   Duration  799ms (transform 305ms, setup 0ms, import 482ms, tests 162ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts > real PostgreSQL purge SQL using rollback-only synthetic TEMP tables, not application FK coverage > actual maintenance function expires only the due text and stores UTC in America/New_York
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts:48:83
+
+ ❯ prisma.$transaction.isolationLevel specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts:30:7
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+ ❯ inFixture specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts:14:5
+ ❯ specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts:46:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts > real PostgreSQL purge SQL using rollback-only synthetic TEMP tables, not application FK coverage > actual maintenance function expires only the due text and stores UTC in Asia/Tokyo
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts:48:83
+
+ ❯ prisma.$transaction.isolationLevel specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts:30:7
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+ ❯ inFixture specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts:14:5
+ ❯ specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts:46:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-47c31a082c3c4b439cfb130c7782981f
