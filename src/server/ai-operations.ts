@@ -80,6 +80,9 @@ export async function claimAiOperation(operationKey: string): Promise<AiOperatio
   const claimed = await prisma.aiOperation.updateMany({
     where: {
       operationKey,
+      // Personal model attempts are single-use and never lease-reclaimed by
+      // the legacy two-attempt Task/Voice runner.
+      purpose: { not: "personal_intent_candidate_v1" },
       attempts: { lt: MAX_ATTEMPTS },
       OR: [
         { status: "reserved" },
@@ -174,7 +177,7 @@ export async function succeedAiOperation<T>(input: {
   const { claim } = input;
   return prisma.$transaction(async (tx) => {
     const fenced = await tx.aiOperation.updateMany({
-      where: { id: claim.operationId, lockedBy: claim.lockedBy },
+      where: { id: claim.operationId, lockedBy: claim.lockedBy, purpose: { not: "personal_intent_candidate_v1" } },
       data: {
         status: "succeeded",
         finishedAt: new Date(),
@@ -218,7 +221,7 @@ export async function failAiOperation(input: {
   try {
     await prisma.$transaction(async (tx) => {
       const fenced = await tx.aiOperation.updateMany({
-        where: { id: claim.operationId, lockedBy: claim.lockedBy },
+        where: { id: claim.operationId, lockedBy: claim.lockedBy, purpose: { not: "personal_intent_candidate_v1" } },
         data: {
           status: "failed",
           lastError: input.error.slice(0, 1000),
@@ -256,6 +259,16 @@ export async function recordSupersededUsage(
   usage: ProviderUsage | null
 ): Promise<void> {
   if (!usage) return;
+  // The legacy terminal fence may reject a personal operation. That rejection
+  // must not fall through to an Anthropic/Task usage row for the personal call.
+  // Inspect the persisted subject, not only the caller's purpose or key string.
+  const subject = await prisma.aiOperation.findUnique({
+    where: { id: claim.operationId },
+    select: { purpose: true, personalAssistantOperationId: true },
+  });
+  if (subject?.purpose === "personal_intent_candidate_v1" || subject?.personalAssistantOperationId != null) {
+    throw new Error("PERSONAL_AI_LEGACY_USAGE_REFUSED");
+  }
   console.warn("[ai-operations] superseded invocation recording its billed attempt", {
     operationKey: claim.operationKey,
     attempt: claim.attempt,

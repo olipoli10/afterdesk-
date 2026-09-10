@@ -96,8 +96,9 @@ export async function bindGatewayOperation(
     purpose: string;
     voiceIntakeSegmentId: string | null;
     voiceClientId: string | null;
+    personalAssistantOperationId: string | null;
   }>>(
-    `SELECT ai."taskId",task."clientId" "taskClientId",ai.purpose,ai."voiceIntakeSegmentId",voice."clientId" "voiceClientId" FROM "AiOperation" ai LEFT JOIN "Task" task ON task.id=ai."taskId" LEFT JOIN "VoiceIntakeSegment" segment ON segment.id=ai."voiceIntakeSegmentId" LEFT JOIN "VoiceIntakeSession" voice ON voice.id=segment."sessionId" WHERE ai.id=$1`,
+    `SELECT ai."taskId",task."clientId" "taskClientId",ai.purpose,ai."voiceIntakeSegmentId",voice."clientId" "voiceClientId",ai."personalAssistantOperationId" FROM "AiOperation" ai LEFT JOIN "Task" task ON task.id=ai."taskId" LEFT JOIN "VoiceIntakeSegment" segment ON segment.id=ai."voiceIntakeSegmentId" LEFT JOIN "VoiceIntakeSession" voice ON voice.id=segment."sessionId" WHERE ai.id=$1`,
     input.aiOperationId
   );
   const tenant = tenantRows[0];
@@ -107,7 +108,7 @@ export async function bindGatewayOperation(
   const voiceBinding = input.operationType === "intake_voice_transcription" &&
     tenant?.purpose === "intake_voice_transcription" && tenant.voiceIntakeSegmentId !== null &&
     tenant.taskId === null && tenant.voiceClientId === input.tenantId;
-  if (!tenant || (!classificationBinding && !voiceBinding)) {
+  if (!tenant || tenant.personalAssistantOperationId != null || (!classificationBinding && !voiceBinding)) {
     throw new Error("GATEWAY_OPERATION_TENANT_TASK_BINDING_MISMATCH");
   }
   await tx.$executeRawUnsafe(

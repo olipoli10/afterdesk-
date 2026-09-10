@@ -1,0 +1,16 @@
+{
+  "kind": "LOCAL_DISPOSABLE_POSTGRESQL",
+  "startedAt": "2026-09-10T03:02:18Z",
+  "durationSeconds": 45.41,
+  "command": "safeEnvironment -> bundled pwsh -> specs/210-personal-live-activation/validate-postgres.ps1",
+  "exitCode": 0,
+  "testFilesPassed": 4,
+  "testsPassed": 25,
+  "personalSubjectAndClaimTests": 5,
+  "observedNew": ["one successful personal claim across four concurrent transactions", "fenced completion and replay refusal", "USD hold rolled back with parent transaction", "competing USD holds cannot both exceed configured exposure"],
+  "fakeProviderTransportsOnly": true,
+  "productProviderCalls": 0,
+  "deployedDatabaseModified": false,
+  "cleanupOutput": "PERSONAL_DISPOSABLE_DB_REMOVED",
+  "limitations": ["Final later receipt-time fingerprint and held-replay hardening passed unit tests; integrated gateway admission does not yet exist", "No real model, SMS, Google or Samsung outcome"]
+}

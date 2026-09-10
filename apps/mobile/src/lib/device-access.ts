@@ -1,11 +1,12 @@
 export const DEVICE_RESOURCES = ["CONTACTS", "CALENDAR", "MICROPHONE", "CAMERA", "PHOTOS", "NOTIFICATIONS", "LOCATION"] as const;
 export type DeviceResource = (typeof DEVICE_RESOURCES)[number];
-export type DeviceAccessStatus = "UNDETERMINED" | "DENIED" | "GRANTED" | "UNAVAILABLE";
+export type DeviceAccessStatus = "UNDETERMINED" | "DENIED" | "GRANTED" | "LIMITED" | "UNAVAILABLE";
 
 export type NativePermissionLike = {
   status?: string;
   granted: boolean;
   canAskAgain: boolean;
+  accessPrivileges?: "all" | "limited" | "none";
 };
 
 export type DeviceAccessState = {
@@ -21,21 +22,27 @@ export function normalizeDevicePermission(
 ): DeviceAccessState {
   if (!permission) return { resource, status: "UNAVAILABLE", canAskAgain: false, valuesDisclosed: false };
   const status = permission.granted
-    ? "GRANTED"
+    ? resource === "PHOTOS" && permission.accessPrivileges === "limited" ? "LIMITED" : "GRANTED"
     : permission.status?.toLowerCase() === "undetermined"
       ? "UNDETERMINED"
       : "DENIED";
   return { resource, status, canAskAgain: permission.canAskAgain, valuesDisclosed: false };
 }
 
+export function devicePermissionAction(state: DeviceAccessState): "REQUEST" | "SETTINGS" | "UNAVAILABLE" {
+  if (state.status === "UNAVAILABLE") return "UNAVAILABLE";
+  if (state.status === "GRANTED" || state.status === "LIMITED" || !state.canAskAgain) return "SETTINGS";
+  return "REQUEST";
+}
+
 export const DEVICE_ACCESS_COPY = {
   CONTACTS: {
     title: "Contacts du téléphone",
-    detail: "Pour reconnaître les personnes que tu choisis. Aucune liste n’est envoyée automatiquement.",
+    detail: "Dans Contacts, choisis une personne, vérifie les coordonnées et confirme son ajout au portail. Aucune liste complète n’est envoyée et l’import n’autorise pas un SMS ou un appel.",
   },
   CALENDAR: {
     title: "Calendriers du téléphone",
-    detail: "Pour voir ton horaire et préparer les rendez-vous demandés. Chaque écriture reste contrôlée.",
+    detail: "Autorisation native préparée. Les calendriers du téléphone ne sont pas encore lus ou modifiés par cette intégration. Google Agenda se connecte séparément au service SMS.",
   },
   MICROPHONE: {
     title: "Microphone",
@@ -43,18 +50,18 @@ export const DEVICE_ACCESS_COPY = {
   },
   CAMERA: {
     title: "Caméra",
-    detail: "Pour photographier une preuve, un document ou l’avancement d’un chantier à ta demande.",
+    detail: "Autorisation native préparée pour une capture à ta demande. La prise de photo dans ENDVERA n’est pas encore branchée.",
   },
   PHOTOS: {
     title: "Photos choisies",
-    detail: "Pour joindre seulement les photos que tu sélectionnes, jamais parcourir ta galerie en arrière-plan.",
+    detail: "Le téléphone indique si l’accès est complet ou limité à ta sélection. Le sélecteur de photos ENDVERA n’est pas encore branché; cet écran ne parcourt pas ta galerie.",
   },
   NOTIFICATIONS: {
     title: "Notifications",
-    detail: "Pour signaler un rendez-vous, un suivi ou une décision qui demande ton attention.",
+    detail: "Autorisation native préparée. Les rappels locaux et les notifications push ne sont pas encore branchés; accorder cet accès ne programme aucun rappel.",
   },
   LOCATION: {
     title: "Localisation pendant l’utilisation",
-    detail: "Pour associer une action au bon chantier pendant que tu utilises ENDVERA, sans suivi permanent.",
+    detail: "Autorisation native préparée, seulement pendant l’utilisation. L’association au chantier par position n’est pas encore branchée; aucune position n’est lue ici et aucun suivi permanent n’est demandé.",
   },
 } as const;

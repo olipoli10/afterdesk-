@@ -2824,7 +2824,10 @@ model AiOperation {
   voiceIntakeSegmentId String?             @unique
   voiceIntakeSegment   VoiceIntakeSegment? @relation(fields: [voiceIntakeSegmentId], references: [id], onDelete: Restrict)
 
-  /// classification | planning | critique | intake_voice_transcription
+  personalAssistantOperationId String? @unique
+  personalAssistantOperation PersonalAssistantOperation? @relation(fields: [personalAssistantOperationId], references: [id], onDelete: Restrict)
+
+  /// classification | planning | critique | intake_voice_transcription | personal_intent_candidate_v1
   purpose      String
   operationKey String            @unique
   status       AiOperationStatus @default(reserved)
@@ -5614,6 +5617,7 @@ model PersonalAssistantOperation {
   budget            PersonalAssistantBudget?      @relation(fields: [budgetId], references: [id])
   deliveryReceipts  PersonalAssistantDeliveryReceipt[]
   reservedCadMicros BigInt?
+  aiOperation        AiOperation?
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
 

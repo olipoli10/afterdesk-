@@ -83,11 +83,19 @@ export type ProtectedContentRef = {
 
 export type GatewayOperationSubject =
   | Readonly<{ kind: "task"; taskId: string }>
+  | PersonalGatewayOperationSubject
   | Readonly<{
       kind: "voice_intake_segment";
       sessionId: string;
       segmentId: string;
     }>;
+
+/** Persisted personal subject only. This does not add an executable operation. */
+export type PersonalGatewayOperationSubject = Readonly<{
+  kind: "personal_assistant_operation";
+  operationId: string;
+  workspaceId: string;
+}>;
 
 type GatewayOperationRequestBase = {
   logicalOperationKey: string;

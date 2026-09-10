@@ -2,6 +2,31 @@
 
 Same accepted spec210 goal; no new GO or external activation is implied.
 
+## 2026-09-10 03:08Z — rolling implementation, not live completion
+
+Read overnight-continuation.md for current rolling sequence. Subject relation and
+immutable binding migration are implemented; real disposable PostgreSQL tests now
+cover source reload, cross-workspace/refusal/revocation, one-attempt concurrent
+claims, fenced completion, USD ledger rollback and competing holds.25 tests passed
+with fake transports and disposable cleanup. Deployed DB remains unchanged.
+
+OpenRouter adapter, prompt/schema, exact output cap, deep immutable request and
+timeout uncertainty are local. Current-rate budget policy returns separately USD
+and CAD micros plus rate fingerprint. New transaction-scoped account hold and
+personal claim helpers do not yet compose a dispatch-authorized wrapper.
+
+Critical cross-review fixed a legacy error path that could mislabel personal usage
+as Anthropic/Task usage; current reinspection excludes the persisted personal subject.
+Temporal grammar resolves exact quotes, anchored to persisted receipt time, and
+clarifies ambiguous/DST/missing-end requests. Legacy inferred one-hour appointments
+are no longer promoted automatically into Google write drafts; legacy local default
+itself remains and is disclosed. No claim of general semantic model correctness.
+
+Next: compose personal gateway policy/privacy/breaker admission, immutable child
+model attempt with atomic USD+CAD holds and single dispatch fence, then worker
+integration and exact action preparation. Operation remains UNREGISTERED until
+that complete boundary is tested. No new paid call, live effect or deployment.
+
 ## Implemented and checked
 
 `src/server/model-gateway/personal-intent/contract.ts` binds an untrusted proposal

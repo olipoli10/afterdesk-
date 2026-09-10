@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as Calendar from "expo-calendar";
 import * as Contacts from "expo-contacts";
 import { getRecordingPermissionsAsync, requestRecordingPermissionsAsync } from "expo-audio";
@@ -7,11 +7,13 @@ import * as ImagePicker from "expo-image-picker";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
-import { Linking, Text, View } from "react-native";
+import { AppState, Linking, Text, View } from "react-native";
+import { router } from "expo-router";
 import { BrandHeader, Button, Card, Heading, Notice, Screen, sharedStyles } from "@/components/ui";
 import {
   DEVICE_ACCESS_COPY,
   DEVICE_RESOURCES,
+  devicePermissionAction,
   normalizeDevicePermission,
   type DeviceAccessState,
   type DeviceResource,
@@ -23,6 +25,7 @@ const statusCopy: Record<DeviceAccessState["status"], string> = {
   UNDETERMINED: "Pas encore demandé",
   DENIED: "Refusé ou révoqué",
   GRANTED: "Accès accordé sur ce téléphone",
+  LIMITED: "Accès limité aux photos choisies",
   UNAVAILABLE: "Non disponible sur cet appareil",
 };
 
@@ -64,64 +67,111 @@ async function askNativePermission(resource: DeviceResource): Promise<DeviceAcce
   }
 }
 
+async function readBiometricsAvailable(): Promise<boolean> {
+  try {
+    return await LocalAuthentication.hasHardwareAsync() && await LocalAuthentication.isEnrolledAsync();
+  } catch {
+    return false;
+  }
+}
+
 export default function DeviceAccessScreen() {
   const { activeWorkspace } = useMobileSession();
   const [states, setStates] = useState<DeviceAccessState[]>(DEVICE_RESOURCES.map(unavailable));
   const [busy, setBusy] = useState<DeviceResource | "ALL" | "REFRESH" | null>("REFRESH");
   const [error, setError] = useState<string | null>(null);
   const [biometricsReady, setBiometricsReady] = useState<boolean | null>(null);
+  const mounted = useRef(false);
+  // Native permission dialogs can foreground the app while a request is in flight.
+  // Do not start a competing refresh or allow a second tap before React renders.
+  const pending = useRef(false);
 
   const refresh = useCallback(async () => {
+    if (pending.current || !mounted.current) return;
+    pending.current = true;
     setBusy("REFRESH");
-    setError(null);
-    setStates(await Promise.all(DEVICE_RESOURCES.map(readNativePermission)));
     try {
-      const [hardware, enrolled] = await Promise.all([
-        LocalAuthentication.hasHardwareAsync(),
-        LocalAuthentication.isEnrolledAsync(),
-      ]);
-      setBiometricsReady(hardware && enrolled);
+      const next = await Promise.all(DEVICE_RESOURCES.map(readNativePermission));
+      if (!mounted.current) return;
+      setStates(next);
+      const ready = await readBiometricsAvailable();
+      if (mounted.current) setBiometricsReady(ready);
     } catch {
-      setBiometricsReady(false);
+      if (mounted.current) setBiometricsReady(false);
     } finally {
-      setBusy(null);
+      pending.current = false;
+      if (mounted.current) setBusy(null);
     }
   }, []);
 
   useEffect(() => {
     let active = true;
+    mounted.current = true;
+    pending.current = true;
     void Promise.all([
       Promise.all(DEVICE_RESOURCES.map(readNativePermission)),
-      LocalAuthentication.hasHardwareAsync().catch(() => false),
-      LocalAuthentication.isEnrolledAsync().catch(() => false),
-    ]).then(([next, hardware, enrolled]) => {
+      readBiometricsAvailable(),
+    ]).then(([next, ready]) => {
       if (!active) return;
       setStates(next);
-      setBiometricsReady(hardware && enrolled);
+      setBiometricsReady(ready);
+      pending.current = false;
       setBusy(null);
     });
-    return () => { active = false; };
-  }, []);
+    const subscription = AppState.addEventListener("change", state => {
+      if (state === "active") void refresh();
+    });
+    return () => { active = false; mounted.current = false; subscription.remove(); };
+  }, [refresh]);
 
   const request = async (resource: DeviceResource) => {
+    if (pending.current) return;
+    pending.current = true;
     setBusy(resource);
     setError(null);
-    const permission = await askNativePermission(resource);
-    setStates((current) => current.map((state) => state.resource === resource ? permission : state));
-    if (permission.status === "UNAVAILABLE") setError(`${DEVICE_ACCESS_COPY[resource].title} n’est pas disponible sur ce téléphone.`);
-    setBusy(null);
+    try {
+      const current = await readNativePermission(resource);
+      if (!mounted.current) return;
+      const permission = devicePermissionAction(current) === "REQUEST" ? await askNativePermission(resource) : current;
+      if (!mounted.current) return;
+      setStates((states) => states.map((state) => state.resource === resource ? permission : state));
+      if (permission.status === "UNAVAILABLE") setError(`${DEVICE_ACCESS_COPY[resource].title} n’est pas disponible sur ce téléphone.`);
+    } finally {
+      pending.current = false;
+      if (mounted.current) setBusy(null);
+    }
   };
 
   const requestAll = async () => {
+    if (pending.current) return;
+    pending.current = true;
     setBusy("ALL");
     setError(null);
-    const next: DeviceAccessState[] = [];
-    for (const resource of DEVICE_RESOURCES) next.push(await askNativePermission(resource));
-    setStates(next);
-    if (next.some((state) => state.status === "UNAVAILABLE")) {
-      setError("Au moins un accès n’est pas disponible; les autres permissions restent utilisables.");
+    try {
+      const next: DeviceAccessState[] = [];
+      for (const resource of DEVICE_RESOURCES) {
+        if (!mounted.current) return;
+        const current = await readNativePermission(resource);
+        if (!mounted.current) return;
+        next.push(devicePermissionAction(current) === "REQUEST" ? await askNativePermission(resource) : current);
+      }
+      if (!mounted.current) return;
+      setStates(next);
+      if (next.some((state) => state.status === "UNAVAILABLE")) {
+        setError("Au moins un accès n’est pas disponible; les autres permissions restent utilisables.");
+      }
+    } finally {
+      pending.current = false;
+      if (mounted.current) setBusy(null);
     }
-    setBusy(null);
+  };
+
+  const openSettings = async () => {
+    try {
+      await Linking.openSettings();
+    } catch {
+      if (mounted.current) setError("Impossible d’ouvrir les réglages. Ouvre les paramètres du téléphone, puis Applications → ENDVERA → Autorisations.");
+    }
   };
 
   return (
@@ -130,22 +180,23 @@ export default function DeviceAccessScreen() {
       <Heading eyebrow="ACCÈS DU TÉLÉPHONE" title="Donne à ENDVERA les accès utiles" body="Chaque permission est séparée, visible et révocable. ENDVERA l’utilise seulement quand tu demandes l’action correspondante." />
 
       <Card>
-        <Text style={sharedStyles.name}>Connexion rapide</Text>
-        <Text style={sharedStyles.muted}>Android présentera chaque autorisation séparément.</Text>
-        <Button disabled={busy !== null} onPress={() => void requestAll()}>Autoriser tous les accès utiles</Button>
+        <Text style={sharedStyles.name}>Choisis tes accès</Text>
+        <Text style={sharedStyles.muted}>Tu peux activer un accès à la fois ci-dessous ou examiner les demandes restantes. Le téléphone présente chaque choix séparément; tu peux refuser. Un accès accordé ne signifie pas qu’un service est connecté.</Text>
+        <Button disabled={busy !== null} onPress={() => void requestAll()}>Examiner les permissions restantes</Button>
       </Card>
 
       {states.map((state) => (
         <Card key={state.resource}>
           <Text style={sharedStyles.name}>{DEVICE_ACCESS_COPY[state.resource].title}</Text>
           <Text style={sharedStyles.muted}>{DEVICE_ACCESS_COPY[state.resource].detail}</Text>
-          <Text style={state.status === "GRANTED" ? sharedStyles.success : sharedStyles.value}>{statusCopy[state.status]}</Text>
-          {state.status === "GRANTED" ? (
-            <Notice>L’autorisation est active. Cet écran ne téléverse aucune donnée.</Notice>
-          ) : state.canAskAgain || state.status === "UNDETERMINED" ? (
+          <Text style={state.status === "GRANTED" || state.status === "LIMITED" ? sharedStyles.success : sharedStyles.value}>{statusCopy[state.status]}</Text>
+          {state.status === "GRANTED" || state.status === "LIMITED" ? <Notice>L’autorisation est active. Cet écran ne téléverse aucune donnée.</Notice> : null}
+          {devicePermissionAction(state) === "REQUEST" ? (
             <Button disabled={busy !== null} onPress={() => void request(state.resource)}>Autoriser {DEVICE_ACCESS_COPY[state.resource].title.toLowerCase()}</Button>
+          ) : devicePermissionAction(state) === "SETTINGS" ? (
+            <Button disabled={busy !== null} tone="secondary" onPress={() => void openSettings()}>{state.status === "GRANTED" || state.status === "LIMITED" ? "Modifier ou retirer cet accès" : "Ouvrir les réglages du téléphone"}</Button>
           ) : (
-            <Button tone="secondary" onPress={() => void Linking.openSettings()}>Ouvrir les réglages du téléphone</Button>
+            <Notice>Accès non vérifiable dans cette version ou sur cet appareil. Actualise pour vérifier à nouveau; aucune autorisation n’est supposée.</Notice>
           )}
         </Card>
       ))}
@@ -154,6 +205,12 @@ export default function DeviceAccessScreen() {
         <Text style={sharedStyles.name}>Empreinte ou reconnaissance du téléphone</Text>
         <Text style={sharedStyles.muted}>Pour confirmer plus tard une action sensible sans transmettre tes données biométriques à ENDVERA.</Text>
         <Text style={biometricsReady ? sharedStyles.success : sharedStyles.value}>{biometricsReady === null ? "Vérification…" : biometricsReady ? "Disponible" : "Non configurée"}</Text>
+      </Card>
+
+      <Card>
+        <Text style={sharedStyles.name}>Tes textos et Google Agenda</Text>
+        <Text style={sharedStyles.muted}>Google Agenda doit être connecté séparément pour répondre à tes textos et modifier ton agenda depuis le serveur. Les permissions de ce téléphone ne donnent pas un contrôle général à distance et ne connectent pas automatiquement tes comptes.</Text>
+        <Button tone="secondary" onPress={() => router.push("/personal-service")}>Configurer mon numéro ENDVERA et Google Agenda</Button>
       </Card>
 
       {error ? <Notice danger>{error}</Notice> : null}

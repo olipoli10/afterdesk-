@@ -112,6 +112,7 @@ const CEILING_ENV_VAR = "ACCOUNT_PROVIDER_SPEND_CEILING_MICROS";
 const CEILING_ENV_BY_PROVIDER: Record<string, string> = {
   anthropic: "ACCOUNT_PROVIDER_SPEND_CEILING_ANTHROPIC_MICROS",
   voyage: "ACCOUNT_PROVIDER_SPEND_CEILING_VOYAGE_MICROS",
+  openrouter: "ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS",
 };
 
 /** UTC calendar day. Deterministic, no library, no locale. */
@@ -219,18 +220,38 @@ export class AccountSpendCeilingError extends Error {
  * returns the existing hold rather than stacking a second one — same
  * discipline as reserveSpend in workflow-budget.ts.
  */
-export async function reserveAccountProviderSpend(input: {
+export type AccountSpendReservationInput = {
   operationKey: string;
   attempt: number;
   worstCaseMicros: bigint;
   provider?: string;
   now?: Date;
-}): Promise<AccountSpendGrant | AccountSpendRefusal> {
+};
+
+export async function reserveAccountProviderSpend(input: AccountSpendReservationInput): Promise<AccountSpendGrant | AccountSpendRefusal> {
+  return prisma.$transaction(tx => reserveAccountProviderSpendInTransaction(tx, input));
+}
+
+/**
+ * Same ledger and reservation rules, composable with a caller's SERIALIZABLE
+ * transaction. No nested transaction: pilot CAD hold, provider USD hold and
+ * gateway attempt can commit/roll back together. `env` is trusted server
+ * configuration, never request/model data. OpenRouter always needs its own
+ * explicit ceiling, including local execution; legacy dev behavior is unchanged.
+ */
+export async function reserveAccountProviderSpendInTransaction(
+  tx: Prisma.TransactionClient,
+  input: AccountSpendReservationInput,
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<AccountSpendGrant | AccountSpendRefusal> {
   const provider = input.provider ?? DEFAULT_PROVIDER;
   const now = input.now ?? new Date();
+  if (provider === "openrouter" && (typeof input.worstCaseMicros !== "bigint" || input.worstCaseMicros <= 0n ||
+      !input.operationKey || !Number.isSafeInteger(input.attempt) || input.attempt < 1)) {
+    throw new Error("ACCOUNT_SPEND_RESERVATION_INVALID");
+  }
   const periodKey = dailyPeriodKey(now);
 
-  return prisma.$transaction(async (tx) => {
     /**
      * Serialised per (provider, period), not per operation: the whole point
      * is that two DIFFERENT operations racing for the last of the same
@@ -249,7 +270,28 @@ export async function reserveAccountProviderSpend(input: {
       },
       select: { id: true, amountMicros: true, status: true, periodKey: true },
     });
+    const ceiling = resolveAccountSpendCeilingMicros(provider, env);
     if (existing && existing.status === "held") {
+      if (provider === "openrouter") {
+        if (existing.amountMicros !== input.worstCaseMicros || existing.periodKey !== periodKey) {
+          throw new Error("ACCOUNT_SPEND_REPLAY_CONFLICT");
+        }
+        // An old hold is exposure, not current dispatch authority. Unlike the
+        // historical paths, OpenRouter replay must recheck the current cap.
+        if (ceiling === null) return {
+          ok: false, reason: "ceiling_not_configured", provider, periodKey,
+          ceilingMicros: null, committedMicros: existing.amountMicros, requestedMicros: input.worstCaseMicros,
+        };
+        const [held, settled] = await Promise.all([
+          tx.accountProviderSpendHold.aggregate({ where: { provider, periodKey, status: "held" }, _sum: { amountMicros: true } }),
+          tx.accountProviderSpendHold.aggregate({ where: { provider, periodKey, status: "settled" }, _sum: { settledMicros: true } }),
+        ]);
+        const committed = (held._sum.amountMicros ?? 0n) + (settled._sum.settledMicros ?? 0n);
+        if (committed > ceiling || existing.amountMicros > ceiling) return {
+          ok: false, reason: "would_exceed_account_ceiling", provider, periodKey,
+          ceilingMicros: ceiling, committedMicros: committed, requestedMicros: input.worstCaseMicros,
+        };
+      }
       return {
         ok: true as const,
         holdId: existing.id,
@@ -259,8 +301,7 @@ export async function reserveAccountProviderSpend(input: {
       };
     }
 
-    const ceiling = resolveAccountSpendCeilingMicros(provider);
-    if (ceiling === null && isProductionEnvironment()) {
+    if (ceiling === null && (isProductionEnvironment(env) || provider === "openrouter")) {
       return {
         ok: false as const,
         reason: "ceiling_not_configured" as const,
@@ -328,7 +369,6 @@ export async function reserveAccountProviderSpend(input: {
       periodKey,
       created: true,
     };
-  });
 }
 
 /**

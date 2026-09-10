@@ -1,5 +1,34 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 03:07Z — continuous agent implementation checkpoint
+
+Olivier requested continued multi-agent code, changing branch when an account/key
+blocks one path. Same budget and goal; heartbeat verified and updated ACTIVE/3min.
+App goal creation refused because historical blocked goal is unfinished; no false
+completion. Current plan/goal/queue remain authoritative for continuation.
+
+Implemented local subject/DB constraints, source reinspection, disabled OpenRouter
+adapter, immutable wire schema, current USD/CAD budget policy, transaction-scoped
+provider holds, one-attempt personal claims, and closed quoted temporal resolver.
+Independent reviews found/fixed nested schema mutability and legacy personal usage
+fallthrough to fake Anthropic/Task bookkeeping. Legacy default-one-hour appointments
+no longer automatically create Google drafts. This does not change their historical
+local interpretation or claim arbitrary natural-language understanding.
+
+Mobile: permission refresh/revoke/limited photos and single selected native contact
+preview -> explicit owner-confirmed existing contact API. No bulk contact upload or
+permission to message imported contacts. Existing distributed APK unchanged.
+
+Validation: full root2922 PASS/3 historical skips (root-1789009556442), mobile210 PASS
+(mobile-1789009567089), TypeScript completePASS, provider boundary3367/0 violations.
+Real disposable PostgreSQL25 PASS including claim races and USD rollback/cap;
+cluster removed. See personal-claims-postgres-20260910.json; no remote DB migration.
+Prior fullroot2887 pass retained. No newpaidprovider call, deployment or APK build.
+
+Continue to composed personal gateway admission/child ledger, then worker/action
+integration; do not mark local-model entry done or service live. Twilio/Google access
+dependencies unchanged and quiet. No dashboard metric promotion.
+
 ## 2026-09-10 02:34Z — personal intent contract and Twilio number observation
 
 Number +14503676562 is now present in Twilio (owner purchase, not agent purchase),

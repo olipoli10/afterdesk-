@@ -1,0 +1,22 @@
+{
+  "kind": "LOCAL_DISPOSABLE_POSTGRESQL",
+  "startedAt": "2026-09-10T02:56:14Z",
+  "durationSeconds": 39.28,
+  "command": "safeEnvironment -> bundled pwsh -> specs/210-personal-live-activation/validate-postgres.ps1",
+  "exitCode": 0,
+  "testFilesPassed": 4,
+  "testsPassed": 23,
+  "newSubjectTests": 3,
+  "migration": "20260910030000_personal_gateway_subject",
+  "observed": ["stored-source reload", "cross-workspace refusal", "revoked identity refusal", "authority version change", "tampered source refusal", "personal purpose and non-null unique FK", "immutable subject, purpose and operation key"],
+  "fakeProviderTransportsOnly": true,
+  "productProviderCalls": 0,
+  "deployedDatabaseModified": false,
+  "cleanupOutput": "PERSONAL_DISPOSABLE_DB_REMOVED",
+  "earlierAttempts": [
+    "Wrong guessed PowerShell executable path: process did not start; retried with discovered bundled path",
+    "Disposable startup address extraction failed twice; both temporary clusters removed",
+    "Parser now strips ANSI and extracts direct postgres/postgresql URI from formatted output, then enforces loopback host"
+  ],
+  "limitations": ["No live Twilio/OpenRouter/Google interaction", "No physical Samsung observation", "Gateway operation still unregistered for execution"]
+}

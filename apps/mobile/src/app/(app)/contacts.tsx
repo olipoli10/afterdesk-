@@ -1,9 +1,10 @@
 import { Text } from "react-native";
 import { Card, Empty, Heading, Label, Screen, sharedStyles } from "@/components/ui";
 import { useMobileSession } from "@/state/mobile-session";
+import { NativeContactImport } from "@/components/native-contact-import";
 
 export default function ContactsScreen() {
-  const { cockpit } = useMobileSession();
+  const { cockpit, activeWorkspace, refresh } = useMobileSession();
   return (
     <Screen>
       <Heading
@@ -11,6 +12,7 @@ export default function ContactsScreen() {
         title="Contacts"
         body="ENDVERA relie chaque personne au bon chantier. Les coordonnées privées suivent les permissions du rôle."
       />
+      {activeWorkspace?.role === "OWNER" ? <NativeContactImport key={activeWorkspace.id} workspaceId={activeWorkspace.id} workspaceName={activeWorkspace.name} projects={cockpit?.projects ?? []} refresh={refresh} /> : null}
       {cockpit?.contacts.length ? (
         cockpit.contacts.map((contact) => (
           <Card key={contact.id}>

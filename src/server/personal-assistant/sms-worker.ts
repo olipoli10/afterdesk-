@@ -9,7 +9,6 @@ import { processUnifiedAssistantRequest } from "@/server/construction-operating-
 import { enqueuePersonalSms } from "./sms-inbox";
 import { readGoogleCalendar } from "./google-connection";
 import type { ConnectorEnvironment } from "./google-client";
-import { preparePersonalCalendar } from "./calendar-actions";
 import { sendAutomaticPersonalReply } from "./outbox";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
@@ -59,13 +58,12 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       reply = `${result.reply}\nTraitement dans ENDVERA seulement. Aucun SMS/appel envoyé à tes contacts ni changement Google exécuté.`;
       source = "ENDVERA_LOCAL";
       if (result.intent === "CALENDAR_ITEM_CREATE" && result.canonicalEffectId) {
-        const item = await prisma.constructionCalendarItem.findFirst({ where: { id: result.canonicalEffectId, workspaceId: row.workspaceId, status: "scheduled" } });
-        if (item?.endsAt) {
-          try {
-            await preparePersonalCalendar({ userId: row.createdByUserId, workspaceId: row.workspaceId, requestId: commandUuid(`google:${row.id}`), draft: { title: item.title, startsAt: item.startsAt.toISOString(), endsAt: item.endsAt.toISOString(), timezone: item.timezone } });
-            reply += "\nL’ajout à Google est préparé : vérifie et approuve les heures dans Connexions calendrier.";
-          } catch { reply += "\nL’ajout à Google n’est pas préparé. Connecte Google avec permission d’écriture et vérifie le rendez-vous dans l’app."; }
-        } else reply += "\nIl manque une heure de fin confirmée pour préparer l’ajout à Google.";
+        // The legacy interpreter synthesizes a one-hour duration. A stored
+        // endsAt therefore is NOT evidence that the sender supplied an end.
+        // Do not promote that legacy projection to a Google write draft. The
+        // owner can supply an exact draft in the existing calendar screen; the
+        // candidate path must separately resolve source-quoted start AND end.
+        reply += "\nL’heure de fin du rendez-vous ENDVERA peut être une durée par défaut. Confirme les heures exactes dans Connexions calendrier pour préparer l’ajout à Google. Aucun ajout Google n’est préparé à partir de cette durée.";
       }
     }
     if (reply.length > 1500) reply = "Ton résultat est trop long pour un seul résumé SMS fiable. Consulte le dossier dans ENDVERA ou demande une période plus précise. Aucun détail n’a été remplacé par une supposition.";

@@ -228,7 +228,7 @@ describe("configuration: production fails closed, never silently unlimited", () 
 
   it("an unconfigured ceiling in production refuses every reservation — the check happens BEFORE any hold is created", () => {
     const fn = source.slice(source.indexOf("export async function reserveAccountProviderSpend"));
-    const ceilingCheckIndex = fn.indexOf('if (ceiling === null && isProductionEnvironment())');
+    const ceilingCheckIndex = fn.indexOf('if (ceiling === null && (isProductionEnvironment(env) || provider === "openrouter"))');
     const createIndex = fn.indexOf("tx.accountProviderSpendHold.create(");
     expect(ceilingCheckIndex).toBeGreaterThan(0);
     expect(createIndex).toBeGreaterThan(ceilingCheckIndex);
@@ -248,7 +248,8 @@ describe("configuration: production fails closed, never silently unlimited", () 
       source.indexOf("export async function reserveAccountProviderSpend"),
       source.indexOf("export async function settleAccountSpendHold")
     );
-    expect(fn).toContain("prisma.$transaction(async (tx) => {");
+    expect(fn).toContain("prisma.$transaction(tx => reserveAccountProviderSpendInTransaction(tx, input))");
+    expect(fn).toContain("export async function reserveAccountProviderSpendInTransaction(");
     expect(fn).toContain("pg_advisory_xact_lock(hashtext(");
     // The lock must be acquired before any read of committed spend.
     const lockIndex = fn.indexOf("pg_advisory_xact_lock");
