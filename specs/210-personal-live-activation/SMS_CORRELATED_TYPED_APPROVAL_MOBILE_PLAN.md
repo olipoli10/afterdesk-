@@ -1,5 +1,15 @@
 # Approbation typée d’un rendez-vous issu de deux SMS
 
+## Controller addendum — 2026-09-10 19:22Z
+
+For the first implementation, use the selected V1 card's existing reviewId with
+the sibling GET `/correlated-calendar-reviews/approval-offer`, rather than a new
+negotiated approval collection. No manual identifier, new guide, automatic POST
+or claim on read. Display and freeze the precise review returned with that offer
+before allowing an explicit approval gesture. The V1 collection remains unchanged.
+See the backend plan addendum for single-namespace/time/opaque-refusal invariants.
+Backend execution proofs remain required before implementing the approval button.
+
 2026-09-10 — **PROPOSITION, DESIGN ONLY.** Un seul document; aucun bouton, endpoint, flag, schéma ou garde modifié. Décision backend réservée au contrôleur. La liste/carte v1 reste `readOnly:true`, `approvalAvailable:false`, `executionAuthorized:false`.
 
 ## Point de départ vérifié

@@ -1,5 +1,31 @@
 # Approbation explicite corrélée — décision backend et plan exécutable
 
+## Controller routing addendum — 2026-09-10 19:22Z
+
+The initial negotiated collection `view=approval-v1` is superseded for this first
+implementation by the sibling private GET
+`/correlated-calendar-reviews/approval-offer?workspaceId=...&reviewId=...`.
+The existing V1 collection/card remains unchanged. The mobile already owns each
+card's reviewId; it supplies it internally, never asks Olivier to copy an ID.
+
+Reason: a collection loop would hold multiple canonical namespaces and calendar
+locks, or risk hiding current-authority failures as missing entries. Selecting
+only the newest review would also block older valid requests. A single selected
+card uses one C2a gate and one namespace in one bounded transaction. The offer
+returns the exact V1 evidence/view used for its fingerprint, not a token applied
+to stale displayed text. No effect or approval occurs on GET.
+
+The new individual DTO is `personal-correlated-calendar-approval-offer-v1` with
+the unchanged review and an explicit ELIGIBLE_FOR_EXPLICIT_APPROVAL offer. No
+calendar operation/claim/nonce/authority handle is disclosed; existing source
+operation references within V1 evidence remain intact. Refusals stay opaque and
+never invent a per-item reason or empty collection. Expiry is checked against DB
+time and conservative monotone elapsed time through commit, without extension.
+POST approve and GET approval-result siblings remain as originally planned.
+
+This is a controller implementation decision within the accepted scope, not a
+new user authorization, live action, or completed mobile endpoint.
+
 2026-09-10. **PROPOSITION — DESIGN TECHNIQUE SEULEMENT, GATE OFF.**
 Décideur : contrôleur. Aucune implémentation produit, migration, génération,
 activation, exécution SQL/native ou provider par ce document. La compétence

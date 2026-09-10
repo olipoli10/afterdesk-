@@ -33,6 +33,7 @@ import { deterministicGoogleEventId } from "@/lib/construction-operating-assista
 import { recoverExpiredPersonalActionClaims } from "@/server/personal-assistant/claim-recovery";
 import { readCorrelatedCalendarApprovalResult } from "@/server/personal-assistant/correlated-calendar-approval-result";
 import { inspectCorrelatedCalendarApprovalOfferInTransaction, lockCorrelatedCalendarApprovalWriteInTransaction } from "@/server/personal-assistant/correlated-calendar-approval-gate";
+import { createCorrelatedCalendarApprovalClaimBudget, claimCorrelatedCalendarApprovalInTransaction } from "@/server/personal-assistant/correlated-calendar-approval";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -617,6 +618,125 @@ describe("current canonical correlated approval gate on PostgreSQL without an ex
       await tx.personalAssistantOperation.update({ where: { id: review.calendarOperationId }, data: { updatedAt: new Date() } });
       return inspectCorrelatedCalendarApprovalOfferInTransaction(tx, { enabled: true, actor: x.f.actor, reviewId: review.id }, approvalGateEnvironment(x), context());
     }, txOptions)).rejects.toMatchObject({ name: "ZodError", issues: expect.arrayContaining([expect.objectContaining({ path: ["operationCommitted"] })]) });
+    expect(await historicalSnapshot(x)).toEqual(before);
+  });
+});
+
+async function actualClaimCommand(x: Answered, reviewId: string) {
+  const d = await approvalFixtureData(x, reviewId);
+  return { version: "personal-correlated-calendar-approval-command-v1" as const, workspaceId: x.f.workspaceId, reviewId,
+    expectedRequestHash: d.review.calendarRequestHash, expectedReviewFingerprint: d.inspected.fingerprint };
+}
+async function nativeCommandClaim(x: Answered, command: Awaited<ReturnType<typeof actualClaimCommand>>, zone = "UTC", env: NodeJS.ProcessEnv = approvalGateEnvironment(x)) {
+  // Unlike the earlier gate-only fixture, capture the total budget BEFORE the
+  // real transaction's queue/connection acquisition, using production options.
+  const budget = createCorrelatedCalendarApprovalClaimBudget({ deadlineAt: Date.now() + 25000 });
+  return prisma.$transaction(async tx => {
+    await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone);
+    return claimCorrelatedCalendarApprovalInTransaction(tx, command, x.f.actor, env, budget);
+  }, budget.transactionOptions);
+}
+async function closeTestCreatedClaim(claim: CorrelatedCalendarApprovalClaim) {
+  // Fixture cleanup by a legal terminal transition, not an executor/provider
+  // observation and not deletion or mutation of immutable approval evidence.
+  await syntheticApprovalTransition(claim, { version: "personal-correlated-calendar-write-state-v1", origin: claim.origin,
+    phase: "UNCERTAIN", writeConfirmed: false, reviewRequired: true, automaticRetry: false, reason: "WRITE_OUTCOME_UNKNOWN" }, "uncertain");
+}
+describe("actual transaction-only command approval on PostgreSQL, synthetic choice not execution", () => {
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("commits one exact approval and claim through the real C2b path in %s", async zone => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const command = await actualClaimCommand(x, review.id), before = await historicalSnapshot(x);
+    const result = await nativeCommandClaim(x, command, zone);
+    if (result.status !== "CLAIM_CREATED_NOT_COMMITTED") throw new Error("SYNTHETIC_NEW_CLAIM_REQUIRED");
+    const { claim, view } = result, after = await historicalSnapshot(x);
+    const previous = before.operations.find(row => row.id === claim.operationId), current = after.operations.find(row => row.id === claim.operationId);
+    expect(previous).toBeDefined(); expect(current).toBeDefined();
+    const expectedState = { version: "personal-correlated-calendar-write-state-v1", origin: claim.origin, phase: "CLAIMED",
+      approvedBy: claim.userId, approvedHash: claim.expectedRequestHash, approvalToken: claim.approvalToken, writeAuthority: claim.authority, dispatchStarted: false };
+    expect(current).toEqual({ ...previous, status: "processing", attempts: 1, result: expectedState, leaseUntil: new Date(claim.leaseUntil), updatedAt: current!.updatedAt });
+    expect(inspectCorrelatedCalendarApprovalState(current!.result, claim, view).state.phase).toBe("CLAIMED");
+    expect(after.operations.filter(row => row.id !== claim.operationId)).toEqual(before.operations.filter(row => row.id !== claim.operationId));
+    expect({ ...after, operations: before.operations, approvals: before.approvals }).toEqual(before);
+    expect(after.approvals).toHaveLength(1);
+    expect(await savedApproval(claim)).toMatchObject([{ id: claim.origin.approvalId, approvalToken: claim.approvalToken,
+      approvedAt: new Date(claim.approvedAt), approvalExpiresAt: new Date(claim.approvalExpiresAt), leaseUntil: new Date(claim.leaseUntil) }]);
+    expect(Date.parse(claim.leaseUntil) - Date.parse(claim.approvedAt)).toBeLessThanOrEqual(25000);
+    const gate = await prisma.$transaction(tx => lockCorrelatedCalendarApprovalWriteInTransaction(tx, claim, approvalGateEnvironment(x), context(), "CLAIMED"), txOptions);
+    expect(gate).toHaveProperty("status", "CORRELATED_CALENDAR_APPROVAL_GATE_INSPECTED");
+    expect(x.transport).toHaveBeenCalledOnce(); await closeTestCreatedClaim(claim);
+  });
+  it("replays a prior choice after actual expiry and grant revocation without another claim or active gate", async () => {
+    const x = await actualAnsweredQuestion("14h", 1700, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const command = await actualClaimCommand(x, review.id), result = await nativeCommandClaim(x, command);
+    if (result.status !== "CLAIM_CREATED_NOT_COMMITTED") throw new Error("SYNTHETIC_NEW_CLAIM_REQUIRED");
+    await waitForQuestionExpiry(x.p.id);
+    expect((await prisma.constructionConnectorGrant.updateMany({ where: { connectorAccountId: x.f.google.id },
+      data: { status: "revoked", revokedAt: new Date(), stateVersion: { increment: 1 }, grantedScopes: [] } })).count).toBe(2);
+    const before = await historicalSnapshot(x);
+    const replay = await nativeCommandClaim(x, command, "UTC", { ...approvalGateEnvironment(x), ENDVERA_GOOGLE_OAUTH_ENABLED: "OFF", ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED: "false" });
+    expect(replay).toEqual({ status: "ALREADY_ATTEMPTED", committed: false, executionAuthorized: false });
+    expect(await historicalSnapshot(x)).toEqual(before);
+    expect(await readApprovalHistory(x, review.id)).toMatchObject({ outcome: "UNKNOWN", reason: "CLAIM_LEASE_EXPIRED" });
+    expect(x.transport).toHaveBeenCalledOnce(); await closeTestCreatedClaim(result.claim);
+  });
+  it("rolls back approval and operation together when caller fails after the real CAS", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const command = await actualClaimCommand(x, review.id), before = await historicalSnapshot(x);
+    const budget = createCorrelatedCalendarApprovalClaimBudget({ deadlineAt: Date.now() + 25000 });
+    await expect(prisma.$transaction(async tx => {
+      const provisional = await claimCorrelatedCalendarApprovalInTransaction(tx, command, x.f.actor, approvalGateEnvironment(x), budget);
+      expect(provisional).toHaveProperty("status", "CLAIM_CREATED_NOT_COMMITTED");
+      throw new Error("SYNTHETIC_AFTER_REAL_CLAIM_CAS");
+    }, budget.transactionOptions)).rejects.toThrow("SYNTHETIC_AFTER_REAL_CLAIM_CAS");
+    expect(await historicalSnapshot(x)).toEqual(before);
+  });
+  it("wrong request hash never creates an approval or changes the source chain", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const command = await actualClaimCommand(x, review.id), before = await historicalSnapshot(x);
+    await expect(nativeCommandClaim(x, { ...command, expectedRequestHash: "f".repeat(64) })).rejects.toThrow();
+    expect(await historicalSnapshot(x)).toEqual(before);
+  });
+  it("two real overlapping command transactions commit at most one immutable choice", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const command = await actualClaimCommand(x, review.id), before = await historicalSnapshot(x), pids: number[] = [];
+    let release!: () => void, timedOut = false;
+    const barrier = new Promise<void>(resolve => { release = resolve; });
+    const timer = setTimeout(() => { timedOut = true; release(); }, 1500);
+    const run = () => {
+      const budget = createCorrelatedCalendarApprovalClaimBudget({ deadlineAt: Date.now() + 25000 });
+      return prisma.$transaction(async tx => {
+        const [row] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); pids.push(row.pid);
+        if (pids.length === 2) release(); await barrier;
+        return claimCorrelatedCalendarApprovalInTransaction(tx, command, x.f.actor, approvalGateEnvironment(x), budget);
+      }, budget.transactionOptions);
+    };
+    let outcomes: PromiseSettledResult<Awaited<ReturnType<typeof run>>>[];
+    try { outcomes = await Promise.allSettled([run(), run()]); } finally { clearTimeout(timer); release(); }
+    expect(timedOut).toBe(false); expect(new Set(pids).size).toBe(2);
+    const successes = outcomes.filter(result => result.status === "fulfilled" && result.value.status === "CLAIM_CREATED_NOT_COMMITTED");
+    expect(successes).toHaveLength(1);
+    for (const outcome of outcomes) if (outcome.status === "rejected") {
+      const error = outcome.reason as { code?: string; meta?: { code?: string } };
+      expect(error.code === "P2034" || error.code === "P2010" && error.meta?.code === "40001").toBe(true);
+    } else if (outcome.value.status !== "CLAIM_CREATED_NOT_COMMITTED") expect(outcome.value.status).toBe("ALREADY_ATTEMPTED");
+    const winner = successes[0]; if (winner.status !== "fulfilled" || winner.value.status !== "CLAIM_CREATED_NOT_COMMITTED") throw new Error("SYNTHETIC_WINNER_REQUIRED");
+    const after = await historicalSnapshot(x); expect(after.approvals).toHaveLength(1);
+    expect({ ...after, operations: before.operations, approvals: before.approvals }).toEqual(before);
+    expect(after.operations.filter(row => row.id !== review.calendarOperationId)).toEqual(before.operations.filter(row => row.id !== review.calendarOperationId));
+    expect(x.transport).toHaveBeenCalledOnce(); await closeTestCreatedClaim(winner.value.claim);
+  });
+  it("a budget already exhausted before the transaction callback cannot claim", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const command = await actualClaimCommand(x, review.id), before = await historicalSnapshot(x);
+    const budget = createCorrelatedCalendarApprovalClaimBudget({ deadlineAt: Date.now() + 50 });
+    await prisma.$queryRawUnsafe("SELECT pg_sleep(0.07)::text");
+    await expect(prisma.$transaction(tx => claimCorrelatedCalendarApprovalInTransaction(tx, command, x.f.actor, approvalGateEnvironment(x), budget), budget.transactionOptions)).rejects.toThrow();
     expect(await historicalSnapshot(x)).toEqual(before);
   });
 });

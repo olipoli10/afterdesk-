@@ -1,5 +1,29 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 19:33Z — atomic approval and private result HTTP verified; execution continues
+
+C2b real transaction-only claim passes154 native PostgreSQL tests, finished
+19:29:11.068Z/STOPPED, receipt postgres-native-1789068433734. Eight new cases
+exercise three zones, exact single claim, expired/revoked replay, rollback after
+actual CAS, wrong hash, two distinct overlapping backends and exhausted budget.
+Source and tests independently reread; author62 and peer8 PASS. This is synthetic
+choice, not an observed human approval or Google execution. The last two negative
+native assertions currently prove refusal/no mutation, not a particular error;
+they will be strengthened without changing product guards.
+
+C3 private result GET author72 and peer14 PASS. Fresh build1789068002670 PASS
+19:23:04.818Z; real OFF HTTP seven probes PASS, process stopped and port closed,
+receipt correlated-calendar-approval-result-http-1789068240618. No authenticated
+HTTP, deployment or device claim. Main fixture TypeScript syntax/type issues were
+separate from product behavior; corrected without changing native runtime logic.
+
+C2c same existing executor is released to implementation after the native proof.
+Individual selected-card approval offer reader/GET is frozen for peer and native
+review, not yet accepted. The19:22Z backend/mobile addendum preserves existing V1
+and avoids hiding valid older cards behind a blocked latest card. No provider,
+secret access, remote migration, APK, deployment or spending. Dashboard remains
+roadmap22%, localbuild46.75%, C2 18of18, real-test NO-GO, Verified-E2E0%.
+
 ## 2026-09-10 19:11Z — current approval gate and historical result verified
 
 C2a current namespace/proof/OWNER/READ+WRITE/committed-phase gate and C3 REVIEW-only

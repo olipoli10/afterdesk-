@@ -12,7 +12,13 @@ import { safeEnvironment } from '../208-astra-r02-local-preflight/preflight.mjs'
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const receipt = process.argv[2];
 const target = process.argv[3] ?? 'voice-review';
-if (!['voice-review', 'correlated-calendar-reviews'].includes(target)) throw new Error('KNOWN_PRIVATE_READ_TARGET_REQUIRED');
+const targets = {
+  'voice-review': { path: '/api/endvera/v1/mobile/project-brain-intake/voice-review', query: '&sessionId=synthetic', kind: 'VOICE_REVIEW_OFF_HTTP', prefix: 'voice-review' },
+  'correlated-calendar-reviews': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews', query: '', kind: 'CORRELATED_CALENDAR_REVIEW_OFF_HTTP', prefix: 'correlated-calendar-review' },
+  'correlated-calendar-approval-result': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews/approval-result', query: '&reviewId=synthetic', kind: 'CORRELATED_CALENDAR_APPROVAL_RESULT_OFF_HTTP', prefix: 'correlated-calendar-approval-result' },
+};
+if (!Object.hasOwn(targets, target)) throw new Error('KNOWN_PRIVATE_READ_TARGET_REQUIRED');
+const selected = targets[target];
 if (!/^build-[0-9]{13}$/.test(receipt ?? '')) throw new Error('BUILD_RECEIPT_REQUIRED');
 const build = JSON.parse(readFileSync(resolve(root, 'specs/210-personal-live-activation/evidence', receipt, 'result.json'), 'utf8'));
 if (build.kind !== 'build' || build.exitCode !== 0 || build.localOnly !== true || build.providerCallsAuthorized !== false
@@ -44,9 +50,8 @@ try {
   const deadline = Date.now() + 45_000;
   while (!ready && !closed && !startError && Date.now() < deadline) await delay(100);
   if (!ready || closed || startError) throw new Error('OWNED_SERVER_NOT_READY');
-  const path = target === 'voice-review' ? '/api/endvera/v1/mobile/project-brain-intake/voice-review'
-    : '/api/endvera/v1/personal/model/correlated-calendar-reviews';
-  const sessionQuery = target === 'voice-review' ? '&sessionId=synthetic' : '';
+  const path = selected.path;
+  const sessionQuery = selected.query;
   for (const [method, query, expectedStatus] of [
     ['GET', '', 404], ['GET', `?workspaceId=synthetic${sessionQuery}`, 404],
     ['GET', `?workspaceId=one&workspaceId=two${sessionQuery}`, 404],
@@ -86,11 +91,11 @@ try {
   const output = Buffer.concat(chunks).toString('utf8');
   const safeOutput = !output.includes(auth) && outputSize < 1_000_000;
   if (!safeOutput) errorCode = 'LOCAL_SERVER_OUTPUT_WITHHELD';
-  const result = { kind: target === 'voice-review' ? 'VOICE_REVIEW_OFF_HTTP' : 'CORRELATED_CALENDAR_REVIEW_OFF_HTTP', buildReceipt: receipt, buildDirectory: build.buildDirectory, buildId,
+  const result = { kind: selected.kind, buildReceipt: receipt, buildDirectory: build.buildDirectory, buildId,
     finishedAt: new Date().toISOString(), localOnly: true, ownerPid: child.pid ?? null, childExitCode,
     serverStopped: closed, portClosed, portCheck: 'TCP_ECONNREFUSED_REQUIRED', providerCallsAuthorized: false, databaseConfigured: false,
     authenticatedReadObserved: false, observations, exitCode: errorCode ? 1 : 0, errorCode };
-  const dir = resolve(root, 'specs/210-personal-live-activation/evidence', `${target === 'voice-review' ? 'voice-review' : 'correlated-calendar-review'}-http-${Date.now()}`);
+  const dir = resolve(root, 'specs/210-personal-live-activation/evidence', `${selected.prefix}-http-${Date.now()}`);
   mkdirSync(dir, { recursive: true });
   writeFileSync(resolve(dir, 'result.json'), JSON.stringify(result, null, 2), { flag: 'wx' });
   if (safeOutput) writeFileSync(resolve(dir, 'output.txt'), output, { flag: 'wx' });
