@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button, Card, Empty, Heading, Label, Loading, Notice, Screen, sharedStyles } from "@/components/ui";
 import { useMobileSession } from "@/state/mobile-session";
+import { ConnectionSetupLinks } from "@/components/connection-setup-links";
 
 const STATE_LABEL = {
   INTERNAL: "Interne et actif",
@@ -38,9 +39,10 @@ export default function PermissionsScreen() {
     <Screen>
       <Heading
         eyebrow="AUTORITÉ"
-        title="Permissions et connecteurs"
-        body="Vois ce qu’ENDVERA peut réellement faire. Les fournisseurs externes restent désactivés."
+        title="Accès et connexions"
+        body="Les accès du téléphone et le service texto se règlent séparément. Les rôles et règles de ton espace sont affichés plus bas."
       />
+      <ConnectionSetupLinks isWorkspaceOwner={activeWorkspace?.role === "OWNER"} />
       {permissionLoadState === "LOADING" ? <Loading label="Permissions en lecture…" /> : null}
       {authorityLoadState === "LOADING" ? <Loading label="Politique d’autorité en lecture…" /> : null}
       {publicError ? <Notice danger>{publicError}</Notice> : null}
