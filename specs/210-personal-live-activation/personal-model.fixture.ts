@@ -15,10 +15,10 @@ export function requirePersonalDisposableDatabase() {
   }
 }
 
-export async function personalModelFixture() {
+export async function personalModelFixture(body = "Qu’est-ce que j’ai demain?") {
   requirePersonalDisposableDatabase();
   const now = new Date();
-  const user = await prisma.user.create({ data: { name: "Synthetic model owner", email: `model-wrapper-${randomUUID()}@example.invalid`, role: "CLIENT" } });
+  const user = await prisma.user.create({ data: { name: "Synthetic model owner", email: `model-wrapper-${randomUUID()}@example.invalid`, role: "CLIENT", emailVerified: true } });
   const workspaceId = (await initializeConstructionWorkspace({ userId: user.id, name: "Synthetic model wrapper" })).workspaceId;
   const from = `+1500${String(Math.floor(Math.random() * 10_000_000)).padStart(7, "0")}`;
   const identity = await prisma.constructionCommunicationIdentity.create({ data: { workspaceId, userId: user.id, channel: "sms", normalizedAddress: from, verified: true, permissions: ["COMMAND"], status: "active" } });
@@ -28,7 +28,6 @@ export async function personalModelFixture() {
     credentialRef: "synthetic-reference-not-a-secret", externalAccountKeyHash: hash(accountSid),
     grants: { create: { capability: "sms_inbound", status: "active", grantedAt: now, requestedScopes: ["sms_inbound"], grantedScopes: ["sms_inbound"] } },
   } });
-  const body = "Qu’est-ce que j’ai demain?";
   const source = { accountSid, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from, to: "+15005550006", body };
   const { operationId } = await enqueuePersonalSms({ ...source, contentHash: hash(JSON.stringify(source)) });
   const model = await prisma.constructionConnectorAccount.create({ data: {
@@ -65,6 +64,6 @@ export async function personalModelFixture() {
     requiredPrivacyPosture: "zero_retention", canonicalHash: `sha256:${hash(randomUUID())}`, createdBy: "synthetic-test", publishedAt: now,
   } });
   return { now, userId: user.id, workspaceId, identityId: identity.id, smsAccountId: sms.id, modelAccountId: model.id, modelGrantId: model.grants[0].id,
-    sourceOperationId: operationId, body, rate, policy, route,
+    sourceOperationId: operationId, body, rate, policy, route, accountSid, from,
     subject: { kind: "personal_assistant_operation" as const, workspaceId, operationId } };
 }

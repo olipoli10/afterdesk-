@@ -37,7 +37,7 @@ describe("real local PostgreSQL personal SMS queue", () => {
   it("holds an uncertain engine outcome without silently retrying it", async () => {
     const message = { ...envelope, messageSid: `SM${"e".repeat(32)}`, body: "Note ce chantier", contentHash: "e".repeat(64) };
     const { operationId } = await enqueuePersonalSms(message); const engine = vi.fn().mockRejectedValue(new Error("synthetic-uncertain-outcome"));
-    expect(await processPersonalSms(operationId, workerEnv, { engine })).toEqual({ status: "REVIEW_REQUIRED" });
+    expect(await processPersonalSms(operationId, workerEnv, { engine })).toEqual({ status: "REVIEW_REQUIRED", recorded: true, automaticRetry: false, engineCancellationConfirmed: false });
     expect(await processPersonalSms(operationId, workerEnv, { engine })).toEqual({ status: "NOT_PENDING" });
     expect(engine).toHaveBeenCalledOnce();
     expect(await prisma.personalAssistantOperation.count({ where: { idempotencyKey: `reply:${operationId}` } })).toBe(0);

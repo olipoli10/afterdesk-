@@ -102,3 +102,18 @@ Wrong .mjs validator filename initially failed; correct package command passed.
 
 Do not publish, redeploy or rebuild the APK for this unactivated contract alone.
 Live personal-service acceptance and all historical dashboard metrics stay unchanged.
+# 2026-09-10 04:19Z — composed pipeline and mobile review checkpoint
+
+Current local implementation is recorded in progress.md and CONTINUATION_QUEUE.json:
+full guarded gateway -> lazy one-use OpenRouter wire -> stored proposal -> exact
+transactional review drafts + source completion -> owner-only mobile review.
+Global transport kill switch and lane-specific flag are both required for actual
+wire mode; current owner/source/AI grant/route/privacy/budget guards remain mandatory.
+No real key, model call, deployment or Samsung observation was performed in this wave.
+
+Evidence: root3142 before final kill-switch hardening; mobile255; disposablePG51,
+cluster removed; Next build and Android export local PASS. Final root receipt will
+be in progress.md. Full-source interpretation remains unverified until owner review.
+Known-day Google read fast-path and native document picker recovery are next wave,
+not a declaration that the entire personal service is ready. All dashboard metrics
+remain unchanged, customer NO-GO and Verified-E2E0%.

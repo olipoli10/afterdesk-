@@ -6,6 +6,10 @@ import { recoverExpiredPersonalIntentAttempts } from "@/server/model-gateway/per
 import { createOpenRouterPersonalIntentAdapter, type OpenRouterPersonalIntentTransport } from "@/server/model-gateway/personal-intent/openrouter-adapter";
 import { PERSONAL_MODEL_AUTHORITY } from "@/server/model-gateway/personal-intent/budget-policy";
 import { personalModelFixture, requirePersonalDisposableDatabase } from "./personal-model.fixture";
+import { processPersonalSms } from "@/server/personal-assistant/sms-worker";
+import { prepareStoredPersonalIntentReview } from "@/server/model-gateway/personal-intent/review-consumer";
+import { GOOGLE_CALENDAR_READ_SCOPE, GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/construction-operating-assistant-r3/connector-contracts";
+import { personalModelReviewsForOwner } from "@/server/model-gateway/personal-intent/review-projection";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -38,6 +42,86 @@ function dispatch(f: Fixture, admission: PersonalIntentAdmission, transport: Ope
 }
 
 describe("personal model complete gateway on disposable PostgreSQL, fake transport only", () => {
+  async function reviewedSource(f: Fixture, actions: (admission: PersonalIntentAdmission) => unknown[], options: { rollback?: boolean; revoke?: boolean } = {}) {
+    let calls = 0;
+    // Intake already records provider-origin provenance even in this synthetic
+    // fixture. Processing must add no outbound transport flags; never erase it.
+    const transportBefore = await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, externalTransportPerformed: true } });
+    const env = { ...controls(f), ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner",
+      ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED", TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_API_KEY_SID: "synthetic-key-id", TWILIO_API_KEY_SECRET: "synthetic-secret",
+      TWILIO_AUTH_TOKEN: "synthetic-token", TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_PROVIDER_WEBHOOK_ORIGIN: "https://endvera.example",
+      ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true" };
+    const result = await processPersonalSms(f.sourceOperationId, env, { model: async context => {
+      const admission = await admitted(f);
+      const outcome = await dispatch(f, admission, async () => {
+        calls++;
+        return { httpStatus: 200, body: JSON.stringify({ id: "synthetic-request", model: f.rate.model,
+          choices: [{ index: 0, finish_reason: "stop", message: { role: "assistant", content: JSON.stringify({ schemaVersion: 1,
+            requestFingerprint: admission.source.input.requestFingerprint, actions: actions(admission) }) } }] }) };
+      });
+      expect(outcome.status).toBe("PROPOSAL_STORED_NOT_AUTHORIZED");
+      if (options.revoke) await prisma.constructionConnectorGrant.update({ where: { id: f.modelGrantId }, data: { status: "revoked", revokedAt: new Date() } });
+      return { reply: "Synthetic pending review", finalizeReview: async tx => {
+        const review = await prepareStoredPersonalIntentReview(tx, { enabled: true, userId: context.claim.userId, workspaceId: context.claim.workspaceId,
+          sourceOperationId: context.claim.operationId, modelChildOperationId: admission.childOperationId }, env);
+        if (options.rollback) throw new Error("SYNTHETIC_FINAL_SOURCE_CAS_LOST");
+        return review;
+      } };
+    } });
+    expect(calls).toBe(1);
+    const source = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: f.sourceOperationId } });
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, externalTransportPerformed: true } })).toBe(transportBefore);
+    return { result, source };
+  }
+  function span(body: string, quote: string) { const start = body.indexOf(quote); return { start, end: start + quote.length, quote }; }
+  async function calendarAccount(f: Fixture, capability: "calendar_read" | "calendar_write") {
+    const scope = capability === "calendar_read" ? GOOGLE_CALENDAR_READ_SCOPE : GOOGLE_CALENDAR_WRITE_SCOPE;
+    await prisma.constructionConnectorAccount.create({ data: { workspaceId: f.workspaceId, provider: "google_calendar", createdByUserId: f.userId,
+      status: "connected", connectedAt: f.now, grantedScopes: [scope], credentialRef: "synthetic-never-resolved", externalAccountKeyHash: "a".repeat(64),
+      grants: { create: { capability, status: "active", grantedAt: f.now, requestedScopes: [scope], grantedScopes: [scope] } } } });
+  }
+  it("finishes SMS source and stored review atomically, without pretending to fetch Google", async () => {
+    const f = await personalModelFixture(); await calendarAccount(f, "calendar_read");
+    const { result, source } = await reviewedSource(f, () => [{ id: "calendar", kind: "READ_CALENDAR", dependsOn: [], period: span(f.body, "demain") }]);
+    expect(result.status).toBe("COMPLETED_REPLY_PREPARED"); expect(source.status).toBe("completed");
+    expect(source.result).toMatchObject({ source: "MODEL_REVIEW_ONLY", replyDelivery: "PREPARED_UNSENT", personalModelReview: {
+      source: { text: f.body }, actions: [{ status: "READ_REVIEW_ONLY" }] } });
+    expect(JSON.stringify(source.result)).toContain("Google Agenda n’a pas été consulté");
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "sms_outbound", status: "pending" } })).toBe(1);
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } })).toBe(0);
+    const projection = await personalModelReviewsForOwner(f.userId, f.workspaceId);
+    expect(projection.unavailableCount).toBe(0);
+    expect(projection.reviews).toMatchObject([{ source: { text: f.body }, actions: [{ currentStatus: "NOT_READ" }] }]);
+  });
+  it("prepares one exact source-quoted Google draft and separate owner reply, with zero approval or transport", async () => {
+    const f = await personalModelFixture("Ajoute Visite Laval le 2026-09-12 à 14:00 jusqu’à 15:00."); await calendarAccount(f, "calendar_write");
+    const { result, source } = await reviewedSource(f, () => [{ id: "event", kind: "PREPARE_CALENDAR_EVENT", dependsOn: [],
+      title: span(f.body, "Visite Laval"), starts: span(f.body, "2026-09-12 à 14:00"), ends: span(f.body, "15:00") }]);
+    expect(result.status).toBe("COMPLETED_REPLY_PREPARED");
+    expect(source.result).toMatchObject({ personalModelReview: { actions: [{ status: "PREPARED_UNSENT", draft: { title: "Visite Laval", startsAt: "2026-09-12T18:00:00.000Z", endsAt: "2026-09-12T19:00:00.000Z" } }] } });
+    const drafts = await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } });
+    expect(drafts).toHaveLength(1); expect(drafts[0]).toMatchObject({ status: "pending", attempts: 0, externalTransportPerformed: false });
+    const projection = await personalModelReviewsForOwner(f.userId, f.workspaceId);
+    expect(projection.reviews).toMatchObject([{ actions: [{ operationId: drafts[0].id, currentStatus: "pending", nextDecision: "REVIEW_EXACT_DRAFT" }] }]);
+  });
+  it("prepares an exact self SMS only, without sending it", async () => {
+    const f = await personalModelFixture("Texte-moi : Bonjour.");
+    await prisma.constructionConnectorGrant.create({ data: { connectorAccountId: f.smsAccountId, capability: "personal_sms_send", status: "active", grantedAt: f.now, requestedScopes: ["personal_sms_send"], grantedScopes: ["personal_sms_send"] } });
+    const { result, source } = await reviewedSource(f, () => [{ id: "self", kind: "PREPARE_SELF_SMS", dependsOn: [], message: span(f.body, "Bonjour.") }]);
+    expect(result.status).toBe("COMPLETED_REPLY_PREPARED");
+    expect(source.result).toMatchObject({ personalModelReview: { actions: [{ status: "PREPARED_UNSENT", draft: { to: f.from, text: "Bonjour." } }] } });
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "sms_outbound", status: "pending", attempts: 0 } })).toBe(2);
+    const projection = await personalModelReviewsForOwner(f.userId, f.workspaceId);
+    expect(projection.unavailableCount).toBe(0);
+    expect(projection.reviews).toMatchObject([{ actions: [{ currentStatus: "pending", nextDecision: "REVIEW_EXACT_DRAFT", draft: { to: f.from, text: "Bonjour." } }] }]);
+  });
+  it.each([{ rollback: true }, { revoke: true }])("never leaves a draft or success reply when final source review refuses: %j", async options => {
+    const f = await personalModelFixture("Texte-moi : Bonjour.");
+    await prisma.constructionConnectorGrant.create({ data: { connectorAccountId: f.smsAccountId, capability: "personal_sms_send", status: "active", grantedAt: f.now, requestedScopes: ["personal_sms_send"], grantedScopes: ["personal_sms_send"] } });
+    const { result, source } = await reviewedSource(f, () => [{ id: "self", kind: "PREPARE_SELF_SMS", dependsOn: [], message: span(f.body, "Bonjour.") }], options);
+    expect(result.status).toBe("REVIEW_REQUIRED"); expect(source.status).toBe("uncertain");
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "sms_outbound" } })).toBe(0);
+  });
   it("does not reserve or admit when disabled or explicit AI consent is revoked", async () => {
     const f = await personalModelFixture();
     expect((await admitPersonalIntent({ ...input(f), enabled: false }, controls(f))).status).toBe("DISABLED");

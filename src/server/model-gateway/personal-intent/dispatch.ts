@@ -48,7 +48,7 @@ export async function dispatchPersonalIntent(input: Input, env: NodeJS.ProcessEn
   if (!admission || admission.status !== "ADMITTED_NOT_DISPATCHED") return result("NOT_DISPATCHED", "FULL_ADMISSION_REQUIRED");
   const mode = input.transportMode;
   if (!["SYNTHETIC_LOCAL", "EXTERNAL_PROVIDER"].includes(mode) || adapter.transportMode !== mode
-    || (mode === "EXTERNAL_PROVIDER" && env.ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED !== "true")
+    || (mode === "EXTERNAL_PROVIDER" && (env.ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED !== "true" || env.ENDVERA_EXTERNAL_TRANSPORT_ENABLED !== "ENABLED"))
     || adapter.key !== "openrouter-personal-intent-candidate" || adapter.modelKey !== admission.budgetPolicy.model
     || adapter.providerEndpointSlug !== admission.budgetPolicy.providerEndpoint
     || adapter.maxOutputTokens !== admission.budgetPolicy.maxOutputTokens) return result("NOT_DISPATCHED", "ADAPTER_BINDING_REFUSED");
@@ -144,7 +144,7 @@ export async function dispatchPersonalIntent(input: Input, env: NodeJS.ProcessEn
   } catch { return recordUncertain(admission, "INVALID_PROPOSAL"); }
   try {
     return await prisma.$transaction(async tx => {
-      if (mode === "EXTERNAL_PROVIDER" && env.ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED !== "true") throw new Error("PERSONAL_MODEL_EXTERNAL_TRANSPORT_DISABLED");
+      if (mode === "EXTERNAL_PROVIDER" && (env.ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED !== "true" || env.ENDVERA_EXTERNAL_TRANSPORT_ENABLED !== "ENABLED")) throw new Error("PERSONAL_MODEL_EXTERNAL_TRANSPORT_DISABLED");
       const current = await reinspectPersonalIntentAdmission(tx, admission, input.currentRateConfiguration, env, input.currentPilotEnvelopeReview);
       // A response is not allowed to outlive either current budget authority.
       // Recheck the original USD hold (never allocate a replacement), and lock

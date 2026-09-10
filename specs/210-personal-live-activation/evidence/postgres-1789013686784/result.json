@@ -1,0 +1,9 @@
+{
+  "kind": "postgres",
+  "exitCode": 0,
+  "finishedAt": "2026-09-10T04:16:38.928Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\postgres-1789013686784",
+  "buildDirectory": null
+}

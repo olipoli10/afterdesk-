@@ -1,5 +1,60 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 04:14Z — exclusive model SMS and owner review implementation
+
+Source SMS work now has a35s deadline/50s batch bound and exact live source CAS;
+late outcomes cannot overwrite uncertainty. Candidate mode is exclusive, with no
+legacy interpretation after model failure. A lazy fixed-endpoint OpenRouter wire
+rechecks source/configuration before and after encrypted credential access, invokes
+only after gateway dispatch CAS and has no automatic retry. No real wire invoked.
+
+Stored candidate review, pending drafts and source reply complete in one Serializable
+transaction. Full original SMS is preserved alongside exact drafts, current state
+and owner responsibility. READ_REVIEW_ONLY is explicitly NOT_READ, not a fetched
+agenda. Explicit verified-owner AI consent/key provisioning remain separate and
+OFF by default. No client-provided key, model price or provider route is admitted.
+
+Mobile now shows AI prerequisites/explicit consent/disconnect, source-bound reviews
+and exact pending Google calendar approval. Mobile attempt fences are screen-session
+only; persistent backend CAS remains authority. No permissions were granted by agent.
+
+Root3142 PASS/3 historical skips (root-1789013350470), mobile255 PASS
+(mobile-1789013414849), complete root/mobile TypeScript and scoped ESLint PASS.
+Local Next build PASS (build-1789013302635) and Android export PASS
+(mobile-export-1789013421165); neither is deployment or a new signed APK.
+Static provider boundary4108 scanned modules/0 violations; no gate allowlist changed.
+Final disposable PostgreSQL51 PASS (postgres-1789013686784); cluster removed.
+This includes14 composed pipeline tests and12 consent/encrypted-key tests. Synthetic
+fixtures only; inbound provenance flags are not evidence of live provider transport.
+
+Failures preserved: postgres-1789012950060 had6/39 failures from incomplete synthetic
+connected-account/grant fixtures and old exact result-shape assertion. Subsequent
+postgres-1789013263282 had6/51 failures from incorrect zero-transport assertions:
+synthetic inbound source records retain provider-origin provenance by design. Changed
+tests require no additional transport flags, never erase those source records.
+Root-1789013095820 found direct fetch in the SMS cancellation wrapper; moved
+cancellation into the existing Google client, preserving10s limit and URL guard.
+Code review found JSONB field-order sensitivity in current-draft projection; schema-
+ordered hash reconstruction plus12 independently authored regressions protect it.
+Postgres-1789013498600 retained50/51 PASS: final failure was a malformed synthetic
+calendar candidate using startsAt/endsAt instead of strict starts/ends. It was
+correctly refused, then fixture corrected and full51 passed. Parent additionally
+reproduced a missing global transport kill-switch check in the new wire (1/14 local
+test failed, fake HTTP only). Wire, controller and pre/post dispatcher now require
+the global ENABLED flag; focused59 tests PASS after correction. This minimal gate
+hardening postdates the local Next build; final root regression follows.
+
+Final root3152 PASS/3 historical skips at04:21:37Z (root-1789014047579),
+after global kill-switch correction and9 independently authored revocation tests.
+Full TypeScript and scoped ESLint PASS; all current wave agents reviewed and frozen.
+
+Next authorized local wave: exact known-day Google read before model routing with
+current read-grant provenance through reply dispatch; guarded native document picker
+failure/cancellation/concurrent selection. Distinct agents audited these gaps.
+Current Twilio secret-access confirmation, Google consent and verified owner phone
+binding are still external dependencies. Existing APK and deployed source unchanged.
+No real provider, billing settlement, founder observation or metric promotion.
+
 ## 2026-09-10 03:40Z — composed personal model wrapper validated locally
 
 Existing gateway admission now atomically binds owner AI consent, immutable source

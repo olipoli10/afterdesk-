@@ -1,0 +1,167 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests | 5 failed) 33002ms
+     × finishes SMS source and stored review atomically, without pretending to fetch Google 5092ms
+     × prepares one exact source-quoted Google draft and separate owner reply, with zero approval or transport 2002ms
+     × prepares an exact self SMS only, without sending it 2519ms
+     × never leaves a draft or success reply when final source review refuses: {"rollback":true} 2650ms
+     × never leaves a draft or success reply when final source review refuses: {"revoke":true} 2517ms
+     ✓ does not reserve or admit when disabled or explicit AI consent is revoked  767ms
+     ✓ rolls back AI, child, gateway and CAD reservation if the USD hold refuses  1201ms
+     ✓ admits once under concurrency, stores only a proposal, never settles or replays  3954ms
+     ✓ refuses transport after consent revocation and preserves held exposure  1945ms
+     ✓ refuses dispatch when the account USD cap is withdrawn after admission  1638ms
+     ✓ drops a proposal if permission changes during model latency and never retries  2610ms
+     ✓ does not accept a proposal when the USD ceiling is removed during latency  2171ms
+     ✓ keeps unknown callback outcomes and both reservations, without business writes  1814ms
+     ✓ records a pre-dispatch expired claim without a callback, refund or second claim  2119ms
+ ❯ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests | 1 failed) 13721ms
+     ✓ prepares a requested account/grant without consent, key or transport  2427ms
+     ✓ provisioning encrypts a fake key but never auto-grants AI consent  583ms
+     ✓ explicit consent does not manufacture a connected credential  336ms
+     × lazy access resolves only the current owner/source/credential binding 944ms
+     ✓ withholds lazy access after SMS identity revoked  986ms
+     ✓ withholds lazy access after SMS identity permissions  1163ms
+     ✓ withholds lazy access after SMS identity rebound  1695ms
+     ✓ local revoke invalidates stored consent/key but preserves source evidence  1096ms
+     ✓ credential rotation fences old authority and resolves only the replacement  1342ms
+     ✓ AES-GCM binding rejects another workspace's synthetic ciphertext even under the same test encryption key  1731ms
+     ✓ an administrator who is not the actual workspace owner cannot prepare, consent or provision  455ms
+     ✓ unverified owner loses lazy access and consent capability  959ms
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 9398ms
+     ✓ processes through the guarded engine once and durably prepares one unsent reply  2164ms
+     ✓ holds an uncertain engine outcome without silently retrying it  331ms
+     ✓ retains exactly one durable operation across concurrent deliveries and reconnect  4191ms
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (8 tests) 19447ms
+     ✓ prepares without transport then inserts exactly once after owner approval  4301ms
+     ✓ withholds calendar success on uncertain write and never retries automatically  2206ms
+     ✓ stores encrypted tokens, scrubs one-use material and survives reconnect  3762ms
+     ✓ rejects a wrong browser correlation before any token exchange  703ms
+     ✓ lets only one concurrent callback exchange the code  2913ms
+     ✓ refuses cross-workspace access and clears credentials on local disconnect  2538ms
+     ✓ does not reconnect a connection revoked during the exchange  1299ms
+     ✓ reads through granted authority and refuses a revoked read grant  1719ms
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (6 tests) 13925ms
+     ✓ automatically replies only to the original sender with standing self-SMS consent  4741ms
+     ✓ binds proof from signed intake once, never a phone entered as a string  1101ms
+     ✓ sends once after exact approval and records delivery separately  1899ms
+     ✓ serializes competing reservations and never exceeds the configured local allowance  3283ms
+     ✓ retains reservation and refuses replay after an uncertain transport  1480ms
+     ✓ revokes pending authority without sending  1417ms
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 10394ms
+     ✓ reloads the stored source, rejects cross-workspace lookup and observes revocation  2912ms
+     ✓ changes authority fingerprint when connector version changes and refuses changed source  962ms
+     ✓ enforces personal purpose, non-null unique FK and immutable binding in PostgreSQL  1286ms
+     ✓ fences one personal attempt across real concurrent transactions and rejects replay  3071ms
+     ✓ rolls back account USD exposure with its parent transaction and serializes competing holds  2157ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model-connection.postgres.test.ts > owner AI consent and encrypted credentials on disposable PostgreSQL only > lazy access resolves only the current owner/source/credential binding
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts:77:136
+     75|     // Compare booleans/digests, never print even synthetic key values…
+     76|     expect(digest(resolved) === digest(apiKey)).toBe(true);
+     77|     expect(await prisma.personalAssistantOperation.count({ where: { wo…
+       |                                                                                                                                        ^
+     78|   });
+     79|   it.each(["revoked", "permissions", "rebound"])("withholds lazy acces…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > finishes SMS source and stored review atomically, without pretending to fetch Google
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ reviewedSource specs/210-personal-live-activation/personal-model.postgres.test.ts:70:136
+     68|     expect(calls).toBe(1);
+     69|     const source = await prisma.personalAssistantOperation.findUniqueO…
+     70|     expect(await prisma.personalAssistantOperation.count({ where: { wo…
+       |                                                                                                                                        ^
+     71|     return { result, source };
+     72|   }
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:82:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > prepares one exact source-quoted Google draft and separate owner reply, with zero approval or transport
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ reviewedSource specs/210-personal-live-activation/personal-model.postgres.test.ts:70:136
+     68|     expect(calls).toBe(1);
+     69|     const source = await prisma.personalAssistantOperation.findUniqueO…
+     70|     expect(await prisma.personalAssistantOperation.count({ where: { wo…
+       |                                                                                                                                        ^
+     71|     return { result, source };
+     72|   }
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:95:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > prepares an exact self SMS only, without sending it
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ reviewedSource specs/210-personal-live-activation/personal-model.postgres.test.ts:70:136
+     68|     expect(calls).toBe(1);
+     69|     const source = await prisma.personalAssistantOperation.findUniqueO…
+     70|     expect(await prisma.personalAssistantOperation.count({ where: { wo…
+       |                                                                                                                                        ^
+     71|     return { result, source };
+     72|   }
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:107:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > never leaves a draft or success reply when final source review refuses: {"rollback":true}
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > never leaves a draft or success reply when final source review refuses: {"revoke":true}
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ reviewedSource specs/210-personal-live-activation/personal-model.postgres.test.ts:70:136
+     68|     expect(calls).toBe(1);
+     69|     const source = await prisma.personalAssistantOperation.findUniqueO…
+     70|     expect(await prisma.personalAssistantOperation.count({ where: { wo…
+       |                                                                                                                                        ^
+     71|     return { result, source };
+     72|   }
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:118:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  2 failed | 4 passed (6)
+      Tests  6 failed | 45 passed (51)
+   Start at  00:08:09
+   Duration  107.74s (transform 968ms, setup 0ms, import 6.60s, tests 99.89s, environment 1ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

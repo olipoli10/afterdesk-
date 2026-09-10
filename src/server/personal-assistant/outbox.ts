@@ -13,19 +13,21 @@ async function requireSelfRecipient(db: DB, userId: string, workspaceId: string,
   if (!member || !identity) throw new Error("VERIFIED_SELF_RECIPIENT_REQUIRED");
 }
 export async function preparePersonalOutbound(input: { userId: string; workspaceId: string; kind: OutboundKind; to: string; text: string; requestId: string }, env: ConnectorEnvironment = process.env) {
+  return prisma.$transaction(tx => preparePersonalOutboundInTransaction(tx, input, env), { isolationLevel: "Serializable" });
+}
+/** Preparation only: does not approve, reserve transport spend or send. */
+export async function preparePersonalOutboundInTransaction(tx: Prisma.TransactionClient, input: { userId: string; workspaceId: string; kind: OutboundKind; to: string; text: string; requestId: string }, env: ConnectorEnvironment = process.env) {
   if (!/^[0-9a-f-]{36}$/i.test(input.requestId)) throw new Error("REQUEST_ID_REQUIRED");
   const request = personalOutboundSchema.parse({ to: input.to, from: env.TWILIO_PHONE_NUMBER, text: input.kind === "voice_outbound" ? `Bonjour, ici l’assistant ENDVERA. ${input.text}` : input.text });
   if (!["sms_outbound", "voice_outbound"].includes(input.kind) || input.kind === "voice_outbound" && request.text.length > 600) throw new Error("OUTBOUND_REQUEST_REFUSED");
   const requestHash = hash(JSON.stringify(request));
-  return prisma.$transaction(async tx => {
-    await requireSelfRecipient(tx, input.userId, input.workspaceId, request.to);
-    const account = await tx.constructionConnectorAccount.findUniqueOrThrow({ where: { workspaceId_provider: { workspaceId: input.workspaceId, provider: "endvera_sms" } } });
-    const idempotencyKey = `personal-outbound:${input.workspaceId}:${input.requestId}`;
-    const existing = await tx.personalAssistantOperation.findUnique({ where: { idempotencyKey } });
-    if (existing) { if (existing.requestHash !== requestHash || existing.createdByUserId !== input.userId || existing.kind !== input.kind) throw new Error("OUTBOUND_REPLAY_CONFLICT"); return { operationId: existing.id, requestHash, status: existing.status }; }
-    const row = await tx.personalAssistantOperation.create({ data: { id: randomUUID(), workspaceId: input.workspaceId, connectorAccountId: account.id, kind: input.kind, status: "pending", request, requestHash, idempotencyKey, createdByUserId: input.userId } });
-    return { operationId: row.id, requestHash, status: row.status };
-  }, { isolationLevel: "Serializable" });
+  await requireSelfRecipient(tx, input.userId, input.workspaceId, request.to);
+  const account = await tx.constructionConnectorAccount.findUniqueOrThrow({ where: { workspaceId_provider: { workspaceId: input.workspaceId, provider: "endvera_sms" } } });
+  const idempotencyKey = `personal-outbound:${input.workspaceId}:${input.requestId}`;
+  const existing = await tx.personalAssistantOperation.findUnique({ where: { idempotencyKey } });
+  if (existing) { if (existing.requestHash !== requestHash || existing.createdByUserId !== input.userId || existing.kind !== input.kind) throw new Error("OUTBOUND_REPLAY_CONFLICT"); return { operationId: existing.id, requestHash, status: existing.status }; }
+  const row = await tx.personalAssistantOperation.create({ data: { id: randomUUID(), workspaceId: input.workspaceId, connectorAccountId: account.id, kind: input.kind, status: "pending", request, requestHash, idempotencyKey, createdByUserId: input.userId } });
+  return { operationId: row.id, requestHash, status: row.status };
 }
 export async function approvePersonalOutbound(input: { userId: string; workspaceId: string; operationId: string; expectedRequestHash: string }, env: ConnectorEnvironment = process.env) {
   return prisma.$transaction(async tx => {

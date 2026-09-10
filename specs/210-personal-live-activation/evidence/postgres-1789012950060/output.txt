@@ -1,0 +1,207 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests | 5 failed) 28153ms
+     × finishes SMS source and stored review atomically, without pretending to fetch Google 3389ms
+     × prepares one exact source-quoted Google draft and separate owner reply, with zero approval or transport 881ms
+     × prepares an exact self SMS only, without sending it 760ms
+     × never leaves a draft or success reply when final source review refuses: {"rollback":true} 781ms
+     × never leaves a draft or success reply when final source review refuses: {"revoke":true} 760ms
+     ✓ does not reserve or admit when disabled or explicit AI consent is revoked  936ms
+     ✓ rolls back AI, child, gateway and CAD reservation if the USD hold refuses  1783ms
+     ✓ admits once under concurrency, stores only a proposal, never settles or replays  4584ms
+     ✓ refuses transport after consent revocation and preserves held exposure  2251ms
+     ✓ refuses dispatch when the account USD cap is withdrawn after admission  2417ms
+     ✓ drops a proposal if permission changes during model latency and never retries  2872ms
+     ✓ does not accept a proposal when the USD ceiling is removed during latency  2285ms
+     ✓ keeps unknown callback outcomes and both reservations, without business writes  2223ms
+     ✓ records a pre-dispatch expired claim without a callback, refund or second claim  2230ms
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (8 tests) 15230ms
+     ✓ prepares without transport then inserts exactly once after owner approval  3787ms
+     ✓ withholds calendar success on uncertain write and never retries automatically  1490ms
+     ✓ stores encrypted tokens, scrubs one-use material and survives reconnect  3148ms
+     ✓ rejects a wrong browser correlation before any token exchange  468ms
+     ✓ lets only one concurrent callback exchange the code  2607ms
+     ✓ refuses cross-workspace access and clears credentials on local disconnect  1629ms
+     ✓ does not reconnect a connection revoked during the exchange  920ms
+     ✓ reads through granted authority and refuses a revoked read grant  1175ms
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (6 tests) 11307ms
+     ✓ automatically replies only to the original sender with standing self-SMS consent  3662ms
+     ✓ binds proof from signed intake once, never a phone entered as a string  808ms
+     ✓ sends once after exact approval and records delivery separately  1589ms
+     ✓ serializes competing reservations and never exceeds the configured local allowance  3121ms
+     ✓ retains reservation and refuses replay after an uncertain transport  1048ms
+     ✓ revokes pending authority without sending  1076ms
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 9800ms
+     ✓ reloads the stored source, rejects cross-workspace lookup and observes revocation  2709ms
+     ✓ changes authority fingerprint when connector version changes and refuses changed source  878ms
+     ✓ enforces personal purpose, non-null unique FK and immutable binding in PostgreSQL  1193ms
+     ✓ fences one personal attempt across real concurrent transactions and rejects replay  2925ms
+     ✓ rolls back account USD exposure with its parent transaction and serializes competing holds  2092ms
+ ❯ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests | 1 failed) 9576ms
+     ✓ processes through the guarded engine once and durably prepares one unsent reply  2191ms
+     × holds an uncertain engine outcome without silently retrying it 422ms
+     ✓ retains exactly one durable operation across concurrent deliveries and reconnect  4169ms
+     ✓ refuses changed payload under the same provider message id 60ms
+     ✓ refuses a revoked owner even when the original message was received 103ms
+     ✓ creates and cascades only encrypted credential storage 189ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/inbox.postgres.test.ts > real local PostgreSQL personal SMS queue > holds an uncertain engine outcome without silently retrying it
+AssertionError: expected { status: 'REVIEW_REQUIRED', …(3) } to deeply equal { status: 'REVIEW_REQUIRED' }
+
+- Expected
++ Received
+
+  {
++   "automaticRetry": false,
++   "engineCancellationConfirmed": false,
++   "recorded": true,
+    "status": "REVIEW_REQUIRED",
+  }
+
+ ❯ specs/210-personal-live-activation/inbox.postgres.test.ts:40:74
+     38|     const message = { ...envelope, messageSid: `SM${"e".repeat(32)}`, …
+     39|     const { operationId } = await enqueuePersonalSms(message); const e…
+     40|     expect(await processPersonalSms(operationId, workerEnv, { engine }…
+       |                                                                          ^
+     41|     expect(await processPersonalSms(operationId, workerEnv, { engine }…
+     42|     expect(engine).toHaveBeenCalledOnce();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > finishes SMS source and stored review atomically, without pretending to fetch Google
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/personal-model.postgres.test.ts:75:47
+
+  72 function span(body: string, quote: string) { const start = body.indexOf(quote); return { start, end: start + quote.length, quote }; }
+  73 async function calendarAccount(f: Fixture, capability: "calendar_read" | "calendar_write") {
+  74   const scope = capability === "calendar_read" ? GOOGLE_CALENDAR_READ_SCOPE : GOOGLE_CALENDAR_WRITE_SCOPE;
+→ 75   await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv05ejm000ni5ns97xrqkgi, cmtv05dn80002i5nsbwzvz5l8, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events.readonly}, null, null, null, primary, 1, 2026-09-10 04:03:18.109, null, cmtv05dk50000i5nsg0nlr6o3, 2026-09-10 04:03:21.442, 2026-09-10 04:03:21.442)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ calendarAccount specs/210-personal-live-activation/personal-model.postgres.test.ts:75:5
+     73|   async function calendarAccount(f: Fixture, capability: "calendar_rea…
+     74|     const scope = capability === "calendar_read" ? GOOGLE_CALENDAR_REA…
+     75|     await prisma.constructionConnectorAccount.create({ data: { workspa…
+       |     ^
+     76|       status: "connected", connectedAt: f.now, grantedScopes: [scope],
+     77|       grants: { create: { capability, status: "active", grantedAt: f.n…
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:80:45
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > prepares one exact source-quoted Google draft and separate owner reply, with zero approval or transport
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/personal-model.postgres.test.ts:75:47
+
+  72 function span(body: string, quote: string) { const start = body.indexOf(quote); return { start, end: start + quote.length, quote }; }
+  73 async function calendarAccount(f: Fixture, capability: "calendar_read" | "calendar_write") {
+  74   const scope = capability === "calendar_read" ? GOOGLE_CALENDAR_READ_SCOPE : GOOGLE_CALENDAR_WRITE_SCOPE;
+→ 75   await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv05f8y001ci5ns9etdudgd, cmtv05eo7000ri5nsu3jogkx1, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, null, null, primary, 1, 2026-09-10 04:03:21.497, null, cmtv05el7000pi5ns2vq1uk4e, 2026-09-10 04:03:22.354, 2026-09-10 04:03:22.354)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ calendarAccount specs/210-personal-live-activation/personal-model.postgres.test.ts:75:5
+     73|   async function calendarAccount(f: Fixture, capability: "calendar_rea…
+     74|     const scope = capability === "calendar_read" ? GOOGLE_CALENDAR_REA…
+     75|     await prisma.constructionConnectorAccount.create({ data: { workspa…
+       |     ^
+     76|       status: "connected", connectedAt: f.now, grantedScopes: [scope],
+     77|       grants: { create: { capability, status: "active", grantedAt: f.n…
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:90:103
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > prepares an exact self SMS only, without sending it
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorGrant.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/personal-model.postgres.test.ts:100:45
+
+   97 });
+   98 it("prepares an exact self SMS only, without sending it", async () => {
+   99   const f = await personalModelFixture("Texte-moi : Bonjour.");
+→ 100   await prisma.constructionConnectorGrant.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorGrant\" violates check constraint \"ConstructionConnectorGrant_active_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv05ftv0021i5ns5s4nk2ng, cmtv05fio001ri5nsjy76e4dj, personal_sms_send, active, {}, {}, 1, 2026-09-10 04:03:22.378, null, 2026-09-10 04:03:23.107, 2026-09-10 04:03:23.107)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:100:5
+     98|   it("prepares an exact self SMS only, without sending it", async () =…
+     99|     const f = await personalModelFixture("Texte-moi : Bonjour.");
+    100|     await prisma.constructionConnectorGrant.create({ data: { connector…
+       |     ^
+    101|     const { result, source } = await reviewedSource(f, () => [{ id: "s…
+    102|     expect(result.status).toBe("COMPLETED_REPLY_PREPARED");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > never leaves a draft or success reply when final source review refuses: {"rollback":true}
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorGrant.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/personal-model.postgres.test.ts:108:45
+
+  105 });
+  106 it.each([{ rollback: true }, { revoke: true }])("never leaves a draft or success reply when final source review refuses: %j", async options => {
+  107   const f = await personalModelFixture("Texte-moi : Bonjour.");
+→ 108   await prisma.constructionConnectorGrant.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorGrant\" violates check constraint \"ConstructionConnectorGrant_active_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv05gfn002pi5nsc5ulzcul, cmtv05g2i002fi5nsjli75bnn, personal_sms_send, active, {}, {}, 1, 2026-09-10 04:03:23.138, null, 2026-09-10 04:03:23.892, 2026-09-10 04:03:23.892)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:108:5
+    106|   it.each([{ rollback: true }, { revoke: true }])("never leaves a draf…
+    107|     const f = await personalModelFixture("Texte-moi : Bonjour.");
+    108|     await prisma.constructionConnectorGrant.create({ data: { connector…
+       |     ^
+    109|     const { result, source } = await reviewedSource(f, () => [{ id: "s…
+    110|     expect(result.status).toBe("REVIEW_REQUIRED"); expect(source.statu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model.postgres.test.ts > personal model complete gateway on disposable PostgreSQL, fake transport only > never leaves a draft or success reply when final source review refuses: {"revoke":true}
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorGrant.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/personal-model.postgres.test.ts:108:45
+
+  105 });
+  106 it.each([{ rollback: true }, { revoke: true }])("never leaves a draft or success reply when final source review refuses: %j", async options => {
+  107   const f = await personalModelFixture("Texte-moi : Bonjour.");
+→ 108   await prisma.constructionConnectorGrant.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorGrant\" violates check constraint \"ConstructionConnectorGrant_active_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv05h0j003di5ns93lguyok, cmtv05goa0033i5nsvr4e7xbp, personal_sms_send, active, {}, {}, 1, 2026-09-10 04:03:23.918, null, 2026-09-10 04:03:24.644, 2026-09-10 04:03:24.644)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/personal-model.postgres.test.ts:108:5
+    106|   it.each([{ rollback: true }, { revoke: true }])("never leaves a draf…
+    107|     const f = await personalModelFixture("Texte-moi : Bonjour.");
+    108|     await prisma.constructionConnectorGrant.create({ data: { connector…
+       |     ^
+    109|     const { result, source } = await reviewedSource(f, () => [{ id: "s…
+    110|     expect(result.status).toBe("REVIEW_REQUIRED"); expect(source.statu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  2 failed | 3 passed (5)
+      Tests  6 failed | 33 passed (39)
+   Start at  00:03:15
+   Duration  80.24s (transform 1.16s, setup 0ms, import 5.28s, tests 74.07s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

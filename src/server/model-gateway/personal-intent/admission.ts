@@ -60,7 +60,7 @@ export class PersonalIntentAdmissionRefused extends Error {
 function refuse(reason: string): never { throw new PersonalIntentAdmissionRefused(reason); }
 
 /** This account is explicit owner consent for AI, not an SMS or Calendar grant. */
-async function inspectModelAuthority(tx: Tx, source: PersonalIntentAdmission["source"], now: Date): Promise<PersonalModelAuthority> {
+export async function inspectModelAuthority(tx: Tx, source: PersonalIntentAdmission["source"], now: Date): Promise<PersonalModelAuthority> {
   const rows = await tx.$queryRawUnsafe<Array<{
     accountId: string; accountStatus: string; createdByUserId: string; accountVersion: number;
     accountRevokedAt: Date | null; credentialsPrepared: boolean; credentialRef: string | null; externalAccountKeyHash: string | null;
@@ -86,7 +86,7 @@ async function inspectModelAuthority(tx: Tx, source: PersonalIntentAdmission["so
   }) });
 }
 
-function requireCurrentPilot(env: NodeJS.ProcessEnv, now: Date, modelCeiling: bigint, reviewInput: unknown) {
+export function inspectPersonalModelPilotEnvelope(env: NodeJS.ProcessEnv, now: Date, modelCeiling: bigint, reviewInput: unknown) {
   if (env.ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED !== "true" || env.ENDVERA_EXTERNAL_AUTHORITY_REF !== PERSONAL_MODEL_AUTHORITY ||
       env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT !== "2026-10-10T01:18:26Z") refuse("PERSONAL_MODEL_PILOT_NOT_ENABLED");
   // Server-reviewed envelope, NOT account-balance/model-supplied billing proof.
@@ -105,7 +105,7 @@ async function currentContext(tx: Tx, input: PersonalIntentAdmissionInput, env: 
   const [clock] = await tx.$queryRawUnsafe<Array<{ now: Date }>>('SELECT CURRENT_TIMESTAMP AS now');
   if (!clock || !Number.isFinite(clock.now.getTime())) refuse("PERSONAL_MODEL_DATABASE_CLOCK_REQUIRED");
   const budgetPolicy = inspectPersonalModelBudget(input.rateConfiguration, clock.now);
-  const pilotEnvelopeReview = requireCurrentPilot(env, clock.now, budgetPolicy.ceilingCadMicros, input.pilotEnvelopeReview);
+  const pilotEnvelopeReview = inspectPersonalModelPilotEnvelope(env, clock.now, budgetPolicy.ceilingCadMicros, input.pilotEnvelopeReview);
   const source = await inspectPersonalGatewaySubject(tx, input.subject);
   const modelAuthority = await inspectModelAuthority(tx, source, clock.now);
   if (!/^sha256:[a-f0-9]{64}$/.test(source.input.requestFingerprint)) refuse("PERSONAL_MODEL_FINGERPRINT_INVALID");

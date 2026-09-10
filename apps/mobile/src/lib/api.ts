@@ -6,6 +6,8 @@ import {
 import { mobileApiBaseUrl } from "@/lib/config";
 import { personalGoogleStatusSchema, personalGoogleDisconnectSchema, personalGoogleEventsSchema, personalGoogleActionsSchema, validatePersonalGoogleLaunch } from "@/lib/personal-google";
 import { personalOutboxSchema, personalPairingSchema, personalPhoneSchema } from "@/lib/personal-service";
+import { personalModelCommand, personalModelStatusSchema, personalModelPreparedSchema, personalModelConsentSchema, personalModelDisconnectedSchema } from "@/lib/personal-model";
+import { personalModelReviewsSchema } from "@/lib/personal-model-reviews";
 import { mobileCommandSchema } from "@/lib/commands";
 import {
   mobileAssistantHistorySchema,
@@ -144,6 +146,21 @@ function statusCode(status: number): MobileApiErrorCode {
 }
 
 export class MobileApi {
+  async personalModelReviews(workspaceId: string) {
+    return personalModelReviewsSchema.parse(await this.request(`/api/endvera/v1/personal/model/reviews?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
+  }
+  async personalModelStatus(workspaceId: string) {
+    return personalModelStatusSchema.parse(await this.request(`/api/endvera/v1/personal/model/status?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
+  }
+  async preparePersonalModel(workspaceId: string) {
+    return personalModelPreparedSchema.parse(await this.request("/api/endvera/v1/personal/model/consent", { method: "POST", body: JSON.stringify(personalModelCommand(workspaceId, "PREPARE")) }));
+  }
+  async consentPersonalModel(workspaceId: string) {
+    return personalModelConsentSchema.parse(await this.request("/api/endvera/v1/personal/model/consent", { method: "POST", body: JSON.stringify(personalModelCommand(workspaceId, "CONSENT")) }));
+  }
+  async disconnectPersonalModel(workspaceId: string) {
+    return personalModelDisconnectedSchema.parse(await this.request("/api/endvera/v1/personal/model/disconnect", { method: "POST", body: JSON.stringify(personalModelCommand(workspaceId, "DISCONNECT")) }));
+  }
   async personalPhone(workspaceId: string) {
     return personalPhoneSchema.parse(await this.request(`/api/endvera/v1/personal/phone?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
   }

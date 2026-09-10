@@ -6,6 +6,8 @@ import { MobileApi } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { createPersonalDraftRequests, loadPersonalServiceState, personalDeliveryLabel, personalPairingSmsUri, type PersonalPhone, type PersonalOutbox } from "@/lib/personal-service";
 import { useMobileSession } from "@/state/mobile-session";
+import { PersonalModelConnection } from "@/components/personal-model-connection";
+import { PersonalModelReviewList } from "@/components/personal-model-reviews";
 
 function PersonalService({ workspaceId }: { workspaceId: string }) {
   const api = useMemo(() => new MobileApi({ getCookie: () => authClient.getCookie(), browserManagedCredentials: Platform.OS === "web" }), []);
@@ -75,11 +77,13 @@ function PersonalService({ workspaceId }: { workspaceId: string }) {
       {phone?.boundPhone ? <Button disabled={busy || loading} tone="secondary" onPress={() => void run(() => api.disconnectPersonalPhone(workspaceId))}>Retirer l’accès à mon téléphone</Button> : null}
     </Card>
     <Button tone="secondary" onPress={() => router.push("/calendar-connections")}>2 · Connecter mon Google Agenda</Button>
+    <PersonalModelConnection key={workspaceId} workspaceId={workspaceId} />
+    <PersonalModelReviewList key={`reviews:${workspaceId}`} workspaceId={workspaceId} />
     {message ? <Notice>{message}</Notice> : null}
     {readErrors.phoneUnavailable && !loading ? <Notice>Impossible de vérifier ton numéro. L’association et les envois sont désactivés jusqu’à une nouvelle vérification.</Notice> : null}
     {readErrors.outboxUnavailable && !loading ? <Notice>Le suivi des envois est indisponible. Tu peux associer ton numéro si sa configuration est confirmée, mais attends le retour du suivi avant de préparer ou d’envoyer un message.</Notice> : null}
     <Card>
-      <Label>3 · Préparer un message vers moi</Label>
+      <Label>4 · Préparer un message vers moi</Label>
       <Text style={sharedStyles.muted}>Ce pilote est limité à ton propre numéro vérifié. Aucun employé ni client n’est contacté. Tu vois le texte complet avant l’envoi.</Text>
       <TextInput accessibilityLabel="Texte exact à préparer" value={draft} onChangeText={setDraft} multiline maxLength={1500} placeholder="Ce que l’assistant doit dire…" placeholderTextColor={colors.muted} style={{ color: colors.text, borderColor: colors.border, borderWidth: 1, borderRadius: 12, padding: 16, minHeight: 100 }} />
       <Button disabled={busy || loading || !outbox || !phone?.boundPhone || !draft.trim()} onPress={() => void run(isCurrent => prepareDraft("sms_outbound", isCurrent))}>Préparer le SMS</Button>

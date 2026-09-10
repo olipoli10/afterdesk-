@@ -1,0 +1,156 @@
+import "server-only";
+import { createHash, randomUUID } from "node:crypto";
+import type { Prisma } from "@prisma-client";
+import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { inspectModelAuthority, type PersonalIntentAdmission, type PersonalModelAuthority } from "@/server/model-gateway/personal-intent/admission";
+import { PERSONAL_MODEL_AUTHORITY } from "@/server/model-gateway/personal-intent/budget-policy";
+import { loadPersonalModelConfiguration } from "@/server/model-gateway/personal-intent/configuration";
+import { inspectPersonalGatewaySubject } from "@/server/model-gateway/personal-subject";
+import { openConnectorSecret, requireConnectorKey, sealConnectorSecret } from "./credential-cipher";
+
+const scopes = ["personal_data:inference", `authority:${PERSONAL_MODEL_AUTHORITY}`];
+export const PERSONAL_MODEL_CONSENT_VERSION = "personal-model-consent-v1";
+const secretSchema = z.object({ apiKey: z.string().regex(/^[A-Za-z0-9_-]{24,512}$/) }).strict();
+const binding = (workspaceId: string, accountId: string, credentialId: string) => JSON.stringify([workspaceId, accountId, `openrouter-api-key:${credentialId}`]);
+type Tx = Prisma.TransactionClient;
+type OwnerInput = Readonly<{ userId: string; workspaceId: string }>;
+
+async function requireOwner(tx: Tx, input: OwnerInput) {
+  const owner = await tx.constructionWorkspaceMember.findFirst({ where: {
+    workspaceId: input.workspaceId, userId: input.userId, status: "active", role: "owner",
+    workspace: { ownerUserId: input.userId, status: "active" }, user: { role: "CLIENT", emailVerified: true },
+  }, select: { id: true } });
+  if (!owner) throw new Error("PERSONAL_MODEL_OWNER_REQUIRED");
+}
+async function databaseNow(tx: Tx) {
+  const [clock] = await tx.$queryRawUnsafe<Array<{ now: Date }>>('SELECT CURRENT_TIMESTAMP AS now');
+  if (!(clock?.now instanceof Date) || !Number.isFinite(clock.now.getTime())) throw new Error("PERSONAL_MODEL_CLOCK_REQUIRED");
+  return clock.now;
+}
+function requireCurrentAuthority(env: NodeJS.ProcessEnv, now: Date) {
+  if (env.ENDVERA_EXTERNAL_AUTHORITY_REF !== PERSONAL_MODEL_AUTHORITY || env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT !== "2026-10-10T01:18:26Z"
+    || now.getTime() < Date.parse("2026-09-10T01:18:26Z") || now.getTime() >= Date.parse("2026-10-10T01:18:26Z")) throw new Error("PERSONAL_MODEL_AUTHORITY_INACTIVE");
+}
+async function preparedAccount(tx: Tx, input: OwnerInput) {
+  const account = await tx.constructionConnectorAccount.upsert({
+    where: { workspaceId_provider: { workspaceId: input.workspaceId, provider: "openrouter" } },
+    create: { workspaceId: input.workspaceId, createdByUserId: input.userId, provider: "openrouter", requestedScopes: scopes }, update: {},
+  });
+  if (account.createdByUserId !== input.userId) throw new Error("PERSONAL_MODEL_ACCOUNT_OWNER_MISMATCH");
+  return account;
+}
+
+/** Preparation is not consent, credential provisioning or transport activation. */
+export async function preparePersonalModelConnection(input: OwnerInput) {
+  return prisma.$transaction(async tx => {
+    await requireOwner(tx, input);
+    const account = await preparedAccount(tx, input);
+    await tx.constructionConnectorGrant.upsert({ where: { connectorAccountId_capability: { connectorAccountId: account.id, capability: "personal_model_inference" } },
+      create: { connectorAccountId: account.id, capability: "personal_model_inference", requestedScopes: scopes }, update: {} });
+    return { prepared: true as const, executionAuthorized: false as const };
+  }, { isolationLevel: "Serializable" });
+}
+
+/** Only the verified workspace owner can explicitly consent. Client prices,
+ * credential material and administrator authority are never accepted here. */
+export async function consentPersonalModelConnection(input: OwnerInput & { confirmation: typeof PERSONAL_MODEL_CONSENT_VERSION }, env: NodeJS.ProcessEnv = process.env) {
+  if (input.confirmation !== PERSONAL_MODEL_CONSENT_VERSION) throw new Error("PERSONAL_MODEL_EXPLICIT_CONSENT_REQUIRED");
+  return prisma.$transaction(async tx => {
+    await requireOwner(tx, input); const now = await databaseNow(tx); requireCurrentAuthority(env, now);
+    const account = await preparedAccount(tx, input);
+    await tx.constructionConnectorGrant.upsert({ where: { connectorAccountId_capability: { connectorAccountId: account.id, capability: "personal_model_inference" } },
+      create: { connectorAccountId: account.id, capability: "personal_model_inference", status: "active", requestedScopes: scopes, grantedScopes: scopes, grantedAt: now },
+      update: { status: "active", requestedScopes: scopes, grantedScopes: scopes, grantedAt: now, revokedAt: null, stateVersion: { increment: 1 } } });
+    // No account status/credential change: consent does not prove a working key.
+    return { consentGranted: true as const, executionAuthorized: false as const, consentVersion: PERSONAL_MODEL_CONSENT_VERSION };
+  }, { isolationLevel: "Serializable" });
+}
+
+/** Internal operator provisioning only; this function has no HTTP caller and
+ * performs no provider verification. Never log its input or return the key. */
+export async function provisionPersonalModelCredential(input: OwnerInput & { apiKey: string }, env: NodeJS.ProcessEnv = process.env) {
+  const parsed = secretSchema.safeParse({ apiKey: input.apiKey });
+  if (!parsed.success) throw new Error("PERSONAL_MODEL_CREDENTIAL_INVALID");
+  const key = requireConnectorKey(env.ENDVERA_CONNECTOR_ENCRYPTION_KEY);
+  return prisma.$transaction(async tx => {
+    await requireOwner(tx, input); const now = await databaseNow(tx); requireCurrentAuthority(env, now);
+    const account = await preparedAccount(tx, input); const id = randomUUID();
+    const ciphertext = sealConnectorSecret(JSON.stringify(parsed.data), binding(input.workspaceId, account.id, id), key);
+    await tx.constructionConnectorCredential.updateMany({ where: { connectorAccountId: account.id, workspaceId: input.workspaceId, revokedAt: null },
+      data: { ciphertext: "revoked", revokedAt: now, version: { increment: 1 } } });
+    await tx.constructionConnectorCredential.create({ data: { id, connectorAccountId: account.id, workspaceId: input.workspaceId, ciphertext } });
+    await tx.constructionConnectorAccount.update({ where: { id: account.id }, data: { status: "connected", credentialRef: id,
+      externalAccountKeyHash: createHash("sha256").update(`openrouter-credential:${id}`).digest("hex"),
+      connectedAt: now, revokedAt: null, stateVersion: { increment: 1 } } });
+    return { credentialPrepared: true as const, providerVerified: false as const, executionAuthorized: false as const };
+  }, { isolationLevel: "Serializable" });
+}
+
+/** Lazy server-only access after dispatch CAS. Re-read consent and encrypted
+ * row bindings; possession of an admission object never suffices. */
+export async function personalModelCredentialForDispatch(input: {
+  source: PersonalIntentAdmission["source"]; modelAuthority: PersonalModelAuthority;
+}, env: NodeJS.ProcessEnv = process.env): Promise<string> {
+  return prisma.$transaction(async tx => {
+    await requireOwner(tx, { userId: input.source.actorUserId, workspaceId: input.source.subject.workspaceId });
+    const now = await databaseNow(tx); requireCurrentAuthority(env, now);
+    const currentSource = await inspectPersonalGatewaySubject(tx, input.source.subject);
+    if (currentSource.authorityFingerprint !== input.source.authorityFingerprint) throw new Error("PERSONAL_MODEL_SOURCE_AUTHORITY_CHANGED");
+    const current = await inspectModelAuthority(tx, currentSource, now);
+    if (current.accountId !== input.modelAuthority.accountId || current.fingerprint !== input.modelAuthority.fingerprint) throw new Error("PERSONAL_MODEL_CREDENTIAL_BINDING_CHANGED");
+    const account = await tx.constructionConnectorAccount.findFirst({ where: { id: current.accountId, workspaceId: input.source.subject.workspaceId,
+      createdByUserId: input.source.actorUserId, provider: "openrouter", status: "connected", revokedAt: null } });
+    if (!account?.credentialRef) throw new Error("PERSONAL_MODEL_CREDENTIAL_UNAVAILABLE");
+    const credential = await tx.constructionConnectorCredential.findFirst({ where: { id: account.credentialRef, connectorAccountId: account.id,
+      workspaceId: input.source.subject.workspaceId, revokedAt: null } });
+    if (!credential) throw new Error("PERSONAL_MODEL_CREDENTIAL_UNAVAILABLE");
+    try {
+      return secretSchema.parse(JSON.parse(openConnectorSecret(credential.ciphertext, binding(credential.workspaceId, account.id, credential.id),
+        requireConnectorKey(env.ENDVERA_CONNECTOR_ENCRYPTION_KEY)))).apiKey;
+    } catch { throw new Error("PERSONAL_MODEL_CREDENTIAL_UNAVAILABLE"); }
+  }, { isolationLevel: "Serializable" });
+}
+
+export async function personalModelConnectionStatus(userId: string, workspaceId: string, env: NodeJS.ProcessEnv = process.env) {
+  return prisma.$transaction(async tx => {
+    await requireOwner(tx, { userId, workspaceId }); const now = await databaseNow(tx);
+    const account = await tx.constructionConnectorAccount.findUnique({ where: { workspaceId_provider: { workspaceId, provider: "openrouter" } }, include: { grants: true } });
+    const owned = account?.createdByUserId === userId;
+    const grant = owned ? account.grants.find(g => g.capability === "personal_model_inference") : undefined;
+    const configuration = loadPersonalModelConfiguration(env, now);
+    const configured = configuration.status === "CONFIGURED_NOT_AUTHORIZED";
+    let authorityCurrent = false; try { requireCurrentAuthority(env, now); authorityCurrent = true; } catch { /* Display disabled. */ }
+    const consentGranted = Boolean(authorityCurrent && grant?.status === "active" && !grant.revokedAt && grant.grantedAt
+      && grant.grantedAt.getTime() >= Date.parse("2026-09-10T01:18:26Z") && grant.grantedAt.getTime() <= now.getTime()
+      && scopes.every(scope => grant.grantedScopes.includes(scope)));
+    const credential = owned && account.status === "connected" && !account.revokedAt && account.credentialRef
+      ? await tx.constructionConnectorCredential.findFirst({ where: { id: account.credentialRef, workspaceId, connectorAccountId: account.id, revokedAt: null }, select: { id: true } }) : null;
+    const credentialPrepared = Boolean(credential);
+    let credentialStorageConfigured = false;
+    try { requireConnectorKey(env.ENDVERA_CONNECTOR_ENCRYPTION_KEY); credentialStorageConfigured = true; } catch { /* No usable encryption configuration. */ }
+    const transportConfigured = configured && env.ENDVERA_EXTERNAL_TRANSPORT_ENABLED === "ENABLED"
+      && env.ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED === "true";
+    return { prepared: Boolean(owned), credentialPrepared, credentialStorageConfigured, consentGranted, configured, transportConfigured,
+      readyForAdmission: configured && credentialPrepared && credentialStorageConfigured && consentGranted,
+      liveObserved: false as const, executionAuthorized: false as const, consentVersion: PERSONAL_MODEL_CONSENT_VERSION };
+  }, { isolationLevel: "Serializable" });
+}
+
+export async function disconnectPersonalModelConnection(input: OwnerInput) {
+  return prisma.$transaction(async tx => {
+    await requireOwner(tx, input); const now = await databaseNow(tx);
+    const account = await tx.constructionConnectorAccount.findUnique({ where: { workspaceId_provider: { workspaceId: input.workspaceId, provider: "openrouter" } } });
+    if (!account) return { disconnected: true as const, providerGrantRevoked: false as const };
+    if (account.createdByUserId !== input.userId) throw new Error("PERSONAL_MODEL_ACCOUNT_OWNER_MISMATCH");
+    await tx.constructionConnectorCredential.updateMany({ where: { connectorAccountId: account.id, workspaceId: input.workspaceId },
+      data: { ciphertext: "revoked", revokedAt: now, version: { increment: 1 } } });
+    await tx.constructionConnectorGrant.updateMany({ where: { connectorAccountId: account.id },
+      data: { status: "revoked", grantedScopes: [], revokedAt: now, stateVersion: { increment: 1 } } });
+    await tx.constructionConnectorAccount.update({ where: { id: account.id }, data: { status: "revoked", credentialRef: null,
+      externalAccountKeyHash: null, syncCursorRef: null, grantedScopes: [], revokedAt: now, stateVersion: { increment: 1 } } });
+    // Never erase model evidence or release uncertain budgets. Recovery sees
+    // revoked current authority and closes only the appropriate fenced attempt.
+    return { disconnected: true as const, providerGrantRevoked: false as const };
+  }, { isolationLevel: "Serializable" });
+}

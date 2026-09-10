@@ -63,6 +63,24 @@ describe("full personal gateway dispatch (synthetic transaction and wire only)",
     expect(await dispatchPersonalIntent({ ...f.input, adapter, transportMode: "EXTERNAL_PROVIDER" }, { NODE_ENV: "test" })).toMatchObject({ status: "NOT_DISPATCHED" });
     expect(f.transport).not.toHaveBeenCalled();
   });
+  it("refuses external mode before CAS when only the model switch, not the global switch, is enabled", async () => {
+    const f = fixture(); const adapter = { ...f.adapter, transportMode: "EXTERNAL_PROVIDER" as const };
+    expect(await dispatchPersonalIntent({ ...f.input, adapter, transportMode: "EXTERNAL_PROVIDER" }, {
+      NODE_ENV: "test", ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED: "true", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "DISABLED",
+    })).toMatchObject({ status: "NOT_DISPATCHED", reason: "ADAPTER_BINDING_REFUSED" });
+    expect(shared.transaction).not.toHaveBeenCalled(); expect(f.transport).not.toHaveBeenCalled();
+  });
+  it("global revocation after an external-policy callback preserves uncertainty and no result authority", async () => {
+    // The EXTERNAL policy branch is exercised with a local fake callback only.
+    const f = fixture(); const env: NodeJS.ProcessEnv = { NODE_ENV: "test", ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED: "true", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED" };
+    const adapter = { ...f.adapter, transportMode: "EXTERNAL_PROVIDER" as const, dispatch: vi.fn(async () => {
+      const response = await f.adapter.dispatch(sourceInput, new AbortController().signal);
+      delete env.ENDVERA_EXTERNAL_TRANSPORT_ENABLED; return response;
+    }) };
+    expect(await dispatchPersonalIntent({ ...f.input, adapter, transportMode: "EXTERNAL_PROVIDER" }, env)).toMatchObject({ status: "UNCERTAIN", recorded: true, reason: "POST_DISPATCH_REVALIDATION_FAILED" });
+    expect(adapter.dispatch).toHaveBeenCalledTimes(1); expect(shared.finish).not.toHaveBeenCalled();
+    expect(shared.uncertain).toHaveBeenCalledWith(admission, "POST_DISPATCH_REVALIDATION_FAILED");
+  });
   it("checks persisted lineage plus both held currencies then calls once and stores no action authority", async () => {
     const f = fixture();
     expect(await dispatchPersonalIntent(f.input)).toMatchObject({ status: "PROPOSAL_STORED_NOT_AUTHORIZED", recorded: true, executionAuthorized: false, accounting: "UNSETTLED" });

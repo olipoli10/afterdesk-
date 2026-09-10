@@ -43,23 +43,32 @@ export function newGoogleConsent(env: ConnectorEnvironment, mode: CalendarConnec
 export class GoogleCalendarClient {
   private attemptedRequests = 0;
   get transportAttempts() { return this.attemptedRequests; }
-  constructor(private readonly env: ConnectorEnvironment, private readonly transport: typeof fetch = fetch, private readonly now: () => number = Date.now) {}
+  constructor(private readonly env: ConnectorEnvironment, private readonly transport: typeof fetch = fetch, private readonly now: () => number = Date.now,
+    private readonly sourceSignal?: AbortSignal) {}
 
   private async request(url: string, init: RequestInit): Promise<unknown> {
     requireGooglePilot(this.env, this.now());
+    // Source cancellation can shorten, never replace, the reviewed request limit.
+    const signal = AbortSignal.any([AbortSignal.timeout(10000), ...(this.sourceSignal ? [this.sourceSignal] : []), ...(init.signal ? [init.signal] : [])]);
+    const requireActive = () => { if (signal.aborted) throw new Error("GOOGLE_TRANSPORT_UNAVAILABLE"); };
+    requireActive();
     let response: Response;
-    try { this.attemptedRequests++; response = await this.transport(url, { ...init, redirect: "error", signal: AbortSignal.timeout(10000) }); }
+    try { this.attemptedRequests++; response = await this.transport(url, { ...init, redirect: "error", signal }); }
     catch { throw new Error("GOOGLE_TRANSPORT_UNAVAILABLE"); }
+    if (signal.aborted) { void response.body?.cancel().catch(() => undefined); requireActive(); }
     if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "GOOGLE_REAUTHORIZATION_REQUIRED" : "GOOGLE_REQUEST_REFUSED");
     const reader = response.body?.getReader();
     if (!reader) throw new Error("GOOGLE_RESPONSE_INVALID");
     const chunks: Uint8Array[] = []; let size = 0;
-    while (true) {
-      const part = await reader.read(); if (part.done) break;
-      size += part.value.byteLength;
-      if (size > 262144) { await reader.cancel(); throw new Error("GOOGLE_RESPONSE_TOO_LARGE"); }
-      chunks.push(part.value);
-    }
+    try {
+      while (true) {
+        requireActive();
+        const part = await reader.read(); requireActive(); if (part.done) break;
+        size += part.value.byteLength;
+        if (size > 262144) throw new Error("GOOGLE_RESPONSE_TOO_LARGE");
+        chunks.push(part.value);
+      }
+    } finally { void reader.cancel().catch(() => undefined); reader.releaseLock(); }
     try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
     catch { throw new Error("GOOGLE_RESPONSE_INVALID"); }
   }
