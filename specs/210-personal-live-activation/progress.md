@@ -1,5 +1,27 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 17:50Z — pure approval contract verified; durable SQL implementation continues
+
+Typed view fingerprint, command, claim and terminal-state validators now retain
+exact owner/review/request/origin bindings without granting execution authority.
+Peer reproduced twelve unknown-key refusals bypassed by enumerable `__proto__`
+serialization (2 PASS /12 FAIL); the bounded preflight now rejects that key before
+canonicalization. Shared gateway serialization was not changed. Author149,
+peer103 and controller103 targeted checks pass; failures remain in the audits.
+
+Fresh `root-1789062486024` finished17:49:12.866Z:5324 PASS/3 historical skips,
+399 passing files. Controller TypeScript and scoped ESLint pass. This is a pure
+contract with no callers, database writes or provider requests; importing the
+existing canonicalizer still initializes its existing server dependency graph.
+
+Forward79 approval SQL/Prisma is now being authored and independently reviewed.
+It is not applied or generated: preserve78, require a previously committed review,
+one durable approval coupled to one claim, exact UTC lease and immutable outcomes.
+Runtime integration and the mobile approval button remain subsequent work.
+Heartbeat remains ACTIVE3min; no provider, remote migration, APK or deployment.
+Dashboard unchanged: roadmap22%, local build46.75%, C2 18of18,
+real-test NO-GO, Verified-E2E0%. Campaign remains IN_PROGRESS.
+
 ## 2026-09-10 17:35Z — actual SMS-to-calendar preparation verified; explicit approval continues
 
 The actual incoming worker now calls one bounded local preparation helper after
