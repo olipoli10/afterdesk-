@@ -1477,10 +1477,10 @@ export async function projectBrainIntakeForUser(input: {
   return projectBrainIntakeProjectionSchema.parse(projection);
 }
 
-export async function projectBrainSourceBytesForUser(input: {
+async function readAuthorizedProjectBrainSourceBytes(input: {
   userId: string;
   sourceId: string;
-}) {
+}, recordDownload: boolean) {
   const source = await prisma.$transaction(async (tx) => {
     const located = await tx.constructionProjectBrainSource.findUnique({
       where: { id: input.sourceId },
@@ -1539,9 +1539,11 @@ export async function projectBrainSourceBytesForUser(input: {
       select: { id: true },
     });
     if (!stillAuthorized) throw new Error("CONSTRUCTION_RESOURCE_NOT_FOUND");
-    await tx.fileAccessLog.create({
-      data: { fileId: source.file.id, userId: input.userId, action: "download" },
-    });
+    if (recordDownload) {
+      await tx.fileAccessLog.create({
+        data: { fileId: source.file.id, userId: input.userId, action: "download" },
+      });
+    }
   });
 
   return {
@@ -1550,6 +1552,15 @@ export async function projectBrainSourceBytesForUser(input: {
     mimeType: source.mimeType,
     contentHash,
   };
+}
+
+export async function projectBrainSourceBytesForUser(input: { userId: string; sourceId: string }) {
+  return readAuthorizedProjectBrainSourceBytes(input, true);
+}
+
+/** Internal local read only. Not consent, model admission, or external transport authority. */
+export async function readProjectBrainSourceBytesInternally(input: { userId: string; sourceId: string }) {
+  return readAuthorizedProjectBrainSourceBytes(input, false);
 }
 
 export const projectBrainIntakeProjectionForUser = projectBrainIntakeForUser;
