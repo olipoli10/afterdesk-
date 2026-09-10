@@ -1,5 +1,14 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 23:49Z — corrected actual Prisma preflight accepted
+
+Source1981817c, actual clean checkout and private T-only invocation exit0:
+READ_ONLY_PREFLIGHT_70_MATCH, PG18.6, exact70history47e1af...,25508ms.
+BackendSSLfalse preserved; strict client policy source-bound. Original refusal
+untouched. T suspension freshly confirmed23:49:30Z. Main194tests and TypeScript
+PASS; no migration/deploy/provider/newAPK. Continue one-attempt trial upgrade
+implementation and independent review; real baseline bytes remain protected.
+
 ## 2026-09-10 23:36Z — private real preflight refused, diagnosis continues
 
 Bridge a8844c06 reviewed and physical nonsecret ingress confirmed no echo.
