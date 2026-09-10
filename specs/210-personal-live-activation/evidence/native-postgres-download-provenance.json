@@ -1,0 +1,20 @@
+{
+  "artifact": "postgresql-17.11-3-windows-x64-binaries.zip",
+  "version": "17.11-3",
+  "officialProvenance": [
+    "https://www.postgresql.org/download/windows/",
+    "https://www.enterprisedb.com/download-postgresql-binaries",
+    "https://sbp.enterprisedb.com/getfile.jsp?fileid=1260491"
+  ],
+  "finalUrl": "https://get.enterprisedb.com/postgresql/postgresql-17.11-3-windows-x64-binaries.zip",
+  "bytes": 341325378,
+  "sha256": "4b8db0930c38f6ef845db919551dedda3b6b845aeb0927b3d79a6e8e9e4537cf",
+  "hashProvenance": "LOCALLY_COMPUTED_IDENTITY_NOT_PUBLISHER_CHECKSUM",
+  "publisherChecksumAvailable": false,
+  "lastModified": "Tue, 01 Sep 2026 10:10:39 GMT",
+  "etag": "\"22b9effec4ff4d6cd2e39eb20b059e88-41\"",
+  "downloadedAt": "2026-09-10T05:34:47.268Z",
+  "archivePath": "C:/dev/endvera-astra-r03/.scratch/postgres-native-17.11-3/postgresql-17.11-3-windows-x64-binaries.zip",
+  "executableRun": false,
+  "providerCalls": 0
+}

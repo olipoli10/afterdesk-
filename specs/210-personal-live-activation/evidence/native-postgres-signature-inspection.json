@@ -1,0 +1,1019 @@
+{
+  "inspectedAt": "2026-09-10T05:34:59.3699091Z",
+  "extractionRoot": "C:\\dev\\endvera-astra-r03\\.scratch\\postgres-native-17.11-3\\runtime",
+  "extractedFiles": 1563,
+  "archiveUncompressedBytes": 907896760,
+  "traversalGuardPassed": true,
+  "executableRun": true,
+  "signatures": [
+    {
+      "file": "bin\\icudt67.dll",
+      "bytes": 28399104,
+      "sha256": "5ff9c8026344e886f280ddfa235a1e16e1bcd396e90f9ed600b6f71d9d881ae8",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\icuin67.dll",
+      "bytes": 2674176,
+      "sha256": "23d5914acf071f566df19aaf404373e5c73c9910c370e728976f6202c04cf6c3",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\icuio67.dll",
+      "bytes": 61440,
+      "sha256": "1ca5221753f930de19041d546ce0f24102455621c71033d4d5cb8151762c9694",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\icutu67.dll",
+      "bytes": 220672,
+      "sha256": "371c4784b5510b8e80a6b5896567b17bc70e231ea47ee8f614a7ebd3d510960f",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\icuuc67.dll",
+      "bytes": 1906688,
+      "sha256": "2fb4007a1f1089a0807cc1abde5443f5c3b0865ecfd80344b6ad165f1fe53ade",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\initdb.exe",
+      "bytes": 245248,
+      "sha256": "2ef1b590d0967af7c0ea10bbf1b53195a589c75ef5b5cdc6177aa2b0bee9fe65",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libcrypto-3-x64.dll",
+      "bytes": 5714432,
+      "sha256": "2049826335e37848b25a9668b6e4e46030569f00e1a8bcc300c1c2fdedc4445f",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libcurl.dll",
+      "bytes": 734720,
+      "sha256": "004509675fbf796d92f5c860de158df67f32545334c59cc3efbd327c6b7c6d11",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libecpg_compat.dll",
+      "bytes": 25088,
+      "sha256": "6bbdd9d803c4ec5378b5c266cfe8f4de3f574c0750e35351e875b43bc80272e5",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libecpg.dll",
+      "bytes": 102400,
+      "sha256": "25bb1ce81dfeb63de0d8662fcb790cd51d628985635d0ab99a4fe7f0c10ef875",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libiconv-2.dll",
+      "bytes": 1850401,
+      "sha256": "3ee9786ab3eb8dfd791bdbd17c7e791dbe025734befcded0ee4170e1089f79df",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libintl-9.dll",
+      "bytes": 475769,
+      "sha256": "1125ac8dc0c4f5c3ed4712e0d8ad29474099fcb55bb0e563a352ce9d03ef1d78",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\liblz4.dll",
+      "bytes": 128000,
+      "sha256": "096af775241b3bd4b1c3d79c83b103bb8f02da54ec4cd76c5d49eef61a68ad01",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libpgtypes.dll",
+      "bytes": 84992,
+      "sha256": "6cb0b375ef28fae35515713655dc5b7be517f14c45627c401f560c1c3b93da9a",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libpq.dll",
+      "bytes": 351232,
+      "sha256": "9ec4dfaa93e21554a6349e198831e4958dda01c66aea3e63a90247cd85bd9d6b",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libssl-3-x64.dll",
+      "bytes": 1313280,
+      "sha256": "f5a703416d879b082556787733383bae2cef18e8e55c0415cc873e623f898956",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libwinpthread-1.dll",
+      "bytes": 52736,
+      "sha256": "ffe2d56375bb4e8bdee9037df6befc5016ddd8871d0d85027314dd5792f8fdc9",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libxml2.dll",
+      "bytes": 1230848,
+      "sha256": "fa13b5d8bdc8254a6a7f0bc9b26331fa6badf096334bb912e7dc6928206a74a0",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libxslt.dll",
+      "bytes": 414208,
+      "sha256": "8226fad0fc6e9b79b14203d4f5263ddec5764c0108aa7c17622dd77f311669a6",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\libzstd.dll",
+      "bytes": 727040,
+      "sha256": "287e7e474961e8886a3d961e2c07da647a7ac8d60d97023545f3a3ecf604daba",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\pg_ctl.exe",
+      "bytes": 132096,
+      "sha256": "595303cede56a05eff6e2ec6e6e8bd5531c13832ba09fab57b1a9e93bc945c34",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\postgres.exe",
+      "bytes": 9939456,
+      "sha256": "8ae8bb442e8a4c4fb2c8e9ad38c19aca610ee3cba33afd69249de769f905329b",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\psql.exe",
+      "bytes": 635392,
+      "sha256": "aa12e27530ac07f129e69daca953ea5f02202a7bde45d503e771abc39016536d",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\testplug.dll",
+      "bytes": 10752,
+      "sha256": "d1b10395868a004f6ae4700159ba89992a65147efaca63218cd5fb084b32303a",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\wxbase3211u_net_vc_x64_custom.dll",
+      "bytes": 257024,
+      "sha256": "f707ee1d13ed5d3264a6b95dbb6cc4cd79e5d663180a91dca80704b1d97783eb",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\wxbase3211u_vc_x64_custom.dll",
+      "bytes": 2985472,
+      "sha256": "cc6b32bb8cbc1ecd798a8e08144671bb0542e75217ee5b0f9a76fab9146b88be",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\wxbase3211u_xml_vc_x64_custom.dll",
+      "bytes": 193024,
+      "sha256": "4c716cb9407ed90331d677b55e82b3e31a16ff6f5adf9493321594d01fa200d3",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\wxmsw3211u_adv_vc_x64_custom.dll",
+      "bytes": 11264,
+      "sha256": "e9b0906ec69d7656228f564596ae882a8d68f37b5021f490ebcf2aae289eb742",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\wxmsw3211u_aui_vc_x64_custom.dll",
+      "bytes": 594944,
+      "sha256": "ded33cdf2455389eaef3e9c2bd6bca04d3edfbea9e7f53393ee6f8bab2ae124c",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\wxmsw3211u_core_vc_x64_custom.dll",
+      "bytes": 8352768,
+      "sha256": "d658d50d6820d17ac4de22bd66b93799595d63c7469ca6a1d99f479a838b67b8",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\wxmsw3211u_html_vc_x64_custom.dll",
+      "bytes": 708096,
+      "sha256": "74b2e9f9f4b690b554733f1be1e4412c27ea5e0b0a6cd67d05e3895eafb2946e",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\wxmsw3211u_xrc_vc_x64_custom.dll",
+      "bytes": 886784,
+      "sha256": "24bb563eaed37c5b87d238fab8183eac8f66dbf4c67b06c2b9fa54a1234e020f",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "bin\\zlib1.dll",
+      "bytes": 91648,
+      "sha256": "890afa7a17fb66308e0026631070409138b157ef2773c0a41d22a76943f7aedf",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\_int.dll",
+      "bytes": 55808,
+      "sha256": "752fe49749fc86e424613c3d468dc534f819f5ca19ba51d91079759c58c8c0c6",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\amcheck.dll",
+      "bytes": 67584,
+      "sha256": "7c9afe65c0837345094c0af6164bf3e80a3091a02d93eea12ea6460404b331d0",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\auth_delay.dll",
+      "bytes": 14336,
+      "sha256": "ccfc568f84dcce7ff07920be34462d38c7f48c4ff31bad617f89f60bb8c95fca",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\auto_explain.dll",
+      "bytes": 20992,
+      "sha256": "8bb40d4657ed0a14c84adc0c2d6f765b6f20f68aff13ceabee1695d3bb6aa41b",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\autoinc.dll",
+      "bytes": 16384,
+      "sha256": "803d100c50f997fcb88acee9dca5d98b2fc066890035c11ae90c1e194bc25749",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\basebackup_to_shell.dll",
+      "bytes": 18944,
+      "sha256": "aedae9929fe69573a5168d66e477e55ed4fb7f7bb07319ef68dbae6cfb17518e",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\basic_archive.dll",
+      "bytes": 19456,
+      "sha256": "fc77498f4239e7de0e0849c71ef9ab95706902f075187f6d6a2b7abd974427ba",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\bloom.dll",
+      "bytes": 31232,
+      "sha256": "cc24fa3b074079086d210cf11e11dadce4babab119c6799ebb4de29edd08f04b",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\bool_plperl.dll",
+      "bytes": 15872,
+      "sha256": "1bef9e63109104f2056e176a503a0c6c6b5130599c1b601908c6ee182b806fae",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\btree_gin.dll",
+      "bytes": 29184,
+      "sha256": "c1dfa1a23be0ccafb88795d462d98bf1ccebc92dedb5c5e0aeab1afb9c74a41c",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\btree_gist.dll",
+      "bytes": 80384,
+      "sha256": "2b12613da74d25892ba43648a1ba37c4b7058737a7f0e89b80df52e932bd79fd",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\citext.dll",
+      "bytes": 19968,
+      "sha256": "0bbfe0f1cfb28d2f72685637c6e847de070718e5d2b36606a57352a5e8f7eec9",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\cube.dll",
+      "bytes": 57344,
+      "sha256": "abd74a6e1420ccf10af6fbc0dcd0130ab50a241e3c05fd5fae1b03cb10368867",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\cyrillic_and_mic.dll",
+      "bytes": 20480,
+      "sha256": "d0b57379d213dcb90d0429cd05d2689d4baf13ed0d786ce69e3a704296476315",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\dblink.dll",
+      "bytes": 51712,
+      "sha256": "ba6d132158d3f5fc5309b29b0ccadc5e163e603f1f378171a24a97c5d755adaf",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\dict_int.dll",
+      "bytes": 15360,
+      "sha256": "bb9aab1e9b9a8bc7770909b2b98e6767e1d600049a22ce48cb1c9a4f3b6fd915",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\dict_snowball.dll",
+      "bytes": 648704,
+      "sha256": "7dd3a703722b2bf8c7f04a2568d8cfc6fe17fbf51e42278c1689bda505cac93d",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\dict_xsyn.dll",
+      "bytes": 17920,
+      "sha256": "16ccc3a13ddc83d9b40012eb523cdd84f10910f227c929f1cc303c6069441628",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\earthdistance.dll",
+      "bytes": 14848,
+      "sha256": "83d624e6040c465923087b56250cbc6e709fecb80df49397f7e1e90c589defd3",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\euc_cn_and_mic.dll",
+      "bytes": 15872,
+      "sha256": "cbc3a104921e7ff3b47090d495aa46e3b216d8af150dbf59a544fe028c846768",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\euc_jp_and_sjis.dll",
+      "bytes": 23040,
+      "sha256": "c389f5260637c19d7d019f219fb51b718cc7b03100ccd5e0ee12b4ddb8970485",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\euc_kr_and_mic.dll",
+      "bytes": 15872,
+      "sha256": "3b2c04d6078f9a8334790f678314d8b0b8ca6c29b40a8ca7788c6d3ab76bd0f6",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\euc_tw_and_big5.dll",
+      "bytes": 22528,
+      "sha256": "3e6cd73d8d663b0de86f3925f7fa1556b1b1a6f44ba449573dd4086c74c8283a",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\euc2004_sjis2004.dll",
+      "bytes": 16896,
+      "sha256": "25787bf8880da77f9a52b566db88e76cd1737713644191af6a1210df7c9f10e6",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\file_fdw.dll",
+      "bytes": 26112,
+      "sha256": "839bd446ebed5b615a740fbb32bf6374dbe287d03e3ea0dcba6c895461a1ea76",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\fuzzystrmatch.dll",
+      "bytes": 56832,
+      "sha256": "f242fdc8d495d6432dc7b5575e1818869eee4d212dd4a187915cd2d7b802f09f",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\hstore_plperl.dll",
+      "bytes": 20992,
+      "sha256": "641f0eed5face9d797d7bfdcbf81c5736d798dc031fdcb36e7d4a82e3b274c78",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\hstore_plpython3.dll",
+      "bytes": 18944,
+      "sha256": "eddb4c4c81490d3ee6020123afe3312c9e1bd6c89406933b2890b18f7a657325",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\hstore.dll",
+      "bytes": 66560,
+      "sha256": "f5d973246e3e5fc71d174fd7c1755e8138efbc68c3aaa841b4eb5555c1a943f7",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\insert_username.dll",
+      "bytes": 15360,
+      "sha256": "00509ad3f94ad2e0a428a9de10df382f81a703da5b650e64d05c47f799f16a4c",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\isn.dll",
+      "bytes": 70144,
+      "sha256": "efcdecbb93f11f2357101ae9ddf65e6a413e9d753315beb50f435e8589475f9f",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\jsonb_plperl.dll",
+      "bytes": 24576,
+      "sha256": "45901f3c5dadc16b45500918fa9ef57b78a47d213ade20ba7ad2b457ab1c0c01",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\jsonb_plpython3.dll",
+      "bytes": 23040,
+      "sha256": "7e250bd33bff3cccb009d01381af60a5593cccdde16fea013aadce58486de26b",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\latin_and_mic.dll",
+      "bytes": 15872,
+      "sha256": "b27b3f0b6303be1214692194d078103f606bfff93de70a64d2483b034df457d1",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\latin2_and_win1250.dll",
+      "bytes": 16384,
+      "sha256": "e27ac7ee0c62438ac7d30f2bf6a4297ec471876fff7f8881518f1d4b6e77df5a",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\libpqwalreceiver.dll",
+      "bytes": 31744,
+      "sha256": "e6e7d444005f2fc758ad2743f3acb1de33087f36fd33ee27b98684d7746d6537",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\lo.dll",
+      "bytes": 15360,
+      "sha256": "39201e4fdafbe7ff51c8bf2f89b88f1d2400d1e9c626145932556b5e31aed2e9",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\ltree_plpython3.dll",
+      "bytes": 15360,
+      "sha256": "c0a46902d8ddadf1bbe04d0c1b48e80b76c49e1205eafa8a9f4010eeedb02828",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\ltree.dll",
+      "bytes": 70144,
+      "sha256": "7dfd11245b94c03eb74e7ba880a663662ed5c54c8daccf08d22484ead4bb3638",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\moddatetime.dll",
+      "bytes": 16384,
+      "sha256": "f654a2c09e438e59c7bdb94b5927b11856a956115994dd8038feb71a49d4ad59",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pageinspect.dll",
+      "bytes": 57344,
+      "sha256": "ad89a92590afc886f875e6eab518c5c641af0d326a6dd62797207973a20ff893",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\passwordcheck.dll",
+      "bytes": 15360,
+      "sha256": "4d6107b760611cad982307060bf8e25d8ce7837f13045d99885fc509941619a2",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pg_buffercache.dll",
+      "bytes": 20480,
+      "sha256": "2432a4f9a9fff49f75641b51c6048e398113589474dd1f48e41bf681a4500d88",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pg_freespacemap.dll",
+      "bytes": 14848,
+      "sha256": "3b4791c28dbc06ba64f75bf0ee0a46eb0c05b144af78e8fb34289df411f24385",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pg_prewarm.dll",
+      "bytes": 31744,
+      "sha256": "58832d182f2ed3cfc15edff8201462d4538a9e85e08e5c39b87cdb9e4f20fe6e",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pg_stat_statements.dll",
+      "bytes": 43008,
+      "sha256": "46483a9fed98ec25d38acd0f9d2d3149db7b86a4df78f764c65466bf75e0e2a9",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pg_surgery.dll",
+      "bytes": 21504,
+      "sha256": "631ac3a46e4196d9cc7a42dcd8dd0b5e20cd677a245013bfc42a500485a225a8",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pg_trgm.dll",
+      "bytes": 56832,
+      "sha256": "ce88e92560308cb92107b5eb24e1164d414a1950c8f2a52b78b6133cc53003d9",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pg_visibility.dll",
+      "bytes": 26112,
+      "sha256": "7c8813e72712960a039814e963db95748d449d6da03ed6f8849a938325a90596",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pg_walinspect.dll",
+      "bytes": 26112,
+      "sha256": "963c9b4b4585021a461a9096d0443dfb5e8938d395742bc21fe3116c1d12c66c",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pgcrypto.dll",
+      "bytes": 196096,
+      "sha256": "65df5477319a7bba0a82f57ac867629a4a46a4f6aed7f6d844687b0b7504da9a",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pgevent.dll",
+      "bytes": 40960,
+      "sha256": "74e5a522770037a1e66bfb1866d94a873f56553682ecc992397cfff272b90d00",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pgoutput.dll",
+      "bytes": 33792,
+      "sha256": "38216cce7fe0cf005c752b89f42ccb6c735db60855123c31a381f229ba25f919",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pgrowlocks.dll",
+      "bytes": 18944,
+      "sha256": "6dee49d8338bd5ef6036a8f4c1c971e2e3fd9d8913771b1a810b53a23bb44d0d",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pgstattuple.dll",
+      "bytes": 34816,
+      "sha256": "2dbc541beb60826765a992ec78217108e9b3aaa26f74ad24a335bb9dc8155a74",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pgxml.dll",
+      "bytes": 28672,
+      "sha256": "6be5b95f273e6e7eafb80792454a3bd267d158ff520ac672e4f67e094809a3d1",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\plperl.dll",
+      "bytes": 94208,
+      "sha256": "c21972ed0a190868389d0461ba847c6100d8723736bf6c66b0973de941ae88a1",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\plpgsql.dll",
+      "bytes": 195072,
+      "sha256": "618541ff60af85f2e5bb763eafdb1bf69db463cc16dcd4376ed4549485cb0699",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\plpython3.dll",
+      "bytes": 119808,
+      "sha256": "63847fbf893033d3aa8b4dba3b6fd4f08b547cb48c87cf8b2ff3884dd2a7fd57",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\pltcl.dll",
+      "bytes": 60928,
+      "sha256": "32fd217a0a9697d6803ed90f939aa8dfdfffdc3f4fa3afce04ceec1e656469c5",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\plugin_debugger.dll",
+      "bytes": 61440,
+      "sha256": "56a0adf2ecab30a11235aab43cbbe408fe0dd29c9b3faa787fc6121abe9410b6",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\postgres_fdw.dll",
+      "bytes": 135680,
+      "sha256": "63874175efbda255acbfafd033eb3b557f90141c53b45a5256953bfc8675ca4f",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\refint.dll",
+      "bytes": 20480,
+      "sha256": "1566eeddba81766bae9b8d99d4c3de6b6c619c5be14608d112befe8b2858cb07",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\seg.dll",
+      "bytes": 35840,
+      "sha256": "c3e0c23497c7e30d199e847513846123c669ee946432d4b01b2a8c28afdc928d",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\sslinfo.dll",
+      "bytes": 21504,
+      "sha256": "2c64c6593a4d600ab908a4eacf4fe4a5c9f6f3bd710f0023d31a0bc32030ca7d",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\system_stats.dll",
+      "bytes": 38912,
+      "sha256": "ac48cb0f80982a2ab81770eb083a60f6813abd02fb4ac0f4ef3e7cf5cf6e5e0c",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\tablefunc.dll",
+      "bytes": 30720,
+      "sha256": "e3be27a3d385f41a27c6b43079ccc6436a0bea72b5949e777adae74fe6f33e39",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\tcn.dll",
+      "bytes": 16896,
+      "sha256": "69b986e86f1d0416e1d60ed88e2a025d20fccf44542238d4f2c7029be7a68ea2",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\test_decoding.dll",
+      "bytes": 25088,
+      "sha256": "774b1df99bdca6871de8b04db49f69848afe7414fff2beb149ee0a7ca99c7850",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\tsm_system_rows.dll",
+      "bytes": 17920,
+      "sha256": "15f6c314fc69133396ca23b7ba6706fcba4aa3b01003de4184bd2624fd70ba99",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\tsm_system_time.dll",
+      "bytes": 17920,
+      "sha256": "5f9c43aca279ea9f0207957681d8e114fb6def498b034cabda6965ecd78e3ab3",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\unaccent.dll",
+      "bytes": 20480,
+      "sha256": "7a5604b83e4073974476e593d428892abcc5bc445614088b242715228689fe7d",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_big5.dll",
+      "bytes": 129024,
+      "sha256": "ced779a8a3d6b07324d9e664cbfb1d7f9785be577b28140077b1ebf8cf622824",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_cyrillic.dll",
+      "bytes": 20480,
+      "sha256": "7e6e461b5f4fefc4499b221422f263296f0cafb5e7c2f5261ab9034e2a24b75b",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_euc_cn.dll",
+      "bytes": 89600,
+      "sha256": "158f6d21c3b2ca63e71caa4174b10dcdc618df189d19353cbdc45a0ed4cf406b",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_euc_jp.dll",
+      "bytes": 165376,
+      "sha256": "f704506804c27966cb8275a6db8b99ad7759db0098f0eaf8766270df4976dfe5",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_euc_kr.dll",
+      "bytes": 117248,
+      "sha256": "b86dde1e1d2e937ac146f290933521cabfad549d2b095b56cf95748e9f296b39",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_euc_tw.dll",
+      "bytes": 214016,
+      "sha256": "b119964f5c897977b3f0fb528897fc16756d86d4b2c16a96877e8649906b338a",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_euc2004.dll",
+      "bytes": 219136,
+      "sha256": "f87635eb3f8bee6919996423c4a3b245f168490d95f7d9fcf56fca245afe6a1c",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_gb18030.dll",
+      "bytes": 275456,
+      "sha256": "575ef5d9d5f7b7d15b2bf65f3f4e28d54c07c57314fe673b79dd08a7f94c7873",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_gbk.dll",
+      "bytes": 160768,
+      "sha256": "e73004c7099727d80ffd13724245c602257250b1d7767764ff87f8f62529a3be",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_iso8859_1.dll",
+      "bytes": 15360,
+      "sha256": "984bc11aeeb46eaf52229b1254c18a00b4c0797c99a9284d98525489e971df1c",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_iso8859.dll",
+      "bytes": 36864,
+      "sha256": "77019fcf9a48839229889edf726ba12a4790dc8c6f4114f2e50c87c5ef1f9f28",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_johab.dll",
+      "bytes": 176128,
+      "sha256": "824d0473a1372a8d8152b96812f740674cb11ffedbab7532014f402ac1d47cf1",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_sjis.dll",
+      "bytes": 95744,
+      "sha256": "bf33332f14b168c7756b6e0ce97d131c33c8c9e0bab897006cfb83f444d961c9",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_sjis2004.dll",
+      "bytes": 140800,
+      "sha256": "c37285950b05c571b6a51994820fc36860b266dcc20d5442fac17f105594e293",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_uhc.dll",
+      "bytes": 181760,
+      "sha256": "c09800fcdfe9b04418484e10c08b4fdf9cce5df9ec7467611559e11d160233a0",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\utf8_and_win.dll",
+      "bytes": 39936,
+      "sha256": "72f6ce4ba8d6b52c7a32f8dba5c81a92e59be09a2c69b590af82899fdfadbc94",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    },
+    {
+      "file": "lib\\uuid-ossp.dll",
+      "bytes": 49664,
+      "sha256": "1148441dab73423eb50535026802969fd5e05ccb140e5ac15157e5785d0a462e",
+      "status": "NotSigned",
+      "signer": null,
+      "thumbprint": null
+    }
+  ],
+  "versionChecksOnly": true,
+  "clusterCreated": false,
+  "serverStarted": false,
+  "officialHttpsProvenanceAcceptedUnsignedLocalTooling": true,
+  "publisherSignatureVerified": false,
+  "approvalBasis": "Parent agent accepted exact official HTTPS provenance and pinned local archive identity for isolated local tooling despite NotSigned; only --version authorized in this step.",
+  "versionCheckedAt": "2026-09-10T05:36:30.9432406Z",
+  "versionChecks": [
+    {
+      "file": "postgres.exe",
+      "command": "--version",
+      "output": "postgres (PostgreSQL) 17.11",
+      "exitCode": 0
+    },
+    {
+      "file": "pg_ctl.exe",
+      "command": "--version",
+      "output": "pg_ctl (PostgreSQL) 17.11",
+      "exitCode": 0
+    },
+    {
+      "file": "initdb.exe",
+      "command": "--version",
+      "output": "initdb (PostgreSQL) 17.11",
+      "exitCode": 0
+    },
+    {
+      "file": "psql.exe",
+      "command": "--version",
+      "output": "psql (PostgreSQL) 17.11",
+      "exitCode": 0
+    }
+  ]
+}

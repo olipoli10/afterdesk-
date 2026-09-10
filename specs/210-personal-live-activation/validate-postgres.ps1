@@ -1,7 +1,8 @@
 [CmdletBinding()]
-param()
+param([string]$TestFile = '')
 $ErrorActionPreference = 'Stop'
 $taskRepo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+if ($TestFile -and ($TestFile -notmatch '^[a-z-]+\.postgres\.test\.ts$' -or -not (Test-Path -LiteralPath (Join-Path $PSScriptRoot $TestFile) -PathType Leaf))) { throw 'PERSONAL_DB_TEST_FILTER_INVALID' }
 $taskServer = 'endvera-personal-210-' + [Guid]::NewGuid().ToString('N')
 $taskDatabase = 'endvera_personal_210_' + [Guid]::NewGuid().ToString('N')
 $taskPrisma = Join-Path $taskRepo 'node_modules\.bin\prisma.cmd'
@@ -31,7 +32,9 @@ try {
   $env:ENDVERA_210_DATABASE_NAME = $taskDatabase
   & $taskPrisma migrate deploy 2>&1 | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'PERSONAL_DB_MIGRATION_FAILED' }
-  & node node_modules/vitest/vitest.mjs run --config specs/210-personal-live-activation/vitest.postgres.config.ts
+  $taskTestArgs = @('node_modules/vitest/vitest.mjs', 'run', '--config', 'specs/210-personal-live-activation/vitest.postgres.config.ts')
+  if ($TestFile) { $taskTestArgs += ('specs/210-personal-live-activation/' + $TestFile) }
+  & node @taskTestArgs
   $taskExit = $LASTEXITCODE
 } catch {
   # Only fixed codes; provider/connection output is never printed.
