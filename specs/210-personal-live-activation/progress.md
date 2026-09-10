@@ -1,5 +1,30 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 18:16Z — durable approval locally verified; runtime wiring continues
+
+Forward79 immutable approval and state guards are reviewed and applied only to
+fresh native clusters. SQL SHA05163ed1dae6a7421ea3c2a1ecbd83cc7ed2abce77d6fda2cb4d34869060e1f7,
+fingerprint79:41de317b70655965d494f1c3e0ea5940;78 untouched. First119/2 retained:
+all16 new protocols passed, two old expected error names were intercepted earlier
+by79. Only exact expected names changed; rollback assertions retained.
+
+Full20-clone rerun317 PASS18:13:01.013Z, including temporal121; owned server
+STOPPED. Controller and peer checked actual receipt rows. Native tests prove SQL
+synthetic choice/one claim/nonce/UTC/MVCC/subtransactions/terminal preservation,
+not human approval, runtime execution or Google confirmation.
+
+Local owned Prisma client generated; schema validation, TypeScript/lint PASS.
+Root5348 PASS/3 historical skips18:15:28.808Z at root-1789064045917. Main audit
+audits/SMS_CORRELATED_APPROVAL_CONTROLLER_NATIVE_B.md preserves all exact evidence.
+
+Next C0 isolates the existing shared calendar schema without changing grammar;
+C1 adapts recovery to the closed79 unknown outcome before C2 same executor/gates.
+Then private offer/result and mobile one-use approval. No deployment or typed
+execution activation before these remaining checks. Queue remains IN_PROGRESS,
+ACTIVE3min re-read14:11. No new provider, secret, remote migration, APK or spending.
+Dashboard remains roadmap22%, localbuild46.75%, C2 18of18, real-test NO-GO,
+Verified-E2E0%; local test totals do not promote readiness rubrics.
+
 ## 2026-09-10 17:50Z — pure approval contract verified; durable SQL implementation continues
 
 Typed view fingerprint, command, claim and terminal-state validators now retain

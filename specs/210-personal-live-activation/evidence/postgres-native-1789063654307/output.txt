@@ -1,0 +1,194 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_781c0527929d4af59d6ac9bae9d6b966","template":"endvera_personal_210_0929519bcf3f4116a9e3f2ec590b8390","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T18:08:47.3897968Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (121 tests | 2 failed) 56829ms
+     ✓ refuses preparing and approving in one transaction after TOP_XID  532ms
+     ✓ refuses preparing and approving in one transaction after SAVEPOINT  320ms
+     ✓ refuses preparing and approving in one transaction after RELEASED_SAVEPOINT  438ms
+     ✓ refuses preparing and approving in one transaction after OUTER_WRITE  459ms
+     ✓ refuses dispatching a SAVEPOINT claim before its parent commits  466ms
+     ✓ refuses confirming a SAVEPOINT dispatch before its parent commits  481ms
+     ✓ two native sessions cannot commit two approvals for the same review  494ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in UTC  555ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in America/Toronto  531ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in Pacific/Auckland  587ms
+     ✓ rolls back approval and leaves pending unchanged for MISSING_CLAIM  499ms
+     ✓ rolls back approval and leaves pending unchanged for NULL_AUTHORITY  476ms
+     ✓ rolls back approval and leaves pending unchanged for WRONG_ORIGIN  448ms
+     ✓ refuses an unapproved status mutation without a row or nonce  506ms
+     ✓ refuses a duplicate approval and protects its immutable nonce and scope  521ms
+     ✓ permits one dispatch transition and an exact synthetic terminal receipt, never reopening it  540ms
+     ✓ commits the accepted reply and one private draft through the production hook, not a direct test preparer  594ms
+     ✓ OFF at source processing leaves the completed reply and acknowledgement without a calendar review  471ms
+     ✓ an ambiguous refused answer remains completed but does not produce a calendar review even with preparation ON  461ms
+     ✓ preserves actual committed source and acknowledgement after revocation between consumption and preparation  442ms
+     ✓ preserves actual committed source and acknowledgement after expiry between consumption and preparation  1234ms
+     ✓ returns an authorized empty collection but refuses a foreign or revoked member 50ms
+     ✓ projects the real committed two-SMS draft without any manual review identifier  615ms
+     ✓ does not turn a damaged current authorization into an empty success  502ms
+     ✓ does not recreate expired history or reset its preparation window  1227ms
+     ✓ two actual readers preserve the same single immutable review  696ms
+     ✓ an already cancelled caller never receives even an empty list 77ms
+     ✓ a concurrently revoked owner cannot publish the old empty-list snapshot 180ms
+     ✓ commits exactly one isolated pending review and stable replay in UTC  585ms
+     ✓ commits exactly one isolated pending review and stable replay in America/New_York  576ms
+     ✓ commits exactly one isolated pending review and stable replay in Asia/Tokyo  563ms
+     ✓ remains OFF without writing a draft or changing sources  420ms
+     ✓ refuses a preexisting generic operation instead of adopting its request UUID  555ms
+     ✓ a marked operation without its review cannot commit  466ms
+     ✓ rolls back both new rows on a failure after provisional preparation  491ms
+     × a committed review and marker cannot be rewritten or removed 601ms
+     ✓ current revocation refuses even a known replay without changing the saved review  508ms
+     × cannot commit a just-prepared draft already claimed in that same transaction 423ms
+     ✓ refuses an expired replay while keeping the original draft and provenance  1229ms
+     ✓ serializes two actual backend preparations on the same receipt without duplicating  805ms
+     ✓ returns the two full sources and exact current draft without writes in UTC  540ms
+     ✓ returns the two full sources and exact current draft without writes in America/New_York  551ms
+     ✓ returns the two full sources and exact current draft without writes in Asia/Tokyo  549ms
+     ✓ does not prepare a review when missing or OFF and does not disclose it to a foreign owner  507ms
+     ✓ refuses expired proof without resetting the saved preparation window  1239ms
+     ✓ current revoked Google authority refuses the read without altering immutable history  619ms
+     ✓ reads a synthetic current uncertain state as uncertain, never re-preparing pending  600ms
+     ✓ bounds the first discovery against a real exclusive table lock  871ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  495ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  565ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  554ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  415ms
+     ✓ a genuine refused ambiguous answer is not recast as a consumed accepted receipt  406ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  424ms
+     ✓ current MODEL grant revocation refuses without changing the historical receipt  361ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1273ms
+     ✓ keeps a later active question intact while inspecting the earlier inactive receipt  744ms
+     ✓ holds current owner authority against a real concurrent revocation, then refuses the next read  508ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate 291ms
+     ✓ STORE_OFF preserves evidence while selecting the correct oldest candidate 247ms
+     ✓ BRIDGE_OFF preserves evidence while selecting the correct oldest candidate 225ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1282ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1290ms
+     ✓ GOOGLE_REVOKED preserves evidence while selecting the correct oldest candidate  303ms
+     ✓ MODEL_REVOKED preserves evidence while selecting the correct oldest candidate  301ms
+     ✓ IDENTITY_REVISED preserves evidence while selecting the correct oldest candidate  347ms
+     ✓ OWNER_REVISED preserves evidence while selecting the correct oldest candidate  309ms
+     ✓ an orphan bare hour stays deterministic and never completes a source 65ms
+     ✓ a retained calendar confirmation reserves 14h without interpreting it 236ms
+     ✓ a retained calendar confirmation reserves Ajoute inspection vendredi à 14h without interpreting it 239ms
+     ✓ two distinct live reply backends commit at most one canonical receipt and acknowledgment  324ms
+     ✓ 14h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 281ms
+     ✓ 3h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 267ms
+     ✓ independent or reserved message Qu’est-ce que j’ai demain? does not consume a pending answer 217ms
+     ✓ independent or reserved message Ajoute inspection vendredi à 14h does not consume a pending answer 189ms
+     ✓ independent or reserved message CONFIRME ENDVERA AGENDA bois lac lune sable does not consume a pending answer 221ms
+     ✓ OFF cannot consume or prepare an acknowledgment 201ms
+     ✓ BEFORE_ACCEPTANCE cannot consume or prepare an acknowledgment 192ms
+     ✓ REVOKED cannot consume or prepare an acknowledgment 221ms
+     ✓ AFTER_INSERT_FAILURE rolls back the real consumer/source CAS and acknowledgment insert 296ms
+     ✓ AFTER_INSERT_REVOKED rolls back the real consumer/source CAS and acknowledgment insert 288ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1244ms
+     ✓ expires WAITING once, retains source/question/budget/history  1208ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1218ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1247ms
+     ✓ existing ingress worker routes 14h without another model or source completion 286ms
+     ✓ existing ingress worker routes 3h without another model or source completion 289ms
+     ✓ existing ingress worker routes Ajoute une visite vendredi without another model or source completion 264ms
+     ✓ existing ingress worker routes OFF without another model or source completion 246ms
+     ✓ retains atomic source/question/registry with preparation ON 250ms
+     ✓ retains atomic source/question/registry with preparation OFF 126ms
+     ✓ retains atomic source/question/registry with preparation REVOKED_AFTER_SOURCE_CAS 197ms
+     ✓ prepares only START ambiguity and commits exact question plus source CAS 155ms
+     ✓ prepares only END ambiguity and commits exact question plus source CAS 143ms
+     ✓ missing-end model template requests full reformulation before any misleading question is inserted 118ms
+     ✓ current grant changed after inspection rolls back the inserted question and source state 117ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  372ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only  341ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only  330ms
+     ✓ attached but OFF refuses the ordinary approval path 165ms
+     ✓ post-response Google revocation keeps the entire exposure and never creates WAITING 280ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry 283ms
+     ✓ OFF does not require valid input or mutate the DB 1ms
+     ✓ commits exact complete wire + shared ledger without calendar draft or additional provider work 165ms
+     ✓ rolls registry, question and shared ledger back if source completion is omitted 138ms
+     ✓ rejects lease replacement after registry insertion even if a raw UPDATE tries to complete 137ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1698ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in UTC  311ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in America/New_York 291ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo 292ms
+     ✓ missing immutable acceptedAt refuses; historical updatedAt is never substituted 165ms
+     ✓ an SMS received before the durable question receipt cannot become its answer later 212ms
+     ✓ another actor cannot load the question or consume its reply 179ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  462ms
+     ✓ revocation remains possible but prevents attaching or consuming evidence 244ms
+     ✓ rejects a minimal forged ACCEPTED packet at the actual INSERT trigger 223ms
+     ✓ competing consumption of the same SMS commits at most one permanent receipt 226ms
+     ✓ five creations across both types share one permanent hourly cap  863ms
+     ✓ keeps one visible pair namespace after re-pairing into another workspace/owner 291ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  963ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends  391ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 119 passed (121)
+   Start at  14:07:48
+   Duration  59.03s (transform 1.06s, setup 0ms, import 2.06s, tests 56.83s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > atomic correlated calendar preparation from two real persisted synthetic SMS sources > a committed review and marker cannot be rewritten or removed
+AssertionError: expected [Function] to throw error including 'CORRELATED_CALENDAR_MARKER_IMMUTABLE' but got '\nInvalid `prisma.$executeRawUnsafe()…'
+
+- Expected
++ Received
+
+- CORRELATED_CALENDAR_MARKER_IMMUTABLE
++
++ Invalid `prisma.$executeRawUnsafe()` invocation:
++
++
++ Raw query failed. Code: `P0001`. Message: `ERROR: CORRELATED_APPROVAL_OPERATION_IMMUTABLE`
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:670:152
+    668|     await expect(prisma.$executeRawUnsafe('DELETE FROM "PersonalSmsCor…
+    669|       .rejects.toThrow("CORRELATED_CALENDAR_REVIEW_IMMUTABLE");
+    670|     await expect(prisma.$executeRawUnsafe('UPDATE "PersonalAssistantOp…
+       |                                                                                                                                                        ^
+    671|       .rejects.toThrow("CORRELATED_CALENDAR_MARKER_IMMUTABLE");
+    672|     expect(await answeredSnapshot(x)).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > atomic correlated calendar preparation from two real persisted synthetic SMS sources > cannot commit a just-prepared draft already claimed in that same transaction
+AssertionError: expected [Function] to throw error including 'CORRELATED_CALENDAR_FINAL_PENDING_CHA…' but got '\nInvalid `tx.personalAssistantOperat…'
+
+- Expected
++ Received
+
+- CORRELATED_CALENDAR_FINAL_PENDING_CHANGED
++
++ Invalid `tx.personalAssistantOperation.update()` invocation in
++ C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:688:43
++
++   685 await expect(prisma.$transaction(async tx => {
++   686   const prepared = await prepareCorrelatedPersonalCalendarReviewInTransaction(tx, calendarReviewInput(x), calendarReviewEnv(x), context());
++   687   if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
++ → 688   await tx.personalAssistantOperation.update(
++ Error occurred during query execution:
++ ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "P0001", message: "CORRELATED_APPROVAL_REQUIRED", severity: "ERROR", detail: None, column: None, hint: None }), transient: false })
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:690:19
+    688|       await tx.personalAssistantOperation.update({ where: { id: prepar…
+    689|       await tx.$executeRawUnsafe("SET CONSTRAINTS ALL IMMEDIATE");
+    690|     }, txOptions)).rejects.toThrow("CORRELATED_CALENDAR_FINAL_PENDING_…
+       |                   ^
+    691|     expect(await answeredSnapshot(x)).toEqual(before);
+    692|     expect(await prisma.personalSmsCorrelatedCalendarReview.count({ wh…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-565b7b554b454d868c4b5d8640ecb9b6

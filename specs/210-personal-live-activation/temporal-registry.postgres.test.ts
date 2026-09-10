@@ -27,6 +27,9 @@ import { personalCalendarActions, preparePersonalCalendar, preparePersonalCalend
 import { personalCorrelatedCalendarRequestId } from "@/server/model-gateway/personal-intent/correlated-calendar-id";
 import { loadCorrelatedPersonalCalendarReviewInTransaction, readCorrelatedPersonalCalendarReview } from "@/server/model-gateway/personal-intent/correlated-calendar-projection";
 import { readCorrelatedPersonalCalendarReviewList } from "@/server/model-gateway/personal-intent/correlated-calendar-review-list";
+import { fingerprintCorrelatedCalendarApprovalView, inspectCorrelatedCalendarApprovalClaim, inspectCorrelatedCalendarApprovalState,
+  type CorrelatedCalendarApprovalClaim, type CorrelatedCalendarApprovalState } from "@/server/personal-assistant/correlated-calendar-approval-contract";
+import { deterministicGoogleEventId } from "@/lib/construction-operating-assistant-r3/google-calendar";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -230,6 +233,207 @@ async function answeredSnapshot(x: Answered) {
     receipts: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1 ORDER BY id', x.p.id),
     expectations: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsConversationExpectation" WHERE namespace=$1 ORDER BY id', (await stored(x.p.id)).namespace) };
 }
+// Forward79 SQL protocol fixture only: TEST-CREATED choice, not a human click,
+// runtime executor, provider result or current-authority-lock proof.
+async function approvalFixtureData(x: Answered, reviewId: string, db: Prisma.TransactionClient | typeof prisma = prisma) {
+  const review = await db.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { id: reviewId } });
+  const operation = await db.personalAssistantOperation.findUniqueOrThrow({ where: { id: review.calendarOperationId } });
+  const member = await db.constructionWorkspaceMember.findFirstOrThrow({ where: { workspaceId: x.f.workspaceId, userId: x.f.userId } });
+  const workspace = await db.constructionWorkspace.findUniqueOrThrow({ where: { id: x.f.workspaceId } });
+  const account = await db.constructionConnectorAccount.findUniqueOrThrow({ where: { id: review.connectorAccountId } });
+  const grant = await db.constructionConnectorGrant.findUniqueOrThrow({ where: { id: x.f.google.grants[0].id } });
+  const inspected = fingerprintCorrelatedCalendarApprovalView({ version: "personal-correlated-calendar-approval-view-v1",
+    scope: x.f.actor, review: { reviewId: review.id, receiptId: review.receiptId, reviewVersion: review.reviewVersion, packetHash: review.packetHash, proofHash: review.proofHash },
+    request: { calendarRequestId: review.calendarRequestId, calendarRequestHash: review.calendarRequestHash, connectorAccountId: review.connectorAccountId, accountVersion: review.accountVersion },
+    presentation: { itemVersion: "personal-correlated-calendar-review-v1", evidenceVersion: "personal-correlated-calendar-local-preview-v1", titleNormalization: "EXISTING_SCHEMA_TRIM_ONLY", provenance: "UNKNOWN" } });
+  const authority = { accountId: account.id, accountVersion: account.stateVersion, credentialId: account.credentialRef!, writeGrantId: grant.id,
+    writeGrantVersion: grant.stateVersion, memberId: member.id, memberRole: "owner" as const, memberUpdatedAt: member.updatedAt.toISOString(),
+    workspaceUpdatedAt: workspace.updatedAt.toISOString(), accountScopes: account.grantedScopes, grantScopes: grant.grantedScopes };
+  return { review, operation, inspected, authority };
+}
+type ApprovalFixtureData = Awaited<ReturnType<typeof approvalFixtureData>>;
+async function insertSyntheticApprovalClaim(tx: Prisma.TransactionClient, d: ApprovalFixtureData,
+  options: { omitClaim?: boolean; leaseMs?: number; authority?: unknown; state?: (state: CorrelatedCalendarApprovalState) => unknown } = {}) {
+  const id = randomUUID(), token = randomUUID();
+  const [row] = await tx.$queryRawUnsafe<Array<{ id: string; approvedAt: Date; approvalExpiresAt: Date; leaseUntil: Date }>>(`
+    INSERT INTO "PersonalSmsCorrelatedCalendarApproval"(id,"reviewId","calendarOperationId","workspaceId","userId","approvalToken",
+      "fingerprintVersion","reviewFingerprint","approvalExpiresAt","leaseUntil","writeAuthority")
+    SELECT $1,$2,$3,$4,$5,$6,'personal-correlated-calendar-approval-view-v1',$7,
+      least(v."preparationExpiresAt",v."pilotExpiresAt"),
+      least(v."preparationExpiresAt",v."pilotExpiresAt",date_trunc('milliseconds',clock_timestamp() AT TIME ZONE 'UTC')+($9::int*interval '1 millisecond')),$8::jsonb
+    FROM "PersonalSmsCorrelatedCalendarReview" v WHERE v.id=$2
+    RETURNING id,"approvedAt","approvalExpiresAt","leaseUntil"`, id, d.review.id, d.operation.id, d.review.workspaceId, d.review.userId, token,
+  d.inspected.fingerprint, JSON.stringify(options.authority === undefined ? d.authority : options.authority), options.leaseMs ?? 20000);
+  expect(row).toBeDefined();
+  const claim = inspectCorrelatedCalendarApprovalClaim({ version: "personal-correlated-calendar-write-claim-v1",
+    origin: { kind: "personal_sms_temporal_receipt", approvalId: id, reviewId: d.review.id, reviewFingerprint: d.inspected.fingerprint },
+    ...d.inspected.view.scope, operationId: d.operation.id, expectedRequestHash: d.operation.requestHash, request: d.operation.request,
+    authority: d.authority, approvalToken: token, approvedAt: row.approvedAt.toISOString(), approvalExpiresAt: row.approvalExpiresAt.toISOString(), leaseUntil: row.leaseUntil.toISOString() }, d.inspected.view).claim;
+  const state: CorrelatedCalendarApprovalState = { version: "personal-correlated-calendar-write-state-v1", origin: claim.origin,
+    phase: "CLAIMED", approvedBy: claim.userId, approvedHash: claim.expectedRequestHash, approvalToken: token, writeAuthority: claim.authority, dispatchStarted: false };
+  if (!options.omitClaim) expect(await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='processing',attempts=1,
+    "leaseUntil"=($2::timestamptz AT TIME ZONE 'UTC'),result=$3::jsonb WHERE id=$1 AND status='pending' AND attempts=0`, d.operation.id, claim.leaseUntil,
+  JSON.stringify(options.state ? options.state(state) : state))).toBe(1);
+  return { claim, state, view: d.inspected.view };
+}
+async function syntheticApproval(x: Answered, reviewId: string, options?: Parameters<typeof insertSyntheticApprovalClaim>[2], zone = "UTC") {
+  const d = await approvalFixtureData(x, reviewId);
+  return prisma.$transaction(async tx => {
+    await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone);
+    return insertSyntheticApprovalClaim(tx, d, options);
+  }, txOptions);
+}
+async function syntheticApprovalTransition(claim: CorrelatedCalendarApprovalClaim, state: unknown, status: "processing" | "completed" | "uncertain", transport = false) {
+  return prisma.$transaction(tx => tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status=$2,
+    result=$3::jsonb,"leaseUntil"=CASE WHEN $2='processing' THEN "leaseUntil" ELSE NULL END,"externalTransportPerformed"=$4 WHERE id=$1`,
+  claim.operationId, status, JSON.stringify(state), transport), txOptions);
+}
+
+describe("durable typed calendar approval SQL protocol, synthetic choice only", () => {
+  it.each(["TOP_XID", "SAVEPOINT", "RELEASED_SAVEPOINT", "OUTER_WRITE"])("refuses preparing and approving in one transaction after %s", async mode => {
+    const x = await actualAnsweredQuestion(), before = await answeredSnapshot(x);
+    let reachedInsert = false;
+    await expect(prisma.$transaction(async tx => {
+      await tx.$queryRawUnsafe("SELECT pg_current_xact_id()::text");
+      if (mode === "OUTER_WRITE") {
+        await tx.$executeRawUnsafe("CREATE TEMP TABLE synthetic_approval_outer_write(value integer) ON COMMIT DROP");
+        await tx.$executeRawUnsafe("INSERT INTO synthetic_approval_outer_write VALUES (1)");
+      }
+      if (mode !== "TOP_XID") await tx.$executeRawUnsafe("SAVEPOINT synthetic_review");
+      const prepared = await prepareCorrelatedPersonalCalendarReviewInTransaction(tx, calendarReviewInput(x), calendarReviewEnv(x), context());
+      if (prepared.status === "DISABLED") throw new Error("SYNTHETIC_PREPARE_REQUIRED");
+      // Force78's final pending predicate early, then try the forbidden phase
+      // change. Expect the specific committed-review refusal, not an arbitrary
+      // deferred-claim error that could make this test pass for the wrong reason.
+      await tx.$executeRawUnsafe("SET CONSTRAINTS ALL IMMEDIATE");
+      if (mode === "RELEASED_SAVEPOINT") await tx.$executeRawUnsafe("RELEASE SAVEPOINT synthetic_review");
+      const d = await approvalFixtureData(x, prepared.reviewId, tx); reachedInsert = true;
+      await insertSyntheticApprovalClaim(tx, d);
+    }, txOptions)).rejects.toThrow(/CORRELATED_APPROVAL_COMMITTED_REVIEW_REQUIRED/);
+    expect(reachedInsert).toBe(true); expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(0);
+  });
+  it("refuses dispatching a SAVEPOINT claim before its parent commits", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const d = await approvalFixtureData(x, review.id), before = await answeredSnapshot(x);
+    let reachedDispatch = false;
+    await expect(prisma.$transaction(async tx => {
+      await tx.$queryRawUnsafe("SELECT pg_current_xact_id()::text");
+      await tx.$executeRawUnsafe("SAVEPOINT synthetic_claim");
+      const { claim, state } = await insertSyntheticApprovalClaim(tx, d);
+      await tx.$executeRawUnsafe("SET CONSTRAINTS ALL IMMEDIATE");
+      await tx.$executeRawUnsafe("RELEASE SAVEPOINT synthetic_claim"); reachedDispatch = true;
+      await tx.$executeRawUnsafe('UPDATE "PersonalAssistantOperation" SET result=$2::jsonb WHERE id=$1', claim.operationId,
+        JSON.stringify({ ...state, phase: "DISPATCH_CLAIMED", dispatchStarted: true }));
+    }, txOptions)).rejects.toThrow(/CORRELATED_APPROVAL_COMMITTED_CLAIM_REQUIRED/);
+    expect(reachedDispatch).toBe(true); expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("refuses confirming a SAVEPOINT dispatch before its parent commits", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const { claim, state } = await syntheticApproval(x, review.id), before = await answeredSnapshot(x);
+    let reachedTerminal = false;
+    await expect(prisma.$transaction(async tx => {
+      await tx.$queryRawUnsafe("SELECT pg_current_xact_id()::text");
+      await tx.$executeRawUnsafe("SAVEPOINT synthetic_dispatch");
+      await tx.$executeRawUnsafe('UPDATE "PersonalAssistantOperation" SET result=$2::jsonb WHERE id=$1', claim.operationId,
+        JSON.stringify({ ...state, phase: "DISPATCH_CLAIMED", dispatchStarted: true }));
+      await tx.$executeRawUnsafe("SET CONSTRAINTS ALL IMMEDIATE");
+      await tx.$executeRawUnsafe("RELEASE SAVEPOINT synthetic_dispatch"); reachedTerminal = true;
+      await tx.$executeRawUnsafe('UPDATE "PersonalAssistantOperation" SET status=\'completed\',"leaseUntil"=NULL,"externalTransportPerformed"=true,result=$2::jsonb WHERE id=$1', claim.operationId,
+        JSON.stringify({ version: "personal-correlated-calendar-write-state-v1", origin: claim.origin, phase: "CONFIRMED", automaticRetry: false,
+          receipt: { confirmed: true, providerEventId: deterministicGoogleEventId({ workspaceId: claim.workspaceId, calendarItemId: claim.request.requestId, idempotencyKey: claim.request.requestId }) } }));
+    }, txOptions)).rejects.toThrow(/CORRELATED_APPROVAL_CONFIRMED_REQUIRED/);
+    expect(reachedTerminal).toBe(true); expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("two native sessions cannot commit two approvals for the same review", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const d = await approvalFixtureData(x, review.id), pids: number[] = [];
+    let ready!: () => void, release!: () => void, elapsed = false;
+    const firstInserted = new Promise<void>(resolve => { ready = resolve; }), secondSnapshot = new Promise<void>(resolve => { release = resolve; });
+    const timer = setTimeout(() => { elapsed = true; ready(); release(); }, 2500);
+    const first = prisma.$transaction(async tx => {
+      const [row] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); pids.push(row.pid);
+      const claim = await insertSyntheticApprovalClaim(tx, d); ready(); await secondSnapshot; return claim;
+    }, txOptions).finally(ready);
+    const second = (async () => {
+      await firstInserted;
+      return prisma.$transaction(async tx => {
+        const [row] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); pids.push(row.pid);
+        release(); return insertSyntheticApprovalClaim(tx, d);
+      }, txOptions);
+    })().finally(release);
+    try {
+      const results = await Promise.allSettled([first, second]);
+      expect(elapsed).toBe(false); expect(new Set(pids).size).toBe(2);
+      expect(results.filter(r => r.status === "fulfilled")).toHaveLength(1);
+      expect(results.filter(r => r.status === "rejected")).toHaveLength(1);
+      expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsCorrelatedCalendarApproval" WHERE "reviewId"=$1', review.id)).toHaveLength(1);
+      expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: review.calendarOperationId } })).toMatchObject({ status: "processing", attempts: 1 });
+    } finally { clearTimeout(timer); ready(); release(); }
+  });
+  it.each(["UTC", "America/Toronto", "Pacific/Auckland"])("binds native fingerprint, DB epoch and one atomic claim in %s", async zone => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const before = await budget(), result = await syntheticApproval(x, review.id, undefined, zone);
+    const [sql] = await prisma.$queryRawUnsafe<Array<{ fingerprint: string; valid: boolean }>>(`SELECT
+      sms_correlated_approval_view_fingerprint(sms_correlated_approval_view(v)) AS fingerprint,
+      sms_correlated_approval_state_valid(o.result,a,v) AS valid FROM "PersonalSmsCorrelatedCalendarApproval" a
+      JOIN "PersonalSmsCorrelatedCalendarReview" v ON v.id=a."reviewId" JOIN "PersonalAssistantOperation" o ON o.id=a."calendarOperationId" WHERE a.id=$1`, result.claim.origin.approvalId);
+    expect(sql).toEqual({ fingerprint: result.claim.origin.reviewFingerprint, valid: true });
+    expect(inspectCorrelatedCalendarApprovalState(result.state, result.claim, result.view)).toMatchObject({ persistencePerformed: false, authorityVerified: false });
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: result.claim.operationId } })).toMatchObject({ status: "processing", attempts: 1,
+      result: result.state, externalTransportPerformed: false, leaseUntil: new Date(result.claim.leaseUntil) });
+    expect(await budget()).toEqual(before); expect(x.transport).toHaveBeenCalledOnce();
+  });
+  it.each(["MISSING_CLAIM", "NULL_AUTHORITY", "WRONG_ORIGIN"])("rolls back approval and leaves pending unchanged for %s", async failure => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const before = await answeredSnapshot(x);
+    await expect(syntheticApproval(x, review.id, failure === "MISSING_CLAIM" ? { omitClaim: true }
+      : failure === "NULL_AUTHORITY" ? { authority: null }
+      : { state: state => ({ ...state, origin: { ...state.origin, approvalId: randomUUID() } }) })).rejects.toThrow();
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsCorrelatedCalendarApproval" WHERE "reviewId"=$1', review.id)).toEqual([]);
+  });
+  it("refuses an unapproved status mutation without a row or nonce", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const before = await answeredSnapshot(x);
+    await expect(prisma.$transaction(tx => tx.personalAssistantOperation.update({ where: { id: review.calendarOperationId }, data: { status: "uncertain" } }), txOptions)).rejects.toThrow(/CORRELATED_APPROVAL_REQUIRED/);
+    expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("refuses a duplicate approval and protects its immutable nonce and scope", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const result = await syntheticApproval(x, review.id), before = await answeredSnapshot(x);
+    await expect(syntheticApproval(x, review.id)).rejects.toThrow();
+    for (const sql of ['UPDATE "PersonalSmsCorrelatedCalendarApproval" SET "approvalToken"=$2 WHERE id=$1',
+      'UPDATE "PersonalSmsCorrelatedCalendarApproval" SET "workspaceId"=$2 WHERE id=$1']) {
+      await expect(prisma.$executeRawUnsafe(sql, result.claim.origin.approvalId, randomUUID())).rejects.toThrow(/IMMUTABLE/);
+    }
+    await expect(prisma.$executeRawUnsafe('DELETE FROM "PersonalSmsCorrelatedCalendarApproval" WHERE id=$1', result.claim.origin.approvalId)).rejects.toThrow(/IMMUTABLE/);
+    expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("permits one dispatch transition and an exact synthetic terminal receipt, never reopening it", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const { claim, state, view } = await syntheticApproval(x, review.id);
+    const dispatch = { ...state, phase: "DISPATCH_CLAIMED", dispatchStarted: true };
+    await syntheticApprovalTransition(claim, dispatch, "processing");
+    await expect(syntheticApprovalTransition(claim, state, "processing")).rejects.toThrow();
+    const terminal = { version: "personal-correlated-calendar-write-state-v1", origin: claim.origin, phase: "CONFIRMED", automaticRetry: false,
+      receipt: { confirmed: true, providerEventId: deterministicGoogleEventId({ workspaceId: claim.workspaceId, calendarItemId: claim.request.requestId, idempotencyKey: claim.request.requestId }) } };
+    await expect(syntheticApprovalTransition(claim, { ...terminal, receipt: { ...terminal.receipt, providerEventId: `e${"0".repeat(31)}` } }, "completed", true)).rejects.toThrow();
+    await syntheticApprovalTransition(claim, terminal, "completed", true);
+    expect(inspectCorrelatedCalendarApprovalState(terminal, claim, view)).toMatchObject({ providerConfirmationVerified: false });
+    await expect(syntheticApprovalTransition(claim, dispatch, "processing")).rejects.toThrow(/TERMINAL_IMMUTABLE/);
+    expect(x.transport).toHaveBeenCalledOnce(); // Prior synthetic question only, not Google.
+  });
+});
+
 describe("actual incoming worker prepares one correlated calendar review in PostgreSQL", () => {
   it("commits the accepted reply and one private draft through the production hook, not a direct test preparer", async () => {
     const x = await actualAnsweredQuestion("14h", undefined, true);
@@ -464,7 +668,9 @@ describe("atomic correlated calendar preparation from two real persisted synthet
     await expect(prisma.$executeRawUnsafe('DELETE FROM "PersonalSmsCorrelatedCalendarReview" WHERE id=$1', first.reviewId))
       .rejects.toThrow("CORRELATED_CALENDAR_REVIEW_IMMUTABLE");
     await expect(prisma.$executeRawUnsafe('UPDATE "PersonalAssistantOperation" SET "correlatedTemporalReceiptId"=NULL WHERE id=$1', first.operationId))
-      .rejects.toThrow("CORRELATED_CALENDAR_MARKER_IMMUTABLE");
+      // Forward79's alphabetically earlier BEFORE guard rejects this same
+      // immutable-marker rewrite;78 remains unchanged and still installed.
+      .rejects.toThrow("CORRELATED_APPROVAL_OPERATION_IMMUTABLE");
     expect(await answeredSnapshot(x)).toEqual(before);
   });
   it("current revocation refuses even a known replay without changing the saved review", async () => {
@@ -483,7 +689,9 @@ describe("atomic correlated calendar preparation from two real persisted synthet
       if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
       await tx.personalAssistantOperation.update({ where: { id: prepared.operationId }, data: { status: "processing", attempts: 1, leaseUntil: new Date(Date.now() + 10000) } });
       await tx.$executeRawUnsafe("SET CONSTRAINTS ALL IMMEDIATE");
-    }, txOptions)).rejects.toThrow("CORRELATED_CALENDAR_FINAL_PENDING_CHANGED");
+    // Forward79 refuses the UPDATE before78's deferred pending check can run.
+    // The unchanged rollback/source assertions still prove the original intent.
+    }, txOptions)).rejects.toThrow("CORRELATED_APPROVAL_REQUIRED");
     expect(await answeredSnapshot(x)).toEqual(before);
     expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(0);
   });
@@ -588,8 +796,11 @@ describe("private correlated calendar read from actually committed preparation",
   it("reads a synthetic current uncertain state as uncertain, never re-preparing pending", async () => {
     const x = await actualAnsweredQuestion(), prepared = await prepareAnsweredCalendar(x);
     if (prepared.status === "DISABLED") throw new Error("NATIVE_PREPARATION_REQUIRED");
-    // Deliberate synthetic status mutation tests display only, NOT a provider outcome.
-    await prisma.personalAssistantOperation.update({ where: { id: prepared.operationId }, data: { status: "uncertain" } });
+    // Valid forward79 synthetic approval + uncertain transition tests display
+    // only. No pending->uncertain bypass and no provider outcome.
+    const { claim } = await syntheticApproval(x, prepared.reviewId);
+    await syntheticApprovalTransition(claim, { version: "personal-correlated-calendar-write-state-v1", origin: claim.origin,
+      phase: "UNCERTAIN", writeConfirmed: false, reviewRequired: true, automaticRetry: false, reason: "CLAIM_COMMIT_OUTCOME_UNKNOWN" }, "uncertain");
     const before = await answeredSnapshot(x);
     const actual = await readCorrelatedPersonalCalendarReview({ enabled: true, actor: x.f.actor, reviewId: prepared.reviewId },
       { ...x.env, ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_REVIEW_ENABLED: "true" });

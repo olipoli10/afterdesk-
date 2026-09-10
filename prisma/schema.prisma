@@ -5830,6 +5830,8 @@ model PersonalSmsCorrelatedCalendarReview {
   createdAt DateTime @default(dbgenerated("date_trunc('milliseconds'::text, (clock_timestamp() AT TIME ZONE 'UTC'::text))")) @db.Timestamp(3)
   preparationExpiresAt DateTime @db.Timestamp(3)
 
+  approval PersonalSmsCorrelatedCalendarApproval?
+
   receipt PersonalSmsTemporalClarificationReply @relation(fields: [receiptId, workspaceId, userId], references: [id, workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_receipt_fk")
   clarification PersonalSmsTemporalClarification @relation(fields: [clarificationId, workspaceId, userId], references: [id, workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_question_fk")
   originalSource PersonalAssistantOperation @relation("CorrelatedCalendarOriginal", fields: [originalSourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_original_fk")
@@ -5842,6 +5844,25 @@ model PersonalSmsCorrelatedCalendarReview {
   @@index([workspaceId, userId, createdAt, id], map: "sms_correlated_calendar_owner_created_idx")
   @@unique([receiptId, workspaceId, userId], map: "sms_correlated_calendar_receipt_scope_key")
   @@unique([calendarOperationId, workspaceId, userId], map: "sms_correlated_calendar_draft_scope_key")
+  @@unique([id, calendarOperationId, workspaceId, userId], map: "sms_correlated_review_approval_scope_key")
+}
+
+model PersonalSmsCorrelatedCalendarApproval {
+  id String @id
+  reviewId String @unique(map: "sms_correlated_approval_review_key")
+  calendarOperationId String @unique(map: "sms_correlated_approval_operation_key")
+  workspaceId String
+  userId String
+  approvalToken String @unique(map: "sms_correlated_approval_token_key")
+  fingerprintVersion String
+  reviewFingerprint String
+  approvedAt DateTime @default(dbgenerated("date_trunc('milliseconds'::text, (clock_timestamp() AT TIME ZONE 'UTC'::text))")) @db.Timestamp(3)
+  approvalExpiresAt DateTime @db.Timestamp(3)
+  leaseUntil DateTime @db.Timestamp(3)
+  writeAuthority Json
+  review PersonalSmsCorrelatedCalendarReview @relation(fields: [reviewId, calendarOperationId, workspaceId, userId], references: [id, calendarOperationId, workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "sms_correlated_approval_review_fk")
+
+  @@unique([reviewId, calendarOperationId, workspaceId, userId], map: "sms_correlated_approval_scope_key")
 }
 
 model PersonalSmsConversationExpectation {
