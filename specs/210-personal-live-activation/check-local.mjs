@@ -11,7 +11,9 @@ if (!['root', 'mobile', 'build', 'mobile-export', 'postgres', 'postgres-native']
 const powershell = process.argv[3];
 const isPostgres = kind === 'postgres' || kind === 'postgres-native';
 const nativeRoot = kind === 'postgres-native' ? process.argv[4] : undefined;
-const postgresTestFile = kind === 'postgres-native' ? process.argv[5] : process.argv[4];
+const migrationRehearsal = kind === 'postgres-native' && process.argv[5] === '--migration-rehearsal';
+const postgresTestFile = kind === 'postgres-native' ? (migrationRehearsal ? undefined : process.argv[5]) : process.argv[4];
+if (migrationRehearsal && process.argv.length !== 6) throw new Error('LOCAL_REHEARSAL_FILTER_CONFLICT');
 if (isPostgres && (!powershell || !isAbsolute(powershell) || !existsSync(powershell) || !['pwsh.exe', 'powershell.exe'].includes(basename(powershell).toLowerCase()))) throw new Error('LOCAL_POWERSHELL_EXECUTABLE_REQUIRED');
 if (kind === 'postgres-native' && (!nativeRoot || !isAbsolute(nativeRoot) || !existsSync(resolve(nativeRoot, 'bin', 'postgres.exe')))) throw new Error('LOCAL_NATIVE_POSTGRES_ROOT_REQUIRED');
 if (postgresTestFile && (!isPostgres || !/^[a-z-]+\.postgres\.test\.ts$/.test(postgresTestFile) || !existsSync(resolve(root, 'specs/210-personal-live-activation', postgresTestFile)))) throw new Error('LOCAL_POSTGRES_TEST_FILE_REQUIRED');
@@ -25,6 +27,7 @@ const args = isPostgres ? ['-NoProfile', '-File', kind === 'postgres-native' ? '
 const env = safeEnvironment(root);
 if (nativeRoot) args.push('-RuntimeRoot', nativeRoot, '-NodePath', process.execPath);
 if (postgresTestFile) args.push('-TestFile', postgresTestFile);
+if (migrationRehearsal) args.push('-MigrationRehearsal');
 const auth = randomBytes(32).toString('hex');
 if (kind === 'build') Object.assign(env, { BETTER_AUTH_SECRET: auth, BETTER_AUTH_URL: 'http://127.0.0.1:3000', NODE_ENV: 'production', VERCEL_ENV: 'development', ENDVERA_LOCAL_BUILD_DIR: `.next-personal-210-${stamp}` });
 mkdirSync(dir, { recursive: true });
@@ -37,7 +40,7 @@ child.on('close', code => {
   if (output.includes(auth) || size >= 16000000) { console.error('LOCAL_CHECK_OUTPUT_WITHHELD'); process.exitCode = 1; return; }
   writeFileSync(resolve(dir, 'output.txt'), output, { flag: 'wx' });
   const result = { kind, databaseRuntime: kind === 'postgres-native' ? 'NATIVE_POSTGRESQL' : kind === 'postgres' ? 'PRISMA_DEV_PGLITE' : null,
-    postgresTestFile: postgresTestFile ?? null, exitCode: code, finishedAt: new Date().toISOString(), providerCallsAuthorized: false, localOnly: true, outputPath: dir, buildDirectory: kind === 'build' ? env.ENDVERA_LOCAL_BUILD_DIR : null };
+    postgresTestFile: postgresTestFile ?? null, ...(migrationRehearsal ? { migrationRehearsal: 'SYNTHETIC_POPULATED_70_TO_79', remotePg18Verified: false } : {}), exitCode: code, finishedAt: new Date().toISOString(), providerCallsAuthorized: false, localOnly: true, outputPath: dir, buildDirectory: kind === 'build' ? env.ENDVERA_LOCAL_BUILD_DIR : null };
   writeFileSync(resolve(dir, 'result.json'), JSON.stringify(result, null, 2), { flag: 'wx' });
   console.log(output.split(/\r?\n/).slice(-22).join('\n')); console.log(JSON.stringify(result));
   if (code !== 0) process.exitCode = 1;

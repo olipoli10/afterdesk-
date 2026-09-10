@@ -1,0 +1,7 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+{"version":"personal-pilot-70-to-79-rehearsal-v1","status":"SYNTHETIC_POPULATED_UPGRADE_VERIFIED","baselineCount":70,"finalCount":79,"legacyRowCount":14,"historicalRowsPreserved":true,"newProofTablesEmpty":true,"databaseRuntime":"POSTGRESQL_17_11","remotePg18Verified":false,"providerCallsAuthorized":false,"deploymentAuthorized":false}
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-33bc96ca02fb46c1a5e3fa52cdbfe2a5

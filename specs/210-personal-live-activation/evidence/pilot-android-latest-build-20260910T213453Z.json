@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "EXISTING_ANDROID_BUILD_METADATA_READ",
+  "observedAt": "2026-09-10T21:34:53Z",
+  "configuredProjectId": "a7b2c087-f8e1-48e4-8798-f6fabefb69fe",
+  "command": "Existing cached eas-cli23.2.0 build:list --platform android --limit 1 --non-interactive --json",
+  "existingCredentialUsedByCli": true,
+  "credentialValuesInspectedOrDisplayed": false,
+  "newInstallOrBuildSubmitted": false,
+  "build": {
+    "id": "fccebc0b-b48f-4a99-99e2-5eda00d37711",
+    "status": "FINISHED",
+    "platform": "ANDROID",
+    "distribution": "INTERNAL",
+    "appVersion": "0.2.0",
+    "appBuildVersion": "4",
+    "gitCommitHash": "15a47d966184618b1d894947b10a73c0f5b7da94",
+    "createdAt": "2026-09-10T02:06:19.357Z",
+    "completedAt": "2026-09-10T02:20:01.389Z"
+  },
+  "notes": [
+    "CLI derives project selection from the existing mobile project configuration; projectId was not repeated in the returned build object.",
+    "This is the existing old APK, not a build of current local fixes.",
+    "Recheck version immediately before any future submission; no version number changed here.",
+    "Process environment retained only OS/path/profile directories; no inherited provider secret variables. Output projected to metadata fields, not raw CLI authentication or signed artifact URLs."
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "REMOTE_PILOT_CATALOG_SHAPE_READ",
+  "observedAt": "2026-09-10T21:32:10Z",
+  "projectId": "withered-mud-08129552",
+  "branchId": "br-nameless-moon-ax8nmuwj",
+  "databaseName": "neondb",
+  "readOnly": true,
+  "query": "SELECT current_database() AS database_name, current_setting('server_version_num') AS server_version_num, current_user AS database_role,\n(SELECT count(*)::int FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p')) AS table_count,\n(SELECT count(*)::int FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) AS application_function_count,\n(SELECT count(*)::int FROM pg_constraint c WHERE c.connamespace='public'::regnamespace AND (NOT c.convalidated OR (to_jsonb(c)->>'conenforced')::boolean = false)) AS unvalidated_or_unenforced_constraints,\n(SELECT COALESCE(jsonb_agg(jsonb_build_object('kind',x.relkind,'count',x.n) ORDER BY x.relkind),'[]'::jsonb) FROM (SELECT c.relkind::text,count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' GROUP BY c.relkind) x) AS relation_kinds,\n(SELECT jsonb_agg(jsonb_build_object('name',e.extname,'version',e.extversion) ORDER BY e.extname) FROM pg_extension e) AS extensions",
+  "rows": [
+    {
+      "database_name": "neondb",
+      "server_version_num": "180006",
+      "database_role": "neondb_owner",
+      "table_count": 183,
+      "application_function_count": 65,
+      "unvalidated_or_unenforced_constraints": 0,
+      "relation_kinds": [
+        {
+          "kind": "i",
+          "count": 676
+        },
+        {
+          "kind": "r",
+          "count": 183
+        }
+      ],
+      "extensions": [
+        {
+          "name": "plpgsql",
+          "version": "1.0"
+        },
+        {
+          "name": "vector",
+          "version": "0.8.6"
+        }
+      ]
+    }
+  ],
+  "customerRowsRead": false,
+  "secretAccess": false,
+  "externalMutation": false,
+  "driftVerified": false,
+  "backupVerified": false,
+  "notes": [
+    "Counts and valid/enforced flags are not definitions equivalence or complete permissions inspection.",
+    "Current branch PostgreSQL18.6 and vector0.8.6 differ from native17.11 rehearsal platform; differences require explicit comparison."
+  ]
+}

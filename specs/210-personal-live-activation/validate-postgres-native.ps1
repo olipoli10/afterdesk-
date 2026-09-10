@@ -2,7 +2,8 @@
 param(
   [Parameter(Mandatory = $true)][string]$RuntimeRoot,
   [Parameter(Mandatory = $true)][string]$NodePath,
-  [string]$TestFile = ''
+  [string]$TestFile = '',
+  [switch]$MigrationRehearsal
 )
 $ErrorActionPreference = 'Stop'
 $taskRepo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -84,6 +85,7 @@ function Get-NativeCampaignRemainingMs([Diagnostics.Stopwatch]$Clock, [int]$Maxi
   return [int][Math]::Min($MaximumMs, $remaining)
 }
 try {
+  if ($MigrationRehearsal -and $TestFile) { throw 'PERSONAL_NATIVE_REHEARSAL_FILTER_CONFLICT' }
   if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { throw 'PERSONAL_NATIVE_WINDOWS_REQUIRED' }
   if (-not [IO.Path]::IsPathFullyQualified($RuntimeRoot) -or $RuntimeRoot.StartsWith('\\')) { throw 'PERSONAL_NATIVE_RUNTIME_INVALID' }
   $taskRuntimeItem = Get-Item -LiteralPath $RuntimeRoot
@@ -210,6 +212,75 @@ try {
   $taskChildEnvironment['ENDVERA_210_DATABASE_NAME'] = $taskDatabase
   $taskChildEnvironment['PGDATABASE'] = $taskDatabase
   $taskChildEnvironment['PGAPPNAME'] = 'endvera_native_local_tests'
+  if ($MigrationRehearsal) {
+    # Explicit isolated populated70 -> clone79 rehearsal; never enters the default test loop.
+    $taskRehearsalClock = [Diagnostics.Stopwatch]::StartNew()
+    $taskRehearsalHelper = Join-Path $PSScriptRoot 'deployment/migration-rehearsal/rehearsal.mjs'
+    Assert-NoReparseAncestors $taskRehearsalHelper
+    $taskRehearsal = Join-Path $taskCluster 'migration-rehearsal'
+    function Assert-RehearsalInputs([string]$Label) {
+      $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+      $null = Invoke-NativeChild $taskNode @($taskRehearsalHelper, 'verify-inputs', $taskCluster) ($Label + '-inputs') $remaining
+    }
+    $taskStage = 'REHEARSAL_STAGE'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $null = Invoke-NativeChild $taskNode @($taskRehearsalHelper, 'stage', $taskCluster) 'rehearsal-stage' $remaining
+    $taskStage = 'REHEARSAL_MIGRATE_70'
+    Assert-RehearsalInputs 'rehearsal-migrate-70'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock 120000
+    $null = Invoke-NativeChild $taskNode @((Join-Path $taskRepo 'node_modules/prisma/build/index.js'), 'migrate', 'deploy', '--config', (Join-Path $taskRehearsal 'prisma-70.config.ts')) 'rehearsal-migrate-70' $remaining
+    $taskStage = 'REHEARSAL_SEED_70'
+    Assert-RehearsalInputs 'rehearsal-seed-70'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $null = Invoke-NativeChild $taskSql @('-X', '-q', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $taskRehearsal 'seed-70.sql')) 'rehearsal-seed-70' $remaining
+    $taskStage = 'REHEARSAL_SNAPSHOT_70'
+    Assert-RehearsalInputs 'rehearsal-snapshot-70'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $before = Invoke-NativeChild $taskSql @('-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $taskRehearsal 'snapshot-70.sql')) 'rehearsal-snapshot-70' $remaining
+    $beforeFile = Join-Path $taskRehearsal 'before.json'
+    [IO.File]::WriteAllText($beforeFile, $before.Trim(), [Text.UTF8Encoding]::new($false))
+    $beforeHash = (Get-FileHash -LiteralPath $beforeFile -Algorithm SHA256).Hash
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $null = Invoke-NativeChild $taskNode @($taskRehearsalHelper, 'baseline', $taskCluster) 'rehearsal-baseline' $remaining
+    # Preserve the complete populated70 database. No connection termination or deletion.
+    $taskBaseline = $taskDatabase
+    $taskChildEnvironment['PGDATABASE'] = 'postgres'
+    $taskStage = 'REHEARSAL_SEAL_70'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $null = Invoke-NativeChild $taskSql @('-X', '-v', 'ON_ERROR_STOP=1', '-c', "ALTER DATABASE $taskBaseline ALLOW_CONNECTIONS false;") 'rehearsal-seal-70' $remaining
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $connections = (Invoke-NativeChild $taskSql @('-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-c', "SELECT count(*) FROM pg_stat_activity WHERE datname='$taskBaseline';") 'rehearsal-baseline-connections' $remaining).Trim()
+    if ($connections -ne '0') { throw 'PERSONAL_NATIVE_REHEARSAL_CONNECTIONS_REMAIN' }
+    $taskDatabase = 'endvera_personal_210_' + [Guid]::NewGuid().ToString('N')
+    $taskStage = 'REHEARSAL_CLONE_70'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $null = Invoke-NativeChild $taskSql @('-X', '-v', 'ON_ERROR_STOP=1', '-c', "CREATE DATABASE $taskDatabase TEMPLATE $taskBaseline;") 'rehearsal-clone-70' $remaining
+    $taskUrl = "postgresql://${taskUser}:${taskPassword}@127.0.0.1:${taskPort}/${taskDatabase}?connection_limit=5&connect_timeout=5"
+    $taskChildEnvironment['DATABASE_URL'] = $taskUrl
+    $taskChildEnvironment['DIRECT_URL'] = $taskUrl
+    $taskChildEnvironment['ENDVERA_210_DATABASE_NAME'] = $taskDatabase
+    $taskChildEnvironment['PGDATABASE'] = $taskDatabase
+    $taskStage = 'REHEARSAL_MIGRATE_79'
+    Assert-RehearsalInputs 'rehearsal-migrate-79'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock 120000
+    $null = Invoke-NativeChild $taskNode @((Join-Path $taskRepo 'node_modules/prisma/build/index.js'), 'migrate', 'deploy', '--config', (Join-Path $taskRehearsal 'prisma-79.config.ts')) 'rehearsal-migrate-79' $remaining
+    $taskStage = 'REHEARSAL_SNAPSHOT_79'
+    Assert-RehearsalInputs 'rehearsal-snapshot-79'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $after = Invoke-NativeChild $taskSql @('-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $taskRehearsal 'snapshot-79.sql')) 'rehearsal-snapshot-79' $remaining
+    [IO.File]::WriteAllText((Join-Path $taskRehearsal 'after.json'), $after.Trim(), [Text.UTF8Encoding]::new($false))
+    if ((Get-FileHash -LiteralPath $beforeFile -Algorithm SHA256).Hash -ne $beforeHash) { throw 'PERSONAL_NATIVE_REHEARSAL_SNAPSHOT_CHANGED' }
+    $taskStage = 'REHEARSAL_VERIFY'
+    $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    Write-Output (Invoke-NativeChild $taskNode @($taskRehearsalHelper, 'verify', $taskCluster) 'rehearsal-verify' $remaining)
+    $null = Get-NativeCampaignRemainingMs $taskRehearsalClock
+    $taskReceipt = [ordered]@{ mode = 'SYNTHETIC_POPULATED_70_TO_79'; baselineDatabase = $taskBaseline; upgradedDatabase = $taskDatabase
+      baselineSnapshotSha256 = $beforeHash.ToLowerInvariant(); databaseRetained = $true; providerCallsAuthorized = $false; remotePg18Verified = $false }
+    [IO.File]::WriteAllText((Join-Path $taskCluster 'rehearsal-databases.json'), ($taskReceipt | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
+    $taskRehearsalClock.Stop()
+    $taskExit = 0
+  } else {
+  # BEGIN_DEFAULT_MIGRATED_TEMPLATE_SUITE — unchanged ordinary test path.
   $taskStage = 'MIGRATIONS'
   $null = Invoke-NativeChild $taskNode @((Join-Path $taskRepo 'node_modules/prisma/build/index.js'), 'migrate', 'deploy') 'migrations' 120000
   Write-Output 'PERSONAL_NATIVE_MIGRATIONS_APPLIED'
@@ -265,6 +336,8 @@ try {
     if ($testResult.ExitCode -ne 0) { $taskExit = 1 }
   }
   $taskTestClock.Stop()
+  # END_DEFAULT_MIGRATED_TEMPLATE_SUITE
+  }
 } catch {
   $code = $_.Exception.Message
   if ($code -match '^PERSONAL_NATIVE_[A-Z0-9_]+$') { Write-Output $code }

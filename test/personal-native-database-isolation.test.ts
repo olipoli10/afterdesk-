@@ -18,11 +18,15 @@ describe("native per-file database isolation contract (static, no PostgreSQL exe
     expect(source).toContain("PERSONAL_NATIVE_EMPTY_TEST_INVENTORY");
   });
   it("migrates once, closes the template to connections and clones only after that barrier", () => {
-    expect(source.match(/'migrate', 'deploy'/g)).toHaveLength(1);
-    const migrated = source.indexOf("PERSONAL_NATIVE_MIGRATIONS_APPLIED");
-    const sealed = source.indexOf('ALTER DATABASE $taskTemplate ALLOW_CONNECTIONS false;');
-    const disconnected = source.indexOf("PERSONAL_NATIVE_TEMPLATE_CONNECTIONS_REMAIN");
-    const cloned = source.indexOf('CREATE DATABASE $taskDatabase TEMPLATE $taskTemplate;');
+    const start = source.indexOf('# BEGIN_DEFAULT_MIGRATED_TEMPLATE_SUITE');
+    const end = source.indexOf('# END_DEFAULT_MIGRATED_TEMPLATE_SUITE');
+    expect(start).toBeGreaterThan(0); expect(end).toBeGreaterThan(start);
+    const normal = source.slice(start, end);
+    expect(normal.match(/'migrate', 'deploy'/g)).toHaveLength(1);
+    const migrated = normal.indexOf("PERSONAL_NATIVE_MIGRATIONS_APPLIED");
+    const sealed = normal.indexOf('ALTER DATABASE $taskTemplate ALLOW_CONNECTIONS false;');
+    const disconnected = normal.indexOf("PERSONAL_NATIVE_TEMPLATE_CONNECTIONS_REMAIN");
+    const cloned = normal.indexOf('CREATE DATABASE $taskDatabase TEMPLATE $taskTemplate;');
     expect(migrated).toBeGreaterThan(0);
     expect(sealed).toBeGreaterThan(migrated);
     expect(disconnected).toBeGreaterThan(sealed);

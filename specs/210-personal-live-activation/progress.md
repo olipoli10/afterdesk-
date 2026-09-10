@@ -1,5 +1,20 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 21:38Z — populated upgrade rehearsal and regressions verified
+
+Actual local Prisma70->seed14 old rows->sealed baseline->clone->79 PASS21:30:11Z.
+Old columns/history preserved, seven new proof ledgers empty; private clusters
+retained and exact servers stopped. Controller103 focused, native372/20 clones
+and full root6268/3 historical skips PASS. Red staging inventory and real shared
+dependency-chain failures retained and corrected under separate peer review.
+See audits/PILOT_POPULATED_REHEARSAL_CONTROLLER.md for hashes and exact receipts.
+
+Fresh read-only pilot metadata PG18.6/183tables/676indexes/65application functions
+does not prove definitions equivalence. EAS latest remains existing code4/source
+15a47d9, not a new APK. Continue PILOT_SCHEMA_DRIFT_PLAN.md, then recoverable remote
+backup/rehearsal and compatible backend. No remote WRITE, provider, new purchase,
+APK submission or metric promotion. Preserve tsconfig/drafts/shared dependencies.
+
 ## 2026-09-10 21:14Z — real metadata reconciled; populated local upgrade implementation active
 
 New local catalog79/compare70 reviewed and62/62 PASS17:13:40; types/lint PASS.

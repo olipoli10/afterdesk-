@@ -19,8 +19,8 @@
       "status": "IN_PROGRESS",
       "dependencies": ["VOICE_DISCLOSURE_DEADLINE_REPAIR", "SMS_CORRELATED_EXPLICIT_APPROVAL"],
       "evidence": "PILOT_BACKEND_APK_UPGRADE_PLAN.md",
-      "completed": ["Historical remote70/local79 mismatch identified; bootstrap68-to70 and APK builder are not sufficient upgrade gates", "Read-only exactcatalog79 and peerreview62 PASS; controller fresh managedNeon metadata70 matches47exact/23LF, old dedicatedVercel06e26ce7 READY confirmed without writes/secrets"],
-      "remaining": ["Reviewed native synthetic populated70-to79 rehearsal in progress", "RemotePG18 catalog drift, recoverable backup and rehearsal before migration", "Compatible dedicated backend before coherent signed internal APK; real owner connections remain separate"],
+      "completed": ["Historical remote70/local79 mismatch identified; bootstrap68-to70 and APK builder are not sufficient upgrade gates", "Read-only exactcatalog79 and peerreview62 PASS; controller fresh managedNeon metadata70 matches47exact/23LF, old dedicatedVercel06e26ce7 READY confirmed without writes/secrets", "Reviewed real native17.11 populated70-to79 rehearsal PASS21:30:11Z:14 old rows/70 history retained, new proof ledgers empty, private databases retained/server stopped", "Regression native372/20 clones PASS21:35:25Z; full root6268 PASS/3 historical skips21:37:17Z; controller103 focused PASS; current EAS read stillold code4"],
+      "remaining": ["Read-only application catalog comparison: PILOT_SCHEMA_DRIFT_PLAN.md", "RemotePG18 catalog drift, recoverable backup and rehearsal before migration", "Compatible dedicated backend before coherent signed internal APK; real owner connections remain separate"],
       "liveObserved": false
     },
     {
