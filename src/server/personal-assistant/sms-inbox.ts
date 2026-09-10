@@ -5,8 +5,8 @@ import { createHash } from "node:crypto";
 import type { TwilioSmsEnvelope } from "./twilio-envelope";
 import { TwilioIngressRefused } from "./twilio-envelope";
 
-// Reuse the durable connector-operation queue; do not create a second assistant
-// database or run a model in the webhook request. The worker consumes this kind.
+// Queue in the existing PostgreSQL database. Historical prepared operations
+// retain their no-transport CHECK; the worker consumes this new live table.
 export async function enqueuePersonalSms(envelope: TwilioSmsEnvelope) {
   const idempotencyKey = `personal-sms:${createHash("sha256")
     .update(`${envelope.accountSid}:${envelope.messageSid}`).digest("hex")}`;
@@ -38,7 +38,7 @@ export async function enqueuePersonalSms(envelope: TwilioSmsEnvelope) {
     if (account?.status !== "connected" || account.externalAccountKeyHash !== accountHash || !account.grants.length) {
       throw new TwilioIngressRefused("CHANNEL_NOT_CONNECTED");
     }
-    const prior = await tx.constructionConnectorOperation.findFirst({
+    const prior = await tx.personalAssistantOperation.findFirst({
       where: { idempotencyKey, kind: "personal_sms_inbound" },
       select: { id: true, workspaceId: true, createdByUserId: true, requestHash: true },
     });
@@ -48,7 +48,7 @@ export async function enqueuePersonalSms(envelope: TwilioSmsEnvelope) {
       }
       return { operationId: prior.id, replayed: true };
     }
-    const operation = await tx.constructionConnectorOperation.create({
+    const operation = await tx.personalAssistantOperation.create({
       data: {
         workspaceId: identity.workspaceId, connectorAccountId: account.id,
         kind: "personal_sms_inbound", status: "received", idempotencyKey,

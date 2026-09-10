@@ -4,6 +4,7 @@ import {
   parseMobileCockpit,
 } from "@/lib/contracts";
 import { mobileApiBaseUrl } from "@/lib/config";
+import { personalGoogleStatusSchema, personalGoogleDisconnectSchema, personalGoogleEventsSchema, validatePersonalGoogleLaunch } from "@/lib/personal-google";
 import { mobileCommandSchema } from "@/lib/commands";
 import {
   mobileAssistantHistorySchema,
@@ -142,6 +143,22 @@ function statusCode(status: number): MobileApiErrorCode {
 }
 
 export class MobileApi {
+  async personalGoogleStatus(workspaceId: string) {
+    return personalGoogleStatusSchema.parse(await this.request(`/api/endvera/v1/personal/google/status?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
+  }
+
+  async connectPersonalGoogle(workspaceId: string, mode: "READ_ONLY" | "READ_WRITE") {
+    return validatePersonalGoogleLaunch(await this.request("/api/endvera/v1/personal/google/connect", { method: "POST", body: JSON.stringify({ workspaceId, action: "CONNECT", mode }) }), this.options.baseUrl ?? mobileApiBaseUrl());
+  }
+
+  async disconnectPersonalGoogle(workspaceId: string) {
+    return personalGoogleDisconnectSchema.parse(await this.request("/api/endvera/v1/personal/google/connect", { method: "POST", body: JSON.stringify({ workspaceId, action: "DISCONNECT" }) }));
+  }
+
+  async personalGoogleEvents(workspaceId: string, start: string, end: string) {
+    return personalGoogleEventsSchema.parse(await this.request(`/api/endvera/v1/personal/google/events?${new URLSearchParams({ workspaceId, start, end })}`, { method: "GET" }));
+  }
+
   constructor(
     private readonly options: {
       baseUrl?: string;

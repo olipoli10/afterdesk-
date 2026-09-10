@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import type { MobileCalendarProviderStatus } from "@/lib/calendar-connectors";
 import { useMobileSession } from "@/state/mobile-session";
+import { PersonalGoogleConnection } from "@/components/personal-google-connection";
 
 function ProviderCard({ provider }: { provider: MobileCalendarProviderStatus }) {
   const { activeWorkspace, submitCalendarConnectorCommand } = useMobileSession();
@@ -102,7 +103,7 @@ export default function CalendarConnectionsScreen() {
       <Heading
         eyebrow="CALENDRIERS EXTERNES"
         title="Connexions calendrier"
-        body="Prépare séparément Google Calendar ou Microsoft Outlook avec le minimum d’accès requis."
+        body="Connecte Google pour retrouver ton horaire. Les accès restent sous ton contrôle."
       />
       {calendarConnectorLoadState === "LOADING" ? (
         <Loading label="Connexions calendrier en reconstruction…" />
@@ -116,11 +117,12 @@ export default function CalendarConnectionsScreen() {
           </Text>
         </Card>
       ) : null}
-      {calendarConnectorCockpit?.providers.map((provider) => (
+      {activeWorkspace?.role === "OWNER" ? <PersonalGoogleConnection key={activeWorkspace.id} workspaceId={activeWorkspace.id} /> : null}
+      {calendarConnectorCockpit?.providers.filter(provider => provider.provider !== "google_calendar").map((provider) => (
         <ProviderCard key={provider.provider} provider={provider} />
       ))}
       <Notice>
-        Cette étape prépare ou révoque uniquement l’autorité locale. Aucun OAuth, appel fournisseur ou transport externe n’est exécuté.
+        Google utilise sa propre page sécurisée pour ton consentement. Microsoft Outlook reste en préparation locale et n’est pas encore connecté.
       </Notice>
     </Screen>
   );

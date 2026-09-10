@@ -6,7 +6,7 @@ const db = vi.hoisted(() => ({
   constructionCommunicationIdentity: { findMany: vi.fn() },
   constructionWorkspaceMember: { findFirst: vi.fn() },
   constructionConnectorAccount: { findUnique: vi.fn() },
-  constructionConnectorOperation: { findFirst: vi.fn(), create: vi.fn() },
+  personalAssistantOperation: { findFirst: vi.fn(), create: vi.fn() },
 }));
 vi.mock("@/lib/db", () => ({ prisma: { $transaction: (fn: (tx: typeof db) => unknown) => fn(db) } }));
 import { enqueuePersonalSms } from "../src/server/personal-assistant/sms-inbox";
@@ -20,30 +20,30 @@ beforeEach(() => {
   db.constructionCommunicationIdentity.findMany.mockResolvedValue([{ id: "identity", userId: "owner", workspaceId: "workspace" }]);
   db.constructionWorkspaceMember.findFirst.mockResolvedValue({ id: "member" });
   db.constructionConnectorAccount.findUnique.mockResolvedValue({ id: "account", status: "connected", externalAccountKeyHash: createHash("sha256").update(envelope.accountSid).digest("hex"), grants: [{ id: "grant" }] });
-  db.constructionConnectorOperation.findFirst.mockResolvedValue(null);
-  db.constructionConnectorOperation.create.mockResolvedValue({ id: "inbound" });
+  db.personalAssistantOperation.findFirst.mockResolvedValue(null);
+  db.personalAssistantOperation.create.mockResolvedValue({ id: "inbound" });
 });
 
 describe("personal SMS durable inbox repository contract (mock DB, not PostgreSQL proof)", () => {
   it("stores a received operation without executing an assistant or outgoing message", async () => {
     expect(await enqueuePersonalSms(envelope)).toEqual({ operationId: "inbound", replayed: false });
     expect(db.$queryRaw).toHaveBeenCalledOnce();
-    expect(db.constructionConnectorOperation.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: "received", kind: "personal_sms_inbound", workspaceId: "workspace", createdByUserId: "owner", externalTransportPerformed: true }) }));
+    expect(db.personalAssistantOperation.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: "received", kind: "personal_sms_inbound", workspaceId: "workspace", createdByUserId: "owner", externalTransportPerformed: true }) }));
   });
   it("returns an identical replay without a second insert", async () => {
-    db.constructionConnectorOperation.findFirst.mockResolvedValue({ id: "prior", workspaceId: "workspace", createdByUserId: "owner", requestHash: envelope.contentHash });
+    db.personalAssistantOperation.findFirst.mockResolvedValue({ id: "prior", workspaceId: "workspace", createdByUserId: "owner", requestHash: envelope.contentHash });
     expect(await enqueuePersonalSms(envelope)).toEqual({ operationId: "prior", replayed: true });
-    expect(db.constructionConnectorOperation.create).not.toHaveBeenCalled();
+    expect(db.personalAssistantOperation.create).not.toHaveBeenCalled();
   });
   it.each([{ workspaceId: "other" }, { createdByUserId: "other" }, { requestHash: "changed" }])("rejects conflicting replay", async change => {
-    db.constructionConnectorOperation.findFirst.mockResolvedValue({ id: "prior", workspaceId: "workspace", createdByUserId: "owner", requestHash: envelope.contentHash, ...change });
+    db.personalAssistantOperation.findFirst.mockResolvedValue({ id: "prior", workspaceId: "workspace", createdByUserId: "owner", requestHash: envelope.contentHash, ...change });
     await expect(enqueuePersonalSms(envelope)).rejects.toThrow("REPLAY_CONFLICT");
-    expect(db.constructionConnectorOperation.create).not.toHaveBeenCalled();
+    expect(db.personalAssistantOperation.create).not.toHaveBeenCalled();
   });
   it.each([{ identities: [] }, { identities: [{ id: "one", userId: "owner", workspaceId: "a" }, { id: "two", userId: "owner", workspaceId: "b" }] }])("rejects absent or ambiguous sender binding", async ({ identities }) => {
     db.constructionCommunicationIdentity.findMany.mockResolvedValue(identities);
     await expect(enqueuePersonalSms(envelope)).rejects.toThrow("IDENTITY_NOT_BOUND");
-    expect(db.constructionConnectorOperation.create).not.toHaveBeenCalled();
+    expect(db.personalAssistantOperation.create).not.toHaveBeenCalled();
   });
   it("rejects revoked workspace membership even for a previously verified phone", async () => {
     db.constructionWorkspaceMember.findFirst.mockResolvedValue(null);

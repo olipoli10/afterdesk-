@@ -5570,10 +5570,50 @@ model ConstructionConnectorAccount {
 
   grants     ConstructionConnectorGrant[]
   operations ConstructionConnectorOperation[]
+  credentials ConstructionConnectorCredential[]
+  personalOperations PersonalAssistantOperation[]
 
   @@unique([workspaceId, provider])
   @@unique([id, workspaceId])
   @@index([workspaceId, status])
+}
+
+// Encrypted server-only material. Account rows retain only an opaque reference.
+model ConstructionConnectorCredential {
+  id                 String                       @id @default(cuid())
+  workspaceId        String
+  connectorAccountId String
+  account            ConstructionConnectorAccount @relation(fields: [connectorAccountId, workspaceId], references: [id, workspaceId], onDelete: Cascade)
+  ciphertext         String
+  version            Int                          @default(1)
+  revokedAt          DateTime?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+
+  @@index([connectorAccountId, revokedAt])
+}
+
+// Live pilot operations have their own lifecycle; historical preparation rows
+// retain their no-transport database constraint and immutable evidence meaning.
+model PersonalAssistantOperation {
+  id                 String                       @id @default(cuid())
+  workspaceId        String
+  connectorAccountId String
+  account            ConstructionConnectorAccount @relation(fields: [connectorAccountId, workspaceId], references: [id, workspaceId], onDelete: Cascade)
+  kind               String
+  status             String
+  idempotencyKey     String                       @unique
+  request            Json
+  requestHash        String
+  result             Json?
+  externalTransportPerformed Boolean              @default(false)
+  createdByUserId    String
+  leaseUntil        DateTime?
+  attempts          Int                          @default(0)
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+
+  @@index([workspaceId, kind, status])
 }
 
 model ConstructionConnectorGrant {
