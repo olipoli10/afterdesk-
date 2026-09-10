@@ -134,7 +134,7 @@ export async function googleTokensForOwner(userId: string, workspaceId: string, 
       if (updated.count !== 1) throw new Error("GOOGLE_CONNECTION_CHANGED");
     }, { isolationLevel: "Serializable" });
   }
-  return { accountId: account.id, tokens };
+  return { accountId: account.id, accountVersion: account.stateVersion, tokens };
 }
 
 export async function googleConnectionStatus(userId: string, workspaceId: string, env: ConnectorEnvironment = process.env) {
@@ -147,11 +147,12 @@ export async function googleConnectionStatus(userId: string, workspaceId: string
 }
 
 export async function readGoogleCalendar(userId: string, workspaceId: string, start: string, end: string, env: ConnectorEnvironment = process.env, client = new GoogleCalendarClient(env)) {
-  const { tokens } = await googleTokensForOwner(userId, workspaceId, env, client);
+  const { tokens, accountId, accountVersion } = await googleTokensForOwner(userId, workspaceId, env, client);
   const result = await client.listEvents(tokens, start, end);
   // Withhold data if the owner or connection was revoked while Google answered.
   const status = await googleConnectionStatus(userId, workspaceId, env);
-  if (!status.readEnabled) throw new Error("GOOGLE_READ_ACCESS_REFUSED");
+  const unchanged = await prisma.constructionConnectorAccount.findFirst({ where: { id: accountId, stateVersion: accountVersion, status: "connected", revokedAt: null } });
+  if (!status.readEnabled || !unchanged) throw new Error("GOOGLE_READ_ACCESS_REFUSED");
   return result;
 }
 

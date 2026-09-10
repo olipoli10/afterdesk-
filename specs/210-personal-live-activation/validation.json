@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-10T01:02:00Z",
+  "verdict": "LOCAL_IMPLEMENTATION_VALIDATED_NOT_LIVE",
+  "projectComplete": false,
+  "rootSuite": { "passed": 2785, "skipped": 3, "failed": 0, "evidence": "evidence/root-1789001895550/result.json", "note": "Three historical founder/DB tests remain skipped. Final receipt-projection hardening additionally checked by PostgreSQL and build." },
+  "focusedPersonalUnits": { "passed": 64, "failed": 0 },
+  "mobileSuite": { "passed": 199, "failed": 0, "evidence": "evidence/mobile-1789001097920/result.json" },
+  "postgres": { "passed": 20, "failed": 0, "testStartedAtLocal": "2026-09-09T21:00:01-04:00", "durationSeconds": 48.41, "command": "& ./specs/210-personal-live-activation/validate-postgres.ps1", "realLocalDatabase": true, "providerTransport": "FAKE", "disposableClusterRemoved": true, "note": "Includes final uncertain-calendar transport evidence and conflicting-delivery-ID regression." },
+  "webBuild": { "pass": true, "evidence": "evidence/build-1789001976506/result.json" },
+  "compiledRuntime": { "passed": 6, "failed": 0, "evidence": "evidence/build-1789001976506/runtime.json", "serverStopped": true },
+  "androidHermesExport": { "pass": true, "evidence": "evidence/mobile-export-1789001885336/result.json", "installableApk": false, "samsungObserved": false },
+  "typechecks": { "root": "PASS", "mobile": "PASS" },
+  "providerBoundary": { "violations": 0, "scope": "Static check; not an OS isolation or external execution proof" },
+  "initialFailuresPreserved": ["Initial full root suite: two historical R37 tests depended on wall clock; test clock injected, actual expired-authority refusal retained", "PostgreSQL fixtures initially violated historical connected/grant constraints", "Legacy simulated SMS identity falsely counted as a paired real phone; E.164 filter corrected"],
+  "externalActivity": { "productProviderCalls": 0, "sms": 0, "voiceCalls": 0, "personalOAuthConsents": 0, "deployments": 0, "purchases": 0, "pushes": 0, "accountMetadataReadOnly": true },
+  "remaining": ["Current owner-approved CAD ceiling and pilot expiry", "Dedicated backend and server-only provider configuration", "Owner phone binding and Google consent", "Internal Android APK with verified HTTPS origin", "Real authorized delivery and device observation", "External AI provider route remains unobserved/unactivated"],
+  "historicalDashboardRetainedWithoutRubricPromotion": { "strictRoadmapPhaseExitPercent": 22, "localBuildReadinessPercent": 46.75, "c2Preparation": "18/18", "realProviderCustomerTestReadiness": "NO-GO", "verifiedE2EObservedPercent": 0 },
+  "continuation": { "automationId": "endvera-mise-en-service-personnelle", "status": "ACTIVE", "intervalMinutes": 3, "unchangedState": "quiet verified wait", "goalCompleted": false }
+}

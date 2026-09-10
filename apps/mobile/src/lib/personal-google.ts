@@ -9,6 +9,8 @@ export const personalGoogleEventsSchema = z.object({
   timeZone: z.string().nullable(), complete: z.literal(true), source: z.literal("GOOGLE_CALENDAR"),
 }).strict();
 export type PersonalGoogleEvents = z.infer<typeof personalGoogleEventsSchema>;
+export const personalGoogleActionsSchema = z.object({ operations: z.array(z.object({ id: z.string(), requestHash: z.string().regex(/^[a-f0-9]{64}$/), status: z.string(), draft: z.object({ title: z.string(), startsAt: z.string().datetime({ offset: true }), endsAt: z.string().datetime({ offset: true }), timezone: z.string() }).strict() }).strict()) }).strict();
+export type PersonalGoogleActions = z.infer<typeof personalGoogleActionsSchema>;
 
 export function validatePersonalGoogleLaunch(value: unknown, apiBaseUrl: string) {
   const parsed = personalGoogleLaunchSchema.parse(value);

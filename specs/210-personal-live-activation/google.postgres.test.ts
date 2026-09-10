@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { initializeConstructionWorkspace } from "@/server/construction-assistant-v1/workspace";
 import { beginGoogleConnection, launchGoogleConnection, finishGoogleConnection, googleTokensForOwner, googleConnectionStatus, disconnectGoogleLocally, readGoogleCalendar } from "@/server/personal-assistant/google-connection";
 import { GoogleCalendarClient } from "@/server/personal-assistant/google-client";
+import { approveAndInsertPersonalCalendar, personalCalendarActions, preparePersonalCalendar } from "@/server/personal-assistant/calendar-actions";
 
 const dbUrl = new URL(process.env.DATABASE_URL ?? "http://invalid");
 const dbName = process.env.ENDVERA_210_DATABASE_NAME ?? "";
@@ -15,23 +16,43 @@ const env = {
 };
 const scopes = "openid https://www.googleapis.com/auth/calendar.events.readonly";
 afterAll(() => prisma.$disconnect());
-async function fixture() {
+async function fixture(mode: "READ_ONLY" | "READ_WRITE" = "READ_ONLY") {
   const user = await prisma.user.create({ data: { name: "Synthetic calendar owner", email: `google-210-${randomUUID()}@example.invalid`, role: "CLIENT" } });
   const { workspaceId } = await initializeConstructionWorkspace({ userId: user.id, name: "Synthetic calendar workspace" });
-  const begin = await beginGoogleConnection({ userId: user.id, workspaceId, mode: "READ_ONLY" }, env);
+  const begin = await beginGoogleConnection({ userId: user.id, workspaceId, mode }, env);
   const url = new URL(begin.launchUrl); const id = url.searchParams.get("attempt")!;
   const launch = await launchGoogleConnection(id, url.searchParams.get("token")!, env);
   const state = new URL(launch.authorizationUrl).searchParams.get("state")!;
-  const transport = vi.fn<typeof fetch>().mockImplementation(async raw => {
+  const transport = vi.fn<typeof fetch>().mockImplementation(async (raw, init) => {
     const target = String(raw);
-    if (target === "https://oauth2.googleapis.com/token") return Response.json({ access_token: "synthetic-access", refresh_token: "synthetic-refresh", expires_in: 3600, token_type: "Bearer", scope: scopes });
+    if (target === "https://oauth2.googleapis.com/token") return Response.json({ access_token: "synthetic-access", refresh_token: "synthetic-refresh", expires_in: 3600, token_type: "Bearer", scope: mode === "READ_WRITE" ? scopes.replace(".readonly", "") : scopes });
     if (target === "https://openidconnect.googleapis.com/v1/userinfo") return Response.json({ sub: "synthetic-subject" });
-    if (target.startsWith("https://www.googleapis.com/calendar/")) return Response.json({ items: [] });
+    if (target.startsWith("https://www.googleapis.com/calendar/")) return init?.method === "POST" ? Response.json({ ...JSON.parse(String(init.body)), status: "confirmed" }) : Response.json({ items: [] });
     throw new Error("UNEXPECTED_ENDPOINT");
   });
   return { userId: user.id, workspaceId, id, begin, launch, state, transport, client: new GoogleCalendarClient(env, transport), input: { state, cookieNonce: launch.cookieNonce, code: "synthetic-code" } };
 }
 describe("real PostgreSQL OAuth state and credential lifecycle with fake Google transport", () => {
+  it("prepares without transport then inserts exactly once after owner approval", async () => {
+    const f = await fixture("READ_WRITE"); await finishGoogleConnection(f.input, env, f.client);
+    const draft = { title: "Rendez-vous synthétique", startsAt: "2026-09-11T14:00:00-04:00", endsAt: "2026-09-11T15:00:00-04:00", timezone: "America/Toronto" };
+    const prepared = await preparePersonalCalendar({ userId: f.userId, workspaceId: f.workspaceId, requestId: randomUUID(), draft });
+    expect(f.transport).toHaveBeenCalledTimes(2); expect((await personalCalendarActions(f.userId, f.workspaceId)).operations[0].draft).toEqual(draft);
+    const approval = { userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash };
+    await expect(approveAndInsertPersonalCalendar({ ...approval, expectedRequestHash: "f".repeat(64) }, env, f.client)).rejects.toThrow("CALENDAR_APPROVAL_REFUSED_OR_ALREADY_USED");
+    expect((await approveAndInsertPersonalCalendar(approval, env, f.client)).confirmed).toBe(true);
+    await expect(approveAndInsertPersonalCalendar(approval, env, f.client)).rejects.toThrow("CALENDAR_APPROVAL_REFUSED_OR_ALREADY_USED"); expect(f.transport).toHaveBeenCalledTimes(3);
+    const body = JSON.parse(String(f.transport.mock.calls[2][1]?.body)); expect(body.attendees).toBeUndefined(); expect(String(f.transport.mock.calls[2][0])).toContain("sendUpdates=none");
+  });
+  it("withholds calendar success on uncertain write and never retries automatically", async () => {
+    const f = await fixture("READ_WRITE"); await finishGoogleConnection(f.input, env, f.client);
+    const prepared = await preparePersonalCalendar({ userId: f.userId, workspaceId: f.workspaceId, requestId: randomUUID(), draft: { title: "Synthétique", startsAt: "2026-09-11T14:00:00Z", endsAt: "2026-09-11T15:00:00Z", timezone: "UTC" } });
+    const transport = vi.fn().mockRejectedValue(new Error("synthetic timeout"));
+    const approval = { userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash };
+    await expect(approveAndInsertPersonalCalendar(approval, env, new GoogleCalendarClient(env, transport))).rejects.toThrow("CALENDAR_WRITE_OUTCOME_UNKNOWN");
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } })).toMatchObject({ status: "uncertain", externalTransportPerformed: true, result: { writeConfirmed: false } });
+    await expect(approveAndInsertPersonalCalendar(approval, env, new GoogleCalendarClient(env, transport))).rejects.toThrow("CALENDAR_APPROVAL_REFUSED_OR_ALREADY_USED"); expect(transport).toHaveBeenCalledOnce();
+  });
   it("stores encrypted tokens, scrubs one-use material and survives reconnect", async () => {
     const f = await fixture();
     await finishGoogleConnection(f.input, env, f.client);

@@ -29,6 +29,8 @@
 
 # next.js
 /.next/
+/.next-personal-210-*/
+/apps/mobile/dist-personal-210-*/
 /out/
 
 # production

@@ -171,6 +171,7 @@ describe("R37 exact private OpenRouter transport", () => {
         observedCase: R37_CASES[0],
         fetchImpl,
         credentialResolver: () => undefined,
+        now: () => new Date("2026-09-04T12:00:00.000Z"),
       }),
     ).rejects.toThrow("R37_CREDENTIAL_REQUIRED");
     expect(fetchImpl).not.toHaveBeenCalled();
@@ -225,11 +226,16 @@ describe("R37 exact private OpenRouter transport", () => {
       [{ ...base, usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2, cost: 0.100001 } }, "R37_ATTEMPT_COST_CEILING_EXCEEDED"],
     ] as const) {
       const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
-      await expect(dispatchOpenRouterRequest({ modelId: R37_MODELS[0], observedCase: R37_CASES[0], fetchImpl, credentialResolver: () => secret })).rejects.toThrow(expected);
+      await expect(dispatchOpenRouterRequest({ modelId: R37_MODELS[0], observedCase: R37_CASES[0], fetchImpl, credentialResolver: () => secret, now: () => new Date("2026-09-04T12:00:00.000Z") })).rejects.toThrow(expected);
     }
     const providerFailure = vi.fn<typeof fetch>().mockResolvedValue(new Response(`failure ${secret}`, { status: 403 }));
-    const error = await dispatchOpenRouterRequest({ modelId: R37_MODELS[0], observedCase: R37_CASES[0], fetchImpl: providerFailure, credentialResolver: () => secret }).catch((cause: unknown) => cause);
+    const error = await dispatchOpenRouterRequest({ modelId: R37_MODELS[0], observedCase: R37_CASES[0], fetchImpl: providerFailure, credentialResolver: () => secret, now: () => new Date("2026-09-04T12:00:00.000Z") }).catch((cause: unknown) => cause);
     expect(String(error)).toContain("R37_PROVIDER_HTTP_403");
     expect(String(error)).not.toContain(secret);
+  });
+  it("still refuses expired R37 authority before any transport", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    await expect(dispatchOpenRouterRequest({ modelId: R37_MODELS[0], observedCase: R37_CASES[0], fetchImpl, credentialResolver: () => "synthetic-secret", now: () => new Date("2026-09-11T00:00:01Z") })).rejects.toThrow("R37_EXCHANGE_EVIDENCE_EXPIRED");
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,58 @@
 # Progress — 2026-09-09
 
+## Latest checkpoint — personal service implemented locally, activation pending
+
+This section supersedes earlier next-action/status prose below. Earlier results
+remain historical evidence, not current instructions to rebuild finished pieces.
+
+Implemented owner phone pairing via one-use signed incoming SMS, explicit self-SMS
+and optional self-voice consent, immutable action approval, bounded outgoing
+reservation ledger, Twilio send adapter and signed delivery callbacks. Unknown
+outcomes are retained and never retried automatically. Conflicting receipt IDs
+cannot create a delivered claim. Automated replies are restricted to the verified
+original sender and exact stored answer, with standing self-SMS consent and gates.
+Google creates require exact owner approval and write scope; invitations disabled.
+An uncertain Google request records attempted transport without claiming a write.
+
+Mobile personal-service screen connects the owner's phone through normal Messages,
+opens Google consent, shows drafts and approvals, and projects actual receipt states.
+No API keys in the mobile app. Signed SMS receipt schedules a bounded after-response
+worker; a protected recovery endpoint and undeployed cron template are included.
+
+Validation strategy emphasized API contracts, authority revocation, PostgreSQL races
+and unknown outcomes, not merely happy-path UI. Latest full root run: 2785 pass,
+3 historical founder/DB tests skipped (not rerun as founder observations). Dedicated
+personal PostgreSQL suite: 20 pass using fake provider transports. Full mobile:
+199 pass. Focused personal units: 64 pass. Web production compilation and Android
+Hermes export pass. Compiled runtime refuses six unauthenticated/disabled entry
+points exactly; temporary runtime server stopped. Final evidence references and
+cleanup results are in validation.json and evidence/. No physical Samsung proof.
+
+The first full-root run had two historical R37 tests depending on wall-clock time.
+Injected their existing supported test clock, added an expired-authority refusal
+case and reran. No production expiry, old R37 authority or spending limit changed.
+PostgreSQL also exposed a legacy sim-sms identity incorrectly counted as a real
+paired phone; the projection now selects only E.164 identities. The regression
+passed against actual disposable PostgreSQL, not mocked persistence.
+
+Read-only account reconciliation found the dedicated endvera-core-sandbox Vercel
+project and existing Expo project. Public afterdesk project unchanged. No external
+write, deployment, paid build, SMS/call, personal OAuth consent or product AI API
+request was performed. Current process lacks required backend/provider configuration;
+this is not a claim that no credentials exist in an external vault.
+
+Next requires owner-approved current total CAD budget, dedicated server/account
+configuration, then the owner's phone binding and Google consent. Exact deployment
+order: deployment/ACTIVATION.md. Do not publish another unconfigured APK or buy a
+number from an unspecified budget. No approved third-party recipient exists.
+The provider reservation ledger is NOT a guaranteed ceiling on inbound/rental/tax
+charges. No real OpenRouter assistant or inbound voice conversation is claimed.
+
+Queue: AWAITING_EXTERNAL_CONFIGURATION, projectComplete=false. Three-minute heartbeat
+ACTIVE, silent when nothing actionable changes; do not pause it at this checkpoint.
+Historical dashboard retained unchanged: roadmap22%, local build46.75%, C2 18/18,
+real-test NO-GO, Verified-E2E0%. No rubric transition inferred from these local tests.
+
 ## Continuing execution — Google and durable SMS worker
 
 New PersonalAssistantOperation table preserves all historical no-transport
@@ -85,7 +138,7 @@ proof. No secret file was created, no existing secret was displayed.
 - Inbox tests mock Prisma: not a concurrency, restart or real PostgreSQL proof.
 - No live provider call, SMS, phone call, deployment or purchase occurred.
 
-## Next execution
+## Historical next execution — superseded by latest checkpoint above
 
 1. Finish real disposable-PostgreSQL tests for concurrent inbox replay/revocation.
 2. Implement Google consent and encrypted credential storage using existing

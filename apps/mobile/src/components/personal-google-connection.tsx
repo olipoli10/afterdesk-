@@ -4,19 +4,24 @@ import * as WebBrowser from "expo-web-browser";
 import { Button, Card, Label, Notice, sharedStyles } from "@/components/ui";
 import { MobileApi } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
-import type { PersonalGoogleEvents, PersonalGoogleStatus } from "@/lib/personal-google";
+import type { PersonalGoogleEvents, PersonalGoogleStatus, PersonalGoogleActions } from "@/lib/personal-google";
 
 export function PersonalGoogleConnection({ workspaceId }: { workspaceId: string }) {
   const api = useMemo(() => new MobileApi({ getCookie: () => authClient.getCookie(), browserManagedCredentials: Platform.OS === "web" }), []);
   const [status, setStatus] = useState<PersonalGoogleStatus | null>(null);
   const [events, setEvents] = useState<PersonalGoogleEvents | null>(null);
+  const [actions, setActions] = useState<PersonalGoogleActions | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const reload = useCallback(async () => {
-    try { setStatus(await api.personalGoogleStatus(workspaceId)); }
+    try { const [nextStatus, nextActions] = await Promise.all([api.personalGoogleStatus(workspaceId), api.personalGoogleActions(workspaceId)]); setStatus(nextStatus); setActions(nextActions); }
     catch { setStatus(null); setMessage("Impossible de vérifier la connexion Google pour le moment."); }
   }, [api, workspaceId]);
-  useEffect(() => { setEvents(null); setMessage(null); void reload(); }, [reload]);
+  useEffect(() => {
+    let active = true;
+    void Promise.all([api.personalGoogleStatus(workspaceId), api.personalGoogleActions(workspaceId)]).then(([nextStatus, nextActions]) => { if (active) { setStatus(nextStatus); setActions(nextActions); } }, () => { if (active) setMessage("Impossible de vérifier la connexion Google pour le moment."); });
+    return () => { active = false; };
+  }, [api, workspaceId]);
 
   async function connect(mode: "READ_ONLY" | "READ_WRITE") {
     setBusy(true); setMessage(null); setEvents(null);
@@ -56,6 +61,7 @@ export function PersonalGoogleConnection({ workspaceId }: { workspaceId: string 
       {status?.writeConsentGranted ? <Text style={sharedStyles.muted}>Permission d’écriture accordée. Elle ne vaut pas approbation d’un changement précis.</Text> : null}
       {status?.readEnabled ? <Button disabled={busy} onPress={() => void readTomorrow()}>Voir mon horaire de demain</Button> : null}
       {status?.connected ? <Button disabled={busy} tone="secondary" onPress={() => void disconnect()}>Déconnecter ENDVERA</Button> : null}
+      <Button disabled={busy} tone="secondary" onPress={() => void reload()}>Actualiser Google et mes ajouts préparés</Button>
     </View>
     {events ? <View style={sharedStyles.stack}>
       <Label>Demain · Google Agenda · fuseau du téléphone</Label>
@@ -64,5 +70,16 @@ export function PersonalGoogleConnection({ workspaceId }: { workspaceId: string 
         <Text style={sharedStyles.muted}>{event.start.dateTime ? new Date(event.start.dateTime).toLocaleString("fr-CA") : `${event.start.date} · toute la journée`}</Text>
       </View>)}
     </View> : null}
+    {actions?.operations.map(action => <View key={action.id} style={sharedStyles.stack}>
+      <Label>Ajout à ton Google Agenda principal</Label>
+      <Text style={sharedStyles.value}>{action.draft.title}</Text>
+      <Text style={sharedStyles.muted}>Début : {new Date(action.draft.startsAt).toLocaleString("fr-CA", { timeZone: action.draft.timezone })}</Text>
+      <Text style={sharedStyles.muted}>Fin : {new Date(action.draft.endsAt).toLocaleString("fr-CA", { timeZone: action.draft.timezone })} · {action.draft.timezone}</Text>
+      <Notice>{action.status === "completed" ? "Ajout confirmé par Google" : action.status === "pending" ? "Préparé, pas encore ajouté" : "Ajout non confirmé — ne pas le recréer sans vérifier"}</Notice>
+      {action.status === "pending" ? <Button disabled={busy || !status?.writeConsentGranted || !status.configured} onPress={() => {
+        setBusy(true); setMessage(null);
+        void api.approvePersonalCalendar(workspaceId, action.id, action.requestHash).catch(() => setMessage("L’ajout Google n’est pas confirmé. Vérifie son état avant de réessayer.")).finally(() => { void reload(); setBusy(false); });
+      }}>Approuver ces heures exactes et ajouter à Google</Button> : null}
+    </View>)}
   </Card>;
 }

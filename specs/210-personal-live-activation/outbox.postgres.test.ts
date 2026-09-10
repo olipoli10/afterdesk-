@@ -1,0 +1,87 @@
+import { createHash, randomUUID } from "node:crypto";
+import { afterAll, describe, expect, it, vi } from "vitest";
+import { prisma } from "@/lib/db";
+import { initializeConstructionWorkspace } from "@/server/construction-assistant-v1/workspace";
+import { startPhonePairing, acceptPersonalSms, personalPhoneStatus, disconnectPersonalPhone } from "@/server/personal-assistant/phone-pairing";
+import { preparePersonalOutbound, approvePersonalOutbound, dispatchPersonalOutbound, personalOutboxForOwner, sendAutomaticPersonalReply } from "@/server/personal-assistant/outbox";
+import { enqueuePersonalSms } from "@/server/personal-assistant/sms-inbox";
+import { processPersonalSms } from "@/server/personal-assistant/sms-worker";
+import { storeTwilioReceipt } from "@/server/personal-assistant/delivery-receipts";
+const dbUrl = new URL(process.env.DATABASE_URL ?? "http://invalid");
+const dbName = process.env.ENDVERA_210_DATABASE_NAME ?? "";
+if (!["localhost", "127.0.0.1"].includes(dbUrl.hostname) || !/^endvera_personal_210_[a-f0-9]{32}$/.test(dbName) || dbUrl.pathname !== `/${dbName}`) throw new Error("DISPOSABLE_PERSONAL_DATABASE_REQUIRED");
+afterAll(() => prisma.$disconnect());
+let phoneCounter = 200;
+async function fixture(budget = "10") {
+  const env = { ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_AUTHORITY_REF: `synthetic-${randomUUID()}`, ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner", ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED", ENDVERA_VOICE_PROVIDER_ENABLED: "ENABLED", TWILIO_ACCOUNT_SID: `AC${"a".repeat(32)}`, TWILIO_API_KEY_SID: `SK${"b".repeat(32)}`, TWILIO_API_KEY_SECRET: "synthetic-secret", TWILIO_AUTH_TOKEN: "synthetic-token", TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_PROVIDER_WEBHOOK_ORIGIN: "https://endvera.example", ENDVERA_TWILIO_STATUS_WEBHOOK_URL: "https://endvera.example/api/webhooks/twilio/status", ENDVERA_PERSONAL_SMS_INGRESS_ENABLED: "true", ENDVERA_PERSONAL_OUTBOUND_ENABLED: "true", ENDVERA_PERSONAL_PILOT_EXPIRES_AT: new Date(Date.now() + 3600000).toISOString(), ENDVERA_TWILIO_RATE_REVIEWED_AT: new Date(Date.now() - 1000).toISOString(), ENDVERA_TWILIO_RATE_REVIEW_REF: "synthetic-rate-bound", ENDVERA_PERSONAL_BUDGET_CAD: budget, ENDVERA_SMS_SEGMENT_RESERVE_CAD: "0.10", ENDVERA_VOICE_MINUTE_RESERVE_CAD: "0.50" };
+  const user = await prisma.user.create({ data: { name: "Synthetic phone owner", email: `phone-210-${randomUUID()}@example.invalid`, role: "CLIENT" } });
+  const { workspaceId } = await initializeConstructionWorkspace({ userId: user.id, name: "Synthetic phone workspace" });
+  const pairing = await startPhonePairing({ userId: user.id, workspaceId, allowSelfSms: true, allowSelfVoice: true }, env);
+  const envelope = { accountSid: env.TWILIO_ACCOUNT_SID, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from: `+15005550${++phoneCounter}`, to: pairing.number, body: pairing.text, contentHash: createHash("sha256").update(pairing.text).digest("hex") };
+  await acceptPersonalSms(envelope, env);
+  const transport = vi.fn<typeof fetch>().mockImplementation(async (_url, init) => {
+    const params = new URLSearchParams(String(init?.body));
+    return Response.json({ sid: `SM${randomUUID().replaceAll("-", "")}`, account_sid: env.TWILIO_ACCOUNT_SID, from: params.get("From"), to: params.get("To"), status: "queued" });
+  });
+  return { env, userId: user.id, workspaceId, envelope, transport };
+}
+async function prepare(f: Awaited<ReturnType<typeof fixture>>) { return preparePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, kind: "sms_outbound", to: f.envelope.from, text: "Bonjour synthétique", requestId: randomUUID() }, f.env); }
+describe("PostgreSQL phone pairing, immutable approval and outbound reservation", () => {
+  it("automatically replies only to the original sender with standing self-SMS consent", async () => {
+    const f = await fixture(); const workerEnv = { ...f.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" };
+    const inbound = await enqueuePersonalSms({ ...f.envelope, messageSid: `SM${randomUUID().replaceAll("-", "")}`, body: "Bonjour", contentHash: "a".repeat(64) });
+    await processPersonalSms(inbound.operationId, workerEnv, { engine: async () => ({ reply: "Bonjour, réponse synthétique." }) });
+    const reply = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { idempotencyKey: `reply:${inbound.operationId}` } });
+    await sendAutomaticPersonalReply(reply.id, workerEnv, f.transport);
+    expect(new URLSearchParams(String(f.transport.mock.calls[0][1]?.body)).get("To")).toBe(f.envelope.from);
+    const unrelated = await prepare(f); await expect(sendAutomaticPersonalReply(unrelated.operationId, workerEnv, f.transport)).rejects.toThrow("AUTOMATIC_REPLY_REFUSED"); expect(f.transport).toHaveBeenCalledOnce();
+  });
+  it("binds proof from signed intake once, never a phone entered as a string", async () => {
+    const f = await fixture();
+    expect((await personalPhoneStatus(f.userId, f.workspaceId, f.env)).boundPhone).toBe(f.envelope.from);
+    expect((await acceptPersonalSms(f.envelope, f.env)).replayed).toBe(true);
+    await expect(acceptPersonalSms({ ...f.envelope, from: "+15005550999" }, f.env)).rejects.toThrow("PAIRING_ALREADY_USED");
+    await expect(preparePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, kind: "sms_outbound", to: "+15005550999", text: "No", requestId: randomUUID() }, f.env)).rejects.toThrow("VERIFIED_SELF_RECIPIENT_REQUIRED");
+  });
+  it("sends once after exact approval and records delivery separately", async () => {
+    const f = await fixture(); const prepared = await prepare(f);
+    const input = { userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash };
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, f.transport)).rejects.toThrow("APPROVAL_REQUIRED");
+    await approvePersonalOutbound(input, f.env);
+    await expect(approvePersonalOutbound(input, f.env)).rejects.toThrow("APPROVAL_REFUSED_OR_ALREADY_USED");
+    const sent = await dispatchPersonalOutbound(prepared.operationId, f.env, f.transport); expect(sent.delivered).toBe(false);
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, f.transport)).rejects.toThrow("APPROVAL_REQUIRED");
+    expect(f.transport).toHaveBeenCalledOnce();
+    expect((await personalOutboxForOwner(f.userId, f.workspaceId)).operations[0].deliveryConfirmed).toBe(false);
+    const receipt = { operationId: prepared.operationId, providerSid: sent.providerSid, status: "delivered", kind: "sms_outbound", from: f.envelope.to, to: f.envelope.from };
+    await storeTwilioReceipt(receipt); await storeTwilioReceipt(receipt);
+    expect((await personalOutboxForOwner(f.userId, f.workspaceId)).operations[0].deliveryConfirmed).toBe(true);
+    expect(await prisma.personalAssistantDeliveryReceipt.count({ where: { operationId: prepared.operationId } })).toBe(1);
+    // Simulate an early callback with a different provider ID retained before
+    // the REST outcome became available: projection must withhold success.
+    await prisma.personalAssistantDeliveryReceipt.create({ data: { id: randomUUID(), operationId: prepared.operationId, providerSid: `SM${"e".repeat(32)}`, status: "delivered" } });
+    expect((await personalOutboxForOwner(f.userId, f.workspaceId)).operations[0].deliveryConfirmed).toBe(false);
+  });
+  it("serializes competing reservations and never exceeds the configured local allowance", async () => {
+    const f = await fixture("0.10"); const a = await prepare(f); const b = await prepare(f);
+    for (const operation of [a, b]) await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: operation.operationId, expectedRequestHash: operation.requestHash }, f.env);
+    const results = await Promise.allSettled([dispatchPersonalOutbound(a.operationId, f.env, f.transport), dispatchPersonalOutbound(b.operationId, f.env, f.transport)]);
+    expect(results.filter(result => result.status === "fulfilled")).toHaveLength(1); expect(f.transport).toHaveBeenCalledOnce();
+    const row = await prisma.personalAssistantOperation.findFirstOrThrow({ where: { workspaceId: f.workspaceId, budgetId: { not: null } } });
+    expect((await prisma.personalAssistantBudget.findUniqueOrThrow({ where: { id: row.budgetId! } })).reservedCadMicros).toBe(100000n);
+  });
+  it("retains reservation and refuses replay after an uncertain transport", async () => {
+    const f = await fixture(); const prepared = await prepare(f);
+    await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
+    const failing = vi.fn().mockRejectedValue(new Error("synthetic timeout"));
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, failing)).rejects.toThrow("OUTBOUND_OUTCOME_REQUIRES_REVIEW");
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, failing)).rejects.toThrow("APPROVAL_REQUIRED");
+    const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } }); expect(row.status).toBe("uncertain"); expect(row.reservedCadMicros).toBe(100000n); expect(failing).toHaveBeenCalledOnce();
+  });
+  it("revokes pending authority without sending", async () => {
+    const f = await fixture(); const prepared = await prepare(f);
+    await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
+    await disconnectPersonalPhone(f.userId, f.workspaceId);
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, f.transport)).rejects.toThrow("APPROVAL_REQUIRED"); expect(f.transport).not.toHaveBeenCalled();
+  });
+});

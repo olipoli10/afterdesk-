@@ -1,0 +1,3 @@
+{
+  "crons": [{ "path": "/api/endvera/v1/personal/worker/tick", "schedule": "* * * * *" }]
+}

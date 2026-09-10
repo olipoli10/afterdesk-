@@ -4,7 +4,8 @@ import {
   parseMobileCockpit,
 } from "@/lib/contracts";
 import { mobileApiBaseUrl } from "@/lib/config";
-import { personalGoogleStatusSchema, personalGoogleDisconnectSchema, personalGoogleEventsSchema, validatePersonalGoogleLaunch } from "@/lib/personal-google";
+import { personalGoogleStatusSchema, personalGoogleDisconnectSchema, personalGoogleEventsSchema, personalGoogleActionsSchema, validatePersonalGoogleLaunch } from "@/lib/personal-google";
+import { personalOutboxSchema, personalPairingSchema, personalPhoneSchema } from "@/lib/personal-service";
 import { mobileCommandSchema } from "@/lib/commands";
 import {
   mobileAssistantHistorySchema,
@@ -143,8 +144,32 @@ function statusCode(status: number): MobileApiErrorCode {
 }
 
 export class MobileApi {
+  async personalPhone(workspaceId: string) {
+    return personalPhoneSchema.parse(await this.request(`/api/endvera/v1/personal/phone?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
+  }
+  async pairPersonalPhone(workspaceId: string, allowSelfSms: boolean, allowSelfVoice: boolean) {
+    return personalPairingSchema.parse(await this.request("/api/endvera/v1/personal/phone", { method: "POST", body: JSON.stringify({ action: "PAIR", workspaceId, allowSelfSms, allowSelfVoice }) }));
+  }
+  async disconnectPersonalPhone(workspaceId: string) {
+    return this.request("/api/endvera/v1/personal/phone", { method: "POST", body: JSON.stringify({ action: "DISCONNECT", workspaceId }) });
+  }
+  async personalOutbox(workspaceId: string) {
+    return personalOutboxSchema.parse(await this.request(`/api/endvera/v1/personal/outbox?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
+  }
+  async preparePersonalMessage(workspaceId: string, to: string, text: string, kind: "sms_outbound" | "voice_outbound", requestId: string) {
+    return this.request("/api/endvera/v1/personal/outbox", { method: "POST", body: JSON.stringify({ action: "PREPARE", workspaceId, kind, to, text, requestId }) });
+  }
+  async approvePersonalMessage(workspaceId: string, operationId: string, expectedRequestHash: string) {
+    return this.request("/api/endvera/v1/personal/outbox", { method: "POST", body: JSON.stringify({ action: "APPROVE_AND_SEND", workspaceId, operationId, expectedRequestHash }) });
+  }
   async personalGoogleStatus(workspaceId: string) {
     return personalGoogleStatusSchema.parse(await this.request(`/api/endvera/v1/personal/google/status?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
+  }
+  async personalGoogleActions(workspaceId: string) {
+    return personalGoogleActionsSchema.parse(await this.request(`/api/endvera/v1/personal/google/actions?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" }));
+  }
+  async approvePersonalCalendar(workspaceId: string, operationId: string, expectedRequestHash: string) {
+    return this.request("/api/endvera/v1/personal/google/actions", { method: "POST", body: JSON.stringify({ action: "APPROVE_AND_INSERT", workspaceId, operationId, expectedRequestHash }) });
   }
 
   async connectPersonalGoogle(workspaceId: string, mode: "READ_ONLY" | "READ_WRITE") {

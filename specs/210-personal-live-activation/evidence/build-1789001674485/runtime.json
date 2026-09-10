@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-09-10T00:56:54.454Z",
+  "localOnly": true,
+  "externalCalls": 0,
+  "serverStopped": true,
+  "checks": [
+    {
+      "path": "/api/endvera/v1/personal/google/status",
+      "expected": 401,
+      "observed": 401,
+      "pass": true
+    },
+    {
+      "path": "/api/endvera/v1/personal/phone",
+      "expected": 401,
+      "observed": 401,
+      "pass": true
+    },
+    {
+      "path": "/api/endvera/v1/personal/outbox",
+      "expected": 401,
+      "observed": 401,
+      "pass": true
+    },
+    {
+      "path": "/api/endvera/v1/personal/google/actions",
+      "expected": 401,
+      "observed": 401,
+      "pass": true
+    },
+    {
+      "path": "/api/endvera/v1/personal/worker/tick",
+      "expected": 401,
+      "observed": 401,
+      "pass": true
+    },
+    {
+      "path": "/api/webhooks/twilio/sms",
+      "expected": 503,
+      "observed": 503,
+      "pass": true
+    }
+  ],
+  "pass": true
+}

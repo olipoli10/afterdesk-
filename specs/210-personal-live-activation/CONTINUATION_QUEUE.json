@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "objective": "PERSONAL_SMS_CALENDAR_VOICE_LIVE",
-  "status": "IN_PROGRESS",
+  "status": "AWAITING_EXTERNAL_CONFIGURATION",
   "projectComplete": false,
   "automationId": "endvera-mise-en-service-personnelle",
   "entries": [
@@ -9,9 +9,9 @@
     {"id":"SMS_POSTGRES_CONCURRENCY","status":"DONE_LOCAL","dependencies":["SIGNED_SMS_INGRESS"],"evidence":"progress.md","liveObserved":false},
     {"id":"GOOGLE_OAUTH","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","liveObserved":false,"limitations":["Google account consent not performed","Remote Google grant revocation not yet implemented; local encrypted credentials are cleared"]},
     {"id":"GUARDED_SMS_WORKER","status":"DONE_LOCAL","dependencies":["SIGNED_SMS_INGRESS","SMS_POSTGRES_CONCURRENCY"],"evidence":"progress.md","liveObserved":false},
-    {"id":"APPROVED_SMS_VOICE_DELIVERY","status":"READY","dependencies":["GUARDED_SMS_WORKER"]},
-    {"id":"HTTPS_ANDROID_CONFIGURATION","status":"READY","dependencies":[]},
-    {"id":"PHONE_BINDING_AND_CALENDAR_APPROVAL","status":"READY","dependencies":["GOOGLE_OAUTH"]},
+    {"id":"APPROVED_SMS_VOICE_DELIVERY","status":"DONE_LOCAL","dependencies":["GUARDED_SMS_WORKER"],"evidence":"progress.md","liveObserved":false,"limitations":["Self-recipient pilot only","Tariff-reviewed reservations are not a ceiling on all provider invoice charges"]},
+    {"id":"HTTPS_ANDROID_CONFIGURATION","status":"PREPARED_NOT_DEPLOYED","dependencies":[],"evidence":"deployment/ACTIVATION.md","remaining":["Configure dedicated backend and secrets","Set verified HTTPS mobile API origin","Build and validate an installable internal APK"]},
+    {"id":"PHONE_BINDING_AND_CALENDAR_APPROVAL","status":"DONE_LOCAL","dependencies":["GOOGLE_OAUTH"],"evidence":"progress.md","liveObserved":false},
     {"id":"PERSONAL_EXTERNAL_SETUP","status":"WAITING_OWNER_CONFIGURATION","dependencies":["GOOGLE_OAUTH","HTTPS_ANDROID_CONFIGURATION"]},
     {"id":"LIVE_OBSERVATION","status":"PENDING","dependencies":["PERSONAL_EXTERNAL_SETUP","APPROVED_SMS_VOICE_DELIVERY"]}
   ],
@@ -19,7 +19,8 @@
     "twilioBudgetCad": null,
     "twilioAccountAndNumber": "NOT_VERIFIED",
     "googleOAuthConnection": "NOT_CONFIGURED",
-    "deploymentAccountAndOrigin": "NOT_VERIFIED",
+    "deploymentAccountAndOrigin": "EXISTING_SANDBOX_PROJECT_VERIFIED_READ_ONLY_ORIGIN_NOT_CONFIGURED",
     "approvedPilotRecipient": "NOT_BOUND"
-  }
+  },
+  "resumeRule": "Recheck changed owner configuration and Git. Continue eligible work without GO. No repeated paid attempts, old R37 budget, fabricated observation or routine unchanged notification. Keep timer active; projectComplete remains false."
 }

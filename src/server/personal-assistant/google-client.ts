@@ -4,6 +4,7 @@ import { z } from "zod";
 import { externalCapabilityDecision } from "@/lib/release/external-capabilities";
 import { googleCalendarScopesForMode } from "@/lib/construction-operating-assistant-r3/google-calendar";
 import type { CalendarConnectionMode } from "@/lib/construction-operating-assistant-r3/connector-contracts";
+import { prepareGoogleCalendarInsert } from "@/lib/construction-operating-assistant-r3/google-calendar";
 
 export type ConnectorEnvironment = Readonly<Record<string, string | undefined>>;
 export const googleTokensSchema = z.object({
@@ -12,7 +13,7 @@ export const googleTokensSchema = z.object({
   subject: z.string().min(1).max(255),
 }).strict();
 export type GoogleTokens = z.infer<typeof googleTokensSchema>;
-const eventTime = z.object({ dateTime: z.string().optional(), date: z.string().optional(), timeZone: z.string().optional() });
+const eventTime = z.object({ dateTime: z.string().datetime({ offset: true }).optional(), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), timeZone: z.string().optional() }).refine(value => Boolean(value.dateTime) !== Boolean(value.date));
 const calendarEvent = z.object({ id: z.string().min(1), summary: z.string().default("Sans titre"), status: z.string().optional(), start: eventTime, end: eventTime });
 const calendarPage = z.object({ items: z.array(calendarEvent).default([]), nextPageToken: z.string().max(8192).optional(), timeZone: z.string().optional() });
 const wireToken = z.object({ access_token: z.string().min(1).max(8192), refresh_token: z.string().min(1).max(8192).optional(), expires_in: z.number().int().positive().max(86400), token_type: z.literal("Bearer"), scope: z.string().max(8192).optional() });
@@ -40,12 +41,14 @@ export function newGoogleConsent(env: ConnectorEnvironment, mode: CalendarConnec
 }
 
 export class GoogleCalendarClient {
+  private attemptedRequests = 0;
+  get transportAttempts() { return this.attemptedRequests; }
   constructor(private readonly env: ConnectorEnvironment, private readonly transport: typeof fetch = fetch, private readonly now: () => number = Date.now) {}
 
   private async request(url: string, init: RequestInit): Promise<unknown> {
     requireGooglePilot(this.env, this.now());
     let response: Response;
-    try { response = await this.transport(url, { ...init, redirect: "error", signal: AbortSignal.timeout(10000) }); }
+    try { this.attemptedRequests++; response = await this.transport(url, { ...init, redirect: "error", signal: AbortSignal.timeout(10000) }); }
     catch { throw new Error("GOOGLE_TRANSPORT_UNAVAILABLE"); }
     if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "GOOGLE_REAUTHORIZATION_REQUIRED" : "GOOGLE_REQUEST_REFUSED");
     const reader = response.body?.getReader();
@@ -86,6 +89,14 @@ export class GoogleCalendarClient {
     const scopes = result.data.scope?.split(/\s+/).filter(Boolean) ?? tokens.scopes;
     if (!tokens.scopes.every(scope => scopes.includes(scope))) throw new Error("GOOGLE_SCOPE_REQUIRED");
     return { ...tokens, accessToken: result.data.access_token, refreshToken: result.data.refresh_token ?? tokens.refreshToken, expiresAt: this.now() + result.data.expires_in * 1000, scopes };
+  }
+
+  async insertEvent(tokens: GoogleTokens, input: Omit<Parameters<typeof prepareGoogleCalendarInsert>[0], "authority">) {
+    const prepared = prepareGoogleCalendarInsert({ ...input, authority: { accountStatus: "connected", revokedAt: null, grantedScopes: tokens.scopes } });
+    const result = z.object({ id: z.literal(String(prepared.body!.id)), status: z.literal("confirmed"), summary: z.literal(input.title.trim()), start: z.object({ dateTime: z.string() }), end: z.object({ dateTime: z.string() }) }).safeParse(await this.request(`https://www.googleapis.com${prepared.path}?${new URLSearchParams(prepared.query)}`, { method: "POST", headers: { ...prepared.headers, authorization: `Bearer ${tokens.accessToken}` }, body: JSON.stringify(prepared.body) }));
+    if (!result.success) throw new Error("GOOGLE_CALENDAR_WRITE_UNCONFIRMED");
+    if (Date.parse(result.data.start.dateTime) !== Date.parse(input.startsAt) || Date.parse(result.data.end.dateTime) !== Date.parse(input.endsAt)) throw new Error("GOOGLE_CALENDAR_WRITE_UNCONFIRMED");
+    return { providerEventId: result.data.id, confirmed: true as const };
   }
 
   async listEvents(tokens: GoogleTokens, start: string, end: string) {

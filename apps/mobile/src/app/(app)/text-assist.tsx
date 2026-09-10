@@ -26,6 +26,7 @@ export default function TextAssistSetupScreen() {
         body="Connecte seulement ce qui t’est utile. ENDVERA garde le contexte, choisit le bon outil et te montre toute action sensible avant de l’exécuter."
       />
 
+      <Button onPress={() => router.push("/personal-service")}>Associer mon numéro et connecter Google</Button>
       <Button onPress={() => router.push(TEXT_ASSIST_FOUNDATION.actions.assistant.route as never)}>
         {TEXT_ASSIST_FOUNDATION.actions.assistant.label}
       </Button>
@@ -41,11 +42,11 @@ export default function TextAssistSetupScreen() {
           <View style={styles.icon}><AppIcon name="assistant" color={colors.accentBright} size={24} /></View>
           <View style={styles.flex}>
             <Text style={sharedStyles.name}>{TEXT_ASSIST_FOUNDATION.sms.title}</Text>
-            <Text style={styles.status}>{TEXT_ASSIST_FOUNDATION.sms.readiness}</Text>
+            <Text style={styles.status}>Association depuis ton service personnel</Text>
           </View>
         </View>
         <Text style={sharedStyles.muted}>{TEXT_ASSIST_FOUNDATION.sms.detail}</Text>
-        <Text style={styles.status}>{TEXT_ASSIST_FOUNDATION.sms.number ?? "Aucun numéro attribué pour l’instant"}</Text>
+        <Button tone="secondary" onPress={() => router.push("/personal-service")}>Voir mon numéro et son état réel</Button>
         <Notice>Aucun accès à l’historique de tes textos ou appels.</Notice>
       </Card>
 

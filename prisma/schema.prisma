@@ -5610,10 +5610,34 @@ model PersonalAssistantOperation {
   createdByUserId    String
   leaseUntil        DateTime?
   attempts          Int                          @default(0)
+  budgetId          String?
+  budget            PersonalAssistantBudget?      @relation(fields: [budgetId], references: [id])
+  deliveryReceipts  PersonalAssistantDeliveryReceipt[]
+  reservedCadMicros BigInt?
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
 
   @@index([workspaceId, kind, status])
+}
+
+model PersonalAssistantBudget {
+  id                String   @id
+  ceilingCadMicros   BigInt
+  reservedCadMicros  BigInt   @default(0)
+  expiresAt         DateTime
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  operations        PersonalAssistantOperation[]
+}
+
+model PersonalAssistantDeliveryReceipt {
+  id           String @id
+  operationId  String
+  operation    PersonalAssistantOperation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+  providerSid  String
+  status       String
+  createdAt    DateTime @default(now())
+  @@index([operationId, createdAt])
 }
 
 model ConstructionConnectorGrant {

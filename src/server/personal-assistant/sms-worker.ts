@@ -9,6 +9,8 @@ import { processUnifiedAssistantRequest } from "@/server/construction-operating-
 import { enqueuePersonalSms } from "./sms-inbox";
 import { readGoogleCalendar } from "./google-connection";
 import type { ConnectorEnvironment } from "./google-client";
+import { preparePersonalCalendar } from "./calendar-actions";
+import { sendAutomaticPersonalReply } from "./outbox";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -27,7 +29,7 @@ export function personalCalendarWindow(now: Date, timezone: string, day: "TODAY"
   return { start: fromZonedTime(start, timezone).toISOString(), end: fromZonedTime(addDays(start, 1), timezone).toISOString() };
 }
 function commandUuid(id: string) { const raw = hash(id); return `${raw.slice(0, 8)}-${raw.slice(8, 12)}-4${raw.slice(13, 16)}-8${raw.slice(17, 20)}-${raw.slice(20, 32)}`; }
-type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0]) => Promise<{ reply: string }>; calendar?: typeof readGoogleCalendar };
+type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0]) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; calendar?: typeof readGoogleCalendar };
 
 export async function processPersonalSms(operationId: string, env: ConnectorEnvironment = process.env, deps: Dependencies = {}) {
   if (!personalSmsWorkerEnabled(env)) return { status: "DISABLED" as const };
@@ -56,6 +58,15 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       const result = await (deps.engine ?? processUnifiedAssistantRequest)({ userId: row.createdByUserId, channel: "SMS", request: { schemaVersion: 1, requestId: commandUuid(row.id), workspaceId: row.workspaceId, message: received.body, occurredAt: row.createdAt.toISOString() }, admittedSource: { senderAddress: received.from, provider: "endvera_sms", providerMessageId: received.messageSid } });
       reply = `${result.reply}\nTraitement dans ENDVERA seulement. Aucun SMS/appel envoyé à tes contacts ni changement Google exécuté.`;
       source = "ENDVERA_LOCAL";
+      if (result.intent === "CALENDAR_ITEM_CREATE" && result.canonicalEffectId) {
+        const item = await prisma.constructionCalendarItem.findFirst({ where: { id: result.canonicalEffectId, workspaceId: row.workspaceId, status: "scheduled" } });
+        if (item?.endsAt) {
+          try {
+            await preparePersonalCalendar({ userId: row.createdByUserId, workspaceId: row.workspaceId, requestId: commandUuid(`google:${row.id}`), draft: { title: item.title, startsAt: item.startsAt.toISOString(), endsAt: item.endsAt.toISOString(), timezone: item.timezone } });
+            reply += "\nL’ajout à Google est préparé : vérifie et approuve les heures dans Connexions calendrier.";
+          } catch { reply += "\nL’ajout à Google n’est pas préparé. Connecte Google avec permission d’écriture et vérifie le rendez-vous dans l’app."; }
+        } else reply += "\nIl manque une heure de fin confirmée pour préparer l’ajout à Google.";
+      }
     }
     if (reply.length > 1500) reply = "Ton résultat est trop long pour un seul résumé SMS fiable. Consulte le dossier dans ENDVERA ou demande une période plus précise. Aucun détail n’a été remplacé par une supposition.";
     const request = { to: received.from, from: received.to, text: reply, sourceOperationId: row.id };
@@ -76,14 +87,19 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
   }
 }
 
-export async function drainPersonalSms(env: ConnectorEnvironment = process.env) {
+export async function drainPersonalSms(env: ConnectorEnvironment = process.env, batchSize = 10) {
+  if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 10) throw new Error("SMS_BATCH_LIMIT_INVALID");
   if (!personalSmsWorkerEnabled(env)) return { disabled: true, processed: 0 };
   await prisma.personalAssistantOperation.updateMany({ where: { kind: "personal_sms_inbound", status: "processing", leaseUntil: { lt: new Date() } }, data: { status: "uncertain", result: { reviewRequired: true, reason: "WORKER_LEASE_EXPIRED", automaticRetry: false } } });
-  const pending = await prisma.personalAssistantOperation.findMany({ where: { kind: "personal_sms_inbound", status: "received" }, orderBy: { createdAt: "asc" }, take: 10, select: { id: true } });
+  const pending = await prisma.personalAssistantOperation.findMany({ where: { kind: "personal_sms_inbound", status: "received" }, orderBy: { createdAt: "asc" }, take: batchSize, select: { id: true } });
   let processed = 0;
   for (const row of pending) {
     try { const result = await processPersonalSms(row.id, env); if (result.status === "COMPLETED_REPLY_PREPARED") processed++; }
     catch { await prisma.personalAssistantOperation.updateMany({ where: { id: row.id, status: "received" }, data: { status: "refused", result: { reason: "ADMISSION_REVOKED", automaticRetry: false } } }); }
+  }
+  if (env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED === "true") {
+    const replies = await prisma.personalAssistantOperation.findMany({ where: { kind: "sms_outbound", status: { in: ["pending", "approved"] }, idempotencyKey: { startsWith: "reply:" } }, take: batchSize, orderBy: { createdAt: "asc" }, select: { id: true } });
+    for (const reply of replies) { try { await sendAutomaticPersonalReply(reply.id, env); } catch { /* Missing budget/configuration or unknown delivery is retained; never forge a reply receipt. */ } }
   }
   return { disabled: false, processed };
 }

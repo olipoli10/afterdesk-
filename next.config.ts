@@ -27,6 +27,9 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Keep prior local build evidence untouched during isolated validation.
+  ...(process.env.ENDVERA_LOCAL_BUILD_DIR && /^\.next-personal-210-[a-z0-9-]{1,60}$/.test(process.env.ENDVERA_LOCAL_BUILD_DIR)
+    ? { distDir: process.env.ENDVERA_LOCAL_BUILD_DIR } : {}),
   poweredByHeader: false,
   experimental: {
     serverActions: {

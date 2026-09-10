@@ -69,6 +69,7 @@ export default function AppLayout() {
 
       <Tabs.Screen name="more" options={{ href: null }} />
       <Tabs.Screen name="text-assist" options={{ href: null }} />
+      <Tabs.Screen name="personal-service" options={{ href: null }} />
       <Tabs.Screen name="onboarding" options={{ href: null }} />
       <Tabs.Screen name="jobs" options={{ href: null }} />
       <Tabs.Screen name="follow-ups" options={{ href: null }} />
