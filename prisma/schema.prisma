@@ -3698,6 +3698,8 @@ model ConstructionCommunicationIdentity {
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
 
+  calendarConfirmations PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationIdentity")
+
   @@unique([workspaceId, channel, normalizedAddress])
   @@index([userId, status])
   @@index([contactId, status])
@@ -5622,6 +5624,12 @@ model PersonalAssistantOperation {
   sourcePersonalOperationId String?
   sourcePersonalOperation PersonalAssistantOperation? @relation("PersonalModelSource", fields: [sourcePersonalOperationId, workspaceId, createdByUserId], references: [id, workspaceId, createdByUserId], onDelete: Restrict)
   modelChildren PersonalAssistantOperation[] @relation("PersonalModelSource")
+  calendarConfirmationSources PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationSource")
+  calendarConfirmationChildren PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationChild")
+  calendarConfirmationCalendars PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationCalendar")
+  calendarConfirmationSummaries PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationSummary")
+  calendarConfirmationBridges PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationBridge")
+  calendarConfirmationConsumptionSources PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationConsumptionSource")
   modelGatewayOperationId String? @unique
   modelGatewayOperation ModelGatewayOperation? @relation(fields: [modelGatewayOperationId], references: [id], onDelete: Restrict)
   createdAt         DateTime                     @default(now())
@@ -5630,6 +5638,66 @@ model PersonalAssistantOperation {
   @@index([workspaceId, kind, status])
   @@unique([id, workspaceId, createdByUserId])
   @@unique([sourcePersonalOperationId, kind])
+}
+
+model PersonalCalendarSmsConfirmationNonce {
+  nonReuseKey String @id
+  namespace   String
+  phraseHash  String
+  createdAt   DateTime @default(now()) @db.Timestamp(3)
+  confirmation PersonalCalendarSmsConfirmation?
+
+  @@unique([namespace, phraseHash], map: "calendar_confirmation_nonce_visible_pair_key")
+}
+
+model PersonalCalendarSmsConfirmation {
+  id                            String @id
+  workspaceId                   String
+  userId                        String
+  identityId                    String
+  sourceOperationId             String
+  modelChildOperationId          String
+  calendarOperationId            String @unique
+  summaryOperationId             String @unique
+  bridgeOutboundOperationId      String? @unique
+  confirmationSourceOperationId  String? @unique
+  reviewActionId                 String
+  phase                         String @default("PREPARED")
+  prepared                      Json
+  reviewSnapshot                Json
+  bindingHash                   String
+  namespace                     String
+  nonReuseKey                   String @unique
+  summaryHash                   String
+  summaryRequestHash            String
+  acceptedProviderSid           String? @unique
+  acceptedAt                    DateTime? @db.Timestamp(3)
+  confirmationSourceRequestHash String?
+  confirmationProviderSid       String? @unique
+  confirmationSourceClaim       Json?
+  calendarClaim                 Json?
+  consumedAt                    DateTime? @db.Timestamp(3)
+  failedAttempts                Int @default(0)
+  createdAt                     DateTime @default(now()) @db.Timestamp(3)
+  expiresAt                     DateTime @db.Timestamp(3)
+  updatedAt                     DateTime @db.Timestamp(3)
+
+  nonce PersonalCalendarSmsConfirmationNonce @relation(fields: [nonReuseKey], references: [nonReuseKey], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_nonce_fkey")
+  // Identity ownership can legitimately change. Current epochs are rechecked;
+  // this immutable record must not prevent revoke/re-pair through a composite FK.
+  identity ConstructionCommunicationIdentity @relation("CalendarConfirmationIdentity", fields: [identityId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_identity_fkey")
+  source PersonalAssistantOperation @relation("CalendarConfirmationSource", fields: [sourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_source_fkey")
+  modelChild PersonalAssistantOperation @relation("CalendarConfirmationChild", fields: [modelChildOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_child_fkey")
+  calendar PersonalAssistantOperation @relation("CalendarConfirmationCalendar", fields: [calendarOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_calendar_fkey")
+  summary PersonalAssistantOperation @relation("CalendarConfirmationSummary", fields: [summaryOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_summary_fkey")
+  bridgeOutbound PersonalAssistantOperation? @relation("CalendarConfirmationBridge", fields: [bridgeOutboundOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_bridge_fkey")
+  confirmationSource PersonalAssistantOperation? @relation("CalendarConfirmationConsumptionSource", fields: [confirmationSourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_consumption_source_fkey")
+
+  @@unique([sourceOperationId, reviewActionId], map: "calendar_confirmation_source_action_key")
+  @@index([namespace, createdAt], map: "calendar_confirmation_namespace_created_idx")
+  @@index([workspaceId, userId, phase, expiresAt], map: "calendar_confirmation_owner_phase_expiry_idx")
+  // SQL-only: UNIQUE(namespace) WHERE phase IN ('PREPARED','WAITING','CONSUMED').
+  // Never model this as unconditional @unique or as a time-dependent predicate.
 }
 
 model PersonalAssistantBudget {

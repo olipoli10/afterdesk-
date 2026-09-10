@@ -5,31 +5,389 @@
   "projectComplete": false,
   "automationId": "endvera-mise-en-service-personnelle",
   "entries": [
-    {"id":"SIGNED_SMS_INGRESS","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","liveObserved":false},
-    {"id":"SMS_POSTGRES_CONCURRENCY","status":"DONE_LOCAL","dependencies":["SIGNED_SMS_INGRESS"],"evidence":"progress.md","liveObserved":false},
-    {"id":"GOOGLE_OAUTH","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","liveObserved":false,"limitations":["Google account consent not performed","Remote Google grant revocation not yet implemented; local encrypted credentials are cleared"]},
-    {"id":"GUARDED_SMS_WORKER","status":"DONE_LOCAL","dependencies":["SIGNED_SMS_INGRESS","SMS_POSTGRES_CONCURRENCY"],"evidence":"progress.md","completed":["Exact live source completion CAS and transactional reply rollback","Source35s/batch50s bounded deadlines; Google cancellation stays in approved client","Exclusive candidate path has no legacy fallback after model uncertainty"],"liveObserved":false},
-    {"id":"APPROVED_SMS_VOICE_DELIVERY","status":"DONE_LOCAL","dependencies":["GUARDED_SMS_WORKER"],"evidence":"progress.md","liveObserved":false,"limitations":["Self-recipient pilot only","Tariff-reviewed reservations are not a ceiling on all provider invoice charges"]},
-    {"id":"HTTPS_ANDROID_CONFIGURATION","status":"IN_PROGRESS","dependencies":[],"evidence":"deployment/android-corrected-build.json","remaining":["Actual owner Samsung installation/login remains unobserved; signed EAS build FINISHED and artifact origin verified"]},
-    {"id":"PERSONAL_MODEL_ENGINE_LOCAL","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","completed":["Closed source-bound candidate and deterministic quoted temporal contract","Explicit owner AI grant distinct from SMS, existing gateway policy/privacy/breaker registration","Atomic one-attempt admission, USD/CAD holds and immutable source-linked model child","OFF-default bounded wire/controller and uncertainty recovery, current pre/post authority and budget checks","Exclusive SMS branch, atomic pending review/draft/source completion and owner mobile projection","Disposable PostgreSQL54 passed with fake transport; root/mobile validation in progress.md"],"limitations":["No live API or credential validation","Generic proposed calendar reads remain review-only; exact known-day direct read implemented separately","No durable cross-SMS clarification correlation yet; an isolated hour is not attached automatically","Model semantic quality and actual device experience remain unobserved"],"liveObserved":false},
-    {"id":"PERSONAL_MODEL_CONFIGURATION_CONSENT","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","completed":["Strict OFF-default rate/envelope/policy configuration","Verified-owner preparation and separate explicit AI grant; encrypted internal credential provision","Status/disconnect and mobile controls; no secret response or provider call","Twelve real disposable PostgreSQL tests passed in latest run"],"liveObserved":false},
-    {"id":"PERSONAL_MODEL_REVIEW_CONSUMER","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","completed":["Stored proposal authority/temporal reinspection","Atomic source/reply and review-only calendar/self-message draft preparers","Owner-only current-state projection with schema-ordered JSONB hash validation","Mobile full source/draft/current state and exact explicit Google approval","Whole PostgreSQL51 passed; local evidence only"],"liveObserved":false},
-    {"id":"DETERMINISTIC_SMS_CALENDAR_READ","status":"DONE_LOCAL","dependencies":["GUARDED_SMS_WORKER","GOOGLE_OAUTH"],"evidence":"progress.md","completed":["Exact known-day Google read before model with no model or legacy call","Current Google read receipt through final source transaction and queued reply disclosure","Full disposable PostgreSQL54 PASS, fake transport only"],"liveObserved":false},
-    {"id":"ANDROID_DOCUMENT_PICKER_RECOVERY","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","completed":["Reproduced native rejection contained","Synchronous picker fence, cancellation and captured source context","Existing durable upload preserved; mobile288 PASS; no actual device observation"],"liveObserved":false},
-    {"id":"PERSONAL_MODEL_OPERATOR_PREPARATION","status":"DONE_LOCAL","dependencies":["PERSONAL_MODEL_ENGINE_LOCAL"],"evidence":"PERSONAL_MODEL_OPERATOR_PREPARATION.md","completed":["Reviewed rate/privacy/policy artifact with exact hashes, OFF defaults and current-time validation","Actual runtime loader compatibility and real model switch name regression","No provider certification, secret access or publication"],"liveObserved":false},
-    {"id":"SMS_DURABLE_WAKEUP","status":"DONE_LOCAL","dependencies":["GUARDED_SMS_WORKER"],"evidence":"progress.md","completed":["Original request55s deadline shared with worker","Durable receipt remains acknowledged if scheduler fails","Replay no wakeup, callback once only;19 focused tests PASS"],"liveObserved":false},
-    {"id":"SMS_TEMPORAL_CLARIFICATION","status":"DONE_LOCAL","dependencies":["PERSONAL_MODEL_REVIEW_CONSUMER"],"completed":["Fixed enum-based clarification templates and narrow demain de interval","Explicit timezone ambiguity refusal including independent lowercase abbreviation and hour-offset regressions","84 focused and11 independent boundary cases passed, finalroot3265 PASS"],"limitations":["No cross-SMS follow-up correlation or arbitrary timezone inference"],"liveObserved":false},
-    {"id":"ANDROID_PHOTO_CAPTURE","status":"IN_PROGRESS","dependencies":["ANDROID_DOCUMENT_PICKER_RECOVERY"],"remaining":["Voluntary camera or selected-photo preview then explicit import","Existing durable source workflow and cross-picker context fences","No new broad permission or actual camera invocation"],"liveObserved":false},
-    {"id":"OUTBOX_CURRENT_DISPATCH_FENCE","status":"IN_PROGRESS","dependencies":["APPROVED_SMS_VOICE_DELIVERY"],"remaining":["Reproduce postclaim authority/global-switch revocation and late completion issues","Exact claim, absolute deadline and terminal CAS without retry or budget release"],"liveObserved":false},
-    {"id":"GOOGLE_CURRENT_WRITE_FENCE","status":"IN_PROGRESS","dependencies":["GOOGLE_OAUTH"],"remaining":["Transaction-scoped exact one-use claim, current write authority under locks, bounded callback and terminal CAS","Independent real disposable PostgreSQL concurrency validation with fake transport"],"liveObserved":false},
-    {"id":"ANDROID_CALENDAR_LOCAL_TIMES","status":"IN_PROGRESS","dependencies":["PERSONAL_MODEL_REVIEW_CONSUMER"],"completed":["Explicit named-zone local dates and UTC offset display with exact ISO preserved","Independent focused tests passed"],"remaining":["Parent full validation and checkpoint"],"liveObserved":false},
-    {"id":"ANDROID_VOICE_CONTEXT_BINDING","status":"IN_PROGRESS","dependencies":["ANDROID_DOCUMENT_PICKER_RECOVERY"],"remaining":["Bind recorded audio to exact starting workspace/project/intake/version through file read and durable staging","One finalization and synchronous native gate held through recording","Independent review and full mobile validation"],"liveObserved":false},
-    {"id":"SMS_CALENDAR_EXACT_CONFIRMATION","status":"IN_PROGRESS","dependencies":["GOOGLE_CURRENT_WRITE_FENCE","OUTBOX_CURRENT_DISPATCH_FENCE"],"evidence":"SMS_CALENDAR_CONFIRMATION_PLAN.md","completed":["OFF-default pure exact summary and confirmation contract; no model authorization"],"remaining":["Review correlation and durable schema/one-use constraints before migration","Atomic challenge/source/calendar claim and full PostgreSQL concurrency tests","No live activation or owner observation yet"],"liveObserved":false},
-    {"id":"ANDROID_SELECTED_CONTACT_IMPORT","status":"DONE_LOCAL","dependencies":[],"evidence":"overnight-continuation.md","completed":["Permission refresh/revocation and limited photos","One selected native contact, exact editable preview, explicit confirmation via existing authenticated onboarding API"],"remaining":["Coherent internal APK containing changes and actual Samsung observation"],"liveObserved":false},
-    {"id":"OPENROUTER_PERSONAL_ENGINE","status":"PENDING","dependencies":["PERSONAL_EXTERNAL_SETUP","PERSONAL_MODEL_ENGINE_LOCAL"],"remaining":["Current credential access and provider pricing/privacy verification inside fresh 20 CAD envelope","Observe guarded personal conversation, preserving deterministic approval for effects"],"liveObserved":false},
-    {"id":"PHONE_BINDING_AND_CALENDAR_APPROVAL","status":"DONE_LOCAL","dependencies":["GOOGLE_OAUTH"],"evidence":"progress.md","liveObserved":false},
-    {"id":"PERSONAL_EXTERNAL_SETUP","status":"IN_PROGRESS","dependencies":["GOOGLE_OAUTH"],"authorization":"authorization.json"},
-    {"id":"LIVE_OBSERVATION","status":"PENDING","dependencies":["PERSONAL_EXTERNAL_SETUP","APPROVED_SMS_VOICE_DELIVERY"]}
+    {
+      "id": "SIGNED_SMS_INGRESS",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "progress.md",
+      "liveObserved": false
+    },
+    {
+      "id": "SMS_POSTGRES_CONCURRENCY",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "SIGNED_SMS_INGRESS"
+      ],
+      "evidence": "progress.md",
+      "liveObserved": false,
+      "completed": [
+        "PGlite inbox replay and persistence tests observed; prior native provenance corrected in progress.md"
+      ],
+      "remaining": [
+        "Native simultaneous PostgreSQL sessions and actual contention tests; PGlite is not native concurrency proof"
+      ]
+    },
+    {
+      "id": "NATIVE_DATABASE_CONCURRENCY_TOOLING",
+      "status": "IN_PROGRESS",
+      "dependencies": [],
+      "completed": [
+        "Official pinned PostgreSQL17.11 starts two simultaneous distinct backends; missing vector migration failure retained and server stopped",
+        "Six Microsoft package digests verified and signed PE tools inspected; bounded pgvector build script reviewed"
+      ],
+      "remaining": [
+        "One local pgvector build and separate extension import/runtime review",
+        "All unchanged migrations plus native concurrency tests with fake transports"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "GOOGLE_OAUTH",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "progress.md",
+      "liveObserved": false,
+      "limitations": [
+        "Google account consent not performed",
+        "Remote Google grant revocation not yet implemented; local encrypted credentials are cleared"
+      ]
+    },
+    {
+      "id": "GUARDED_SMS_WORKER",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "SIGNED_SMS_INGRESS",
+        "SMS_POSTGRES_CONCURRENCY"
+      ],
+      "evidence": "progress.md",
+      "completed": [
+        "Exact live source completion CAS and transactional reply rollback",
+        "Source35s/batch50s bounded deadlines; Google cancellation stays in approved client",
+        "Exclusive candidate path has no legacy fallback after model uncertainty"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "APPROVED_SMS_VOICE_DELIVERY",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "GUARDED_SMS_WORKER"
+      ],
+      "evidence": "progress.md",
+      "liveObserved": false,
+      "limitations": [
+        "Self-recipient pilot only",
+        "Tariff-reviewed reservations are not a ceiling on all provider invoice charges"
+      ]
+    },
+    {
+      "id": "HTTPS_ANDROID_CONFIGURATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [],
+      "evidence": "deployment/android-corrected-build.json",
+      "remaining": [
+        "Actual owner Samsung installation/login remains unobserved; signed EAS build FINISHED and artifact origin verified"
+      ]
+    },
+    {
+      "id": "PERSONAL_MODEL_ENGINE_LOCAL",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "progress.md",
+      "completed": [
+        "Closed source-bound candidate and deterministic quoted temporal contract",
+        "Explicit owner AI grant distinct from SMS, existing gateway policy/privacy/breaker registration",
+        "Atomic one-attempt admission, USD/CAD holds and immutable source-linked model child",
+        "OFF-default bounded wire/controller and uncertainty recovery, current pre/post authority and budget checks",
+        "Exclusive SMS branch, atomic pending review/draft/source completion and owner mobile projection",
+        "Disposable PostgreSQL54 passed with fake transport; root/mobile validation in progress.md"
+      ],
+      "limitations": [
+        "No live API or credential validation",
+        "Generic proposed calendar reads remain review-only; exact known-day direct read implemented separately",
+        "No durable cross-SMS clarification correlation yet; an isolated hour is not attached automatically",
+        "Model semantic quality and actual device experience remain unobserved"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "PERSONAL_MODEL_CONFIGURATION_CONSENT",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "progress.md",
+      "completed": [
+        "Strict OFF-default rate/envelope/policy configuration",
+        "Verified-owner preparation and separate explicit AI grant; encrypted internal credential provision",
+        "Status/disconnect and mobile controls; no secret response or provider call",
+        "Twelve real disposable PostgreSQL tests passed in latest run"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "PERSONAL_MODEL_REVIEW_CONSUMER",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "progress.md",
+      "completed": [
+        "Stored proposal authority/temporal reinspection",
+        "Atomic source/reply and review-only calendar/self-message draft preparers",
+        "Owner-only current-state projection with schema-ordered JSONB hash validation",
+        "Mobile full source/draft/current state and exact explicit Google approval",
+        "Whole PostgreSQL51 passed; local evidence only"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "DETERMINISTIC_SMS_CALENDAR_READ",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "GUARDED_SMS_WORKER",
+        "GOOGLE_OAUTH"
+      ],
+      "evidence": "progress.md",
+      "completed": [
+        "Exact known-day Google read before model with no model or legacy call",
+        "Current Google read receipt through final source transaction and queued reply disclosure",
+        "Full disposable PostgreSQL54 PASS, fake transport only"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "ANDROID_DOCUMENT_PICKER_RECOVERY",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "progress.md",
+      "completed": [
+        "Reproduced native rejection contained",
+        "Synchronous picker fence, cancellation and captured source context",
+        "Existing durable upload preserved; mobile288 PASS; no actual device observation"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "PERSONAL_MODEL_OPERATOR_PREPARATION",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "PERSONAL_MODEL_ENGINE_LOCAL"
+      ],
+      "evidence": "PERSONAL_MODEL_OPERATOR_PREPARATION.md",
+      "completed": [
+        "Reviewed rate/privacy/policy artifact with exact hashes, OFF defaults and current-time validation",
+        "Actual runtime loader compatibility and real model switch name regression",
+        "No provider certification, secret access or publication"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "SMS_DURABLE_WAKEUP",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "GUARDED_SMS_WORKER"
+      ],
+      "evidence": "progress.md",
+      "completed": [
+        "Original request55s deadline shared with worker",
+        "Durable receipt remains acknowledged if scheduler fails",
+        "Replay no wakeup, callback once only;19 focused tests PASS"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "SMS_TEMPORAL_CLARIFICATION",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "PERSONAL_MODEL_REVIEW_CONSUMER"
+      ],
+      "completed": [
+        "Fixed enum-based clarification templates and narrow demain de interval",
+        "Explicit timezone ambiguity refusal including independent lowercase abbreviation and hour-offset regressions",
+        "84 focused and11 independent boundary cases passed, finalroot3265 PASS"
+      ],
+      "limitations": [
+        "No cross-SMS follow-up correlation or arbitrary timezone inference"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "ANDROID_PHOTO_CAPTURE",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "ANDROID_DOCUMENT_PICKER_RECOVERY"
+      ],
+      "remaining": [
+        "New coherent internal APK and real Samsung observation"
+      ],
+      "liveObserved": false,
+      "completed": [
+        "Voluntary camera/selected-photo preview then explicit import wired to durable intake",
+        "Token-owned native picker/recording gate and captured context; mobile398 PASS at c1f96bfb"
+      ]
+    },
+    {
+      "id": "OUTBOX_CURRENT_DISPATCH_FENCE",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "APPROVED_SMS_VOICE_DELIVERY"
+      ],
+      "remaining": [
+        "Native PostgreSQL simultaneous sessions with fake HTTP; real provider delivery separately unobserved"
+      ],
+      "liveObserved": false,
+      "completed": [
+        "One-use nonce, exact source/owner/grant/budget/policy/credential claim with pre/post dispatch fences",
+        "Bounded deadline and terminal CAS; uncertainty keeps full reservation; no retry",
+        "Confirmation-specific deadline and dedicated sender separately reviewed"
+      ]
+    },
+    {
+      "id": "GOOGLE_CURRENT_WRITE_FENCE",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "GOOGLE_OAUTH"
+      ],
+      "remaining": [
+        "Native PostgreSQL contention tests blocked until reviewed pgvector extension is available"
+      ],
+      "liveObserved": false,
+      "completed": [
+        "Transaction-scoped immutable one-use claim and dispatch marker; current authority under locks",
+        "Bounded callback and exact terminal CAS with independent regression review"
+      ]
+    },
+    {
+      "id": "ANDROID_CALENDAR_LOCAL_TIMES",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "PERSONAL_MODEL_REVIEW_CONSUMER"
+      ],
+      "completed": [
+        "Named-zone local dates and UTC offsets with exact ISO preserved",
+        "Independent focused and mobile398 tests passed; source checkpoint c1f96bfb"
+      ],
+      "remaining": [
+        "Physical Samsung observation"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "ANDROID_VOICE_CONTEXT_BINDING",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "ANDROID_DOCUMENT_PICKER_RECOVERY"
+      ],
+      "remaining": [
+        "Physical Samsung permission/recording observation; ten-minute dictation not implemented"
+      ],
+      "liveObserved": false,
+      "completed": [
+        "Recording bound to starting workspace/project/intake/version and matching native completion receipt",
+        "Failed stop retains session gate for cleanup; two-minute limit; mobile398 PASS at c1f96bfb"
+      ]
+    },
+    {
+      "id": "SMS_CALENDAR_EXACT_CONFIRMATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "GOOGLE_CURRENT_WRITE_FENCE",
+        "OUTBOX_CURRENT_DISPATCH_FENCE"
+      ],
+      "evidence": "SMS_CALENDAR_CONFIRMATION_PLAN.md",
+      "completed": [
+        "OFF exact pure contract, permanent nonce, strict migration and source/calendar atomic consumption",
+        "PGlite storage/actual outbox bridge19 PASS plus original SMS worker orchestration3 PASS, fake HTTP only",
+        "Reserved route before model; exact source finalization + pending bridge; separate acknowledgement with no summary leak"
+      ],
+      "remaining": [
+        "Full confirmation SMS to actual Google executor with fake client integration",
+        "Native concurrent-session proof; live activation and owner observation absent"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "PERSONAL_EXPIRED_EFFECT_RECOVERY",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "GOOGLE_CURRENT_WRITE_FENCE",
+        "OUTBOX_CURRENT_DISPATCH_FENCE"
+      ],
+      "completed": [
+        "OFF bounded DB-clock exact CAS from processing to uncertain for three effect kinds only",
+        "Preserves prior claim/transport knowledge and full reservation; no retry/provider access",
+        "24 unit tests plus worker tick deadline tests and independent review"
+      ],
+      "remaining": [
+        "Actual SQL recovery race tests and native multi-backend proof"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "CONFIRMATION_BOOKKEEPING",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "SMS_CALENDAR_EXACT_CONFIRMATION",
+        "PERSONAL_EXPIRED_EFFECT_RECOVERY"
+      ],
+      "completed": [
+        "OFF actor-scoped max25 expiry and consumed-result reconciliation;24 unit tests and independent review",
+        "Wired before new source interpretation with original deadline; no nonce deletion or effect retry"
+      ],
+      "remaining": [
+        "Seven actual SQL tests awaiting execution and final integration review"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "ANDROID_SELECTED_CONTACT_IMPORT",
+      "status": "DONE_LOCAL",
+      "dependencies": [],
+      "evidence": "overnight-continuation.md",
+      "completed": [
+        "Permission refresh/revocation and limited photos",
+        "One selected native contact, exact editable preview, explicit confirmation via existing authenticated onboarding API"
+      ],
+      "remaining": [
+        "Coherent internal APK containing changes and actual Samsung observation"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "OPENROUTER_PERSONAL_ENGINE",
+      "status": "PENDING",
+      "dependencies": [
+        "PERSONAL_EXTERNAL_SETUP",
+        "PERSONAL_MODEL_ENGINE_LOCAL"
+      ],
+      "remaining": [
+        "Current credential access and provider pricing/privacy verification inside fresh 20 CAD envelope",
+        "Observe guarded personal conversation, preserving deterministic approval for effects"
+      ],
+      "liveObserved": false
+    },
+    {
+      "id": "PHONE_BINDING_AND_CALENDAR_APPROVAL",
+      "status": "DONE_LOCAL",
+      "dependencies": [
+        "GOOGLE_OAUTH"
+      ],
+      "evidence": "progress.md",
+      "liveObserved": false
+    },
+    {
+      "id": "PERSONAL_EXTERNAL_SETUP",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "GOOGLE_OAUTH"
+      ],
+      "authorization": "authorization.json"
+    },
+    {
+      "id": "LIVE_OBSERVATION",
+      "status": "PENDING",
+      "dependencies": [
+        "PERSONAL_EXTERNAL_SETUP",
+        "APPROVED_SMS_VOICE_DELIVERY"
+      ]
+    }
   ],
   "ownerInputs": {
     "totalPilotBudgetCad": 100,

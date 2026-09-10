@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-10T06:46:00Z",
+  "state": "LOCAL_CONFIRMATION_IMPLEMENTED_OFF_CONTINUING_VALIDATION",
+  "sourceBaseline": "c1f96bfb7b2f0cd0257845220537b2ce0fc199aa",
+  "databaseRuntime": "PRISMA_DEV_PGLITE",
+  "migration": "20260910050000_calendar_sms_confirmation_store_off",
+  "rootValidation": { "path": "root-1789022027709", "passed": 3512, "skippedHistorical": 3, "coverageNote": "Before the subsequent three maintenance-hook tests; not proof of later edits" },
+  "storageAndBridge": { "path": "postgres-1789021603798", "passed": 19, "actualOutboxWithInjectedFakeHttp": true, "cleanupObserved": true },
+  "sourceWorkerIntegration": { "path": "postgres-1789022374860", "passed": 3, "cleanupObserved": true, "coverage": "Original source through exact review, neutral reply and separate pending confirmation bridge; fake accepted HTTP to WAITING" },
+  "maintenance": { "unitPassed": 24, "independentReview": "NO_CRITICAL_FINDING_IN_SCOPED_REVIEW", "sqlValidation": "RUNNING_NOT_CLAIMED" },
+  "sourceFencingAfterMaintenanceHook": { "unitPassed": 37, "fullRootRerun": "PENDING" },
+  "providerBoundary": { "modules": 5573, "violations": 0 },
+  "nativeDatabase": { "runtime": "PostgreSQL17.11", "simultaneousDistinctBackendsObserved": true, "applicationConcurrencyPassed": false, "blocker": "pgvector extension missing; first bounded local compile reached link but OLDNAMES.lib absent", "ownedServerStopped": true },
+  "externalState": { "providerCalls": 0, "realSmsCalls": 0, "secretAccess": false, "remoteMigration": false, "deployment": false, "newSignedApk": false, "physicalSamsungObservation": false },
+  "dashboard": { "strictCanonicalRoadmapPhaseExitPercent": 22, "localBuildReadinessPercent": 46.75, "c2Preparation": "18/18", "realProviderCustomerTestReadiness": "NO-GO", "verifiedE2eObservedCoveragePercent": 0, "rubricPromotion": false },
+  "continuation": { "heartbeat": "endvera-mise-en-service-personnelle", "status": "ACTIVE", "intervalMinutes": 3, "projectComplete": false }
+}

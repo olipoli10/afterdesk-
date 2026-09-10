@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { personalOutboundExecution, personalOutboundSchema, sendPersonalTwilio, twilioDispatchPolicy, type OutboundKind, type PersonalOutbound, type PersonalOutboundExecutionContext } from "./twilio-outbound";
 import type { ConnectorEnvironment } from "./google-client";
 import { requireGoogleReadAuthority } from "./google-connection";
+import { requireCalendarConfirmationOutboundSourceInTransaction, markCalendarSmsConfirmationWaitingInTransaction } from "./calendar-confirmation-authority";
+import { isReservedCalendarConfirmationMessage } from "./calendar-confirmation-routing";
 
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 type DB = Prisma.TransactionClient | typeof prisma;
@@ -41,15 +43,37 @@ function currentOutboundPolicy(row: OutboundOwner, request: PersonalOutbound, en
 }
 type OutboundClaim = Readonly<{ row: OutboundOwner; request: PersonalOutbound; leaseUntil: Date; approvedUntil: number;
   authority: Awaited<ReturnType<typeof currentOutboundAuthority>>; approvalJson: string;
-  source: Awaited<ReturnType<typeof requireCurrentReplySource>>;
+  source: Awaited<ReturnType<typeof requireCurrentOutboundSource>>;
   policyFingerprint: string; credentialFingerprint: string; budgetId: string; reservation: bigint;
   ceiling: bigint; budgetExpiresAt: Date; automatic: boolean }>;
 const credentialFingerprint = (env: ConnectorEnvironment) => hash(JSON.stringify([env.TWILIO_API_KEY_SID, env.TWILIO_API_KEY_SECRET]));
+function requireConfirmationBridgeEnabled(env: ConnectorEnvironment) {
+  if (env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED !== "true" || env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED !== "true") throw new Error("CONFIRMATION_BRIDGE_DISABLED");
+}
+function confirmationSourceDeadline(source: Awaited<ReturnType<typeof requireCurrentOutboundSource>>) {
+  if (source?.kind !== "CALENDAR_CONFIRMATION") return Infinity;
+  const expiresAt = Date.parse(source.expiresAt);
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) throw new Error("CONFIRMATION_EXPIRED");
+  return expiresAt;
+}
+function requireOrdinaryOutboundText(text: string) {
+  // Routing refusal only; normalization never authorizes a confirmation.
+  if (isReservedCalendarConfirmationMessage(text)) throw new Error("CONFIRMATION_RESERVED_OUTBOUND_TEXT");
+}
 async function withOutboundClaim<T>(claim: OutboundClaim, env: ConnectorEnvironment, execution: ReturnType<typeof personalOutboundExecution>, work: (tx: Prisma.TransactionClient) => T) {
   const requireLive = execution.requireLive;
   requireLive();
   return prisma.$transaction(async tx => {
     const a = claim.authority;
+    // Confirmation lifecycle consistently locks its challenge before related
+    // source/calendar/outbound rows, matching preparation and consumption.
+    if (claim.source?.kind === "CALENDAR_CONFIRMATION") {
+      const current = await requireCalendarConfirmationOutboundSourceInTransaction(tx, claim.row, claim.request, env);
+      if (current.challengeId !== claim.source.challengeId || current.fingerprint !== claim.source.fingerprint
+        || current.expiresAt !== claim.source.expiresAt) throw new Error("CONFIRMATION_BINDING_CHANGED");
+      confirmationSourceDeadline(claim.source);
+      requireLive();
+    }
     // One locked authority snapshot; later source checks cannot let a concurrent
     // membership/grant/budget revocation slip between validation and invocation.
     const rows = await tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT p.id FROM "PersonalAssistantOperation" p
@@ -80,7 +104,7 @@ async function withOutboundClaim<T>(claim: OutboundClaim, env: ConnectorEnvironm
     new Date(a.grant.updatedAt), a.grant.scopes, claim.ceiling, claim.budgetExpiresAt);
     if (rows.length !== 1 || claim.approvedUntil <= Date.now()) throw new Error("OUTBOUND_CLAIM_OR_AUTHORITY_CHANGED");
     requireLive();
-    if (claim.source) {
+    if (claim.source?.kind === "ORDINARY_REPLY") {
       const sources = await tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT id FROM "PersonalAssistantOperation"
         WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND kind='personal_sms_inbound' AND status='completed'
           AND "requestHash"=$4 AND request=$5::jsonb AND result=$6::jsonb FOR SHARE`,
@@ -89,6 +113,8 @@ async function withOutboundClaim<T>(claim: OutboundClaim, env: ConnectorEnvironm
       await requireCurrentReplySource(tx, claim.row, claim.request, env);
     }
     requireLive();
+    confirmationSourceDeadline(claim.source);
+    if (claim.source?.kind === "CALENDAR_CONFIRMATION") requireConfirmationBridgeEnabled(env);
     if (claim.automatic && env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED !== "true") throw new Error("AUTOMATIC_REPLIES_DISABLED");
     if (currentOutboundPolicy(claim.row, claim.request, env).fingerprint !== claim.policyFingerprint
       || credentialFingerprint(env) !== claim.credentialFingerprint) throw new Error("OUTBOUND_POLICY_CHANGED");
@@ -101,6 +127,7 @@ async function withOutboundClaim<T>(claim: OutboundClaim, env: ConnectorEnvironm
  * uses the ordinary approval endpoint instead of the automatic-reply worker. */
 async function requireCurrentReplySource(db: DB, row: { workspaceId: string; createdByUserId: string; idempotencyKey: string },
   request: PersonalOutbound, env: ConnectorEnvironment) {
+  requireOrdinaryOutboundText(request.text);
   if (!request.sourceOperationId && !row.idempotencyKey.startsWith("reply:")) return null;
   if (!request.sourceOperationId || row.idempotencyKey !== `reply:${request.sourceOperationId}`) throw new Error("AUTOMATIC_REPLY_REFUSED");
   const source = await db.personalAssistantOperation.findFirst({ where: { id: request.sourceOperationId, workspaceId: row.workspaceId,
@@ -111,6 +138,17 @@ async function requireCurrentReplySource(db: DB, row: { workspaceId: string; cre
   if (answer.source === "GOOGLE_CALENDAR") await requireGoogleReadAuthority(db, row.createdByUserId, row.workspaceId, answer.googleReadAuthority, env);
   return Object.freeze({ id: source.id, requestHash: source.requestHash, requestJson: JSON.stringify(source.request), resultJson: JSON.stringify(source.result) });
 }
+/** Explicitly separated sources: confirmation summaries never inherit the ordinary
+ * reply's authority, and the existing reply grammar/disclosure checks stay strict. */
+async function requireCurrentOutboundSource(tx: Prisma.TransactionClient, row: OutboundOwner, request: PersonalOutbound, env: ConnectorEnvironment) {
+  if (row.idempotencyKey.startsWith("calendar-confirmation:")) {
+    requireConfirmationBridgeEnabled(env);
+    if (row.kind !== "sms_outbound" || !request.sourceOperationId) throw new Error("CONFIRMATION_OUTBOX_BRIDGE_CHANGED");
+    return requireCalendarConfirmationOutboundSourceInTransaction(tx, row, request, env);
+  }
+  const source = await requireCurrentReplySource(tx, row, request, env);
+  return source ? Object.freeze({ kind: "ORDINARY_REPLY" as const, ...source }) : null;
+}
 export async function preparePersonalOutbound(input: { userId: string; workspaceId: string; kind: OutboundKind; to: string; text: string; requestId: string }, env: ConnectorEnvironment = process.env) {
   return prisma.$transaction(tx => preparePersonalOutboundInTransaction(tx, input, env), { isolationLevel: "Serializable" });
 }
@@ -118,6 +156,7 @@ export async function preparePersonalOutbound(input: { userId: string; workspace
 export async function preparePersonalOutboundInTransaction(tx: Prisma.TransactionClient, input: { userId: string; workspaceId: string; kind: OutboundKind; to: string; text: string; requestId: string }, env: ConnectorEnvironment = process.env) {
   if (!/^[0-9a-f-]{36}$/i.test(input.requestId)) throw new Error("REQUEST_ID_REQUIRED");
   const request = personalOutboundSchema.parse({ to: input.to, from: env.TWILIO_PHONE_NUMBER, text: input.kind === "voice_outbound" ? `Bonjour, ici l’assistant ENDVERA. ${input.text}` : input.text });
+  requireOrdinaryOutboundText(request.text);
   if (!["sms_outbound", "voice_outbound"].includes(input.kind) || input.kind === "voice_outbound" && request.text.length > 600) throw new Error("OUTBOUND_REQUEST_REFUSED");
   const requestHash = hash(JSON.stringify(request));
   await requireSelfRecipient(tx, input.userId, input.workspaceId, request.to);
@@ -135,7 +174,7 @@ export async function approvePersonalOutbound(input: { userId: string; workspace
     const request = personalOutboundSchema.parse(row.request);
     if (hash(JSON.stringify(request)) !== row.requestHash) throw new Error("OUTBOUND_CONTENT_CHANGED");
     await requireSelfRecipient(tx, input.userId, input.workspaceId, request.to);
-    await requireCurrentReplySource(tx, row, request, env);
+    await requireCurrentOutboundSource(tx, row, request, env);
     const policy = twilioDispatchPolicy(env, row.kind as OutboundKind, request.text);
     const update = await tx.personalAssistantOperation.updateMany({ where: { id: row.id, status: "pending", requestHash: input.expectedRequestHash }, data: { status: "approved", result: { approvedBy: input.userId, approvedHash: row.requestHash, approvedUntil: new Date(Math.min(Date.now() + 600000, policy.expiresAt.getTime())).toISOString() } } });
     if (update.count !== 1) throw new Error("APPROVAL_REFUSED_OR_ALREADY_USED");
@@ -161,8 +200,9 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
     if (hash(JSON.stringify(request)) !== row.requestHash || request.from !== env.TWILIO_PHONE_NUMBER) throw new Error("OUTBOUND_CONTENT_CHANGED");
     const authority = await currentOutboundAuthority(tx, row, request, env);
     execution.requireLive();
-    const source = await requireCurrentReplySource(tx, row, request, env);
+    const source = await requireCurrentOutboundSource(tx, row, request, env);
     execution.requireLive();
+    const sourceDeadline = confirmationSourceDeadline(source);
     const { policy, fingerprint: policyFingerprint } = currentOutboundPolicy(row, request, env);
     await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${policy.budgetId}, 0))::text AS acquired`);
     const budget = await tx.personalAssistantBudget.upsert({ where: { id: policy.budgetId }, create: { id: policy.budgetId, ceilingCadMicros: policy.ceiling, expiresAt: policy.expiresAt }, update: {} });
@@ -172,7 +212,7 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
     execution.requireLive();
     claimed = Object.freeze({ row: Object.freeze({ id: row.id, workspaceId: row.workspaceId, createdByUserId: row.createdByUserId,
       connectorAccountId: row.connectorAccountId, kind: row.kind, idempotencyKey: row.idempotencyKey, requestHash: row.requestHash }),
-      request: Object.freeze(request), leaseUntil: new Date(Math.min(execution.deadlineAt, Date.parse(approval.approvedUntil!))), approvedUntil: Date.parse(approval.approvedUntil!),
+      request: Object.freeze(request), leaseUntil: new Date(Math.min(execution.deadlineAt, Date.parse(approval.approvedUntil!), sourceDeadline)), approvedUntil: Date.parse(approval.approvedUntil!),
       // Unique attempt ownership also fences ambiguous commit outcomes. Equal
       // millisecond leases never let a losing claimant terminalize its winner.
       authority, source, approvalJson: JSON.stringify({ ...(row.result as Prisma.JsonObject), outboundClaimToken: randomUUID() }), automatic, ceiling: policy.ceiling, budgetExpiresAt: policy.expiresAt,
@@ -198,11 +238,23 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
       if (!outcome.ok) throw outcome.error;
       return outcome.value;
     }, operationId, { deadlineAt: execution.deadlineAt, signal: execution.signal });
-    const finished = await execution.wait(() => withOutboundClaim(owned, env, execution, tx => tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"externalTransportPerformed"=true,"leaseUntil"=NULL,result=$9::jsonb,"updatedAt"=now()
+    const finished = await execution.wait(() => withOutboundClaim(owned, env, execution, async tx => {
+      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"externalTransportPerformed"=true,"leaseUntil"=NULL,result=$9::jsonb,"updatedAt"=now()
       WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "requestHash"=$4 AND status='processing' AND attempts=1
         AND "leaseUntil"=$5 AND "leaseUntil">clock_timestamp() AND "budgetId"=$6 AND "reservedCadMicros"=$7 AND kind=$8 AND result=$10::jsonb`,
     owned.row.id, owned.row.workspaceId, owned.row.createdByUserId, owned.row.requestHash, owned.leaseUntil, owned.budgetId, owned.reservation, owned.row.kind,
-    JSON.stringify({ ...result, acceptedByProvider: true, approvalHash: owned.row.requestHash }), owned.approvalJson)));
+    JSON.stringify({ ...result, acceptedByProvider: true, approvalHash: owned.row.requestHash }), owned.approvalJson);
+      if (changed !== 1) throw new Error("OUTBOUND_CLAIM_LOST");
+      if (owned.source?.kind === "CALENDAR_CONFIRMATION") {
+        const waiting = await markCalendarSmsConfirmationWaitingInTransaction(tx, { actor: { userId: owned.row.createdByUserId, workspaceId: owned.row.workspaceId },
+          challengeId: owned.source.challengeId, bridgeOutboundOperationId: owned.row.id }, env);
+        if (waiting.status !== "WAITING_FOR_EXACT_CONFIRMATION") throw new Error("CONFIRMATION_NOT_PREPARED");
+        requireConfirmationBridgeEnabled(env);
+        confirmationSourceDeadline(owned.source);
+      }
+      execution.requireLive();
+      return changed;
+    }));
     if (finished !== 1) throw new Error("OUTBOUND_CLAIM_LOST");
     return result;
   } catch (error) {
@@ -253,5 +305,32 @@ export async function sendAutomaticPersonalReply(operationId: string, env: Conne
   if (env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED !== "true") throw new Error("AUTOMATIC_REPLIES_DISABLED");
   return dispatchOutbound(row.id, env, transport, { deadlineAt: execution.deadlineAt, signal: execution.signal }, true);
   });
+  } finally { execution.dispose(); }
+}
+
+/** Only the immutable confirmation summary purpose is accepted here. Existing
+ * automatic-reply policy and SMS-send consent are still required; nothing grants consent. */
+export async function sendAutomaticCalendarConfirmationSummary(operationId: string, env: ConnectorEnvironment = process.env, transport: typeof fetch = fetch, context: PersonalOutboundExecutionContext = {}) {
+  const execution = personalOutboundExecution(context);
+  try {
+    execution.requireLive();
+    return await execution.wait(async () => {
+      if (env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED !== "true") throw new Error("AUTOMATIC_REPLIES_DISABLED");
+      const row = await prisma.personalAssistantOperation.findUnique({ where: { id: operationId } });
+      if (!row || row.kind !== "sms_outbound" || !["pending", "approved"].includes(row.status)
+        || !row.idempotencyKey.startsWith("calendar-confirmation:")) throw new Error("CONFIRMATION_OUTBOX_BRIDGE_CHANGED");
+      const request = personalOutboundSchema.parse(row.request);
+      const source = await prisma.$transaction(tx => requireCurrentOutboundSource(tx, row, request, env),
+        { isolationLevel: "Serializable", maxWait: 1000, timeout: Math.max(1, Math.min(5000, execution.deadlineAt - Date.now())) });
+      if (source?.kind !== "CALENDAR_CONFIRMATION") throw new Error("CONFIRMATION_OUTBOX_BRIDGE_CHANGED");
+      execution.requireLive();
+      const grant = await prisma.constructionConnectorGrant.findFirst({ where: { connectorAccountId: row.connectorAccountId, capability: "personal_sms_send", status: "active", revokedAt: null } });
+      if (!grant) throw new Error("AUTOMATIC_REPLY_CONSENT_REQUIRED");
+      execution.requireLive();
+      if (row.status === "pending") await approvePersonalOutbound({ userId: row.createdByUserId, workspaceId: row.workspaceId, operationId: row.id, expectedRequestHash: row.requestHash }, env);
+      execution.requireLive();
+      if (env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED !== "true") throw new Error("AUTOMATIC_REPLIES_DISABLED");
+      return dispatchOutbound(row.id, env, transport, { deadlineAt: execution.deadlineAt, signal: execution.signal }, true);
+    });
   } finally { execution.dispose(); }
 }

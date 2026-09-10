@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ find: vi.fn(), list: vi.fn(), update: vi.fn(), execute: vi.fn(), transaction: vi.fn(), workspace: vi.fn(), admission: vi.fn(), engine: vi.fn(), send: vi.fn(), calendar: vi.fn(), googleAuthority: vi.fn() }));
+const mocks = vi.hoisted(() => ({ find: vi.fn(), list: vi.fn(), update: vi.fn(), execute: vi.fn(), transaction: vi.fn(), workspace: vi.fn(), admission: vi.fn(), engine: vi.fn(), send: vi.fn(), calendar: vi.fn(), googleAuthority: vi.fn(), confirmation: vi.fn(), prepareConfirmation: vi.fn(), prepareBridge: vi.fn(), sendSummary: vi.fn(), maintenance: vi.fn() }));
 vi.mock("@/lib/db", () => ({ prisma: {
   personalAssistantOperation: { findUnique: mocks.find, findMany: mocks.list, updateMany: mocks.update },
   constructionWorkspace: { findUniqueOrThrow: mocks.workspace }, $executeRawUnsafe: mocks.execute, $transaction: mocks.transaction,
@@ -8,7 +8,11 @@ vi.mock("@/lib/db", () => ({ prisma: {
 vi.mock("@/server/personal-assistant/sms-inbox", () => ({ enqueuePersonalSms: mocks.admission }));
 vi.mock("@/server/construction-operating-assistant-r36c/orchestrator", () => ({ processUnifiedAssistantRequest: mocks.engine }));
 vi.mock("@/server/personal-assistant/google-connection", () => ({ readGoogleCalendarWithAuthority: mocks.calendar, requireGoogleReadAuthority: mocks.googleAuthority }));
-vi.mock("@/server/personal-assistant/outbox", () => ({ sendAutomaticPersonalReply: mocks.send }));
+vi.mock("@/server/personal-assistant/outbox", () => ({ sendAutomaticPersonalReply: mocks.send, sendAutomaticCalendarConfirmationSummary: mocks.sendSummary }));
+vi.mock("@/server/personal-assistant/calendar-confirmation-worker", () => ({ processCalendarConfirmationSms: mocks.confirmation }));
+vi.mock("@/server/personal-assistant/calendar-confirmation-preparation", () => ({ prepareCalendarConfirmationForReviewInTransaction: mocks.prepareConfirmation }));
+vi.mock("@/server/personal-assistant/calendar-confirmation-bridge", () => ({ prepareCalendarConfirmationOutboundInTransaction: mocks.prepareBridge }));
+vi.mock("@/server/personal-assistant/calendar-confirmation-maintenance", () => ({ maintainCalendarSmsConfirmations: mocks.maintenance }));
 import { drainPersonalSms, processPersonalSms } from "@/server/personal-assistant/sms-worker";
 
 const env = { ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_AUTHORITY_REF: "synthetic-authority", ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner",
@@ -37,6 +41,90 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 
 describe("personal SMS source deadline and exact ownership", () => {
+  const maintenanceEnv = { ...env, ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED: "true", ENDVERA_CALENDAR_SMS_CONFIRMATION_MAINTENANCE_ENABLED: "true" };
+  it("runs only scoped bookkeeping after verified claim and before interpretation", async () => {
+    mocks.maintenance.mockImplementation(async () => { expect(mocks.execute).toHaveBeenCalledTimes(1); expect(mocks.engine).not.toHaveBeenCalled(); });
+    await processPersonalSms(row.id, maintenanceEnv);
+    expect(mocks.maintenance).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ actor: { userId: "owner", workspaceId: "workspace" }, batchSize: 25,
+      deadlineAt: Date.parse("2026-09-10T03:00:35Z") }), maintenanceEnv);
+  });
+  it("can keep independent work after bookkeeping failure, without opening an effect route", async () => {
+    mocks.maintenance.mockRejectedValue(new Error("synthetic locked bookkeeping"));
+    expect(await processPersonalSms(row.id, maintenanceEnv)).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(mocks.engine).toHaveBeenCalledTimes(1); expect(mocks.confirmation).not.toHaveBeenCalled(); expect(mocks.send).not.toHaveBeenCalled();
+  });
+  it("does not interpret if bookkeeping has consumed the original deadline", async () => {
+    mocks.maintenance.mockImplementation(async () => { vi.setSystemTime(new Date("2026-09-10T03:00:35Z")); throw new Error("synthetic timeout"); });
+    expect(await processPersonalSms(row.id, maintenanceEnv)).toMatchObject({ status: "REVIEW_REQUIRED" });
+    expect(mocks.engine).not.toHaveBeenCalled(); expect(finish).not.toHaveBeenCalled();
+  });
+  const confirmationEnv = { ...env, ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED: "true", ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED: "true", ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED: "true", ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true" };
+  const singleReview = { status: "REVIEW_PREPARED_NOT_AUTHORIZED", source: { operationId: row.id }, modelChildOperationId: "model-child",
+    actions: [{ actionId: "action", kind: "PREPARE_CALENDAR_EVENT", status: "PREPARED_UNSENT", operationId: "calendar", requestHash: "synthetic-calendar-hash" }] };
+  it("prepares dedicated bridge only after exact original source final CAS, never in ordinary reply text", async () => {
+    const model = vi.fn(async () => ({ reply: "Proposition.", finalizeReview: async () => singleReview }));
+    mocks.prepareConfirmation.mockResolvedValue({ status: "PREPARED_FOR_SOURCE_COMMIT", challengeId: "challenge" });
+    mocks.prepareBridge.mockImplementation(async () => { expect(finish).toHaveBeenCalledTimes(1); return { status: "PREPARED_UNSENT" }; });
+    expect(await processPersonalSms(row.id, { ...confirmationEnv, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, { model: model as never })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(mocks.prepareBridge.mock.calls[0][1]).toEqual({ actor: { userId: "owner", workspaceId: "workspace" }, challengeId: "challenge" });
+    const result = JSON.parse(finish.mock.calls[0][6]); expect(result.personalModelReview).toEqual(singleReview);
+    expect(result.reply).not.toContain("CONFIRME ENDVERA AGENDA"); expect(result.reply).toContain("aucun ajout Google");
+  });
+  it("rolls back ordinary acknowledgement when dedicated bridge preparation fails", async () => {
+    const model = vi.fn(async () => ({ reply: "Proposition.", finalizeReview: async () => singleReview }));
+    mocks.prepareConfirmation.mockResolvedValue({ status: "PREPARED_FOR_SOURCE_COMMIT", challengeId: "challenge" });
+    mocks.prepareBridge.mockRejectedValue(new Error("synthetic revoked send grant"));
+    expect(await processPersonalSms(row.id, { ...confirmationEnv, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, { model: model as never })).toMatchObject({ status: "REVIEW_REQUIRED" });
+    expect(committedReplies).toEqual([]); expect(mocks.sendSummary).not.toHaveBeenCalled();
+  });
+  it("keeps app review when another challenge is active", async () => {
+    const model = vi.fn(async () => ({ reply: "Proposition.", finalizeReview: async () => singleReview }));
+    mocks.prepareConfirmation.mockResolvedValue({ status: "APP_REVIEW_ONLY", reason: "EXISTING_CONFIRMATION_NOT_REPLACED" });
+    expect(await processPersonalSms(row.id, { ...confirmationEnv, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, { model: model as never })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(mocks.prepareBridge).not.toHaveBeenCalled();
+    expect(JSON.parse(finish.mock.calls[0][6]).reply).toContain("avant d’approuver dans l’app");
+  });
+  it("routes queued summary through dedicated sender inside the original batch deadline", async () => {
+    mocks.list.mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: "summary", idempotencyKey: "calendar-confirmation:challenge" }]);
+    const deadlineAt = Date.now() + 4000;
+    expect(await drainPersonalSms({ ...confirmationEnv, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 1, { deadlineAt })).toMatchObject({ processed: 0 });
+    expect(mocks.sendSummary).toHaveBeenCalledExactlyOnceWith("summary", expect.anything(), undefined, expect.objectContaining({ deadlineAt }));
+    expect(mocks.send).not.toHaveBeenCalled(); expect(mocks.list.mock.calls[1][0].take).toBe(1);
+  });
+  it("does not select summary branch while store flag is off", async () => {
+    mocks.list.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+    await drainPersonalSms({ ...confirmationEnv, ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED: "false", ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 1);
+    expect(mocks.list.mock.calls[1][0].where.idempotencyKey).toEqual({ startsWith: "reply:" }); expect(mocks.sendSummary).not.toHaveBeenCalled();
+  });
+  it.each(["CONFIRMATION_HANDLED", "REFUSED"])("uses guarded confirmation %s without another final CAS or interpretation", async status => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "CONFIRME ENDVERA AGENDA arbre lune rive sable" } });
+    mocks.confirmation.mockResolvedValue({ status }); const model = vi.fn();
+    expect(await processPersonalSms(row.id, confirmationEnv, { model })).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(mocks.confirmation).toHaveBeenCalledTimes(1); expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(model).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled(); expect(finish).not.toHaveBeenCalled();
+  });
+  it("finalizes missing challenge as refusal without model fallback", async () => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "CONFIRME ENDVERA AGENDA inconnu" } });
+    mocks.confirmation.mockResolvedValue({ status: "NO_UNIQUE_PENDING_CONFIRMATION" }); const model = vi.fn();
+    expect(await processPersonalSms(row.id, confirmationEnv, { model })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(model).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled(); expect(finish).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(finish.mock.calls[0][6]).reply).toContain("Aucune confirmation valide");
+  });
+  it("retains confirmation exception as uncertain without legacy/model replay", async () => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "CONFIRME ENDVERA AGENDA arbre lune rive sable" } });
+    mocks.confirmation.mockRejectedValue(new Error("synthetic commit uncertainty")); const model = vi.fn();
+    expect(await processPersonalSms(row.id, confirmationEnv, { model })).toMatchObject({ status: "REVIEW_REQUIRED", automaticRetry: false });
+    expect(model).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled(); expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+  it.each(["true", "false"])("never interprets reserved calendar confirmation with model=%s", async flag => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "CONFIRME ENDVERA AGENDA ancien code" } });
+    const model = vi.fn();
+    expect(await processPersonalSms(row.id, { ...env, ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: flag }, { model })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(model).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled(); expect(mocks.calendar).not.toHaveBeenCalled();
+    const result = JSON.parse(finish.mock.calls[0][6]);
+    expect(result).toMatchObject({ source: "CLARIFICATION", replyDelivery: "PREPARED_UNSENT" });
+    expect(result.reply).toContain("Aucun ajout Google");
+  });
   const googleAuthority = { schemaVersion: 1, userId: "owner", workspaceId: "workspace", accountId: "google", accountVersion: 2, credentialId: "credential", readGrantId: "grant", readGrantVersion: 1 };
   const googleRead = { result: { events: [], timeZone: "America/Toronto", complete: true, source: "GOOGLE_CALENDAR" }, authority: googleAuthority };
   it.each(["true", "false"])("reads an exact day with model=%s without a model or legacy interpreter", async flag => {

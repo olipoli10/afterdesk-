@@ -78,12 +78,12 @@ export function isReservedCalendarConfirmationText(text: string): boolean {
   return /^\s*confirme\s+endvera\s+agenda\b/i.test(text);
 }
 
-export function inspectSmsCalendarConfirmation(input: { prepared: unknown; currentBinding: unknown; body: string; now: string;
-  activeChallengeCount: number; phase: "PREPARED" | "WAITING" | "CONSUMED" | "COMPLETED" | "UNCERTAIN" | "EXPIRED" | "REFUSED" }) {
+/** Structural snapshot validation only. Does not claim a durable phase, delivery,
+ * authentication, consent or permission to dispatch/consume anything. */
+export function inspectPreparedSmsCalendarConfirmation(input: { prepared: unknown; currentBinding: unknown; now: string }) {
   const refuse = () => Object.freeze({ status: "REFUSED" as const, executionAuthorized: false as const });
   try {
     const prepared = preparedSchema.parse(input.prepared);
-    if (input.phase !== "WAITING" || input.activeChallengeCount !== 1 || input.body !== prepared.phrase) return refuse();
     if (!/^CONFIRME ENDVERA AGENDA (?:[a-z]+ ){3}[a-z]+$/.test(prepared.phrase)
       || prepared.phrase.slice("CONFIRME ENDVERA AGENDA ".length).split(" ").some(word => !words.includes(word))) return refuse();
     const instant = Date.parse(date.parse(input.now)), created = Date.parse(prepared.createdAt), expires = Date.parse(prepared.expiresAt);
@@ -92,8 +92,18 @@ export function inspectSmsCalendarConfirmation(input: { prepared: unknown; curre
     if (sha(JSON.stringify(checked.binding)) !== prepared.bindingHash || sha(JSON.stringify(original.binding)) !== prepared.bindingHash
       || prepared.namespace !== namespace(checked.binding) || prepared.nonReuseKey !== sha(JSON.stringify([prepared.namespace, prepared.phrase]))
       || prepared.summary !== summary(original.binding, prepared.phrase, original.localStart, original.localEnd) || sha(prepared.summary) !== prepared.summaryHash) return refuse();
-    return Object.freeze({ status: "MATCHED_NOT_AUTHORIZED" as const, executionAuthorized: false as const,
-      operationId: checked.binding.calendar.operationId, expectedRequestHash: checked.binding.calendar.requestHash,
-      bindingHash: prepared.bindingHash, nonReuseKey: prepared.nonReuseKey });
+    return freezeDeep({ status: "PREPARED_SNAPSHOT_VERIFIED_NOT_AUTHORIZED" as const, executionAuthorized: false as const, prepared });
   } catch { return refuse(); }
+}
+
+export function inspectSmsCalendarConfirmation(input: { prepared: unknown; currentBinding: unknown; body: string; now: string;
+  activeChallengeCount: number; phase: "PREPARED" | "WAITING" | "CONSUMED" | "COMPLETED" | "UNCERTAIN" | "EXPIRED" | "REFUSED" }) {
+  const refuse = () => Object.freeze({ status: "REFUSED" as const, executionAuthorized: false as const });
+  if (input.phase !== "WAITING" || input.activeChallengeCount !== 1) return refuse();
+  const inspected = inspectPreparedSmsCalendarConfirmation(input);
+  if (inspected.status !== "PREPARED_SNAPSHOT_VERIFIED_NOT_AUTHORIZED" || input.body !== inspected.prepared.phrase) return refuse();
+  const { prepared } = inspected;
+  return Object.freeze({ status: "MATCHED_NOT_AUTHORIZED" as const, executionAuthorized: false as const,
+    operationId: prepared.binding.calendar.operationId, expectedRequestHash: prepared.binding.calendar.requestHash,
+    bindingHash: prepared.bindingHash, nonReuseKey: prepared.nonReuseKey });
 }

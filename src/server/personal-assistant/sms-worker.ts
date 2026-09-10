@@ -11,6 +11,7 @@ import { readGoogleCalendarWithAuthority, requireGoogleReadAuthority, type Googl
 import { GoogleCalendarClient, type ConnectorEnvironment } from "./google-client";
 import { sendAutomaticPersonalReply } from "./outbox";
 import { processPersonalModelSms, personalModelReviewReply, type PersonalModelSmsResult } from "./model-worker";
+import { isReservedCalendarConfirmationMessage } from "./calendar-confirmation-routing";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -86,6 +87,16 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
   owned = claim;
   try {
     requireLive();
+    if (env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true"
+      && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_MAINTENANCE_ENABLED === "true") {
+      const { maintainCalendarSmsConfirmations } = await import("./calendar-confirmation-maintenance");
+      requireLive();
+      try {
+        await maintainCalendarSmsConfirmations({ actor: { userId: claim.userId, workspaceId: claim.workspaceId },
+          batchSize: 25, deadlineAt, signal: controller.signal }, env);
+      } catch { /* Bookkeeping failure never authorizes replacement/retry. Current challenge checks still fail closed. */ }
+      requireLive();
+    }
     const workspace = await prisma.constructionWorkspace.findUniqueOrThrow({ where: { id: row.workspaceId }, select: { defaultTimezone: true } });
     requireLive();
     const day = smsCalendarDay(received.body);
@@ -95,7 +106,25 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
     let googleReadRange: { start: string; end: string } | undefined;
     // Only the closed whole-message day grammar bypasses interpretation. No
     // model call or legacy fallback is needed for this explicit read request.
-    if (day) {
+    if (isReservedCalendarConfirmationMessage(received.body)) {
+      if (env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true"
+        && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true"
+        && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true") {
+        const { processCalendarConfirmationSms } = await import("./calendar-confirmation-worker");
+        requireLive();
+        const result = await processCalendarConfirmationSms(Object.freeze({ claim, signal: controller.signal, deadlineAt }), env);
+        // Consumption owns source completion and acknowledgement in one tx.
+        // Never perform another source CAS, model call or effect on that source.
+        if (result.status === "CONFIRMATION_HANDLED" || result.status === "REFUSED") return { status: "COMPLETED_REPLY_PREPARED" as const };
+        requireLive();
+        reply = "Aucune confirmation valide et unique n’est en attente pour ce texto. Consulte le rendez-vous dans ENDVERA. Aucun ajout Google n’a été exécuté par cette confirmation.";
+      } else {
+        // Reserve this namespace even while OFF. Quoted/malformed/expired
+        // confirmations are never fresh model requests or implicit approval.
+        reply = "Cette confirmation ne peut pas encore être traitée par texto. Ouvre le rendez-vous dans ENDVERA pour vérifier son état et l’approuver. Aucun ajout Google n’a été exécuté par cette confirmation.";
+      }
+      source = "CLARIFICATION";
+    } else if (day) {
       const range = personalCalendarWindow(row.createdAt, workspace.defaultTimezone, day);
       const client = new GoogleCalendarClient(env, undefined, undefined, controller.signal);
       const read = await (deps.calendar ?? readGoogleCalendarWithAuthority)(row.createdByUserId, row.workspaceId, range.start, range.end, env, client);
@@ -140,6 +169,18 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       requireLive();
       const personalModelReview = finalizeReview ? await finalizeReview(tx) : undefined;
       if (personalModelReview) reply = personalModelReviewReply(personalModelReview);
+      let calendarConfirmationId: string | undefined;
+      if (personalModelReview && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true"
+        && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true" && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true"
+        && env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED === "true") {
+        const { prepareCalendarConfirmationForReviewInTransaction } = await import("./calendar-confirmation-preparation");
+        requireLive();
+        const prepared = await prepareCalendarConfirmationForReviewInTransaction(tx, Object.freeze({ claim, signal: controller.signal, deadlineAt }), personalModelReview, env);
+        if (prepared.status === "PREPARED_FOR_SOURCE_COMMIT") {
+          calendarConfirmationId = prepared.challengeId;
+          reply = "Ton rendez-vous est préparé dans ENDVERA. Un résumé exact est préparé séparément pour confirmation par texto; aucun ajout Google n’est encore exécuté. Tu peux aussi le vérifier dans l’app.";
+        }
+      }
       requireLive();
       if (reply.length > 1500) reply = "Ta demande et les précisions nécessaires sont conservées dans ENDVERA. Consulte la demande originale et chaque proposition dans l’app. Aucun effet exécuté par ces propositions.";
       const request = { to: received.from, from: received.to, text: reply, sourceOperationId: row.id };
@@ -151,6 +192,13 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil), JSON.stringify({ reply, source, replyDelivery: "PREPARED_UNSENT",
           ...(source === "GOOGLE_CALENDAR" ? { googleReadAuthority, googleReadRange } : {}), ...(personalModelReview ? { personalModelReview } : {}) }));
       if (finished !== 1) throw new Error("SMS_SOURCE_CLAIM_LOST");
+      if (calendarConfirmationId) {
+        const { prepareCalendarConfirmationOutboundInTransaction } = await import("./calendar-confirmation-bridge");
+        requireLive();
+        const bridge = await prepareCalendarConfirmationOutboundInTransaction(tx, { actor: { userId: claim.userId, workspaceId: claim.workspaceId }, challengeId: calendarConfirmationId }, env);
+        if (bridge.status !== "PREPARED_UNSENT") throw new Error("SMS_CONFIRMATION_BRIDGE_DISABLED");
+        requireLive();
+      }
     }, { isolationLevel: "Serializable", maxWait: 1000, timeout: Math.max(1, Math.min(5000, deadlineAt - Date.now())) });
     requireLive();
     return { status: "COMPLETED_REPLY_PREPARED" as const };
@@ -189,8 +237,21 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
   }
   requireBatchTime();
   if (env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED === "true") {
-    const replies = await prisma.personalAssistantOperation.findMany({ where: { kind: "sms_outbound", status: { in: ["pending", "approved"] }, idempotencyKey: { startsWith: "reply:" } }, take: batchSize, orderBy: { createdAt: "asc" }, select: { id: true } });
-    for (const reply of replies) { requireBatchTime(); try { await sendAutomaticPersonalReply(reply.id, env, undefined, { deadlineAt, signal: batchController.signal }); } catch { /* Missing budget/configuration or unknown delivery is retained; never forge a reply receipt. */ } }
+    const confirmationEnabled = env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true"
+      && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true" && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true";
+    const sourceKinds = confirmationEnabled ? { OR: [{ idempotencyKey: { startsWith: "reply:" } }, { idempotencyKey: { startsWith: "calendar-confirmation:" } }] }
+      : { idempotencyKey: { startsWith: "reply:" } };
+    const replies = await prisma.personalAssistantOperation.findMany({ where: { kind: "sms_outbound", status: { in: ["pending", "approved"] }, ...sourceKinds }, take: batchSize, orderBy: { createdAt: "asc" }, select: { id: true, idempotencyKey: true } });
+    for (const reply of replies) {
+      requireBatchTime();
+      try {
+        if (confirmationEnabled && reply.idempotencyKey.startsWith("calendar-confirmation:")) {
+          const { sendAutomaticCalendarConfirmationSummary } = await import("./outbox");
+          requireBatchTime();
+          await sendAutomaticCalendarConfirmationSummary(reply.id, env, undefined, { deadlineAt, signal: batchController.signal });
+        } else await sendAutomaticPersonalReply(reply.id, env, undefined, { deadlineAt, signal: batchController.signal });
+      } catch { /* Missing authority/configuration or unknown delivery is retained; never retry a claimed effect or invent a receipt. */ }
+    }
   }
   return { disabled: false, processed, deadlineReached: Date.now() >= deadlineAt - CLEANUP_BUDGET_MS };
   };

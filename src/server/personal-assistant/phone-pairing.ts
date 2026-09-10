@@ -23,7 +23,9 @@ export async function disconnectPersonalPhone(userId: string, workspaceId: strin
     if (!account) return;
     await tx.constructionConnectorGrant.updateMany({ where: { connectorAccountId: account.id }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
     await tx.constructionConnectorAccount.update({ where: { id: account.id }, data: { status: "revoked", revokedAt: new Date(), credentialRef: null, externalAccountKeyHash: null, grantedScopes: [], stateVersion: { increment: 1 } } });
-    await tx.personalAssistantOperation.updateMany({ where: { connectorAccountId: account.id, status: { in: ["pending", "approved", "received"] } }, data: { status: "refused", result: { reason: "PHONE_DISCONNECTED" } } });
+    // A dedicated confirmation summary is immutable historical evidence, not an
+    // executable pending send. Mutating it would roll back the grant revocation.
+    await tx.personalAssistantOperation.updateMany({ where: { connectorAccountId: account.id, kind: { not: "calendar_confirmation_summary" }, status: { in: ["pending", "approved", "received"] } }, data: { status: "refused", result: { reason: "PHONE_DISCONNECTED" } } });
   }, { isolationLevel: "Serializable" });
   return { disconnected: true as const };
 }

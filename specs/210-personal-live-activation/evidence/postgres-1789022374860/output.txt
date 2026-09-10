@@ -1,0 +1,14 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation-worker.postgres.test.ts (3 tests) 16721ms
+     ✓ commits one exact review/draft/challenge plus two distinct pending messages; only the dedicated fake-HTTP bridge reaches WAITING  9515ms
+     ✓ rolls back review/draft/challenge/messages together when the first consumer result drifts from deterministic replay  3599ms
+     ✓ preserves app-only review with no summary or challenge when the worker bridge switch is OFF  3604ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  02:40:07
+   Duration  19.06s (transform 951ms, setup 0ms, import 2.18s, tests 16.72s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

@@ -1,5 +1,53 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 06:38Z — exact SMS confirmation wired OFF; native extension preparation continues
+
+Fresh root evidence/root-1789022027709: **3512 PASS / 3 historical skips**.
+Parent confirmation worker/preparation/source-finalization tests64 PASS, typecheck
+and scoped lint PASS. Separate-agent worker review9 PASS and preparation/outbox
+reviews found no unresolved critical defect in those scoped diffs. Later edits
+and integration tests still require their own final validation; no old artifact
+is claimed to cover a newer source state.
+
+Migration20260910050000_calendar_sms_confirmation_store_off applied to disposable
+Prisma dev PGlite only. Final confirmation storage/bridge run
+evidence/postgres-1789021603798: **19/19 PASS**, cleanup confirmed. It exercises
+the actual existing outbox approval/claim and one injected fake HTTP callback,
+atomic accepted receipt plus WAITING, duplicate refusal, permanent nonce, exact
+source consumption and phone disconnect preserving immutable historical summary.
+Earlier fixture failures are retained, not rewritten. No native concurrency or
+real Twilio receipt is inferred from these tests.
+
+The OFF source worker now routes reserved confirmation messages before any model,
+consumes the exact verified source plus calendar claim atomically, prepares only
+a neutral ordinary acknowledgement, and invokes the existing one-use Google
+executor after commit. Model-source finalization can prepare one exact challenge,
+then its dedicated pending outbox bridge after the same source final CAS. Summary
+text never travels through the ordinary reply authority. Mixed/ambiguous/read-only
+reviews remain app-only. End-to-end SQL worker tests are still in progress.
+
+Expired-effect recovery is OFF and tick-wired with original controller deadline;
+it preserves full budget reservations and records uncertainty without retry.
+Actor-scoped confirmation maintenance has24 unit tests and independent review;
+its7 real-SQL cases are prepared, not yet observed. Wiring maintenance before new
+preparation remains pending. No approval is granted by recovery or maintenance.
+
+Native PostgreSQL17.11 now demonstrably starts with two simultaneous distinct
+backends, but all-migration run postgres-native-1789019537773 stopped at missing
+pgvector (SQLSTATE0A000/P3018). Owned disposable server was stopped. No application
+native-concurrency test passed at that gate. Microsoft toolchain inputs and
+pgvector0.8.6 immutable source were acquired/inspected under bounded scratch-only
+conditions; see NATIVE_TOOLCHAIN_INSPECTION_AND_BUILD_RECIPE.md. One local build
+is approved after script review; extension loading/runtime changes are separate.
+No compiler runtime behavior or network confinement is inferred from signatures.
+
+Existing three-minute heartbeat verified ACTIVE; distinct agents continue.
+No product provider call, new paid API attempt, secret access, remote migration,
+deployment, signed APK or physical Samsung observation in this wave. Unanswered
+credential access, verified owner pairing and Google consent remain external
+dependencies, not reasons to stop independent local coding. Historical dashboard
+unchanged: roadmap22%, local build46.75%, C2 18/18, real-test NO-GO, Verified-E2E0%.
+
 ## 2026-09-10 05:45Z — refreshed validation and database-runtime correction
 
 Current parent root validation: evidence/root-1789018591696,3333 PASS and3
