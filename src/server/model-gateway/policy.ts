@@ -155,6 +155,9 @@ export function parseGatewayFallbackRules(value: unknown): GatewayPolicySnapshot
 
 function routeEligible(request: GatewayOperationRequest, route: GatewayRouteSnapshot, now: Date): "eligible" | "missing_privacy_evidence" | "expired_privacy_evidence" | "ineligible_route" {
   if (route.status !== "published") return "ineligible_route";
+  // STT ignores provider pinning. A stored certificate cannot make the current
+  // candidate support it; refuse initial AND fallback routes before any spend.
+  if (route.adapterKey === "openrouter-stt-candidate") return "ineligible_route";
   if (
     !route.operationTypes.includes(request.operationType as GatewayOperationType) ||
     !route.allowedDataClasses.includes(request.dataClass as GatewayDataClass) ||
