@@ -22,9 +22,6 @@
     "founder-device": {
       "distribution": "internal",
       "autoIncrement": false,
-      "env": {
-        "EXPO_PUBLIC_ENDVERA_API_URL": "https://endvera-core-sandbox-afterdesk.vercel.app"
-      },
       "ios": {
         "simulator": false
       },

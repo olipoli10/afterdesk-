@@ -33,7 +33,7 @@ describe("Bounded R2 release source corrections",()=>{
  it("refuses parse errors and mutations hidden in the label helper",()=>{
   expect(()=>validateMobileReleaseMetadata(`${source}\nconst broken = ;`,definition)).toThrow("RELEASE_MOBILE_METADATA_SYNTAX_INVALID");
   expect(()=>validateMobileReleaseMetadata(source.replace('return platform === "ios"','return (MOBILE_RELEASE_INFO.signed = true), platform === "ios"'),definition)).toThrow("RELEASE_MOBILE_METADATA_LABEL_FUNCTION_INVALID");
-  expect(validateMobileReleaseMetadata(source,definition).semanticVersion).toBe("0.1.1");
+  expect(validateMobileReleaseMetadata(source,definition).semanticVersion).toBe("0.2.0");
  });
  it("validates and binds EAS and mobile build-preparation sources without executing mobile code",()=>{
   expect(validateMobileBuildPreparation(app,eas,readiness).scope).toBe("STATIC_JSON_VALIDATION_ONLY");

@@ -1,1 +1,60 @@
-{"schemaVersion":3,"kind":"CURRENT_CONFIGURATION_PROJECTION","status":"CURRENT_CONFIGURATION_COHERENCE_ONLY","scope":"EXACT_SOURCE_BYTES_AND_MOBILE_RELEASE_CONFIGURATION","currentInputs":[{"path":"release/endvera-construction-v1/release-definition-v3.json","sha256":"7348e14aebdfa5d1f24dde68ccbc9b18349df8ca0ffcb7c5ab4f0084e17734e6"},{"path":"apps/mobile/app.json","sha256":"1173694bf287080de6b5816616dc8e873ce68af01b8d7ec8c3296360f4627b7a"},{"path":"apps/mobile/package.json","sha256":"b7f5d63696d228952e537a8b9be389c53e77a8a43a65a763055c833a8560b690"},{"path":"src/app/account-deletion/page.tsx","sha256":"3d0d1750547b0ce9c06a48345eeeac59d3b5c8e29c50c45448a2c5a3c063cd81"},{"path":"release/endvera-construction-v1/environment-contract-v2.json","sha256":"fba8f1a0ea67a3400f6ec817581491ad525b2bf4162569bc4dd7a531918be522"}],"historyManifest":{"path":"release/current-projection-v3.history.json","sha256":"7d8624d34b147898ca9d28b28332a0fd7614be6c72445f1b8ccaa2b3560025e0"},"supersedes":[{"path":"release/endvera-construction-v1/whole-product-readiness.json","applicationToCurrentBuild":"NOT_APPLICABLE_HISTORICAL_ONLY"},{"path":"release/endvera-construction-v1/whole-product-closure-audit.json","applicationToCurrentBuild":"NOT_APPLICABLE_HISTORICAL_ONLY"},{"path":"release/endvera-construction-v1/market-readiness-report.json","applicationToCurrentBuild":"NOT_APPLICABLE_HISTORICAL_ONLY"}],"mobileConfiguration":{"semanticVersion":"0.1.1","iosBuildNumber":"1","androidVersionCode":3,"accountDeletionPath":"/account-deletion"},"evidenceClass":"STATIC_SOURCE_CONFIGURATION_ONLY","observedProof":null,"wholeProductReadiness":"NOT_EVALUATED","wholeProductClosure":"NOT_EVALUATED","externalReadiness":"NOT_EVALUATED","providerCustomerTestDecision":"NO-GO","productionReady":false,"deviceObserved":false}
+{
+  "schemaVersion": 3,
+  "kind": "CURRENT_CONFIGURATION_PROJECTION",
+  "status": "CURRENT_CONFIGURATION_COHERENCE_ONLY",
+  "scope": "EXACT_SOURCE_BYTES_AND_MOBILE_RELEASE_CONFIGURATION",
+  "currentInputs": [
+    {
+      "path": "release/endvera-construction-v1/release-definition-v3.json",
+      "sha256": "44fc5bd93152dfcf20e1d38da25ef26d4cc11ed6122e1397bd4b3e120cd186b4"
+    },
+    {
+      "path": "apps/mobile/app.json",
+      "sha256": "eef5964161050bc6b3fe18390896e6be549b54a430a6c3055673e9a2b0eca692"
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "sha256": "4571831c0d944bb1f76c79ba64c2420701d68d1eaea2b6f53970525553f5d45a"
+    },
+    {
+      "path": "src/app/account-deletion/page.tsx",
+      "sha256": "3d0d1750547b0ce9c06a48345eeeac59d3b5c8e29c50c45448a2c5a3c063cd81"
+    },
+    {
+      "path": "release/endvera-construction-v1/environment-contract-v2.json",
+      "sha256": "fba8f1a0ea67a3400f6ec817581491ad525b2bf4162569bc4dd7a531918be522"
+    }
+  ],
+  "historyManifest": {
+    "path": "release/current-projection-v3.history.json",
+    "sha256": "7d8624d34b147898ca9d28b28332a0fd7614be6c72445f1b8ccaa2b3560025e0"
+  },
+  "supersedes": [
+    {
+      "path": "release/endvera-construction-v1/whole-product-readiness.json",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    },
+    {
+      "path": "release/endvera-construction-v1/whole-product-closure-audit.json",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    },
+    {
+      "path": "release/endvera-construction-v1/market-readiness-report.json",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    }
+  ],
+  "mobileConfiguration": {
+    "semanticVersion": "0.2.0",
+    "iosBuildNumber": "1",
+    "androidVersionCode": 4,
+    "accountDeletionPath": "/account-deletion"
+  },
+  "evidenceClass": "STATIC_SOURCE_CONFIGURATION_ONLY",
+  "observedProof": null,
+  "wholeProductReadiness": "NOT_EVALUATED",
+  "wholeProductClosure": "NOT_EVALUATED",
+  "externalReadiness": "NOT_EVALUATED",
+  "providerCustomerTestDecision": "NO-GO",
+  "productionReady": false,
+  "deviceObserved": false
+}

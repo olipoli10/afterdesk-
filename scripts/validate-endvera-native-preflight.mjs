@@ -14,7 +14,8 @@ const report = json("release/endvera-construction-v1/native-preflight-readiness.
 const mobile = json("release/endvera-construction-v1/mobile-assistant-experience-readiness.json");
 
 assert(app.name === "ENDVERA" && app.slug === "endvera" && app.scheme === "endvera", "NATIVE_APP_IDENTITY_INVALID");
-assert(app.version === '0.1.1' && app.android.versionCode === 3, "NATIVE_V3_IDENTITY_INVALID");
+const currentAndroid = definition.identities.find(identity => identity.target === 'ANDROID');
+assert(app.version === currentAndroid?.semanticVersion && app.android.versionCode === currentAndroid?.versionCode, "NATIVE_CURRENT_IDENTITY_INVALID");
 assert(app.ios.bundleIdentifier === "ai.endvera.mobile" && app.android.package === "ai.endvera.mobile", "NATIVE_PLATFORM_IDENTITY_INVALID");
 assert(app.ios.icon === app.icon, "NATIVE_IOS_ICON_INVALID");
 assertReleaseRegularFile(root,posix.join("apps/mobile",app.icon));

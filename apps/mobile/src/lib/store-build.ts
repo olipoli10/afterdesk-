@@ -85,11 +85,11 @@ function assertIdentity(appConfig: JsonRecord, readiness: JsonRecord) {
   if (
     expo.name !== "ENDVERA" ||
     expo.slug !== "endvera" ||
-    expo.version !== "0.1.1" ||
+    expo.version !== "0.2.0" ||
     ios.bundleIdentifier !== "ai.endvera.mobile" ||
     ios.buildNumber !== "1" ||
     android.package !== "ai.endvera.mobile" ||
-    android.versionCode !== 3 ||
+    android.versionCode !== 4 ||
     readyIos.bundleIdentifier !== ios.bundleIdentifier ||
     readyIos.buildNumber !== ios.buildNumber ||
     readyIos.artifact !== "IPA" ||
@@ -154,7 +154,7 @@ export function validateCredentialFreeMobileBuild(input: {
     appName: "ENDVERA",
     profiles: [...expectedMobileBuildProfiles],
     ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1", artifact: "IPA" as const },
-    android: { package: "ai.endvera.mobile", versionCode: 3, artifact: "AAB" as const },
+    android: { package: "ai.endvera.mobile", versionCode: 4, artifact: "AAB" as const },
     signed: false,
     uploaded: false,
     submitted: false,

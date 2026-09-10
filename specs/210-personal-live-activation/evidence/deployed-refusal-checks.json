@@ -1,0 +1,21 @@
+{
+  "dateUtc": "2026-09-10",
+  "origin": "https://endvera-core-sandbox-afterdesk.vercel.app",
+  "deploymentId": "dpl_9bNdAWKT2FKA2JRRSpwcf7kszh7N",
+  "sourceHead": "06e26ce7a3f4f373548405fb451bd4b45861b644",
+  "requests": [
+    {"method":"GET","path":"/login","status":200},
+    {"method":"GET","path":"/api/health","status":200},
+    {"method":"GET","path":"/api/auth/get-session","status":200},
+    {"method":"GET","path":"/api/endvera/v1/personal/phone","status":401},
+    {"method":"GET","path":"/api/endvera/v1/personal/google/status","status":401},
+    {"method":"GET","path":"/api/endvera/v1/personal/outbox","status":401},
+    {"method":"GET","path":"/api/endvera/v1/personal/worker/tick","status":401},
+    {"method":"POST","path":"/api/webhooks/twilio/sms","body":"empty form","status":503}
+  ],
+  "authenticatedOwnerObserved": false,
+  "smsDeliveryObserved": false,
+  "googleConsentObserved": false,
+  "samsungLoginObserved": false,
+  "limitations": "Anonymous HTTP reachability and fail-closed behavior only; not database-backed owner acceptance or real-service E2E."
+}

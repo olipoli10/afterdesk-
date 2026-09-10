@@ -30,7 +30,10 @@ No Twilio credential, owner phone binding or Google consent is claimed.
 - No CI or independent human review is claimed by those local checks.
 - Use deployment/vercel.personal.json: guarded build, no inherited maintenance
   cron and no personal worker schedule before provider configuration.
-- Build candidate with --prod --skip-domain; inspect before assigning aliases.
+- Actual deployment dpl_9bNdAWKT2FKA2JRRSpwcf7kszh7N is READY at source
+  06e26ce7a3f4f373548405fb451bd4b45861b644. CLI auto-assigned the existing
+  dedicated backend alias despite --skip-domain. Do not rely on that flag as an
+  alias isolation guarantee. Previous deployment remains available for rollback.
 - Require login page HTTP 200, auth session endpoint healthy, unauthenticated
   protected personal endpoints refused, provider webhooks disabled/refused.
 - Android 0.2.0 / versionCode 4 points to the existing HTTPS backend alias.
@@ -48,3 +51,13 @@ number cancellation and any recurring costs before the authorized period ends.
 
 Technical deploy success is not Samsung login, delivery, Google consent, founder
 acceptance, customer readiness or Verified-E2E. All rubrics remain unchanged.
+
+## Corrected Android candidate
+
+First build 78ef1211-b710-4f2e-8e21-c429f1c9247e was canceled before distribution
+after metadata drift was found. Failed checks are retained. Current mobile
+identity is 0.2.0 / Android 4 throughout the active projection and package.
+Historical manifests remain historical. Latest root and mobile checks succeeded
+(root-1789005406364, mobile-1789005457974); standalone mobile tsc exited 0.
+Vercel link generated a local OIDC env file: it was preserved inside ignored
+.vercel/local-env-from-link-20260910.preserved, never printed or committed.
