@@ -1,0 +1,80 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_455d6e254d1246f9a5f8be281071266d","template":"endvera_personal_210_d89ce919766a48f69daee602fbc1400e","migrationFingerprint":"78:9d69f861d1884ca2b789ed72a691b5c2","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T17:24:32.1385558Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (103 tests) 49121ms
+     ✓ commits the accepted reply and one private draft through the production hook, not a direct test preparer  560ms
+     ✓ an ambiguous refused answer remains completed but does not produce a calendar review even with preparation ON  394ms
+     ✓ projects the real committed two-SMS draft without any manual review identifier  466ms
+     ✓ does not turn a damaged current authorization into an empty success  421ms
+     ✓ does not recreate expired history or reset its preparation window  1202ms
+     ✓ two actual readers preserve the same single immutable review  928ms
+     ✓ commits exactly one isolated pending review and stable replay in UTC  655ms
+     ✓ commits exactly one isolated pending review and stable replay in America/New_York  756ms
+     ✓ commits exactly one isolated pending review and stable replay in Asia/Tokyo  772ms
+     ✓ remains OFF without writing a draft or changing sources  554ms
+     ✓ refuses a preexisting generic operation instead of adopting its request UUID  607ms
+     ✓ a marked operation without its review cannot commit  586ms
+     ✓ rolls back both new rows on a failure after provisional preparation  597ms
+     ✓ a committed review and marker cannot be rewritten or removed  516ms
+     ✓ current revocation refuses even a known replay without changing the saved review  556ms
+     ✓ cannot commit a just-prepared draft already claimed in that same transaction  434ms
+     ✓ refuses an expired replay while keeping the original draft and provenance  1244ms
+     ✓ serializes two actual backend preparations on the same receipt without duplicating  739ms
+     ✓ returns the two full sources and exact current draft without writes in UTC  729ms
+     ✓ returns the two full sources and exact current draft without writes in America/New_York  637ms
+     ✓ returns the two full sources and exact current draft without writes in Asia/Tokyo  626ms
+     ✓ does not prepare a review when missing or OFF and does not disclose it to a foreign owner  533ms
+     ✓ refuses expired proof without resetting the saved preparation window  1237ms
+     ✓ current revoked Google authority refuses the read without altering immutable history  757ms
+     ✓ reads a synthetic current uncertain state as uncertain, never re-preparing pending  676ms
+     ✓ bounds the first discovery against a real exclusive table lock  865ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  546ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  586ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  547ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  429ms
+     ✓ a genuine refused ambiguous answer is not recast as a consumed accepted receipt  412ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  457ms
+     ✓ current MODEL grant revocation refuses without changing the historical receipt  373ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1240ms
+     ✓ keeps a later active question intact while inspecting the earlier inactive receipt  773ms
+     ✓ holds current owner authority against a real concurrent revocation, then refuses the next read  547ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate  392ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1272ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1309ms
+     ✓ GOOGLE_REVOKED preserves evidence while selecting the correct oldest candidate  390ms
+     ✓ MODEL_REVOKED preserves evidence while selecting the correct oldest candidate  317ms
+     ✓ AFTER_INSERT_FAILURE rolls back the real consumer/source CAS and acknowledgment insert  344ms
+     ✓ AFTER_INSERT_REVOKED rolls back the real consumer/source CAS and acknowledgment insert  321ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1249ms
+     ✓ expires WAITING once, retains source/question/budget/history  1226ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1232ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1229ms
+     ✓ existing ingress worker routes 14h without another model or source completion  322ms
+     ✓ existing ingress worker routes 3h without another model or source completion  311ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  403ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only  367ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only  368ms
+     ✓ post-response Google revocation keeps the entire exposure and never creates WAITING  369ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1711ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in UTC  335ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in America/New_York  340ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo  396ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  466ms
+     ✓ five creations across both types share one permanent hourly cap  868ms
+     ✓ keeps one visible pair namespace after re-pairing into another workspace/owner  302ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  754ms
+
+ Test Files  1 passed (1)
+      Tests  103 passed (103)
+   Start at  13:23:40
+   Duration  51.35s (transform 1.05s, setup 0ms, import 2.08s, tests 49.12s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-4d7f6896a321473297a8a77a3539e05a

@@ -1,0 +1,11 @@
+{
+  "kind": "build",
+  "databaseRuntime": null,
+  "postgresTestFile": null,
+  "exitCode": 0,
+  "finishedAt": "2026-09-10T17:37:26.380Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\build-1789061692078",
+  "buildDirectory": ".next-personal-210-build-1789061692078"
+}

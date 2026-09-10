@@ -1,7 +1,12 @@
 # Accepted SMS receipt → one bounded calendar preparation hook
 
-2026-09-10. **HELPER IMPLEMENTED; WORKER WIRING NOT YET IMPLEMENTED**. No worker, source result, schema78, flag, provider or
-approval change by this plan. Decision owner: controller. Scope is making the
+2026-09-10. **HELPER AND BOUNDED WORKER WIRING VERIFIED LOCALLY; LIVE OFF**.
+Native actual-worker105 and full301/20-clone runs pass; see the controller's
+SMS_CORRELATED_CALENDAR_WORKER_NATIVE_INTEGRATION audit for receipts, retained
+failure, and the subsequent budget/history assertion strengthening. Root5221
+PASS/3 historical skips. No provider, signed APK or live result follows.
+No source-result, schema78, flag, provider or approval change. Decision owner:
+controller. Scope is making the
 existing prepare-only producer useful from the real accepted reply path, not a
 second interpretation or executor.
 
@@ -10,8 +15,9 @@ second interpretation or executor.
 `processSmsTemporalReply` commits the canonical receipt, source completion and
 exact unsent acknowledgment together. Its successful wrapper returns
 `TEMPORAL_REPLY_HANDLED_NOT_EXECUTED`, `committed:true`, `sourceCompleted:true`,
-`outcome`, `receiptId`, `packetHash` and acknowledgment id. `sms-worker.ts` currently
-returns `COMPLETED_REPLY_PREPARED` immediately for that handled source at line114.
+`outcome`, `receiptId`, `packetHash` and acknowledgment id. Before this tranche,
+`sms-worker.ts` returned `COMPLETED_REPLY_PREPARED` immediately for that handled
+source at line114.
 
 Only `outcome === CORRELATED_NOT_EXECUTED` is the accepted correlated candidate.
 REFUSED/ordinary/reserved/day-read paths remain unchanged. Neither receipt id nor

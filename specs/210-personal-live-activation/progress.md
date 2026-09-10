@@ -1,5 +1,46 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 17:35Z — actual SMS-to-calendar preparation verified; explicit approval continues
+
+The actual incoming worker now calls one bounded local preparation helper after
+acknowledged accepted source/ACK completion. Captured original hash/claim/signal
+and initial flags prevent reinterpretation or a new time allowance. Both timer
+catches preserve known source completion without another CAS. Unknown consumption
+never receives that latch. No ACK rewrite, second model, provider, generic approval
+or missing-review retry was added; current runtime flags remain OFF.
+
+Main and peer reviews completed; author178 targeted and peer102 PASS. Root
+`root-1789061125441`5221 PASS/3 historical skips17:26:30.068Z; TypeScript/lint PASS.
+First native102/1 failure is retained: the new oracle incorrectly expected the
+incoming source's transport flag false; inbox already records true. Corrected
+comparison preserves its pre-worker value, while the new outgoing ACK stays
+pending/0/unsent. No production guard changed to satisfy that test.
+
+Native103 PASS17:24:35.625Z, then105 PASS17:27:59.385Z. Five actual-worker cases
+include one review, duplicate refusal, OFF→ON replay, ambiguous refusal, and actual
+WRITE grant revocation / original SQL expiry after real consumption commits.
+Full20-file `postgres-native-1789061340125`:301 PASS17:32:20.065Z.
+Peer caught a coverage gap: old budget assertion covered replay only. Stronger
+before-worker budget plus post-consumption receipt/question/expectation snapshots
+pass fresh105 in `postgres-native-1789061590545`17:34:18.581Z. All owned native
+servers stopped; retained clusters and immutable78 fingerprint unchanged.
+
+Queue now38 valid/acyclic entries. Correlation/read-only preparation is DONE_LOCAL,
+not service completion. SMS_CORRELATED_EXPLICIT_APPROVAL is IN_PROGRESS: controller
+read mobile/backend/design-review plans; current implementation A is pure strict
+fingerprint/command/claim/result contracts only. Future79 immutable approval and
+same-executor integration still need review and native proof before a mobile
+button. Result history must survive expiry without reopening SMS or retrying.
+
+Fresh Next `build-1789061692078` PASS17:37:26.380Z; actual built private GET
+OFF7 checks pass17:38:02.068Z with owned server stopped and TCP ECONNREFUSED.
+Previous mobile637/Hermes evidence remains unchanged; no new signed APK, native
+Samsung or live provider proof. No new spending, secrets, remote migration,
+SMS/call, push or deployment. Heartbeat ACTIVE3min re-read13:38; the legacy
+blocked goal reported13:01 is not falsely completed.
+Dashboard unchanged: roadmap22%, local build46.75%, C2 18of18, real-test NO-GO,
+Verified-E2E0%. Continue authorized code while external prerequisites are blocked.
+
 ## 2026-09-10 17:07Z — private correlated review connected locally; verification continues
 
 New immutable item projection, latest-five all-or-unavailable owner collection

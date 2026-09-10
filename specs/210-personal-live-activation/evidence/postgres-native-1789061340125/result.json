@@ -1,0 +1,11 @@
+{
+  "kind": "postgres-native",
+  "databaseRuntime": "NATIVE_POSTGRESQL",
+  "postgresTestFile": null,
+  "exitCode": 0,
+  "finishedAt": "2026-09-10T17:32:20.065Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\postgres-native-1789061340125",
+  "buildDirectory": null
+}

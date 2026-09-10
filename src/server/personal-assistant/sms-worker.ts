@@ -20,6 +20,7 @@ import { canonicalJson } from "@/server/model-gateway/evidence";
 import { temporalLockSourceNamespace, temporalRegistryTransaction } from "./sms-temporal-clarification-authority";
 import { inspectSmsTemporalQuestionPreparationInTransaction, attachSmsTemporalQuestionInTransaction } from "./sms-temporal-question-preparation";
 import { processSmsTemporalReply } from "./sms-temporal-reply-worker";
+import { prepareCorrelatedCalendarAfterCommittedSms } from "./sms-correlated-calendar-preparation-hook";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -71,8 +72,12 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
   if (!personalSmsWorkerEnabled(env)) return { status: "DISABLED" as const };
   if (deps.deadlineAt !== undefined && !Number.isFinite(deps.deadlineAt)) throw new Error("SMS_WORKER_DEADLINE_INVALID");
   const deadlineAt = Math.min(Date.now() + PERSONAL_SMS_PROCESS_BUDGET_MS, deps.deadlineAt ?? Infinity);
+  // Entry OFF cannot become an automatic preparation later in this source run.
+  const correlatedPreparationAtEntry = env.ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_PREPARE_ENABLED === "true"
+    && env.ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED === "true";
   const controller = new AbortController();
   let owned: PersonalSmsSourceClaim | undefined;
+  let knownTemporalCompletion = false;
   const requireLive = () => { if (controller.signal.aborted || Date.now() >= deadlineAt) throw new SmsWorkerDeadline(); };
   const work = async () => {
   requireLive();
@@ -80,6 +85,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
   requireLive();
   if (!row || row.kind !== "personal_sms_inbound" || row.status !== "received" || row.attempts !== 0) return { status: "NOT_PENDING" as const };
   const received = receivedSchema.parse(row.request);
+  const sourceRequestHash = row.requestHash;
   // Re-run binding and grant admission after durable receipt, not just at ingress.
   const admission = await enqueuePersonalSms(received);
   requireLive();
@@ -88,7 +94,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
   const claimed = await prisma.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='processing',attempts=1,"leaseUntil"=($4::timestamptz AT TIME ZONE 'UTC'),"updatedAt"=(now() AT TIME ZONE 'UTC')
     WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "requestHash"=$5
       AND kind='personal_sms_inbound' AND status='received' AND attempts=0 AND "leaseUntil" IS NULL AND clock_timestamp()<$4::timestamptz`,
-    row.id, row.workspaceId, row.createdByUserId, new Date(claim.leaseUntil), row.requestHash);
+    row.id, row.workspaceId, row.createdByUserId, new Date(claim.leaseUntil), sourceRequestHash);
   if (claimed !== 1) return { status: "NOT_PENDING" as const };
   owned = claim;
   try {
@@ -112,9 +118,19 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       // Inspect persisted context even with temporal processing OFF. A missing
       // schema/failed lookup cannot grant permission to use another interpreter.
       const temporal = await processSmsTemporalReply(Object.freeze({ claim, signal: controller.signal, deadlineAt }), env);
-      if (temporal.status === "TEMPORAL_REPLY_HANDLED_NOT_EXECUTED" && temporal.sourceCompleted === true) {
-        // Known commit already includes source CAS, receipt and exact ack. No
-        // postcommit deadline check, second CAS, model or provider invocation.
+      if (temporal.status === "TEMPORAL_REPLY_HANDLED_NOT_EXECUTED" && temporal.sourceCompleted === true && temporal.committed === true) {
+        // Latch BEFORE any postcommit await: both timeout/error exits must keep
+        // the acknowledged source+ACK result, even if preparation is unknown.
+        // This is not a preparation/Google/approval success latch.
+        knownTemporalCompletion = true;
+        if (correlatedPreparationAtEntry && temporal.outcome === "CORRELATED_NOT_EXECUTED"
+          && env.ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_PREPARE_ENABLED === "true"
+          && env.ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED === "true"
+          && !controller.signal.aborted && Date.now() < deadlineAt) {
+          await prepareCorrelatedCalendarAfterCommittedSms({ enabledAtSourceStart: correlatedPreparationAtEntry,
+            claim, sourceRequestHash, result: temporal, signal: controller.signal, deadlineAt }, env);
+          // Internal preparation metadata is deliberately not the source result.
+        }
         return { status: "COMPLETED_REPLY_PREPARED" as const };
       }
       requireLive();
@@ -267,6 +283,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
     requireLive();
     return { status: "COMPLETED_REPLY_PREPARED" as const };
   } catch (error) {
+    if (knownTemporalCompletion) return { status: "COMPLETED_REPLY_PREPARED" as const };
     // A worker may have committed an internal action before losing its result.
     // Do not automatically run that uncertain action a second time.
     if (error instanceof SmsWorkerDeadline) controller.abort();
@@ -275,6 +292,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
   };
   try { return await withinDeadline(work, deadlineAt, () => controller.abort()); }
   catch (error) {
+    if (knownTemporalCompletion) return { status: "COMPLETED_REPLY_PREPARED" as const };
     if (!(error instanceof SmsWorkerDeadline)) throw error;
     return owned ? retainSourceUncertain(owned, true) : { status: "REVIEW_REQUIRED" as const, recorded: false, automaticRetry: false as const, engineCancellationConfirmed: false as const };
   }

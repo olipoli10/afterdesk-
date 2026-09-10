@@ -20,6 +20,7 @@ import { processPersonalSms, type PersonalSmsSourceClaim } from "@/server/person
 import { maintainSmsTemporalClarifications, maintainSmsTemporalClarificationsInTransaction } from "@/server/personal-assistant/sms-temporal-maintenance";
 import { selectPersonalAutomaticOutboundCandidates } from "@/server/personal-assistant/outbound-queue";
 import { processSmsTemporalReply } from "@/server/personal-assistant/sms-temporal-reply-worker";
+import * as temporalReplyModule from "@/server/personal-assistant/sms-temporal-reply-worker";
 import { loadCorrelatedPersonalReceiptSubject } from "@/server/model-gateway/personal-intent/correlated-receipt-subject";
 import { prepareCorrelatedPersonalCalendarReview, prepareCorrelatedPersonalCalendarReviewInTransaction } from "@/server/model-gateway/personal-intent/correlated-calendar-review";
 import { personalCalendarActions, preparePersonalCalendar, preparePersonalCalendarInTransaction, claimPersonalCalendarWriteInTransaction } from "@/server/personal-assistant/calendar-actions";
@@ -178,7 +179,7 @@ async function waitForQuestionExpiry(id: string) {
   await prisma.$queryRawUnsafe("SELECT pg_sleep($1::double precision)::text", (remaining.ms + 50) / 1000);
 }
 
-async function actualAnsweredQuestion(body = "14h", ttlMs?: number) {
+async function actualAnsweredQuestion(body = "14h", ttlMs?: number, prepareCalendar = false) {
   const x = await outboundFixture(ttlMs); await x.approve();
   // Only the HTTP boundary is synthetic. The existing dispatcher persists its
   // actual acceptance receipt and hook, then the real incoming worker consumes.
@@ -188,13 +189,19 @@ async function actualAnsweredQuestion(body = "14h", ttlMs?: number) {
   await prisma.$queryRawUnsafe("SELECT pg_sleep(0.005)::text");
   const wire = { accountSid: x.f.accountSid, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from: x.f.from, to: x.env.TWILIO_PHONE_NUMBER!, body };
   const source = await enqueuePersonalSms({ ...wire, contentHash: sha(JSON.stringify(wire)) });
-  const env = { ...x.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_SMS_TEMPORAL_REPLY_WORKER_ENABLED: "true" };
+  const env = { ...x.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_SMS_TEMPORAL_REPLY_WORKER_ENABLED: "true",
+    ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_PREPARE_ENABLED: prepareCalendar ? "true" : "false" };
+  // Ingress marks a received SMS as transport-performed. Preserve that historical
+  // value; this injected fixture is not evidence of an actual provider call.
+  const sourceBeforeWorker = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: source.operationId } });
+  const budgetBeforeWorker = prepareCalendar ? await budget() : undefined;
   const model = vi.fn(async () => { throw new Error("SECOND_MODEL_REFUSED"); }), engine = vi.fn(async () => { throw new Error("LEGACY_ENGINE_REFUSED"); });
   expect(await processPersonalSms(source.operationId, env, { model, engine })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+  if (prepareCalendar) expect(await budget()).toEqual(budgetBeforeWorker);
   expect(model).not.toHaveBeenCalled(); expect(engine).not.toHaveBeenCalled(); expect(transport).toHaveBeenCalledOnce();
   const receipts = await prisma.$queryRawUnsafe<Array<{ id: string; outcome: string; packet: unknown; packetHash: string }>>('SELECT id,outcome,packet,"packetHash" FROM "PersonalSmsTemporalClarificationReply" WHERE "sourceOperationId"=$1', source.operationId);
   expect(receipts).toHaveLength(1);
-  return { ...x, env, source, receipt: receipts[0], transport };
+  return { ...x, env, source, sourceBeforeWorker, receipt: receipts[0], transport };
 }
 type Answered = Awaited<ReturnType<typeof actualAnsweredQuestion>>;
 const readReviewList = (f: Fixture, env = f.env, actor = f.actor, readContext = context()) =>
@@ -223,6 +230,87 @@ async function answeredSnapshot(x: Answered) {
     receipts: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1 ORDER BY id', x.p.id),
     expectations: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsConversationExpectation" WHERE namespace=$1 ORDER BY id', (await stored(x.p.id)).namespace) };
 }
+describe("actual incoming worker prepares one correlated calendar review in PostgreSQL", () => {
+  it("commits the accepted reply and one private draft through the production hook, not a direct test preparer", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    expect(x.receipt.outcome).toBe("ACCEPTED");
+    const reviews = await prisma.personalSmsCorrelatedCalendarReview.findMany({ where: { receiptId: x.receipt.id } });
+    expect(reviews).toHaveLength(1);
+    const source = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: x.source.operationId } });
+    expect(source).toMatchObject({ status: "completed", attempts: 1, leaseUntil: null,
+      externalTransportPerformed: x.sourceBeforeWorker.externalTransportPerformed });
+    const acknowledgement = await prisma.personalAssistantOperation.findMany({ where: { workspaceId: x.f.workspaceId, idempotencyKey: `reply:${source.id}` } });
+    expect(acknowledgement).toHaveLength(1);
+    expect(acknowledgement[0]).toMatchObject({ kind: "sms_outbound", status: "pending", attempts: 0, externalTransportPerformed: false });
+    const before = await answeredSnapshot(x), list = await readReviewList(x.f, x.env);
+    if ("status" in list) throw new Error("NATIVE_LIST_REQUIRED");
+    expect(list.reviews).toHaveLength(1);
+    expect(list.reviews[0]).toMatchObject({ reviewId: reviews[0].id, currentStatus: "pending", approvalAvailable: false,
+      executionAuthorized: false, evidence: { provenance: "UNKNOWN", draft: { title: "inspection" } } });
+    expect(list.reviews[0].evidence.sources.map(source => source.text)).toEqual([temporalBody, "14h"]);
+    expect(await processPersonalSms(source.id, x.env)).toEqual({ status: "NOT_PENDING" });
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(1);
+    expect(x.transport).toHaveBeenCalledOnce(); // The earlier synthetic question only; no additional SMS/Google transport.
+  });
+  it("OFF at source processing leaves the completed reply and acknowledgement without a calendar review", async () => {
+    const x = await actualAnsweredQuestion();
+    expect(x.receipt.outcome).toBe("ACCEPTED");
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(0);
+    const before = await answeredSnapshot(x);
+    expect(await processPersonalSms(x.source.operationId, { ...x.env, ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_PREPARE_ENABLED: "true" })).toEqual({ status: "NOT_PENDING" });
+    expect(await answeredSnapshot(x)).toEqual(before);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(0);
+  });
+  it("an ambiguous refused answer remains completed but does not produce a calendar review even with preparation ON", async () => {
+    const x = await actualAnsweredQuestion("3h", undefined, true);
+    expect(x.receipt.outcome).not.toBe("ACCEPTED");
+    expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(0);
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: x.source.operationId } })).toMatchObject({ status: "completed", attempts: 1, leaseUntil: null });
+    const before = await answeredSnapshot(x);
+    expect(await processPersonalSms(x.source.operationId, x.env)).toEqual({ status: "NOT_PENDING" });
+    expect(await answeredSnapshot(x)).toEqual(before); expect(x.transport).toHaveBeenCalledOnce();
+  });
+  it.each(["revocation", "expiry"] as const)("preserves actual committed source and acknowledgement after %s between consumption and preparation", async failure => {
+    // A test-only await boundary wraps (never replaces) real consumption. The
+    // state change is real SQL after its COMMIT, before the real worker's hook.
+    // This is not timing evidence from a live provider or a forced fake receipt.
+    const original = temporalReplyModule.processSmsTemporalReply;
+    let committedBeforeHook: Awaited<ReturnType<typeof prisma.personalAssistantOperation.findMany>> | undefined;
+    const history = async (receiptId: string) => ({ budget: await budget(),
+      receipts: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=(SELECT "clarificationId" FROM "PersonalSmsTemporalClarificationReply" WHERE id=$1) ORDER BY id', receiptId),
+      question: await prisma.$queryRawUnsafe('SELECT q.* FROM "PersonalSmsTemporalClarification" q JOIN "PersonalSmsTemporalClarificationReply" r ON r."clarificationId"=q.id WHERE r.id=$1', receiptId),
+      expectations: await prisma.$queryRawUnsafe('SELECT e.* FROM "PersonalSmsConversationExpectation" e WHERE namespace=(SELECT q.namespace FROM "PersonalSmsTemporalClarification" q JOIN "PersonalSmsTemporalClarificationReply" r ON r."clarificationId"=q.id WHERE r.id=$1) ORDER BY id', receiptId) });
+    let historyBeforeHook: Awaited<ReturnType<typeof history>> | undefined;
+    const wrapped = vi.spyOn(temporalReplyModule, "processSmsTemporalReply").mockImplementation(async (...args) => {
+      const result = await original(...args);
+      if (result.status !== "TEMPORAL_REPLY_HANDLED_NOT_EXECUTED" || result.outcome !== "CORRELATED_NOT_EXECUTED")
+        throw new Error("NATIVE_ACCEPTED_CONSUMPTION_REQUIRED");
+      const workspaceId = args[0].claim.workspaceId;
+      if (failure === "revocation") {
+        const account = await prisma.constructionConnectorAccount.findUniqueOrThrow({ where: { workspaceId_provider: { workspaceId, provider: "google_calendar" } } });
+        await prisma.constructionConnectorGrant.updateMany({ where: { connectorAccountId: account.id, capability: "calendar_write" },
+          data: { status: "revoked", revokedAt: new Date(), stateVersion: { increment: 1 }, grantedScopes: [] } });
+      } else {
+        const [receipt] = await prisma.$queryRawUnsafe<Array<{ clarificationId: string }>>('SELECT "clarificationId" FROM "PersonalSmsTemporalClarificationReply" WHERE id=$1', result.receiptId);
+        await waitForQuestionExpiry(receipt.clarificationId);
+      }
+      committedBeforeHook = await prisma.personalAssistantOperation.findMany({ where: { workspaceId }, orderBy: { id: "asc" } });
+      historyBeforeHook = await history(result.receiptId);
+      return result;
+    });
+    try {
+      const x = await actualAnsweredQuestion("14h", failure === "expiry" ? 1000 : undefined, true);
+      expect(wrapped).toHaveBeenCalledOnce(); expect(committedBeforeHook).toBeDefined();
+      expect(await prisma.personalAssistantOperation.findMany({ where: { workspaceId: x.f.workspaceId }, orderBy: { id: "asc" } })).toEqual(committedBeforeHook);
+      expect(historyBeforeHook).toBeDefined(); expect(await history(x.receipt.id)).toEqual(historyBeforeHook);
+      expect(await prisma.personalSmsCorrelatedCalendarReview.count({ where: { receiptId: x.receipt.id } })).toBe(0);
+      expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: x.source.operationId } })).toMatchObject({ status: "completed", attempts: 1, leaseUntil: null });
+      expect(x.transport).toHaveBeenCalledOnce();
+    } finally { wrapped.mockRestore(); }
+  });
+});
+
 describe("private latest correlated calendar list against actual PostgreSQL", () => {
   it("returns an authorized empty collection but refuses a foreign or revoked member", async () => {
     const f = await fixture();
