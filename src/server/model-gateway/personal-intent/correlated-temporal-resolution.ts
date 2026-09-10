@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { inspectCorrelatedPersonalTemporalEvidence, type CorrelatedPersonalTemporalEvidenceInput } from "./correlated-temporal-evidence";
+import { inspectCorrelatedPersonalTemporalEvidence, type CorrelatedPersonalTemporalEvidenceInput, type CorrelatedPersonalTemporalEvidence } from "./correlated-temporal-evidence";
 import { createPersonalIntentInput } from "./contract";
 import { resolvePersonalCalendarTemporalClarifiedSlot } from "./temporal";
 
@@ -13,8 +13,14 @@ function freeze<T>(value: T): T { if (value && typeof value === "object") { Obje
  * no draft, approval, persisted consumption, provider call or model invocation. */
 export function resolveCorrelatedPersonalCalendarTemporal(input: CorrelatedPersonalTemporalEvidenceInput) {
   const evidence = inspectCorrelatedPersonalTemporalEvidence(input);
+  return resolveInspectedPersonalTemporalEvidence(evidence, input.waiting.prepared.rawProposal);
+}
+
+/** Internal phase-independent calculation, shared by live and durable receipt
+ * inspectors. Its input is evidence, never execution authority. */
+export function resolveInspectedPersonalTemporalEvidence(evidence: CorrelatedPersonalTemporalEvidence, raw: string) {
   if (evidence.status === "INSUFFICIENT_ORIGINAL_TEMPLATE") return evidence;
-  const original = evidence.correlation.sources[0], raw = input.waiting.prepared.rawProposal;
+  const original = evidence.correlation.sources[0];
   if (createHash("sha256").update(raw).digest("hex") !== evidence.proposalHash) throw new Error("PERSONAL_CORRELATED_PROPOSAL_CHANGED");
   const temporal = resolvePersonalCalendarTemporalClarifiedSlot(createPersonalIntentInput(original.operationId, original.body), raw, evidence.actionId,
     { receivedAt: evidence.anchorReceivedAt, timezone: evidence.timezone }, { slot: evidence.slot, ...evidence.correlation.explicitReplyTime });

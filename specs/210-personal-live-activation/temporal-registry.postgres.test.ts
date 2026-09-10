@@ -20,6 +20,7 @@ import { processPersonalSms, type PersonalSmsSourceClaim } from "@/server/person
 import { maintainSmsTemporalClarifications, maintainSmsTemporalClarificationsInTransaction } from "@/server/personal-assistant/sms-temporal-maintenance";
 import { selectPersonalAutomaticOutboundCandidates } from "@/server/personal-assistant/outbound-queue";
 import { processSmsTemporalReply } from "@/server/personal-assistant/sms-temporal-reply-worker";
+import { loadCorrelatedPersonalReceiptSubject } from "@/server/model-gateway/personal-intent/correlated-receipt-subject";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -171,6 +172,116 @@ async function waitForQuestionExpiry(id: string) {
   if (!remaining || remaining.ms > 1500) throw new Error("SYNTHETIC_SHORT_EXPIRY_REQUIRED");
   await prisma.$queryRawUnsafe("SELECT pg_sleep($1::double precision)::text", (remaining.ms + 50) / 1000);
 }
+
+async function actualAnsweredQuestion(body = "14h", ttlMs?: number) {
+  const x = await outboundFixture(ttlMs); await x.approve();
+  // Only the HTTP boundary is synthetic. The existing dispatcher persists its
+  // actual acceptance receipt and hook, then the real incoming worker consumes.
+  const transport = vi.fn<typeof fetch>(async () => x.response());
+  expect(await dispatchPersonalOutbound(x.p.questionId, x.env, transport)).toMatchObject({ delivered: false });
+  expect((await stored(x.p.id)).phase).toBe("WAITING");
+  await prisma.$queryRawUnsafe("SELECT pg_sleep(0.005)::text");
+  const wire = { accountSid: x.f.accountSid, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from: x.f.from, to: x.env.TWILIO_PHONE_NUMBER!, body };
+  const source = await enqueuePersonalSms({ ...wire, contentHash: sha(JSON.stringify(wire)) });
+  const env = { ...x.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_SMS_TEMPORAL_REPLY_WORKER_ENABLED: "true" };
+  const model = vi.fn(async () => { throw new Error("SECOND_MODEL_REFUSED"); }), engine = vi.fn(async () => { throw new Error("LEGACY_ENGINE_REFUSED"); });
+  expect(await processPersonalSms(source.operationId, env, { model, engine })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
+  expect(model).not.toHaveBeenCalled(); expect(engine).not.toHaveBeenCalled(); expect(transport).toHaveBeenCalledOnce();
+  const receipts = await prisma.$queryRawUnsafe<Array<{ id: string; outcome: string; packet: unknown; packetHash: string }>>('SELECT id,outcome,packet,"packetHash" FROM "PersonalSmsTemporalClarificationReply" WHERE "sourceOperationId"=$1', source.operationId);
+  expect(receipts).toHaveLength(1);
+  return { ...x, env, source, receipt: receipts[0], transport };
+}
+type Answered = Awaited<ReturnType<typeof actualAnsweredQuestion>>;
+const inspectAnswered = (x: Answered, zone = "UTC", actor = x.f.actor) => prisma.$transaction(async tx => {
+  await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone);
+  return loadCorrelatedPersonalReceiptSubject(tx, { enabled: true, actor, subject: { kind: "personal_sms_temporal_receipt", receiptId: x.receipt.id } }, x.env, context());
+}, txOptions);
+async function answeredSnapshot(x: Answered) {
+  return { operations: await prisma.personalAssistantOperation.findMany({ where: { workspaceId: x.f.workspaceId }, orderBy: { id: "asc" } }),
+    question: await stored(x.p.id), budget: await budget(),
+    receipts: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1 ORDER BY id', x.p.id),
+    expectations: await prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsConversationExpectation" WHERE namespace=$1 ORDER BY id', (await stored(x.p.id)).namespace) };
+}
+describe("durable receipt inspection after actual synthetic HTTP acceptance and incoming SMS completion", () => {
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("recalculates the exact completed two-source packet in %s without any write", async zone => {
+    const x = await actualAnsweredQuestion(), before = await answeredSnapshot(x);
+    expect(x.receipt.outcome).toBe("ACCEPTED"); expect(before.question).toMatchObject({ phase: "CONSUMED", consumedReplyId: x.receipt.id });
+    const first = await inspectAnswered(x, zone), second = await inspectAnswered(x, zone);
+    expect(first).toMatchObject({ status: "CORRELATED_RECEIPT_SUBJECT_INSPECTED_NOT_AUTHORIZED", executionAuthorized: false, persistencePerformed: false, committed: false, draft: null });
+    if (first.status === "DISABLED" || second.status === "DISABLED") throw new Error("NATIVE_RECEIPT_INSPECTION_REQUIRED");
+    expect(first.proof.originalPacket).toEqual(x.receipt.packet); expect(first.proof.packetHash).toBe(x.receipt.packetHash);
+    expect(first.proof.resolution).toEqual(x.receipt.packet); expect(second.proof).toEqual(first.proof);
+    expect(first.proof.resolution.sources.map(s => s.body)).toEqual([temporalBody, "14h"]);
+    expect(await answeredSnapshot(x)).toEqual(before); expect(x.transport).toHaveBeenCalledOnce();
+    expect(before.operations.filter(op => op.kind === "calendar_write")).toHaveLength(0);
+  });
+  it("does not disclose an accepted receipt to another owner or workspace", async () => {
+    const x = await actualAnsweredQuestion(), before = await answeredSnapshot(x);
+    await expect(inspectAnswered(x, "UTC", { ...x.f.actor, userId: "not-this-owner" })).rejects.toThrow("CORRELATED_RECEIPT_OWNER_REQUIRED");
+    await expect(inspectAnswered(x, "UTC", { ...x.f.actor, workspaceId: "not-this-workspace" })).rejects.toThrow("CORRELATED_RECEIPT_OWNER_REQUIRED");
+    expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("a genuine refused ambiguous answer is not recast as a consumed accepted receipt", async () => {
+    const x = await actualAnsweredQuestion("3h"), before = await answeredSnapshot(x);
+    expect(x.receipt.outcome).toBe("REFUSED"); expect(before.question.phase).toBe("WAITING");
+    await expect(inspectAnswered(x)).rejects.toThrow(/CONSUMED/); expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it.each(["GOOGLE", "MODEL"])("current %s grant revocation refuses without changing the historical receipt", async kind => {
+    const x = await actualAnsweredQuestion();
+    await prisma.constructionConnectorGrant.update({ where: { id: kind === "GOOGLE" ? x.f.google.grants[0].id : x.f.modelGrantId },
+      data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+    const before = await answeredSnapshot(x);
+    await expect(inspectAnswered(x)).rejects.toThrow(/GRANT|CONTEXT|AUTHORITY|BINDING|INACTIVE|REVOKED/);
+    expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("retains but refuses an actually expired accepted receipt without inventing a fresh window", async () => {
+    const x = await actualAnsweredQuestion("14h", 1000), before = await answeredSnapshot(x);
+    await waitForQuestionExpiry(x.p.id);
+    await expect(inspectAnswered(x)).rejects.toThrow(/EXPIRED/); expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("keeps a later active question intact while inspecting the earlier inactive receipt", async () => {
+    const x = await actualAnsweredQuestion(), later = await prepare(x.f, await x.f.candidate("calendar"));
+    const before = await answeredSnapshot(x);
+    expect(before.expectations).toEqual(expect.arrayContaining([expect.objectContaining({ id: `calendar:${later.id}`, active: true })]));
+    expect((await inspectAnswered(x)).status).toBe("CORRELATED_RECEIPT_SUBJECT_INSPECTED_NOT_AUTHORIZED");
+    expect(await answeredSnapshot(x)).toEqual(before);
+  });
+  it("holds current owner authority against a real concurrent revocation, then refuses the next read", async () => {
+    const x = await actualAnsweredQuestion();
+    let ready!: () => void, release!: () => void, writerReady!: () => void, writerPid = 0, timedOut = false;
+    const acquired = new Promise<void>(resolve => { ready = resolve; }), held = new Promise<void>(resolve => { release = resolve; });
+    const writerStarted = new Promise<void>(resolve => { writerReady = resolve; });
+    const timer = setTimeout(() => { timedOut = true; ready(); release(); writerReady(); }, 2000);
+    const reading = prisma.$transaction(async tx => {
+      const result = await loadCorrelatedPersonalReceiptSubject(tx, { enabled: true, actor: x.f.actor,
+        subject: { kind: "personal_sms_temporal_receipt", receiptId: x.receipt.id } }, x.env, context());
+      ready(); await held; return result;
+    }, txOptions).then(value => ({ ok: true as const, value }), error => { ready(); return { ok: false as const, error }; });
+    let writing: Promise<{ ok: true } | { ok: false; error: unknown }> | undefined;
+    try {
+      await acquired;
+      writing = prisma.$transaction(async tx => {
+        const [backend] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); writerPid = backend.pid; writerReady();
+        await tx.constructionWorkspaceMember.update({ where: { workspaceId_userId: { workspaceId: x.f.workspaceId, userId: x.f.userId } }, data: { status: "revoked" } });
+      }, txOptions).then(() => ({ ok: true as const }), error => { writerReady(); return { ok: false as const, error }; });
+      await writerStarted;
+      let blocked = false;
+      for (let n = 0; n < 25 && !blocked; n++) {
+        const [state] = await prisma.$queryRawUnsafe<Array<{ blocked: boolean }>>("SELECT cardinality(pg_blocking_pids($1::int))>0 AS blocked", writerPid);
+        blocked = state.blocked; if (!blocked) await prisma.$queryRawUnsafe("SELECT pg_sleep(0.01)::text");
+      }
+      expect(blocked).toBe(true); expect(timedOut).toBe(false);
+    } finally {
+      clearTimeout(timer); release();
+      const result = await reading; if (!result.ok) throw result.error;
+      expect(result.value.status).toBe("CORRELATED_RECEIPT_SUBJECT_INSPECTED_NOT_AUTHORIZED");
+      if (writing) { const result = await writing; if (!result.ok) throw result.error; }
+    }
+    const before = await answeredSnapshot(x);
+    await expect(inspectAnswered(x)).rejects.toThrow("TEMPORAL_REGISTRY_CURRENT_BINDING_REQUIRED");
+    expect(await answeredSnapshot(x)).toEqual(before);
+  });
+});
 
 describe("native temporal scheduling excludes retained invalid questions before LIMIT1", () => {
   it.each(["ELIGIBLE", "STORE_OFF", "BRIDGE_OFF", "EXPIRED", "TERMINAL", "GOOGLE_REVOKED", "MODEL_REVOKED", "IDENTITY_REVISED", "OWNER_REVISED"])("%s preserves evidence while selecting the correct oldest candidate", async mode => {

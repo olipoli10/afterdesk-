@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { correlateSmsTemporalClarification } from "@/server/personal-assistant/sms-temporal-clarification";
+import { correlateSmsTemporalClarification, type PreparedSmsTemporalClarification } from "@/server/personal-assistant/sms-temporal-clarification";
 import { createPersonalIntentInput, inspectPersonalIntentCandidate } from "./contract";
 import { classifyPersonalCalendarTemporalSlot, resolvePersonalCalendarTemporal } from "./temporal";
 
@@ -18,9 +18,14 @@ function freeze<T>(value: T): T { if (value && typeof value === "object") { Obje
  * Well-bound but incomplete/unsafe templates return a closed refusal reason. */
 export function inspectCorrelatedPersonalTemporalEvidence(input: CorrelatedPersonalTemporalEvidenceInput) {
   const correlation = correlateSmsTemporalClarification(input);
+  return inspectPersonalTemporalCorrelationEvidence(correlation, input.waiting.prepared);
+}
+
+/** Shared internal pure calculation; callers must first inspect live or durable
+ * correlation through its distinct strict boundary. This authenticates no DB. */
+export function inspectPersonalTemporalCorrelationEvidence(correlation: ReturnType<typeof correlateSmsTemporalClarification>, prepared: PreparedSmsTemporalClarification) {
   // Use the newly parsed/frozen source packets, never caller-owned source objects.
   const [original, answer] = correlation.sources;
-  const prepared = input.waiting.prepared;
   const rawProposal = prepared.rawProposal;
   if (createHash("sha256").update(rawProposal).digest("hex") !== correlation.proposalHash) throw new Error("PERSONAL_CORRELATED_PROPOSAL_CHANGED");
   const originalInput = createPersonalIntentInput(original.operationId, original.body);

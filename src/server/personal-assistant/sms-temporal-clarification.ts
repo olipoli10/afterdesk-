@@ -144,20 +144,60 @@ export function correlateSmsTemporalClarification(untrusted: z.infer<typeof corr
   const received = Date.parse(reply.source.receivedAt);
   if (received <= Date.parse(waiting.questionReceipt.acceptedAt) || received > clock || received >= Date.parse(p.expiresAt)
     || Date.parse(reply.leaseUntil) <= clock) throw new Error("SMS_CLARIFICATION_REPLY_TIME_INVALID");
-  const literal = explicitTimeLiteral(reply.source.body);
+  return temporalCorrelationEvidence(waiting, p, reply.source, reply.leaseUntil);
+}
+
+// Phase-independent evidence serialization. A historical receipt can reproduce
+// these bytes without representing its already completed source as processing.
+function temporalCorrelationEvidence(waiting: WaitingSmsTemporalClarification, p: PreparedSmsTemporalClarification,
+  replySource: SmsTemporalClarificationSource, historicalLeaseUntil: string) {
+  const literal = explicitTimeLiteral(replySource.body);
   return freeze({ status: "CORRELATED_NOT_RESOLVED_NOT_AUTHORIZED" as const, executionAuthorized: false as const,
     providerExecutionPerformed: false as const, preview: null, sourceAuthority: "NOT_AUTHENTICATED_BY_THIS_PURE_CONTRACT" as const,
     clarificationId: p.clarificationId, waitingHash: waiting.waitingHash, proposalHash: p.proposalHash, questionHash: p.questionHash,
     wireTextHash: p.wireTextHash, wireFormatterVersion: p.wireFormatterVersion,
     question: p.question, reason: p.reason, actionId: p.actionId,
     anchorReceivedAt: p.source.receivedAt, timezone: p.binding.timezone,
-    sources: [p.source, reply.source],
+    sources: [p.source, replySource],
     citations: [{ sourceOperationId: p.source.operationId, start: 0, end: p.source.body.length, quote: p.source.body },
-      { sourceOperationId: reply.source.operationId, start: 0, end: reply.source.body.length, quote: reply.source.body }],
+      { sourceOperationId: replySource.operationId, start: 0, end: replySource.body.length, quote: replySource.body }],
     explicitReplyTime: literal,
     requiredAtomicTransition: { fromPhase: "WAITING" as const, toPhase: "CONSUMED" as const, expectedWaitingHash: waiting.waitingHash,
-      replyOperationId: reply.source.operationId, replyMessageSid: reply.source.messageSid, replyRequestHash: reply.source.requestHash,
-      replyAttempt: 1 as const, replyLeaseUntil: reply.leaseUntil },
+      replyOperationId: replySource.operationId, replyMessageSid: replySource.messageSid, replyRequestHash: replySource.requestHash,
+      replyAttempt: 1 as const, replyLeaseUntil: historicalLeaseUntil },
     persistencePerformed: false as const, temporalResolutionPerformed: false as const,
   });
+}
+
+const completedSourceSchema = z.object({ source: sourceSchema, status: z.literal("completed"), attempt: z.literal(1), leaseUntil: z.null() }).strict();
+const historicalClaimSchema = z.object({ operationId: id, workspaceId: id, userId: id, attempt: z.literal(1), leaseUntil: instant }).strict();
+const durableCorrelationSchema = z.object({
+  waiting: waitingSchema, currentBinding: smsTemporalClarificationBindingSchema, questionPhase: z.literal("CONSUMED"), consumedReplyId: id,
+  receipt: z.object({ id, outcome: z.literal("ACCEPTED"), receivedAt: instant, createdAt: instant, sourceClaim: historicalClaimSchema }).strict(),
+  original: completedSourceSchema, answer: completedSourceSchema, now: instant,
+}).strict();
+export type DurableSmsTemporalCorrelationInput = z.infer<typeof durableCorrelationSchema>;
+
+/** Inspects asserted durable facts, not DB authentication. Neither live phase,
+ * processing status nor a fresh lease is manufactured. Historical transition
+ * fields are reproduced only as evidence for comparison to the stored packet. */
+export function inspectDurableSmsTemporalCorrelation(untrusted: DurableSmsTemporalCorrelationInput) {
+  const input = durableCorrelationSchema.parse(untrusted), { waiting, currentBinding, receipt, original, answer } = input;
+  const p = reinspectPrepared(waiting.prepared), clock = Date.parse(input.now);
+  const expected = markSmsTemporalClarificationAsked(p, waiting.questionReceipt, input.now);
+  if (fingerprint(waiting) !== fingerprint(expected)) throw new Error("SMS_CLARIFICATION_WAITING_CHANGED");
+  if (fingerprint(currentBinding) !== p.bindingHash) throw new Error("SMS_CLARIFICATION_CONTEXT_CHANGED");
+  if (receipt.id !== input.consumedReplyId || fingerprint(original.source) !== fingerprint(p.source)) throw new Error("SMS_DURABLE_RECEIPT_SOURCE_CHANGED");
+  inspectSource(answer.source, currentBinding);
+  if (answer.source.operationId === p.source.operationId || answer.source.operationId === waiting.questionReceipt.outboundOperationId
+    || answer.source.messageSid === p.source.messageSid || answer.source.messageSid === waiting.questionReceipt.acceptedProviderSid) throw new Error("SMS_CLARIFICATION_NEW_SOURCE_REQUIRED");
+  if (receipt.sourceClaim.operationId !== answer.source.operationId || receipt.sourceClaim.userId !== answer.source.userId
+    || receipt.sourceClaim.workspaceId !== answer.source.workspaceId || receipt.receivedAt !== answer.source.receivedAt) throw new Error("SMS_DURABLE_RECEIPT_CLAIM_CHANGED");
+  const received = Date.parse(receipt.receivedAt), recorded = Date.parse(receipt.createdAt);
+  if (received <= Date.parse(waiting.questionReceipt.acceptedAt) || recorded < received || recorded > clock
+    || recorded >= Date.parse(p.expiresAt) || Date.parse(receipt.sourceClaim.leaseUntil) <= recorded) throw new Error("SMS_DURABLE_RECEIPT_TIME_INVALID");
+  const historicalCorrelation = temporalCorrelationEvidence(waiting, p, answer.source, receipt.sourceClaim.leaseUntil);
+  return freeze({ status: "DURABLE_RECEIPT_CORRELATION_INSPECTED_NOT_AUTHORIZED" as const, executionAuthorized: false as const,
+    persistencePerformed: false as const, sourceAuthority: "NOT_AUTHENTICATED_BY_THIS_PURE_CONTRACT" as const,
+    prepared: p, receiptId: receipt.id, historicalCorrelation });
 }

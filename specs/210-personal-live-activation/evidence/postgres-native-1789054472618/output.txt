@@ -1,0 +1,114 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_a53623c62ebd4ec0850881dd499af10a","template":"endvera_personal_210_9abd04d08e134a7aa8f94b7084c740b3","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T15:35:14.3871381Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (73 tests | 1 failed) 23401ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  704ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  449ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  410ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  345ms
+     ✓ a genuine refused ambiguous answer is not recast as a consumed accepted receipt  358ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  378ms
+     ✓ current MODEL grant revocation refuses without changing the historical receipt 290ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1172ms
+     ✓ keeps a later active question intact while inspecting the earlier inactive receipt  508ms
+     × holds current owner authority against a real concurrent revocation, then refuses the next read 609ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate  343ms
+     ✓ STORE_OFF preserves evidence while selecting the correct oldest candidate 187ms
+     ✓ BRIDGE_OFF preserves evidence while selecting the correct oldest candidate 214ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1198ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1198ms
+     ✓ GOOGLE_REVOKED preserves evidence while selecting the correct oldest candidate 211ms
+     ✓ MODEL_REVOKED preserves evidence while selecting the correct oldest candidate 274ms
+     ✓ IDENTITY_REVISED preserves evidence while selecting the correct oldest candidate 211ms
+     ✓ OWNER_REVISED preserves evidence while selecting the correct oldest candidate 199ms
+     ✓ an orphan bare hour stays deterministic and never completes a source 72ms
+     ✓ a retained calendar confirmation reserves 14h without interpreting it 196ms
+     ✓ a retained calendar confirmation reserves Ajoute inspection vendredi à 14h without interpreting it 189ms
+     ✓ two distinct live reply backends commit at most one canonical receipt and acknowledgment 249ms
+     ✓ 14h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 223ms
+     ✓ 3h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 176ms
+     ✓ independent or reserved message Qu’est-ce que j’ai demain? does not consume a pending answer 134ms
+     ✓ independent or reserved message Ajoute inspection vendredi à 14h does not consume a pending answer 123ms
+     ✓ independent or reserved message CONFIRME ENDVERA AGENDA bois lac lune sable does not consume a pending answer 139ms
+     ✓ OFF cannot consume or prepare an acknowledgment 124ms
+     ✓ BEFORE_ACCEPTANCE cannot consume or prepare an acknowledgment 109ms
+     ✓ REVOKED cannot consume or prepare an acknowledgment 136ms
+     ✓ AFTER_INSERT_FAILURE rolls back the real consumer/source CAS and acknowledgment insert 164ms
+     ✓ AFTER_INSERT_REVOKED rolls back the real consumer/source CAS and acknowledgment insert 174ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1154ms
+     ✓ expires WAITING once, retains source/question/budget/history  1140ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1156ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1148ms
+     ✓ existing ingress worker routes 14h without another model or source completion 189ms
+     ✓ existing ingress worker routes 3h without another model or source completion 171ms
+     ✓ existing ingress worker routes Ajoute une visite vendredi without another model or source completion 150ms
+     ✓ existing ingress worker routes OFF without another model or source completion 153ms
+     ✓ retains atomic source/question/registry with preparation ON 130ms
+     ✓ retains atomic source/question/registry with preparation OFF 69ms
+     ✓ retains atomic source/question/registry with preparation REVOKED_AFTER_SOURCE_CAS 119ms
+     ✓ prepares only START ambiguity and commits exact question plus source CAS 80ms
+     ✓ prepares only END ambiguity and commits exact question plus source CAS 79ms
+     ✓ missing-end model template requests full reformulation before any misleading question is inserted 61ms
+     ✓ current grant changed after inspection rolls back the inserted question and source state 67ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only 246ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only 218ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only 215ms
+     ✓ attached but OFF refuses the ordinary approval path 106ms
+     ✓ post-response Google revocation keeps the entire exposure and never creates WAITING 166ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry 200ms
+     ✓ OFF does not require valid input or mutate the DB 1ms
+     ✓ commits exact complete wire + shared ledger without calendar draft or additional provider work 98ms
+     ✓ rolls registry, question and shared ledger back if source completion is omitted 96ms
+     ✓ rejects lease replacement after registry insertion even if a raw UPDATE tries to complete 83ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1644ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in UTC 187ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in America/New_York 184ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo 172ms
+     ✓ missing immutable acceptedAt refuses; historical updatedAt is never substituted 104ms
+     ✓ an SMS received before the durable question receipt cannot become its answer later 140ms
+     ✓ another actor cannot load the question or consume its reply 122ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  314ms
+     ✓ revocation remains possible but prevents attaching or consuming evidence 136ms
+     ✓ rejects a minimal forged ACCEPTED packet at the actual INSERT trigger 144ms
+     ✓ competing consumption of the same SMS commits at most one permanent receipt 146ms
+     ✓ five creations across both types share one permanent hourly cap  558ms
+     ✓ keeps one visible pair namespace after re-pairing into another workspace/owner 173ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  456ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends 147ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 72 passed (73)
+   Start at  11:34:48
+   Duration  26.00s (transform 1.20s, setup 0ms, import 2.43s, tests 23.40s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > durable receipt inspection after actual synthetic HTTP acceptance and incoming SMS completion > holds current owner authority against a real concurrent revocation, then refuses the next read
+AssertionError: expected [Function] to throw error matching /OWNER|AUTHORITY|MEMBERSHIP|CONTEXT|AC…/ but got 'TEMPORAL_REGISTRY_CURRENT_BINDING_REQ…'
+
+- Expected:
+/OWNER|AUTHORITY|MEMBERSHIP|CONTEXT|ACTIVE/
+
++ Received:
+"TEMPORAL_REGISTRY_CURRENT_BINDING_REQUIRED"
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:281:37
+    279|     }
+    280|     const before = await answeredSnapshot(x);
+    281|     await expect(inspectAnswered(x)).rejects.toThrow(/OWNER|AUTHORITY|…
+       |                                     ^
+    282|     expect(await answeredSnapshot(x)).toEqual(before);
+    283|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-f7a876a1813b4766995c0fcbe7f2f264

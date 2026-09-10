@@ -1,0 +1,35 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_26d34d56e85b4235bee544f1b787f46c","template":"endvera_personal_210_d9f92bd44cc9490db812ae8e57325228","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T15:31:56.8465214Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (71 tests) 22367ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  607ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  386ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  392ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  312ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  328ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1174ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1181ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1199ms
+     ✓ 14h uses the canonical consumer once and creates exactly one matching unsent acknowledgment  422ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1163ms
+     ✓ expires WAITING once, retains source/question/budget/history  1151ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1169ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1130ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1648ms
+     ✓ five creations across both types share one permanent hourly cap  625ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  855ms
+
+ Test Files  1 passed (1)
+      Tests  71 passed (71)
+   Start at  11:31:32
+   Duration  24.66s (transform 982ms, setup 0ms, import 2.13s, tests 22.37s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-a87a686b85c045759a25b4909b800530
