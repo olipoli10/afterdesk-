@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
-import { createProjectBrainNativeActionGate, createProjectBrainPhotoSelection, prepareSelectedProjectBrainPhoto, PROJECT_BRAIN_PHOTO_OPTIONS } from "../src/lib/project-brain-photo-selection";
+import { createProjectBrainNativeActionGate, createProjectBrainPhotoSelection, importReviewedProjectBrainPhoto, prepareSelectedProjectBrainPhoto, PROJECT_BRAIN_PHOTO_OPTIONS } from "../src/lib/project-brain-photo-selection";
 import type { ProjectBrainPickerContext } from "../src/lib/project-brain-source-picker";
 import { PROJECT_BRAIN_MAX_SOURCE_BYTES, type ProjectBrainSourceAttempt } from "../src/lib/project-brain-intake";
 
@@ -127,5 +127,45 @@ describe("explicit project photo preview/import", () => {
     expect(source).toContain("Image source={{ uri: preview.attempt.command.uri }}");
     expect(source).not.toMatch(/requestMediaLibraryPermissions|getMediaLibraryPermissions|getPendingResultAsync|fetch\(|getCurrentPosition|saveToLibrary/);
     expect(source).toContain("their removal is not guaranteed"); expect(source).toContain("key={JSON.stringify([workspaceId, projectId, intakeId, stateVersion])}");
+  });
+  it("imports the exact reviewed attempt through durable storage, permitting only the retained URI change", async () => {
+    const attempt = prepareSelectedProjectBrainPhoto(asset, context, "CAMERA", commandId)!.attempt;
+    const durable = { ...attempt, command: { ...attempt.command, uri: "file:///synthetic/durable/photo.jpg" } };
+    const stage = vi.fn(async () => [durable]); const upload = vi.fn(async () => ({ ...durable, state: "CONFIRMED" as const, result: receipt }));
+    expect(await importReviewedProjectBrainPhoto({ attempt, readCurrentContext: () => context, stage, upload })).toMatchObject({ state: "CONFIRMED" });
+    expect(stage).toHaveBeenCalledExactlyOnceWith([attempt]); expect(upload).toHaveBeenCalledExactlyOnceWith(durable);
+  });
+  it.each([null, { ...context, workspaceId: "other" }, { ...context, projectId: "other" }, { ...context, intakeId: "other" }, { ...context, stateVersion: 4 }])("does not stage a photo for a changed context %j", async changed => {
+    const attempt = prepareSelectedProjectBrainPhoto(asset, context, "LIBRARY", commandId)!.attempt;
+    const stage = vi.fn(); const upload = vi.fn();
+    await expect(importReviewedProjectBrainPhoto({ attempt, readCurrentContext: () => changed, stage, upload })).rejects.toThrow("PHOTO_IMPORT_CONTEXT_CHANGED");
+    expect(stage).not.toHaveBeenCalled(); expect(upload).not.toHaveBeenCalled();
+  });
+  it("leaves the original durable entry untouched without upload after context changes during staging", async () => {
+    const attempt = prepareSelectedProjectBrainPhoto(asset, context, "CAMERA", commandId)!.attempt;
+    let current: ProjectBrainPickerContext | null = context;
+    const stage = vi.fn(async () => { current = null; return [attempt]; }); const upload = vi.fn();
+    await expect(importReviewedProjectBrainPhoto({ attempt, readCurrentContext: () => current, stage, upload })).rejects.toThrow("PHOTO_IMPORT_CONTEXT_CHANGED");
+    expect(stage).toHaveBeenCalledTimes(1); expect(upload).not.toHaveBeenCalled();
+  });
+  it.each([{ commandId: "00000000-0000-4000-8000-000000000002" }, { fileName: "other.jpg" }, { sizeBytes: 101 }, { expectedStateVersion: 4 }])("refuses a changed durable command %j", async change => {
+    const attempt = prepareSelectedProjectBrainPhoto(asset, context, "CAMERA", commandId)!.attempt;
+    const stage = vi.fn(async () => [{ ...attempt, command: { ...attempt.command, ...change } }]); const upload = vi.fn();
+    await expect(importReviewedProjectBrainPhoto({ attempt, readCurrentContext: () => context, stage, upload })).rejects.toThrow("PHOTO_DURABLE_SOURCE_CHANGED"); expect(upload).not.toHaveBeenCalled();
+  });
+  it("screen shares one native gate across documents, photos and voice setup before their first await", () => {
+    const screen = readFileSync("src/app/(app)/project-brain-intake.tsx", "utf8");
+    const document = screen.slice(screen.indexOf("const pickSources ="), screen.indexOf("const startVoice ="));
+    const voice = screen.slice(screen.indexOf("const startVoice ="), screen.indexOf("const finalizeRecordedVoice ="));
+    expect(document.indexOf("const release = acquireNativeAction()")).toBeLessThan(document.indexOf("await sourcePicker.run"));
+    expect(document).toContain("release()"); expect(voice.indexOf("voiceStarting.current = true")).toBeLessThan(voice.indexOf("await requestRecordingPermissionsAsync()"));
+    expect(voice).toContain("voiceStarting.current = false;");
+    expect(voice).toContain("if (!handedToRecording) { voiceCapture.current = null;");
+    expect(screen).toContain("session.release()");
+    expect(screen).toContain("if (release() && pickerMounted.current) setNativeBusy(false)");
+    expect(screen).toContain("acquireNativeAction={acquireNativeAction} onImport={importPhoto}");
+    expect(screen).toContain("stage: stageProjectBrainSources, upload: uploadProjectBrainSource");
+    expect(screen).toContain("hasUnknownSourceOutcome || recorderState.isRecording");
+    expect(voice).not.toContain("stageProjectBrainSources");
   });
 });

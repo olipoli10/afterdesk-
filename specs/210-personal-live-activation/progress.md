@@ -1,5 +1,92 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 05:45Z — refreshed validation and database-runtime correction
+
+Current parent root validation: evidence/root-1789018591696,3333 PASS and3
+historical skips. Mobile: evidence/mobile-1789018221609,398 PASS. Production
+build and Android export passed in build-1789018059893 and
+mobile-export-1789018070317 respectively; these are local artifacts, not a new
+signed APK or deployment. Voice completion now requires its matching native
+receipt and preserves a failed-stop session for cleanup. Recording remains
+limited to two minutes; no ten-minute or physical-device claim is made.
+
+Correction to the 05:25 diagnosis below: the operation-row lock-upgrade hypothesis
+was not confirmed. Changing that lock did not make the parallel Google test pass.
+Prisma dev runs postgres-1789017839033 (60/61) and postgres-1789018223281
+(isolated Google10/11) retain the failure and disconnect timeout. Instrumentation
+places the stall at transaction admission, BEFORE the application locking query.
+Prisma dev uses PGlite and does not establish native simultaneous-backend proof.
+Earlier local SQL/persistence results remain recorded; do not relabel them as
+native PostgreSQL concurrency evidence. Outbox's ten local SQL cases passed.
+
+Official EDB PostgreSQL17.11 Windows binaries were downloaded into ignored local
+scratch, with exact archive identity and provenance receipts. They are unsigned;
+the local SHA256 is not a publisher attestation. Version checks passed. The first
+native harness attempt postgres-native-1789018971639 failed during bootstrap
+before any observed server start. The private empty cluster is retained; diagnosis
+continues. No database-concurrency PASS is inferred from runtime availability.
+
+Exact SMS confirmation now has an OFF-only storage implementation and reviewed
+SQL draft. Its migration and PostgreSQL tests are still pending. The future
+accepted-outbox bridge is not implemented or enabled. No real confirmation was
+sent and no Google effect occurred. Root/store contract tests do not replace the
+required native transactional tests.
+
+No provider call, secret access, remote migration, deployment or new APK in this
+wave. Existing credential access, owner pairing and Google consent dependencies
+remain. Heartbeat and independent coding continue; dashboard stays roadmap22%,
+local build46.75%, C2 18/18, real-test NO-GO, Verified-E2E0%.
+
+## 2026-09-10 05:25Z — execution fences, mobile intake and exact SMS confirmation foundation
+
+Continuous authorized coding remains active; heartbeat verified ACTIVE every three
+minutes. No live API, credential access, remote migration, deployment or new signed
+APK in this wave. Missing Twilio secret access, Google consent and owner pairing
+remain separate dependencies; they do not stop the local queue.
+
+Outbox now pins the exact approval plus a per-claim random token, current owner/
+identity/account/grant/budget/source under shared row locks, and a fixed caller
+deadline. Transport starts while locks are held but its promise is awaited only
+after transaction commit. Completion/recovery uses exact claim JSON and lease CAS;
+uncertainty retains the full reservation and never retries. Independent regression
+reproduced a same-millisecond CAS-loser ownership collision before nonce correction.
+Focused46 and13 boundary cases passed; peer ownership regression also passed.
+
+Google calendar now separates a local transactional approval claim from execution,
+uses a durable one-use dispatch marker, exact WRITE grant and owner/workspace
+revision receipt, immutable detached request and bounded final CAS. Independent
+review reproduced caller-claim mutation before immutable snapshot correction.
+Focused17 and independent mutation1 passed. Current token loader additionally
+requires the read grant; separately revoking read conservatively blocks writes.
+
+Real disposable PostgreSQL run evidence/postgres-1789017448854:59 PASS/1 FAIL,
+plus disconnect-hook timeout. Parallel calendar approvals both failed after shared
+operation-row lock upgrades. Operation locks changed to FOR UPDATE, authority rows
+remain FOR SHARE; no timeout increase or retry. Fresh full61-case validation is
+running, including an additional same-outbox-approval contention case. Failed
+evidence retained; disposable cluster cleanup succeeded. Do not call this gate PASS.
+
+Root evidence/root-1789017466282:3324 PASS/3 historical skips. Mobile
+evidence/mobile-1789017458910:384 PASS, before subsequent native stop/receipt fixes.
+Provider boundary4843 modules/0 violations. Parent full validation will be refreshed.
+
+Photo preview/camera/library is now wired into project intake with explicit import
+and shared native gate. Calendar cards show explicit named-zone local time/UTC
+offset and preserve exact ISO values. Voice capture now binds its starting context
+through read/stage/import; repeated finalization and wrong-context upload refused.
+Review found Stop hidden on missing intake and lost session after native stop error;
+global Stop and retained cleanup-capable session are corrected, native completion
+error receipt handling remains under implementation/review. No actual phone proof.
+
+SMS_CALENDAR_CONFIRMATION_PLAN.md and pure contract prepare exact owner-bound
+summary/confirmation only. Four public words are a correlation marker, not identity
+or authorization; permanent database nonreuse, current grants and transactional
+consumption are still required. OFF storage is the next wave; no schema/worker/live
+bridge has been activated and a match never gives the model action authority.
+
+Dashboard unchanged: canonical roadmap22%, local build46.75%, C2 18/18,
+customer/provider real-test NO-GO, Verified-E2E0%. Local tests are not live proof.
+
 ## 2026-09-10 04:46Z — direct calendar read, durable wakeup and mobile intake
 
 04:50 update: temporal/review clarification changes now passed84 focused tests and

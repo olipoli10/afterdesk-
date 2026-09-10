@@ -3,6 +3,7 @@ import { AppState, Platform, Text, View } from "react-native";
 import { Button, Card, Label, Notice, sharedStyles } from "@/components/ui";
 import { MobileApi } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
+import { PersonalCalendarDraftTimes } from "@/components/personal-calendar-draft-times";
 import { createPersonalCalendarApprovalFence, loadPersonalModelReviews, personalCalendarApprovalReceiptSchema, personalModelActionLabel, personalModelActionStatus, personalModelCalendarApproval, personalModelDraftFields, personalModelNextDecision, type PersonalModelReviewAction, type PersonalModelReviews } from "@/lib/personal-model-reviews";
 
 /** Read-only projection; calendar additions use the existing separate explicit approval API. */
@@ -55,6 +56,7 @@ export function PersonalModelReviewList({ workspaceId }: { workspaceId: string }
         <Notice>{personalModelActionStatus(action)}</Notice>
         {action.question ? <Text selectable style={sharedStyles.value}>{action.question}</Text> : null}
         {action.draft ? <Text style={sharedStyles.muted}>{action.currentStatus === "UNAVAILABLE_OR_CHANGED" ? "Ancienne proposition enregistrée — à revérifier, pas un brouillon actuel" : "Proposition exacte enregistrée"}</Text> : null}
+        {action.kind === "PREPARE_CALENDAR_EVENT" && action.draft ? <PersonalCalendarDraftTimes workspaceId={workspaceId} draft={action.draft} showRaw={false} /> : null}
         {personalModelDraftFields(action).map(field => <View key={field.key} style={{ gap: 4 }}><Text style={sharedStyles.muted}>{field.label}</Text><Text selectable style={sharedStyles.value}>{field.value}</Text></View>)}
         <Text style={sharedStyles.muted}>{personalModelNextDecision(action)}</Text>
         {personalModelCalendarApproval(action) ? <>

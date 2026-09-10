@@ -4,6 +4,7 @@ import * as WebBrowser from "expo-web-browser";
 import { Button, Card, Label, Notice, sharedStyles } from "@/components/ui";
 import { MobileApi } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
+import { PersonalCalendarDraftTimes } from "@/components/personal-calendar-draft-times";
 import type { PersonalGoogleEvents, PersonalGoogleStatus, PersonalGoogleActions } from "@/lib/personal-google";
 
 export function PersonalGoogleConnection({ workspaceId }: { workspaceId: string }) {
@@ -73,8 +74,7 @@ export function PersonalGoogleConnection({ workspaceId }: { workspaceId: string 
     {actions?.operations.map(action => <View key={action.id} style={sharedStyles.stack}>
       <Label>Ajout à ton Google Agenda principal</Label>
       <Text style={sharedStyles.value}>{action.draft.title}</Text>
-      <Text style={sharedStyles.muted}>Début : {new Date(action.draft.startsAt).toLocaleString("fr-CA", { timeZone: action.draft.timezone })}</Text>
-      <Text style={sharedStyles.muted}>Fin : {new Date(action.draft.endsAt).toLocaleString("fr-CA", { timeZone: action.draft.timezone })} · {action.draft.timezone}</Text>
+      <PersonalCalendarDraftTimes workspaceId={workspaceId} draft={action.draft} />
       <Notice>{action.status === "completed" ? "Ajout confirmé par Google" : action.status === "pending" ? "Préparé, pas encore ajouté" : "Ajout non confirmé — ne pas le recréer sans vérifier"}</Notice>
       {action.status === "pending" ? <Button disabled={busy || !status?.writeConsentGranted || !status.configured} onPress={() => {
         setBusy(true); setMessage(null);

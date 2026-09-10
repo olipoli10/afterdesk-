@@ -1,0 +1,10 @@
+{
+  "kind": "postgres",
+  "postgresTestFile": "google.postgres.test.ts",
+  "exitCode": 1,
+  "finishedAt": "2026-09-10T05:32:44.264Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\postgres-1789018223281",
+  "buildDirectory": null
+}

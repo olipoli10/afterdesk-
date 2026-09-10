@@ -173,6 +173,7 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
   if (deps.deadlineAt !== undefined && !Number.isFinite(deps.deadlineAt)) throw new Error("SMS_WORKER_DEADLINE_INVALID");
   if (!personalSmsWorkerEnabled(env)) return { disabled: true, processed: 0 };
   const deadlineAt = Math.min(Date.now() + PERSONAL_SMS_BATCH_BUDGET_MS, deps.deadlineAt ?? Infinity);
+  const batchController = new AbortController();
   const requireBatchTime = () => { if (Date.now() >= deadlineAt) throw new SmsWorkerDeadline(); };
   let processed = 0;
   const work = async () => {
@@ -189,10 +190,10 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
   requireBatchTime();
   if (env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED === "true") {
     const replies = await prisma.personalAssistantOperation.findMany({ where: { kind: "sms_outbound", status: { in: ["pending", "approved"] }, idempotencyKey: { startsWith: "reply:" } }, take: batchSize, orderBy: { createdAt: "asc" }, select: { id: true } });
-    for (const reply of replies) { requireBatchTime(); try { await sendAutomaticPersonalReply(reply.id, env); } catch { /* Missing budget/configuration or unknown delivery is retained; never forge a reply receipt. */ } }
+    for (const reply of replies) { requireBatchTime(); try { await sendAutomaticPersonalReply(reply.id, env, undefined, { deadlineAt, signal: batchController.signal }); } catch { /* Missing budget/configuration or unknown delivery is retained; never forge a reply receipt. */ } }
   }
   return { disabled: false, processed, deadlineReached: Date.now() >= deadlineAt - CLEANUP_BUDGET_MS };
   };
-  try { return await withinDeadline(work, deadlineAt); }
+  try { return await withinDeadline(work, deadlineAt, () => batchController.abort()); }
   catch (error) { if (!(error instanceof SmsWorkerDeadline)) throw error; return { disabled: false, processed, deadlineReached: true }; }
 }

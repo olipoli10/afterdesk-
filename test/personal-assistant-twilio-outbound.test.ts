@@ -1,12 +1,41 @@
 import { createHmac } from "node:crypto";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 import { cadMicros, sendPersonalTwilio, twilioDispatchPolicy } from "../src/server/personal-assistant/twilio-outbound";
 import { parseTwilioReceipt } from "../src/server/personal-assistant/delivery-receipts";
 const env = { ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_AUTHORITY_REF: "synthetic-current-authority", ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner", ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED", ENDVERA_VOICE_PROVIDER_ENABLED: "ENABLED", TWILIO_ACCOUNT_SID: `AC${"a".repeat(32)}`, TWILIO_API_KEY_SID: `SK${"b".repeat(32)}`, TWILIO_API_KEY_SECRET: "synthetic-secret", TWILIO_AUTH_TOKEN: "synthetic-token", TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_PROVIDER_WEBHOOK_ORIGIN: "https://endvera.example", ENDVERA_TWILIO_STATUS_WEBHOOK_URL: "https://endvera.example/api/webhooks/twilio/status", ENDVERA_PERSONAL_OUTBOUND_ENABLED: "true", ENDVERA_PERSONAL_PILOT_EXPIRES_AT: new Date(Date.now() + 3600000).toISOString(), ENDVERA_TWILIO_RATE_REVIEWED_AT: new Date(Date.now() - 1000).toISOString(), ENDVERA_TWILIO_RATE_REVIEW_REF: "synthetic-rate-bound", ENDVERA_PERSONAL_BUDGET_CAD: "10", ENDVERA_SMS_SEGMENT_RESERVE_CAD: "0.10", ENDVERA_VOICE_MINUTE_RESERVE_CAD: "0.50" };
 const request = { from: env.TWILIO_PHONE_NUMBER, to: "+15005550001", text: "Message synthétique" };
 const operationId = "synthetic-operation-210";
+afterEach(() => { vi.useRealTimers(); });
 describe("bounded personal Twilio transport with fake HTTP", () => {
+  it("refuses expired or aborted caller lifetimes without HTTP", async () => {
+    const controller = new AbortController(); controller.abort();
+    for (const context of [{ deadlineAt: Date.now() - 1 }, { signal: controller.signal }, { deadlineAt: NaN }]) {
+      const transport = vi.fn();
+      await expect(sendPersonalTwilio("sms_outbound", request, env, transport, operationId, context)).rejects.toThrow();
+      expect(transport).not.toHaveBeenCalled();
+    }
+  });
+  it("aborts a stalled HTTP operation at the caller deadline without retry", async () => {
+    vi.useFakeTimers(); let signal: AbortSignal | undefined;
+    const transport = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => { signal = init?.signal ?? undefined; return new Promise<Response>(() => undefined); });
+    const outcome = sendPersonalTwilio("sms_outbound", request, env, transport, operationId, { deadlineAt: Date.now() + 25 }).catch(error => error.message);
+    await vi.advanceTimersByTimeAsync(26);
+    expect(await outcome).toBe("TWILIO_OUTCOME_UNKNOWN"); expect(signal?.aborted).toBe(true); expect(transport).toHaveBeenCalledTimes(1);
+  });
+  it("bounds response streaming, cancels the reader and retains unknown outcome", async () => {
+    vi.useFakeTimers(); const cancel = vi.fn();
+    const transport = vi.fn(async () => new Response(new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new TextEncoder().encode('{"sid":')); }, cancel })));
+    const outcome = sendPersonalTwilio("sms_outbound", request, env, transport, operationId, { deadlineAt: Date.now() + 25 }).catch(error => error.message);
+    await vi.advanceTimersByTimeAsync(26);
+    expect(await outcome).toBe("TWILIO_OUTCOME_UNKNOWN"); expect(cancel).toHaveBeenCalledOnce(); expect(transport).toHaveBeenCalledOnce();
+  });
+  it("uses a ten-second maximum even when the caller supplies no deadline", async () => {
+    vi.useFakeTimers(); const transport = vi.fn(async () => new Promise<Response>(() => undefined));
+    const outcome = sendPersonalTwilio("sms_outbound", request, env, transport, operationId).catch(error => error.message);
+    await vi.advanceTimersByTimeAsync(10001);
+    expect(await outcome).toBe("TWILIO_OUTCOME_UNKNOWN"); expect(transport).toHaveBeenCalledOnce();
+  });
   it("requires current authority, reviewed rates and a CAD ceiling before transport", async () => {
     for (const bad of [{}, { ...env, ENDVERA_PERSONAL_BUDGET_CAD: "" }, { ...env, ENDVERA_TWILIO_RATE_REVIEWED_AT: "2020-01-01T00:00:00Z" }, { ...env, ENDVERA_TWILIO_STATUS_WEBHOOK_URL: "https://evil.example/api/webhooks/twilio/status" }]) {
       const transport = vi.fn(); await expect(sendPersonalTwilio("sms_outbound", request, bad, transport, operationId)).rejects.toThrow(); expect(transport).not.toHaveBeenCalled();

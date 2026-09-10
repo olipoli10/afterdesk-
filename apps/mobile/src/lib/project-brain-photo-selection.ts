@@ -23,6 +23,29 @@ export function createProjectBrainNativeActionGate() {
   };
 }
 
+/** Keep the reviewed command identity while moving its selected file into the existing durable queue. */
+export async function importReviewedProjectBrainPhoto(input: {
+  attempt: ProjectBrainSourceAttempt;
+  readCurrentContext: () => ProjectBrainPickerContext | null;
+  stage: (attempts: readonly ProjectBrainSourceAttempt[]) => Promise<readonly ProjectBrainSourceAttempt[]>;
+  upload: (attempt: ProjectBrainSourceAttempt) => Promise<ProjectBrainSourceAttempt>;
+}) {
+  const context = input.readCurrentContext();
+  const command = { ...input.attempt.command };
+  if (!context || input.attempt.state !== "READY" || command.kind !== "PHOTO"
+    || command.workspaceId !== context.workspaceId || command.projectId !== context.projectId
+    || command.intakeId !== context.intakeId || command.expectedStateVersion !== context.stateVersion) throw new Error("PHOTO_IMPORT_CONTEXT_CHANGED");
+  const captured = { ...context };
+  const staged = await input.stage([input.attempt]);
+  if (!sameContext(input.readCurrentContext(), context, captured)) throw new Error("PHOTO_IMPORT_CONTEXT_CHANGED");
+  const durable = staged[0];
+  if (staged.length !== 1 || !durable || durable.state !== "READY") throw new Error("PHOTO_DURABLE_SOURCE_CHANGED");
+  const fields = ["schemaVersion", "commandId", "action", "workspaceId", "projectId", "intakeId", "expectedStateVersion", "kind", "fileName", "mimeType", "sizeBytes", "durationMs"] as const;
+  if (fields.some(field => durable.command[field] !== command[field])) throw new Error("PHOTO_DURABLE_SOURCE_CHANGED");
+  // The file URI intentionally changes when retained in the existing app-owned durable storage.
+  return input.upload(durable);
+}
+
 function sameContext(current: ProjectBrainPickerContext | null, original: ProjectBrainPickerContext, captured: ProjectBrainPickerContext) {
   return current === original && current.workspaceId === captured.workspaceId && current.projectId === captured.projectId
     && current.intakeId === captured.intakeId && current.stateVersion === captured.stateVersion;

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-10T05:49:00Z",
+  "status": "LOCAL_WAVE_CHECKPOINT_NATIVE_CONCURRENCY_PENDING",
+  "root": { "passed": 3333, "historicalSkipped": 3, "evidence": "root-1789018591696" },
+  "mobile": { "passed": 398, "evidence": "mobile-1789018221609" },
+  "build": { "exitCode": 0, "evidence": "build-1789018059893" },
+  "androidExport": { "exitCode": 0, "evidence": "mobile-export-1789018070317", "signedApk": false },
+  "independentCodeReviews": {
+    "modelIndependenceClaim": false,
+    "outboxOwnershipRegressionPassed": 1,
+    "calendarImmutableClaimRegressionPassed": 1,
+    "mobileVoicePhotoIntakeCasesPassed": 118
+  },
+  "database": {
+    "runtimeOfEarlierRuns": "PRISMA_DEV_PGLITE",
+    "latestFullRun": "postgres-1789017839033",
+    "passed": 60,
+    "failed": 1,
+    "additionalDisconnectTimeout": true,
+    "isolatedGoogleRun": "postgres-1789018223281",
+    "isolatedGooglePassed": 10,
+    "isolatedGoogleFailed": 1,
+    "failureLocation": "TRANSACTION_ADMISSION_BEFORE_APPLICATION_LOCK_QUERY",
+    "nativeConcurrentBackendProof": false,
+    "firstNativeHarnessRun": "postgres-native-1789018971639",
+    "firstNativeHarnessResult": "BOOTSTRAP_FAILED_BEFORE_OBSERVED_SERVER_START"
+  },
+  "inProgressOutsideThisWave": [
+    "Native PostgreSQL harness diagnosis and concurrency validation",
+    "OFF SMS calendar confirmation storage, SQL draft and transactional tests"
+  ],
+  "limitations": [
+    "No physical Samsung observation; recording currently limited to two minutes",
+    "Exact SMS confirmation transport bridge not implemented or activated",
+    "Local test counts do not promote canonical readiness rubrics"
+  ],
+  "mutations": { "productProviderCalls": 0, "secretAccess": false, "remoteMigration": false, "deployment": false, "newSignedApk": false, "push": false },
+  "dashboard": { "roadmapPhaseExitPercent": 22, "localBuildReadinessPercent": 46.75, "c2PreparationPassed": 18, "c2PreparationTotal": 18, "realProviderCustomerTest": "NO-GO", "verifiedE2EObservedPercent": 0 },
+  "projectComplete": false,
+  "continuation": "ACTIVE_EXISTING_THREE_MINUTE_HEARTBEAT_AND_LOCAL_AGENTS"
+}

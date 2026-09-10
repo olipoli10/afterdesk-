@@ -50,11 +50,11 @@ export const DEVICE_ACCESS_COPY = {
   },
   CAMERA: {
     title: "Caméra",
-    detail: "Autorisation native préparée pour une capture à ta demande. La prise de photo dans ENDVERA n’est pas encore branchée.",
+    detail: "Dans le dossier du chantier, prends volontairement une photo, vérifie son aperçu puis confirme l’import. Cette autorisation seule ne prend ni n’envoie de photo. Le fichier choisi peut conserver ses métadonnées intégrées.",
   },
   PHOTOS: {
     title: "Photos choisies",
-    detail: "Le téléphone indique si l’accès est complet ou limité à ta sélection. Le sélecteur de photos ENDVERA n’est pas encore branché; cet écran ne parcourt pas ta galerie.",
+    detail: "Dans le dossier du chantier, choisis une seule photo JPEG ou PNG dans le sélecteur du téléphone, puis confirme son aperçu avant l’import. Ce parcours ne demande pas d’accès général à la galerie; cet écran ne lit aucune photo.",
   },
   NOTIFICATIONS: {
     title: "Notifications",

@@ -1,0 +1,112 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests) 53635ms
+     ✓ finishes SMS source and stored review atomically, without pretending to fetch Google  10219ms
+     ✓ prepares one exact source-quoted Google draft and separate owner reply, with zero approval or transport  6974ms
+     ✓ prepares an exact self SMS only, without sending it  6809ms
+     ✓ never leaves a draft or success reply when final source review refuses: {"rollback":true}  5951ms
+     ✓ never leaves a draft or success reply when final source review refuses: {"revoke":true}  3711ms
+     ✓ does not reserve or admit when disabled or explicit AI consent is revoked  1427ms
+     ✓ rolls back AI, child, gateway and CAD reservation if the USD hold refuses  1507ms
+     ✓ admits once under concurrency, stores only a proposal, never settles or replays  4127ms
+     ✓ refuses transport after consent revocation and preserves held exposure  1649ms
+     ✓ refuses dispatch when the account USD cap is withdrawn after admission  1784ms
+     ✓ drops a proposal if permission changes during model latency and never retries  2555ms
+     ✓ does not accept a proposal when the USD ceiling is removed during latency  2409ms
+     ✓ keeps unknown callback outcomes and both reservations, without business writes  2116ms
+     ✓ records a pre-dispatch expired claim without a callback, refund or second claim  2391ms
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts (11 tests | 1 failed) 105323ms
+     ✓ prepares without transport then inserts exactly once after owner approval  4044ms
+     ✓ withholds calendar success on uncertain write and never retries automatically  1696ms
+     ✓ stores encrypted tokens, scrubs one-use material and survives reconnect  3340ms
+     ✓ rejects a wrong browser correlation before any token exchange  501ms
+     ✓ lets only one concurrent callback exchange the code  2781ms
+     ✓ refuses cross-workspace access and clears credentials on local disconnect  2023ms
+     ✓ does not reconnect a connection revoked during the exchange  936ms
+     ✓ reads through granted authority and refuses a revoked read grant  1243ms
+     ✓ does not claim a Google write after the caller deadline  998ms
+     ✓ does not overwrite a recovered Google write after a late confirmed response  1867ms
+     × parallel owner approvals claim and insert a Google draft only once 25884ms
+ ✓ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests) 14945ms
+     ✓ prepares a requested account/grant without consent, key or transport  2558ms
+     ✓ provisioning encrypts a fake key but never auto-grants AI consent  700ms
+     ✓ explicit consent does not manufacture a connected credential  361ms
+     ✓ lazy access resolves only the current owner/source/credential binding  1119ms
+     ✓ withholds lazy access after SMS identity revoked  1084ms
+     ✓ withholds lazy access after SMS identity permissions  1059ms
+     ✓ withholds lazy access after SMS identity rebound  1450ms
+     ✓ local revoke invalidates stored consent/key but preserves source evidence  1411ms
+     ✓ credential rotation fences old authority and resolves only the replacement  1421ms
+     ✓ AES-GCM binding rejects another workspace's synthetic ciphertext even under the same test encryption key  2073ms
+     ✓ an administrator who is not the actual workspace owner cannot prepare, consent or provision  486ms
+     ✓ unverified owner loses lazy access and consent capability  1217ms
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (9 tests) 16589ms
+     ✓ automatically replies only to the original sender with standing self-SMS consent  3832ms
+     ✓ binds proof from signed intake once, never a phone entered as a string  854ms
+     ✓ sends once after exact approval and records delivery separately  1671ms
+     ✓ serializes competing reservations and never exceeds the configured local allowance  2058ms
+     ✓ retains reservation and refuses replay after an uncertain transport  1131ms
+     ✓ revokes pending authority without sending  1083ms
+     ✓ does not reserve or dispatch after the caller deadline has already expired  824ms
+     ✓ a late accepted response cannot overwrite an independently retained uncertain state  3626ms
+     ✓ caller cancellation after the one transport attempt retains uncertainty and the full hold  1505ms
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 9839ms
+     ✓ processes through the guarded engine once and durably prepares one unsent reply  2158ms
+     ✓ holds an uncertain engine outcome without silently retrying it  432ms
+     ✓ retains exactly one durable operation across concurrent deliveries and reconnect  4283ms
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 10191ms
+     ✓ reloads the stored source, rejects cross-workspace lookup and observes revocation  2845ms
+     ✓ changes authority fingerprint when connector version changes and refuses changed source  889ms
+     ✓ enforces personal purpose, non-null unique FK and immutable binding in PostgreSQL  1184ms
+     ✓ fences one personal attempt across real concurrent transactions and rejects replay  3106ms
+     ✓ rolls back account USD exposure with its parent transaction and serializes competing holds  2163ms
+ ✓ specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts (3 tests) 9867ms
+     ✓ persists exact authority with one reply, no model admission, and survives reconnect  6336ms
+     ✓ does not commit a reply when Google is disconnected after the read  2001ms
+     ✓ invalidates a saved disclosure receipt after grant revocation and rejects another workspace  1528ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts [ specs/210-personal-live-activation/google.postgres.test.ts ]
+Error: Hook timed out in 60000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:18:1
+     16| };
+     17| const scopes = "openid https://www.googleapis.com/auth/calendar.events…
+     18| afterAll(() => prisma.$disconnect());
+       | ^
+     19| async function fixture(mode: "READ_ONLY" | "READ_WRITE" = "READ_ONLY")…
+     20|   const user = await prisma.user.create({ data: { name: "Synthetic cal…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:135:69
+    133|     const input = { userId: f.userId, workspaceId: f.workspaceId, oper…
+    134|     const results = await Promise.allSettled([approveAndInsertPersonal…
+    135|     expect(results.filter(result => result.status === "fulfilled")).to…
+       |                                                                     ^
+    136|     expect(f.transport).toHaveBeenCalledTimes(3);
+    137|     expect(await prisma.personalAssistantOperation.findUniqueOrThrow({…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 59 passed (60)
+   Start at  01:18:17
+   Duration  230.06s (transform 2.14s, setup 0ms, import 8.38s, tests 220.39s, environment 1ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

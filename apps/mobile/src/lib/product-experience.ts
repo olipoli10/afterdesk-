@@ -55,7 +55,7 @@ export type MobileProductCopy = {
     brief: string; summary: string; scope: string; people: string; dates: string; blockers: string; next: string;
     save: string; review: string; submit: string; confirm: string; reject: string; none: string; retry: string;
     limitation: string; limits: string; created: string; back: string; protected: string; loading: string; unavailable: string;
-    invalidFile: string; microphoneDenied: string; voiceInvalid: string; voiceTooLarge: string; voiceTooLong: string; voiceReadFailed: string;
+    invalidFile: string; microphoneDenied: string; voiceInvalid: string; voiceTooLarge: string; voiceTooLong: string; voiceReadFailed: string; voiceContextChanged: string; voiceStopFailed: string;
     voiceMobileOnly: string; continueUpload: string; locked: string; version: string; localOnly: string; kilobytes: string;
     newVersion: string; pendingCommands: string; retryCommand: string; dismiss: string; interrupted: string; localQueueUnavailable: string; pendingSignOut: string;
     commandAction: Record<"CREATE_PROJECT_BRAIN_INTAKE" | "ADD_OWNER_BRIEF" | "SUBMIT_PROJECT_BRAIN_INTAKE" | "CONFIRM_PROJECT_BRAIN_INTAKE" | "REJECT_PROJECT_BRAIN_INTAKE", string>;
@@ -165,6 +165,8 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
       microphoneDenied: "Permission microphone refusée.", voiceInvalid: "Aucune note vocale utilisable.",
       voiceTooLarge: "Note vocale vide ou trop volumineuse.", voiceReadFailed: "La note vocale n’a pas pu être lue. Réessaie l’enregistrement.",
       voiceTooLong: "La note vocale dépasse la limite de 2 minutes. Enregistre une note plus courte.",
+      voiceContextChanged: "Le chantier ou ses permissions ont changé pendant la dictée. La note n’a pas été envoyée. Reviens au bon chantier avant d’enregistrer à nouveau.",
+      voiceStopFailed: "L’arrêt du microphone n’est pas confirmé. Appuie de nouveau sur Arrêter. Aucun fichier n’a été envoyé.",
       voiceMobileOnly: "L’enregistrement vocal est offert dans l’application iOS ou Android.", continueUpload: "Continuer ce fichier",
       locked: "Ce résumé est verrouillé pendant la vérification de cette version exacte.", version: "Version", localOnly: "Conservé localement; aucun envoi externe.", kilobytes: "Ko",
       newVersion: "Créer une nouvelle version", pendingCommands: "Reprise sécurisée", retryCommand: "Réessayer exactement cette action",
@@ -288,6 +290,8 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
       microphoneDenied: "Microphone permission was denied.", voiceInvalid: "No usable voice note was recorded.",
       voiceTooLarge: "The voice note is empty or too large.", voiceReadFailed: "The voice note could not be read. Record it again.",
       voiceTooLong: "The voice note exceeds the 2-minute limit. Record a shorter note.",
+      voiceContextChanged: "The project or its permissions changed during recording. The note was not sent. Return to the correct project before recording again.",
+      voiceStopFailed: "Microphone stop is not confirmed. Press Stop again. No file has been sent.",
       voiceMobileOnly: "Voice recording is available in the iOS or Android app.", continueUpload: "Continue this file",
       locked: "This summary is locked while you review this exact version.", version: "Version", localOnly: "Stored locally; nothing was sent externally.", kilobytes: "KB",
       newVersion: "Create a new version", pendingCommands: "Safe recovery", retryCommand: "Retry this exact action",

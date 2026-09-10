@@ -1,0 +1,58 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+CALENDAR_CONCURRENCY_DIAGNOSTIC {"events":["1:1:BEGIN","2:1:BEGIN","2:26:CALLBACK_ENTER","2:108:CALLBACK_RETURN","2:129:COMMITTED","3:130:BEGIN","1:156:TRANSACTION_ERROR_UNCLASSIFIED_ERROR"],"outcomes":["UNCLASSIFIED_ERROR","CALENDAR_WRITE_OUTCOME_UNKNOWN"],"elapsedMs":25010}
+
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts (11 tests | 1 failed) 104369ms
+     ✓ prepares without transport then inserts exactly once after owner approval  4184ms
+     ✓ withholds calendar success on uncertain write and never retries automatically  1522ms
+     ✓ stores encrypted tokens, scrubs one-use material and survives reconnect  3076ms
+     ✓ rejects a wrong browser correlation before any token exchange  516ms
+     ✓ lets only one concurrent callback exchange the code  2523ms
+     ✓ refuses cross-workspace access and clears credentials on local disconnect  1492ms
+     ✓ does not reconnect a connection revoked during the exchange  812ms
+     ✓ reads through granted authority and refuses a revoked read grant  1092ms
+     ✓ does not claim a Google write after the caller deadline  1028ms
+     ✓ does not overwrite a recovered Google write after a late confirmed response  1945ms
+     × parallel owner approvals claim and insert a Google draft only once 26172ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts [ specs/210-personal-live-activation/google.postgres.test.ts ]
+Error: Hook timed out in 60000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:19:1
+     17| };
+     18| const scopes = "openid https://www.googleapis.com/auth/calendar.events…
+     19| afterAll(() => prisma.$disconnect());
+       | ^
+     20| async function fixture(mode: "READ_ONLY" | "READ_WRITE" = "READ_ONLY")…
+     21|   const user = await prisma.user.create({ data: { name: "Synthetic cal…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:157:69
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  01:30:57
+   Duration  105.16s (transform 352ms, setup 0ms, import 598ms, tests 104.37s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

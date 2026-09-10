@@ -10,6 +10,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button, Card, Heading, Label, Loading, Notice, Screen, colors, sharedStyles } from "@/components/ui";
+import { ProjectBrainPhotoCapture } from "@/components/project-brain-photo-capture";
+import { createProjectBrainNativeActionGate, importReviewedProjectBrainPhoto } from "@/lib/project-brain-photo-selection";
+import { createProjectBrainVoiceCapture, stopProjectBrainVoiceCapture } from "@/lib/project-brain-voice-capture";
 import {
   PROJECT_BRAIN_MAX_SOURCE_BYTES,
   PROJECT_BRAIN_MAX_VOICE_DURATION_MS,
@@ -45,7 +48,18 @@ export default function ProjectBrainIntakeScreen() {
   const intake = projectBrainIntakeForContext(projectBrainIntake, activeWorkspace?.id, projectId);
   const commandQueue = projectBrainCommandQueueForContext(projectBrainCommandQueue, activeWorkspace?.id, projectId);
   const sourceQueue = projectBrainSourceQueueForContext(projectBrainSourceQueue, activeWorkspace?.id, projectId);
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const voiceCapture = useRef<{ capture: ReturnType<typeof createProjectBrainVoiceCapture>; release: () => void } | null>(null);
+  const finalizeRecordedVoiceRef = useRef<() => Promise<void>>(async () => undefined);
+  const voiceStarting = useRef(false);
+  const manualVoiceStop = useRef(false);
+  const finalizingVoice = useRef(false);
+  const pickerMounted = useRef(true);
+  // Expo's hook retains its status callback for the recorder lifetime: use current refs, never a render's session.
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY, status => {
+    const session = voiceCapture.current;
+    if (!pickerMounted.current || !session || !session.capture.observeNativeStatus(status)) return;
+    if (status.isFinished && !voiceStarting.current && !manualVoiceStop.current && !finalizingVoice.current) void finalizeRecordedVoiceRef.current();
+  });
   const recorderState = useAudioRecorderState(recorder, 250);
   const [summary, setSummary] = useState("");
   const [scope, setScope] = useState("");
@@ -56,13 +70,12 @@ export default function ProjectBrainIntakeScreen() {
   const [localError, setLocalError] = useState<string | null>(null);
   const [pickerBusy, setPickerBusy] = useState(false);
   const [sourcePicker] = useState(createProjectBrainSourcePicker);
+  const [nativeGate] = useState(createProjectBrainNativeActionGate);
+  const [nativeBusy, setNativeBusy] = useState(false);
+  const [voiceSessionActive, setVoiceSessionActive] = useState(false);
   const pickerContextRef = useRef<ProjectBrainPickerContext | null>(null);
-  const pickerMounted = useRef(true);
   useEffect(() => { pickerMounted.current = true; return () => { pickerMounted.current = false; }; }, []);
   const recordingSeen = useRef(false);
-  const manualVoiceStop = useRef(false);
-  const finalizingVoice = useRef(false);
-  const finalizeRecordedVoiceRef = useRef<() => Promise<void>>(async () => undefined);
   const lastBriefHydrationKey = useRef<string | null>(null);
   const briefHydrationKey = projectBrainBriefHydrationKey({
     workspaceId: activeWorkspace?.id,
@@ -82,7 +95,7 @@ export default function ProjectBrainIntakeScreen() {
   }, [briefHydrationKey, intake?.ownerBrief]);
 
   const canManage = activeWorkspace?.role === "OWNER" || activeWorkspace?.role === "OFFICE_MANAGER";
-  const busy = pickerBusy || projectBrainLoadState === "LOADING"
+  const busy = nativeBusy || pickerBusy || projectBrainLoadState === "LOADING"
     || commandQueue.some((item) => item.state === "SENDING")
     || sourceQueue.some((item) => item.state === "SENDING");
   const hasPendingCommand = commandQueue.some((item) => item.state === "READY" || item.state === "SENDING" || item.state === "OUTCOME_UNKNOWN");
@@ -100,6 +113,20 @@ export default function ProjectBrainIntakeScreen() {
   const briefDraft = { summary, scope, importantPeople, importantDates, blockers, nextDecision };
   const briefIsDurable = projectBrainOwnerBriefMatches(intake?.ownerBrief ?? null, briefDraft);
   const commandBase = () => ({ schemaVersion: 1 as const, commandId: globalThis.crypto.randomUUID(), workspaceId: activeWorkspace!.id, projectId: projectId! });
+
+  const acquireNativeAction = () => {
+    if (!pickerMounted.current || !pickerContextRef.current || busy || hasPendingCommand || hasUnknownSourceOutcome
+      || voiceCapture.current || voiceStarting.current || manualVoiceStop.current || finalizingVoice.current || recorderState.isRecording) return null;
+    try { if (recorder.getStatus().isRecording) return null; } catch { return null; }
+    const release = nativeGate.acquire();
+    if (!release) return null;
+    setNativeBusy(true);
+    return () => { if (release() && pickerMounted.current) setNativeBusy(false); };
+  };
+
+  const importPhoto = (attempt: ProjectBrainSourceAttempt) => importReviewedProjectBrainPhoto({
+    attempt, readCurrentContext: () => pickerContextRef.current, stage: stageProjectBrainSources, upload: uploadProjectBrainSource,
+  });
 
   const runCommand = async (command: MobileProjectBrainCommand) => {
     setLocalError(null);
@@ -138,6 +165,8 @@ export default function ProjectBrainIntakeScreen() {
   const pickSources = async () => {
     const pickerContext = pickerContextRef.current;
     if (sourcePicker.isBusy() || !pickerContext || busy || recorderState.isRecording) return;
+    const release = acquireNativeAction();
+    if (!release) return;
     setLocalError(null);
     setPickerBusy(true);
     try {
@@ -157,48 +186,80 @@ export default function ProjectBrainIntakeScreen() {
         if (message) setLocalError(message);
       }
     } finally {
+      release();
       if (pickerMounted.current) setPickerBusy(false);
     }
   };
   const startVoice = async () => {
-    setLocalError(null);
     if (Platform.OS === "web") { setLocalError(copy.voiceMobileOnly); return; }
-    const permission = await requestRecordingPermissionsAsync();
-    if (!permission.granted) { setLocalError(copy.microphoneDenied); return; }
-    await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, shouldPlayInBackground: false });
-    await recorder.prepareToRecordAsync(); recorder.record({ forDuration: PROJECT_BRAIN_MAX_VOICE_DURATION_MS / 1_000 });
+    const release = acquireNativeAction();
+    if (!release) return;
+    const context = pickerContextRef.current;
+    if (!context) { release(); return; }
+    const capture = createProjectBrainVoiceCapture(context, globalThis.crypto.randomUUID(), `memo-${Date.now()}.m4a`);
+    let handedToRecording = false;
+    voiceStarting.current = true; setLocalError(null);
+    try {
+      const permission = await requestRecordingPermissionsAsync();
+      if (!pickerMounted.current || !capture.isCurrent(pickerContextRef.current)) return;
+      if (!permission.granted) { setLocalError(copy.microphoneDenied); return; }
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, shouldPlayInBackground: false });
+      if (!pickerMounted.current || !capture.isCurrent(pickerContextRef.current)) {
+        await setAudioModeAsync({ allowsRecording: false }); return;
+      }
+      await recorder.prepareToRecordAsync();
+      if (!pickerMounted.current || !capture.isCurrent(pickerContextRef.current)) {
+        await recorder.stop().catch(() => undefined); await setAudioModeAsync({ allowsRecording: false }); return;
+      }
+      capture.bindNativeRecorder(recorder.id, recorder.uri);
+      voiceCapture.current = { capture, release };
+      setVoiceSessionActive(true);
+      recorder.record({ forDuration: PROJECT_BRAIN_MAX_VOICE_DURATION_MS / 1_000 });
+      handedToRecording = true;
+    } catch {
+      await setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+      if (pickerMounted.current) setLocalError(copy.voiceReadFailed);
+    } finally {
+      voiceStarting.current = false;
+      if (!handedToRecording) { voiceCapture.current = null; if (pickerMounted.current) setVoiceSessionActive(false); release(); }
+    }
   };
   const finalizeRecordedVoice = async () => {
-    if (!intakeId) return;
+    const session = voiceCapture.current;
+    if (!session) return;
     if (finalizingVoice.current) return;
     finalizingVoice.current = true;
     try {
       await setAudioModeAsync({ allowsRecording: false });
       const stoppedState = recorder.getStatus();
-      const uri = recorder.uri ?? stoppedState.url ?? recorderState.url;
+      const uri = await session.capture.completedNativeUri();
       const durationMs = stoppedState.durationMillis || recorderState.durationMillis;
       if (!uri || durationMs <= 0) { setLocalError(copy.voiceInvalid); return; }
       if (durationMs > PROJECT_BRAIN_MAX_VOICE_DURATION_MS) { setLocalError(copy.voiceTooLong); return; }
-      let blob: Blob;
-      try {
-        blob = await (await fetch(uri)).blob();
-      } catch {
-        setLocalError(copy.voiceReadFailed);
-        return;
-      }
-      if (!blob.size || blob.size > PROJECT_BRAIN_MAX_SOURCE_BYTES) { setLocalError(copy.voiceTooLarge); return; }
-      await sendSources([{ ...commandBase(), action: "ADMIT_PROJECT_BRAIN_SOURCE", intakeId, kind: "VOICE_NOTE", fileName: `memo-${Date.now()}.m4a`, mimeType: "audio/m4a", sizeBytes: blob.size, durationMs, uri }]);
+      await session.capture.import({ uri, durationMs, readCurrentContext: () => pickerContextRef.current,
+        readSize: async localUri => {
+          const blob = await (await fetch(localUri)).blob();
+          if (!blob.size || blob.size > PROJECT_BRAIN_MAX_SOURCE_BYTES) throw new Error("VOICE_TOO_LARGE");
+          return blob.size;
+        }, stage: stageProjectBrainSources, upload: uploadProjectBrainSource });
+    } catch (error) {
+      if (pickerMounted.current) setLocalError(error instanceof Error && error.message === "VOICE_CONTEXT_CHANGED" ? copy.voiceContextChanged
+        : error instanceof Error && error.message === "VOICE_TOO_LARGE" ? copy.voiceTooLarge : copy.voiceReadFailed);
     } finally {
+      if (voiceCapture.current === session) voiceCapture.current = null;
+      if (pickerMounted.current) setVoiceSessionActive(false);
+      session.release();
       finalizingVoice.current = false;
     }
   };
   const stopVoice = async () => {
-    if (!intake || finalizingVoice.current) return;
+    if (!voiceCapture.current || finalizingVoice.current || manualVoiceStop.current) return;
     manualVoiceStop.current = true;
     recordingSeen.current = false;
     try {
-      await recorder.stop();
-      await finalizeRecordedVoice();
+      const outcome = await stopProjectBrainVoiceCapture({ stop: () => recorder.stop(),
+        isRecording: () => recorder.getStatus().isRecording, finalize: finalizeRecordedVoice });
+      if (outcome === "STOP_FAILED" && pickerMounted.current) setLocalError(copy.voiceStopFailed);
     } catch {
       setLocalError(copy.voiceReadFailed);
     } finally {
@@ -229,6 +290,7 @@ export default function ProjectBrainIntakeScreen() {
       {projectBrainLoadState === "UNAVAILABLE" ? <Notice danger>{copy.unavailable}</Notice> : null}
       {publicError ? <Notice danger>{publicError}</Notice> : null}
       {localError ? <Notice danger>{localError}</Notice> : null}
+      {voiceSessionActive ? <Button tone="secondary" accessibilityRole="button" accessibilityLabel={copy.stop} onPress={stopVoice}>{copy.stop}</Button> : null}
       {commandQueue.length ? <Card><Label>{copy.pendingCommands}</Label>{commandQueue.map((attempt: ProjectBrainCommandAttempt) => {
         const presentation = projectBrainIntentPresentation(attempt);
         return <View key={attempt.command.commandId} style={styles.source}>
@@ -241,9 +303,14 @@ export default function ProjectBrainIntakeScreen() {
       })}</Card> : null}
       {!intake ? <Card><Text style={sharedStyles.name}>{project?.name ?? projectId}</Text><Text style={sharedStyles.muted}>{copy.created}</Text><Button disabled={!canManage || busy || hasPendingCommand} accessibilityRole="button" accessibilityLabel={copy.created} onPress={create}>{copy.created}</Button></Card> : (
         <>
+          <ProjectBrainPhotoCapture
+            context={canManage && activeWorkspace && projectId && intake.status === "DRAFT" ? { workspaceId: activeWorkspace.id, projectId, intakeId: intake.id, stateVersion: intake.stateVersion } : null}
+            projectName={project?.name ?? projectId ?? ""} locale={activeWorkspace?.defaultLocale}
+            disabled={busy || hasPendingCommand || hasUnknownSourceOutcome || recorderState.isRecording}
+            acquireNativeAction={acquireNativeAction} onImport={importPhoto} />
           <Card><Label>{copy.sources}</Label>
-            <Button disabled={busy || recorderState.isRecording || hasPendingCommand || intake.status !== "DRAFT"} accessibilityRole="button" accessibilityLabel={copy.add} onPress={pickSources}>{copy.add}</Button>
-            <Button tone="secondary" disabled={busy || hasPendingCommand || intake.status !== "DRAFT" || Platform.OS === "web"} accessibilityRole="button" accessibilityLabel={recorderState.isRecording ? copy.stop : copy.voice} onPress={recorderState.isRecording ? stopVoice : startVoice}>{recorderState.isRecording ? copy.stop : copy.voice}</Button>
+            <Button disabled={busy || recorderState.isRecording || hasPendingCommand || hasUnknownSourceOutcome || intake.status !== "DRAFT"} accessibilityRole="button" accessibilityLabel={copy.add} onPress={pickSources}>{copy.add}</Button>
+            {!voiceSessionActive ? <Button tone="secondary" disabled={Platform.OS === "web" || busy || hasPendingCommand || hasUnknownSourceOutcome || intake.status !== "DRAFT"} accessibilityRole="button" accessibilityLabel={copy.voice} onPress={startVoice}>{copy.voice}</Button> : null}
             {Platform.OS === "web" ? <Text style={sharedStyles.muted}>{copy.voiceMobileOnly}</Text> : null}
             {intake.sources.length ? intake.sources.map((source) => <View key={source.id} style={styles.source}><Text style={sharedStyles.name}>{source.displayName}</Text><Text style={sharedStyles.muted}>{copy.sourceKind[source.kind]} · {Math.ceil(source.sizeBytes / 1024)} {copy.kilobytes} · {copy.localOnly}</Text></View>) : <Text style={sharedStyles.muted}>{copy.none}</Text>}
             {sourceQueue.map((attempt: ProjectBrainSourceAttempt) => {
