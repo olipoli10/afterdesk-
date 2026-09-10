@@ -4,8 +4,8 @@
   "releaseVersion": 1,
   "readiness": "LOCAL_PACKAGE_READY",
   "source": {
-    "head": "74223954ab633b17d851990cdcee07892db97c88",
-    "tree": "c1b787e98b9165b275ccf2e819d30417a101c74a"
+    "head": "39ab9fdaa317b23cd75de280712facbaacdcaa6d",
+    "tree": "c94fcb0692239267bf8a148d307ea2ca9a73cc9f"
   },
   "targets": [
     "WEB",
@@ -267,5 +267,5 @@
   "deployed": false,
   "providerObserved": false,
   "externalEffectCount": 0,
-  "manifestHash": "7930bd9894eaf45f673849ce99211117e109813e63af98819f86332c6326f948"
+  "manifestHash": "8e40502218f6290a0722acc5e475b749ff4f41501268483cf05bd3ad076d9f6f"
 }
