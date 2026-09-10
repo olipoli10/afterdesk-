@@ -88,6 +88,7 @@ export type ProtectedContentRef = {
 export type GatewayOperationSubject =
   | Readonly<{ kind: "task"; taskId: string }>
   | PersonalGatewayOperationSubject
+  | ProjectBrainVoiceGatewaySubject
   | Readonly<{
       kind: "voice_intake_segment";
       sessionId: string;
@@ -99,6 +100,20 @@ export type PersonalGatewayOperationSubject = Readonly<{
   kind: "personal_assistant_operation";
   operationId: string;
   workspaceId: string;
+}>;
+
+/** Immutable provenance only; this discriminant never grants owner or provider authority. */
+export type ProjectBrainVoiceGatewaySubject = Readonly<{
+  kind: "project_brain_voice_segment";
+  actorUserId: string;
+  workspaceId: string;
+  projectId: string;
+  intakeId: string;
+  sourceId: string;
+  sessionId: string;
+  segmentId: string;
+  sourceBindingHash: string;
+  segmentManifestHash: string;
 }>;
 
 type GatewayOperationRequestBase = {
@@ -123,7 +138,7 @@ export type ClassificationGatewayOperationRequest = GatewayOperationRequestBase 
 
 export type VoiceGatewayOperationRequest = GatewayOperationRequestBase & Readonly<{
   operationType: "intake_voice_transcription";
-  subject: Readonly<{
+  subject: ProjectBrainVoiceGatewaySubject | Readonly<{
     kind: "voice_intake_segment";
     sessionId: string;
     segmentId: string;

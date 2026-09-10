@@ -15,6 +15,8 @@ import { appendGatewayAuditEvent, canonicalFingerprint } from "./evidence";
 import { loadGatewayBreakerResolution } from "./breakers";
 import {
   buildClassificationGatewayRequest,
+  fingerprintVoiceGatewayProjection,
+  projectBrainVoiceGatewaySubjectSchema,
   type ClassificationProjection,
   type ClassificationSourceInput,
 } from "./privacy";
@@ -32,6 +34,7 @@ import type {
   GatewayPrivacyRequirement,
   GatewayProviderErrorClass,
 } from "./types";
+import type { VoiceSegmentProjection } from "./voice/projection";
 
 type Tx = Prisma.TransactionClient;
 
@@ -86,6 +89,34 @@ export async function withModelGatewayTransaction<T>(work: (tx: Tx) => Promise<T
   return prisma.$transaction((tx) => work(tx), { isolationLevel: "Serializable" });
 }
 
+/** Existing ledger subject integrity, not current actor/consent/dispatch authorization. */
+async function matchesVoiceLedgerSubject(tx: Tx, aiOperationId: string, tenantId: string, requestFingerprint: string): Promise<boolean> {
+  const rows = await tx.$queryRawUnsafe<Array<{
+    taskId: string | null; personalAssistantOperationId: string | null; purpose: string; subjectKind: string; clientId: string | null;
+    actorUserId: string | null; workspaceId: string | null; projectId: string | null; intakeId: string | null; sourceId: string | null;
+    sourceBindingHash: string | null; segmentManifestHash: string | null;
+  } & Omit<VoiceSegmentProjection, "audioBytes" | "operationType">>>(
+    `SELECT ai."taskId",ai."personalAssistantOperationId",ai.purpose,v."subjectKind",v."clientId",v."requestedByUserId" "actorUserId",
+     v."workspaceId",v."projectId",v."intakeId",v."projectBrainSourceId" "sourceId",v."sourceBindingHash",v."segmentManifestHash",
+     s."sessionId",s.id "segmentId",s.ordinal,s."languageHint"::text,s."mediaFormat"::text,s."mimeType",s."durationMs",s."byteCount",s."audioFingerprint"
+     FROM "AiOperation" ai JOIN "VoiceIntakeSegment" s ON s.id=ai."voiceIntakeSegmentId" JOIN "VoiceIntakeSession" v ON v.id=s."sessionId"
+     WHERE ai.id=$1 FOR SHARE OF ai,s,v`, aiOperationId,
+  );
+  if (rows.length !== 1) return false;
+  const row = rows[0];
+  if (row.taskId !== null || row.personalAssistantOperationId !== null || row.purpose !== "intake_voice_transcription") return false;
+  if (row.subjectKind === "voice_intake") {
+    // Legacy CLIENT provenance cannot be combined with even one Project Brain field.
+    return typeof row.clientId === "string" && row.clientId === tenantId
+      && [row.actorUserId, row.workspaceId, row.projectId, row.intakeId, row.sourceId, row.sourceBindingHash, row.segmentManifestHash].every(value => value === null);
+  }
+  if (row.subjectKind !== "project_brain_voice" || row.clientId !== null || tenantId !== `construction-workspace:${row.workspaceId}`) return false;
+  const subject = projectBrainVoiceGatewaySubjectSchema.safeParse({ kind: "project_brain_voice_segment", actorUserId: row.actorUserId,
+    workspaceId: row.workspaceId, projectId: row.projectId, intakeId: row.intakeId, sourceId: row.sourceId,
+    sessionId: row.sessionId, segmentId: row.segmentId, sourceBindingHash: row.sourceBindingHash, segmentManifestHash: row.segmentManifestHash });
+  return subject.success && fingerprintVoiceGatewayProjection({ ...row, operationType: "intake_voice_transcription" }, subject.data) === requestFingerprint;
+}
+
 export async function bindGatewayOperation(
   tx: Tx,
   input: BindGatewayOperationInput
@@ -107,9 +138,8 @@ export async function bindGatewayOperation(
   const classificationBinding = input.operationType === "classification" &&
     tenant?.taskId !== null && tenant?.taskClientId === input.tenantId &&
     tenant?.voiceIntakeSegmentId === null;
-  const voiceBinding = input.operationType === "intake_voice_transcription" &&
-    tenant?.purpose === "intake_voice_transcription" && tenant.voiceIntakeSegmentId !== null &&
-    tenant.taskId === null && tenant.voiceClientId === input.tenantId;
+  const voiceBinding = input.operationType === "intake_voice_transcription" && !!tenant &&
+    await matchesVoiceLedgerSubject(tx, input.aiOperationId, input.tenantId, input.requestFingerprint);
   const personalBinding = input.operationType === "personal_intent_candidate_v1" &&
     tenant?.purpose === "personal_intent_candidate_v1" && typeof tenant.personalAssistantOperationId === "string" &&
     tenant.taskId === null && tenant.voiceIntakeSegmentId === null && tenant.personalKind === "personal_sms_inbound" &&
@@ -250,8 +280,10 @@ export async function createGatewayAttempt(
     personalWorkspaceId: string | null;
     personalKind: string | null;
     aiPurpose: string;
+    aiOperationId: string;
+    requestFingerprint: string;
   }>>(
-    `SELECT ai."operationKey" AS "aiOperationKey",h."operationKey" AS "holdOperationKey",r."billingProvider",h.provider AS "holdProvider",h."amountMicros" AS "holdAmountMicros",o."tenantId",o."operationType",o.id AS "gatewayOperationId",task."clientId" AS "taskClientId",voice."clientId" AS "voiceClientId",personal."workspaceId" "personalWorkspaceId",personal.kind "personalKind",ai.purpose "aiPurpose"
+    `SELECT ai.id "aiOperationId",o."requestFingerprint",ai."operationKey" AS "aiOperationKey",h."operationKey" AS "holdOperationKey",r."billingProvider",h.provider AS "holdProvider",h."amountMicros" AS "holdAmountMicros",o."tenantId",o."operationType",o.id AS "gatewayOperationId",task."clientId" AS "taskClientId",voice."clientId" AS "voiceClientId",personal."workspaceId" "personalWorkspaceId",personal.kind "personalKind",ai.purpose "aiPurpose"
        FROM "ModelGatewayDecision" d
        JOIN "ModelGatewayOperation" o ON o.id=d."gatewayOperationId"
        JOIN "AiOperation" ai ON ai.id=o."aiOperationId"
@@ -266,6 +298,8 @@ export async function createGatewayAttempt(
     input.accountSpendHoldId
   );
   const binding = bindings[0];
+  const voiceBindingMatches = binding?.operationType === "intake_voice_transcription"
+    ? await matchesVoiceLedgerSubject(tx, binding.aiOperationId, binding.tenantId, binding.requestFingerprint) : false;
   if (
     !binding ||
     binding.aiOperationKey !== binding.holdOperationKey ||
@@ -273,7 +307,7 @@ export async function createGatewayAttempt(
     (binding.operationType === "classification"
       ? binding.tenantId !== binding.taskClientId
       : binding.operationType === "intake_voice_transcription"
-        ? binding.tenantId !== binding.voiceClientId
+        ? !voiceBindingMatches
         : binding.operationType === "personal_intent_candidate_v1"
           ? binding.aiPurpose !== "personal_intent_candidate_v1" || binding.personalKind !== "personal_sms_inbound" ||
             typeof binding.personalWorkspaceId !== "string" || binding.tenantId !== `construction-workspace:${binding.personalWorkspaceId}`

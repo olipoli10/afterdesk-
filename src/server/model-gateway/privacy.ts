@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import { CLASSIFICATION_JSON_SCHEMA } from "@/lib/ai-work-engine/schemas";
 import { canonicalFingerprint, protectedContentRef } from "./evidence";
 import {
@@ -8,6 +9,7 @@ import {
   type ClassificationGatewayOperationRequest,
   type GatewayPrivacyRequirement,
   type VoiceGatewayOperationRequest,
+  type ProjectBrainVoiceGatewaySubject,
 } from "./types";
 import type { VoiceSegmentProjection } from "./voice/projection";
 
@@ -132,6 +134,26 @@ const VOICE_TRANSCRIPT_OUTPUT_CONTRACT = Object.freeze({
   },
 });
 
+const voiceSubjectId = z.string().min(1).max(200);
+export const projectBrainVoiceGatewaySubjectSchema = z.object({
+  kind: z.literal("project_brain_voice_segment"), actorUserId: voiceSubjectId, workspaceId: voiceSubjectId,
+  projectId: voiceSubjectId, intakeId: voiceSubjectId, sourceId: voiceSubjectId, sessionId: voiceSubjectId, segmentId: voiceSubjectId,
+  sourceBindingHash: z.string().regex(/^[a-f0-9]{64}$/), segmentManifestHash: z.string().regex(/^[a-f0-9]{64}$/),
+}).strict();
+
+/** Metadata fingerprint only. A caller must still reload current subject, byte and policy authority. */
+export function fingerprintVoiceGatewayProjection(projection: Omit<VoiceSegmentProjection, "audioBytes">, subject?: ProjectBrainVoiceGatewaySubject) {
+  const minimumProjection = Object.freeze({
+    operationType: projection.operationType, sessionId: projection.sessionId, segmentId: projection.segmentId,
+    ordinal: projection.ordinal, languageHint: projection.languageHint, mediaFormat: projection.mediaFormat,
+    mimeType: projection.mimeType, durationMs: projection.durationMs, byteCount: projection.byteCount, audioFingerprint: projection.audioFingerprint,
+  });
+  if (subject === undefined) return canonicalFingerprint(minimumProjection);
+  const parsed = projectBrainVoiceGatewaySubjectSchema.parse(subject);
+  if (parsed.sessionId !== projection.sessionId || parsed.segmentId !== projection.segmentId) throw new Error("VOICE_PB_GATEWAY_SUBJECT_MISMATCH");
+  return canonicalFingerprint({ projection: minimumProjection, subject: parsed });
+}
+
 export function buildVoiceGatewayRequest(input: {
   logicalOperationKey: string;
   tenantId: string;
@@ -140,34 +162,24 @@ export function buildVoiceGatewayRequest(input: {
   privacyRequirement: GatewayPrivacyRequirement;
   maxTotalCostMicros: bigint;
   projection: VoiceSegmentProjection;
+  projectBrainSubject?: ProjectBrainVoiceGatewaySubject;
   createdAt?: Date;
 }): VoiceGatewayOperationRequest {
   if (input.maxTotalCostMicros <= 0n) throw new Error("INVALID_GATEWAY_COST_BOUND");
   if (!isGatewayDataClass(input.dataClass) || !isGatewayPrivacyRequirement(input.privacyRequirement)) {
     throw new Error("INVALID_GATEWAY_DATA_BOUNDARY");
   }
-  const minimumProjection = Object.freeze({
-    operationType: input.projection.operationType,
-    sessionId: input.projection.sessionId,
-    segmentId: input.projection.segmentId,
-    ordinal: input.projection.ordinal,
-    languageHint: input.projection.languageHint,
-    mediaFormat: input.projection.mediaFormat,
-    mimeType: input.projection.mimeType,
-    durationMs: input.projection.durationMs,
-    byteCount: input.projection.byteCount,
-    audioFingerprint: input.projection.audioFingerprint,
-  });
-  const requestFingerprint = canonicalFingerprint(minimumProjection);
+  const subject = input.projectBrainSubject === undefined ? Object.freeze({ kind: "voice_intake_segment" as const,
+    sessionId: input.projection.sessionId, segmentId: input.projection.segmentId }) : Object.freeze(projectBrainVoiceGatewaySubjectSchema.parse(input.projectBrainSubject));
+  if (subject.kind === "project_brain_voice_segment" && input.tenantId !== `construction-workspace:${subject.workspaceId}`) {
+    throw new Error("VOICE_PB_GATEWAY_TENANT_MISMATCH");
+  }
+  const requestFingerprint = fingerprintVoiceGatewayProjection(input.projection, input.projectBrainSubject);
   return Object.freeze({
     logicalOperationKey: input.logicalOperationKey,
     tenantId: input.tenantId,
     operationType: "intake_voice_transcription" as const,
-    subject: Object.freeze({
-      kind: "voice_intake_segment" as const,
-      sessionId: input.projection.sessionId,
-      segmentId: input.projection.segmentId,
-    }),
+    subject,
     requestFingerprint,
     outputContractHash: canonicalFingerprint(VOICE_TRANSCRIPT_OUTPUT_CONTRACT),
     dataClass: input.dataClass,
