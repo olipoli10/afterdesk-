@@ -124,3 +124,24 @@ R1 exit: independent review plus unit/native/auth/UI tests prove protected synth
 Stop a proposed sub-slice if it needs new provider access, customer audio, authorization/retention expansion, mutation of applied migrations, historical repinning, automatic confirmation, or unresolved cross-ledger ownership. Continue unrelated authorized work through the controller. No external GO, metric increase or whole-product-ready claim follows from this plan.
 
 Next controller decision: approve R1 server-only protected projection and its tests first. R2 remains a concrete follow-on design requiring separate schema/provenance/retention review, not a prerequisite for obtaining useful local R1 proof.
+
+## R1 server evidence and approved GET slice — 2026-09-10
+
+Controller-approved server implementation now exists, without source/snapshot writes or a new operation ledger. Independent R1 review is recorded in `audits/PROJECT_BRAIN_TRANSCRIPT_READER_REVIEW.md`.
+
+Retained native failure: `evidence/postgres-native-1789053596395`, 9 FAIL / 3 PASS, exit 1 and normal exact-cluster STOPPED at 15:20:18Z. The shared advisory returned PostgreSQL `void`, unsupported by Prisma raw-query decoding. Initial mocked checks missed that wire type; three broad `toThrow()` cases also passed for the wrong reason and were not valid access-control evidence. The correction adds `::text`, preserves shared locking, asserts exact refusal codes and moves the two-reader barrier after each read and before commit. Both completed reads must therefore coexist under their locks.
+
+Fresh native proof inspected directly: `evidence/postgres-native-1789053808936/result.json` and `output.txt`, **12/12 PASS**, exit 0, `2026-09-10T15:23:59.112Z`, normal `PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED`; 77 migrations in an isolated template-cloned database. Positive reads cover UTC/New_York/Tokyo, real Decimal conversion, exact producer results, unchanged evidence, actual eight-second session expiry, two reader backends and a revocation demonstrably blocked with `pg_blocking_pids`. This is local synthetic disclosure/lineage proof, not transcription quality or real-user E2E.
+
+The controller next authorizes **GET only**, not mobile UI or R2:
+
+- New `src/app/api/endvera/v1/mobile/project-brain-intake/voice-review/route.ts`; Node runtime, force-dynamic, every explicit response `Cache-Control: private, no-store`.
+- `ENDVERA_PROJECT_BRAIN_VOICE_REVIEW_ENABLED` must equal the literal `true`; missing/other values are OFF. No environment/config activation is performed. OFF returns an opaque 404 before authentication, rate-limit or reader access.
+- Derive actor from `getSessionUser`; require application role CLIENT and verified email. Copy actor id before further awaits. The existing R1 reader enforces actual workspace owner/current epochs.
+- GET accepts exactly one nonblank, whitespace-exact `workspaceId` and `sessionId`, <=200 characters each; reject unknown/duplicate fields, including an injected actor id. No caller transcript/text/operation result is accepted.
+- Per-user limiter uses 60-second window, maximum 60 reads. Denial is 429 without reader call. Auth/rate exceptions return an opaque unavailable response; no stack, SQL, source text or exception message is serialized or logged.
+- Invoke exactly `readProjectBrainVoiceTranscriptReview({actorUserId,workspaceId,sessionId},{enabled:true})` after all gates. Recheck switch after awaited auth/rate/reader work; OFF suppresses disclosure. A reader refusal or malformed/disabled result cannot become a successful response or trigger fallback dispatch.
+- Unknown membership/resource/expiry errors remain opaque; no differing text reveals which private resource exists. No POST/PUT/PATCH/DELETE handler, provider, reservation, new source consent or application page is added. Framework-generated method handling is not claimed covered by direct GET unit tests.
+- Tests must falsify OFF/no downstream access, exact query bounds/duplicates, session-derived actor, role/email refusal, limiter identity, auth/rate/service exceptions, mid-await switch disable, response status/flags/no-store, and absence of mutation/dispatch exports. No new native inventory for this route without controller coordination.
+
+Installed Next route-handler guide plus the selected Next skill route/async/runtime references were read before this slice. Existing R1 reader source/native proof stays frozen for controller checkpoint; route code and its tests are a separate bounded delta.

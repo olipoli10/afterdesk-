@@ -90,3 +90,12 @@ Reviewer subsequently read both controller result.json files and output summarie
 STOPPED. The latter output names TEMPORAL_REGISTRY_CURRENT_BINDING_REQUIRED as
 the actual refusal; the changed exact-code oracle agrees with that evidence.
 TypeScript and scoped reviewer ESLint also pass after the second clock guard.
+
+## Subsequent full native closure (controller-run, receipt read by reviewer)
+
+Read evidence/postgres-native-1789054544302/result.json and output.txt. Exit0 at
+15:38:38.305Z, exact server STOPPED. All19 per-file clone receipts have exit0 and
+the same77:f072fe1fe84f1d2f87bd61dfc0d642ef migration fingerprint. Temporal file
+now73/73 PASS, including the specific owner-revocation next-read refusal. Full
+campaign249/249 PASS as recorded by controller; no DB was run by this reviewer.
+The earlier72/73 failed-oracle receipt remains above and is not relabeled PASS.

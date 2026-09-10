@@ -1,5 +1,56 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 15:50Z — durable receipt and protected GET integration PASS locally
+
+Full native PostgreSQL `postgres-native-1789054544302`: 249 tests in19 isolated
+clones, all with the same77-migration digest, PASS and STOPPED15:38:38.305Z.
+This includes73 temporal registry/receipt cases,12 synthetic transcript-reader
+cases and6 rollback-only purge timezone cases. Earlier71 and72/73 receipts
+remain unchanged. Root `root-1789054789364`:4821 PASS/3 historical skips,
+379 passing files, exit0 at15:40:52.147Z. No product-wide rubric promotion.
+
+Production-mode local build `build-1789054876402` PASS15:43:01.611Z. Actual
+Next HTTP `voice-review-http-1789055351796`:7 OFF probes PASS15:49:11.795Z:
+GET/HEAD private404, OPTIONS read-only204, POST/DELETE405. Owned process44592
+stopped; its original portClosed label only meant a failed post-stop fetch,
+not necessarily a refused socket. Peer caught that weak oracle. New unchanged
+HTTP7 PASS `voice-review-http-1789055508459` at15:51:48.458Z proves owned50824
+stopped AND exact TCP ECONNREFUSED (timeout/other errors fail). No DB URL, credential or product
+activation present. This proves the built default boundary, not authenticated
+phone access or real transcription. Direct-handler author54+peer14 tests
+separately cover authenticated/exception/current-flag paths with mocks.
+
+Receipt-to-calendar/mobile plans reviewed; immutable origin + relation chosen
+in principle. Pure helpers and two-source presentation validation continue;
+SQL78 waits on exact serializer/trigger and cross-review arbitration. No new
+draft, generic approval bypass, migration, deployed route or APK yet.
+
+## 2026-09-10 15:37Z — protected review saved; durable receipt native integration
+
+Incoming replies saved9f8f0b01; bounded UTC purge savedc25f1240; synthetic
+owner-only transcript reader saved57c69c44. R1 native12/12 PASS at15:23:59.112Z
+(`postgres-native-1789053808936`) after retained9FAIL/3PASS void-returning lock
+query. Explicit text cast fixes Prisma decoding, stronger exact-error and
+two-read-lock-overlap oracles retained. No real speech recognition or new APK.
+Root `root-1789053946632`:4742 PASS/3 historical skips,376 passing files, exit0
+at15:26:48.728Z. This is a local working snapshot, not a production certificate.
+
+Durable receipt proof/loader shares phase-independent calculation without fake
+live leases; actual completed sources, exact prior packet and current owner
+authority are reloaded. Two clock-backwards counterexamples corrected;136
+targeted tests PASS. Main native8 new cases plus63 prior pass at15:31:59.443Z
+(`postgres-native-1789054275032`), using real local dispatcher+worker with only
+the HTTP boundary simulated. Additional active-question preservation and real
+revocation-blocking cases produce72 PASS/one overly narrow error oracle at
+15:35:17.109Z (`postgres-native-1789054472618`); actual refusal was correct
+TEMPORAL_REGISTRY_CURRENT_BINDING_REQUIRED. Oracle corrected to that exact code,
+no production change. Full19-file native run is in progress, no invented PASS.
+
+Read-only voice GET OFF route54 tests implemented, peer review ongoing. Future
+receipt-to-calendar schema and mobile two-source review are design only until
+reviewed; no draft, approval or extra inference from this new loader yet.
+Same ACTIVE3min queue, no provider/remote migration/deploy/spending/metrics change.
+
 ## 2026-09-10 15:15Z — incoming replies native PASS; continue durable review
 
 Incoming temporal lower and actual SMS worker are connected, default OFF.
