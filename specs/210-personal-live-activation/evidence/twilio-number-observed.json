@@ -1,0 +1,18 @@
+{
+  "dateUtc":"2026-09-10",
+  "accountSid":"ACda5af663544145019ccdb94e1e40aabc",
+  "numberSid":"PN09cff3ba2438fb5b27ab145cb159df9e",
+  "number":"+14503676562",
+  "country":"Canada",
+  "region":"QC",
+  "type":"Local",
+  "capabilities":["SMS","MMS","Voice"],
+  "balanceUsd":"18.85",
+  "purchasePerformedByAgent":false,
+  "inboundMessagingWebhook":"EMPTY",
+  "apiKeyList":"NO_API_KEYS",
+  "signatureOrApiSecretsDisplayed":false,
+  "nextAccessStep":"Asked owner for action-time consent to create dedicated Twilio key and store required secrets in ENDVERA/Vercel for accepted personal pilot; not yet created or transferred.",
+  "ownerPhonePaired":false,
+  "liveServiceObserved":false
+}

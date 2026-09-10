@@ -1,5 +1,17 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 02:34Z — personal intent contract and Twilio number observation
+
+Number +14503676562 is now present in Twilio (owner purchase, not agent purchase),
+QC/Canada/SMS/MMS/Voice, balanceUSD18.85, no inbound webhook and no API keys.
+Identity-form blocker is superseded by actual number availability. Permission for
+new dedicated key/secret connection asked at action time; no secret revealed.
+Local candidate contract:16 new tests, fullroot2801 pass/3 skips, tsc/lint and
+provider boundary pass. See model-engine-local.md: operation registration,
+authoritative DB wrapper, cost hold and dispatch integration remain unfinished.
+Pure proposal inspection does not make the SMS service AI-enabled. No external
+dispatch, deployment, APK rebuild or new spend occurred in this heartbeat.
+
 ## Latest checkpoint — personal service implemented locally, activation pending
 
 This section supersedes earlier next-action/status prose below. Earlier results
