@@ -78,6 +78,11 @@ function Invoke-NativeChild([string]$Executable, [string[]]$Arguments, [string]$
   if ($result.ExitCode -ne 0) { throw 'PERSONAL_NATIVE_CHILD_FAILED' }
   return $result.Output
 }
+function Get-NativeCampaignRemainingMs([Diagnostics.Stopwatch]$Clock, [int]$MaximumMs = 30000) {
+  $remaining = 600000 - $Clock.ElapsedMilliseconds
+  if ($remaining -le 0) { throw 'PERSONAL_NATIVE_TEST_CAMPAIGN_TIMEOUT' }
+  return [int][Math]::Min($MaximumMs, $remaining)
+}
 try {
   if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { throw 'PERSONAL_NATIVE_WINDOWS_REQUIRED' }
   if (-not [IO.Path]::IsPathFullyQualified($RuntimeRoot) -or $RuntimeRoot.StartsWith('\\')) { throw 'PERSONAL_NATIVE_RUNTIME_INVALID' }
@@ -112,6 +117,14 @@ try {
   Assert-NoReparseAncestors $taskNode
   if ([IO.Path]::GetFileName($taskNode) -ne 'node.exe') { throw 'PERSONAL_NATIVE_NODE_INVALID' }
   if ($TestFile -and ($TestFile -notmatch '^[a-z-]+\.postgres\.test\.ts$' -or -not (Test-Path -LiteralPath (Join-Path $PSScriptRoot $TestFile) -PathType Leaf))) { throw 'PERSONAL_NATIVE_TEST_FILTER_INVALID' }
+  # Match the canonical Vitest include exactly; freeze the inventory before creating any database.
+  $taskTestFiles = @(Get-ChildItem -LiteralPath $PSScriptRoot -File -Filter '*.postgres.test.ts' | Sort-Object Name)
+  foreach ($taskTest in $taskTestFiles) {
+    if ($taskTest.Name -cnotmatch '^[a-z-]+\.postgres\.test\.ts$') { throw 'PERSONAL_NATIVE_TEST_FILTER_INVALID' }
+    Assert-NoReparseAncestors $taskTest.FullName
+  }
+  if ($TestFile) { $taskTestFiles = @($taskTestFiles | Where-Object { $_.Name -ceq $TestFile }) }
+  if ($taskTestFiles.Count -eq 0) { throw 'PERSONAL_NATIVE_EMPTY_TEST_INVENTORY' }
   $taskScratch = Join-Path $taskRepo '.scratch'
   if (-not (Test-Path -LiteralPath $taskScratch)) { $null = [IO.Directory]::CreateDirectory($taskScratch) }
   if ((Get-Item -LiteralPath $taskScratch).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'PERSONAL_NATIVE_SCRATCH_INVALID' }
@@ -200,12 +213,58 @@ try {
   $taskStage = 'MIGRATIONS'
   $null = Invoke-NativeChild $taskNode @((Join-Path $taskRepo 'node_modules/prisma/build/index.js'), 'migrate', 'deploy') 'migrations' 120000
   Write-Output 'PERSONAL_NATIVE_MIGRATIONS_APPLIED'
-  $testArgs = @((Join-Path $taskRepo 'node_modules/vitest/vitest.mjs'), 'run', '--config', 'specs/210-personal-live-activation/vitest.postgres.config.ts')
-  if ($TestFile) { $testArgs += ('specs/210-personal-live-activation/' + $TestFile) }
-  $taskStage = 'TESTS'
-  $testResult = Finish-NativeChild (Start-NativeChild $taskNode $testArgs) 'tests' 600000
-  Write-Output $testResult.Output
-  $taskExit = $testResult.ExitCode
+  # No fixture ever reaches the migrated base. Each file, including a filtered run, gets a
+  # separate real database/process so unscoped recovery sees only that file's committed rows.
+  # All clones and the base remain in the private cluster for diagnosis; nothing is reset/deleted.
+  $taskTemplate = $taskDatabase
+  $taskMigrationSql = 'SELECT count(*)::text || '':'' || md5(string_agg(migration_name || '':'' || checksum, ''|'' ORDER BY migration_name)) FROM "_prisma_migrations" WHERE finished_at IS NOT NULL AND rolled_back_at IS NULL;'
+  $taskStage = 'TEMPLATE_FINGERPRINT'
+  $taskMigrationFingerprint = (Invoke-NativeChild $taskSql @('-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-c', $taskMigrationSql) 'template-migrations').Trim()
+  if ($taskMigrationFingerprint -notmatch '^[1-9][0-9]*:[a-f0-9]{32}$') { throw 'PERSONAL_NATIVE_TEMPLATE_MIGRATIONS_INVALID' }
+  $taskChildEnvironment['PGDATABASE'] = 'postgres'
+  $taskStage = 'SEAL_TEMPLATE'
+  $null = Invoke-NativeChild $taskSql @('-X', '-v', 'ON_ERROR_STOP=1', '-c', "ALTER DATABASE $taskTemplate ALLOW_CONNECTIONS false;") 'seal-template'
+  $taskTemplateConnections = (Invoke-NativeChild $taskSql @('-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-c', "SELECT count(*) FROM pg_stat_activity WHERE datname='$taskTemplate';") 'template-connections').Trim()
+  if ($taskTemplateConnections -ne '0') { throw 'PERSONAL_NATIVE_TEMPLATE_CONNECTIONS_REMAIN' }
+  Write-Output ('PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=' + $taskTestFiles.Count)
+  $taskTestClock = [Diagnostics.Stopwatch]::StartNew()
+  $taskExit = 0
+  $taskTestIndex = 0
+  foreach ($taskTest in $taskTestFiles) {
+    $taskTestIndex++
+    $taskLabel = 'tests-' + $taskTestIndex.ToString('D3')
+    if ($taskTestClock.ElapsedMilliseconds -ge 600000) { throw 'PERSONAL_NATIVE_TEST_CAMPAIGN_TIMEOUT' }
+    $taskDatabase = 'endvera_personal_210_' + [Guid]::NewGuid().ToString('N')
+    $taskChildEnvironment['PGDATABASE'] = 'postgres'
+    $taskStage = 'CLONE_DATABASE'
+    $taskPhaseTimeout = Get-NativeCampaignRemainingMs $taskTestClock
+    $null = Invoke-NativeChild $taskSql @('-X', '-v', 'ON_ERROR_STOP=1', '-c', "CREATE DATABASE $taskDatabase TEMPLATE $taskTemplate;") ($taskLabel + '-create') $taskPhaseTimeout
+    $taskUrl = "postgresql://${taskUser}:${taskPassword}@127.0.0.1:${taskPort}/${taskDatabase}?connection_limit=5&connect_timeout=5"
+    $taskChildEnvironment['DATABASE_URL'] = $taskUrl
+    $taskChildEnvironment['DIRECT_URL'] = $taskUrl
+    $taskChildEnvironment['ENDVERA_210_DATABASE_NAME'] = $taskDatabase
+    $taskChildEnvironment['PGDATABASE'] = $taskDatabase
+    $taskStage = 'VERIFY_CLONE'
+    $taskPhaseTimeout = Get-NativeCampaignRemainingMs $taskTestClock
+    $taskCloneFingerprint = (Invoke-NativeChild $taskSql @('-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-c', $taskMigrationSql) ($taskLabel + '-migrations') $taskPhaseTimeout).Trim()
+    if ($taskCloneFingerprint -ne $taskMigrationFingerprint) { throw 'PERSONAL_NATIVE_CLONE_MIGRATIONS_MISMATCH' }
+    $taskRemainingMs = Get-NativeCampaignRemainingMs $taskTestClock 600000
+    $testArgs = @((Join-Path $taskRepo 'node_modules/vitest/vitest.mjs'), 'run', '--config', 'specs/210-personal-live-activation/vitest.postgres.config.ts', ('specs/210-personal-live-activation/' + $taskTest.Name))
+    $taskStage = 'TESTS'
+    $testResult = Finish-NativeChild (Start-NativeChild $taskNode $testArgs) $taskLabel ([int]$taskRemainingMs)
+    $taskReceipt = [ordered]@{
+      testFile = $taskTest.Name; database = $taskDatabase; template = $taskTemplate
+      migrationFingerprint = $taskCloneFingerprint; isolation = 'MIGRATED_TEMPLATE_CLONE_PER_FILE'
+      exitCode = $testResult.ExitCode; finishedAt = [DateTime]::UtcNow.ToString('o')
+      providerCallsAuthorized = $false; databaseRetained = $true
+    }
+    [IO.File]::WriteAllText((Join-Path $taskCluster ($taskLabel + '-receipt.json')), ($taskReceipt | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
+    Write-Output ($taskReceipt | ConvertTo-Json -Compress)
+    Write-Output $testResult.Output
+    # An assertion failure does not prevent independent files running and cannot be overwritten by a later PASS.
+    if ($testResult.ExitCode -ne 0) { $taskExit = 1 }
+  }
+  $taskTestClock.Stop()
 } catch {
   $code = $_.Exception.Message
   if ($code -match '^PERSONAL_NATIVE_[A-Z0-9_]+$') { Write-Output $code }
@@ -219,7 +278,9 @@ try {
       $resolvedData = [IO.Path]::GetFullPath($taskData)
       $expectedData = [IO.Path]::GetFullPath((Join-Path $taskCluster 'data'))
       if ($resolvedData -ne $expectedData -or -not $resolvedData.StartsWith([IO.Path]::GetFullPath($taskScratch).TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'PERSONAL_NATIVE_CLEANUP_TARGET_INVALID' }
-      $null = Invoke-NativeChild $taskControl @('-D', $resolvedData, '-m', 'fast', '-w', '-t', '15', 'stop') 'stop'
+      # Sixteen retained clones require a larger final fsync than one database.
+      # This is a bounded graceful shutdown allowance, not a new test deadline.
+      $null = Invoke-NativeChild $taskControl @('-D', $resolvedData, '-m', 'fast', '-w', '-t', '45', 'stop') 'stop' 55000
       Write-Output 'PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED'
     } catch { Write-Output 'PERSONAL_NATIVE_CLEANUP_REQUIRES_REVIEW'; $taskExit = 1 }
   }

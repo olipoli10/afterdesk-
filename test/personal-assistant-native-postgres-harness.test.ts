@@ -38,7 +38,7 @@ describe("native PostgreSQL harness static contract (does not start a process)",
   it("starts loopback-only and stops only its resolved exact data directory without deletion", () => {
     expect(source).toContain("-h 127.0.0.1 -p $taskPort");
     expect(source).toContain("$resolvedData -ne $expectedData");
-    expect(source).toContain("@('-D', $resolvedData, '-m', 'fast', '-w', '-t', '15', 'stop')");
+    expect(source).toContain("@('-D', $resolvedData, '-m', 'fast', '-w', '-t', '45', 'stop') 'stop' 55000");
     expect(source).not.toMatch(/Remove-Item|Delete\(|register|New-Service|SetEnvironmentVariable/);
     expect(source).toContain("$info.CreateNoWindow = $true");
     expect(source).toContain("$Child.Process.Kill([bool]$Child.OwnsProcessTree)");

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "originalCampaignExitCodePreserved": 1,
+  "nativeTestFilesPassed": 16,
+  "nativeTestsPassed": 179,
+  "isolation": "MIGRATED_TEMPLATE_CLONE_PER_FILE",
+  "cluster": "C:/dev/endvera-astra-r03/.scratch/personal-pg-native-0a82149822dd4382ad5b30e59fc3b198",
+  "shutdownRequestAt": "2026-09-10T14:26:47.440Z",
+  "shutdownCheckpointSeconds": 17.687,
+  "databaseShutDownLogAt": "2026-09-10T14:27:06.125Z",
+  "postmasterPidFilePresentOnFollowup": false,
+  "pgCtlStatusExitOnFollowup": 3,
+  "followupStatus": "STOPPED_VERIFIED_AFTER_ORIGINAL_TIMEOUT",
+  "serverRestarted": false,
+  "databaseDeleted": false,
+  "providerCallsAuthorized": false,
+  "note": "The original 15-second graceful stop wait expired during retained-clone fsync. Do not relabel the original campaign result as PASS. Followup read-only status verified no running server; a longer bounded graceful wait requires a fresh run."
+}

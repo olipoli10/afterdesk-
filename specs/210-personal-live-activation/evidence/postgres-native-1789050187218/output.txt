@@ -1,0 +1,29 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_11344529804846cc86df625f0502a6ac","template":"endvera_personal_210_6a5f4b8327174c5b875bc7b1ca4b6378","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:23:34.8517655Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (32 tests) 8769ms
+     ✓ retains atomic source/question/registry with preparation ON  386ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  436ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only  315ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only  352ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry  394ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1658ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  349ms
+     ✓ five creations across both types share one permanent hourly cap  708ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  543ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends  312ms
+
+ Test Files  1 passed (1)
+      Tests  32 passed (32)
+   Start at  10:23:23
+   Duration  11.11s (transform 989ms, setup 0ms, import 2.19s, tests 8.77s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-192ac14247974299a060291af6347909

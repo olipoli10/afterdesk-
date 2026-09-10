@@ -1,0 +1,236 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=16
+{"testFile":"confirmation-maintenance.postgres.test.ts","database":"endvera_personal_210_a2ef1010aa904c4d94bac769e782c56c","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:25:12.0362646Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts (7 tests) 5024ms
+     ✓ expires PREPARED and WAITING by DB time without touching another owner, summary or permanent nonce  3670ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  10:25:05
+   Duration  6.35s (transform 753ms, setup 0ms, import 1.08s, tests 5.02s, environment 1ms)
+
+
+{"testFile":"confirmation-worker.postgres.test.ts","database":"endvera_personal_210_3189da688db1484fbbe5cae7bba6102f","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:25:18.2857809Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation-worker.postgres.test.ts (6 tests) 1951ms
+     ✓ commits one exact review/draft/challenge plus two distinct pending messages; only the dedicated fake-HTTP bridge reaches WAITING  561ms
+     ✓ reloads exact confirmation SMS and runs the existing Google executor once with synthetic confirmed outcome  376ms
+     ✓ reloads exact confirmation SMS and runs the existing Google executor once with synthetic unknown outcome  413ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  10:25:13
+   Duration  4.27s (transform 1.06s, setup 0ms, import 2.16s, tests 1.95s, environment 0ms)
+
+
+{"testFile":"confirmation.postgres.test.ts","database":"endvera_personal_210_d96ce151706c4eccaa84f3734e934a7f","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:25:32.1252775Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation.postgres.test.ts (22 tests) 10733ms
+     ✓ selects the newer ordinary reply ahead of a retained expired bridge without rewriting either  5617ms
+     ✓ selects the newer ordinary reply ahead of a retained revoked bridge without rewriting either  324ms
+     ✓ selects the newer ordinary reply ahead of a retained identity-revised bridge without rewriting either  346ms
+     ✓ serializes app approval against SMS consumption without two calendar claims  415ms
+     ✓ expires by the DB clock without deleting or resetting the permanent phrase registry  1201ms
+     ✓ permanently closes after five distinct wrong confirmation sources  310ms
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  10:25:20
+   Duration  11.97s (transform 711ms, setup 0ms, import 1.05s, tests 10.73s, environment 0ms)
+
+
+{"testFile":"google.postgres.test.ts","database":"endvera_personal_210_7f180e54f04643b39fe6ca60afc46051","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:25:35.8933132Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone UTC without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"UTC","mixedEquality":true,"explicitUtcEquality":true,"inferredDateEquality":true,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":true,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-01T16:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-01T16:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone America/New_York without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"America/New_York","mixedEquality":false,"explicitUtcEquality":true,"inferredDateEquality":false,"mixedExpiredAppearsLive":true,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":true,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":true,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-01T12:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-01T12:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone Asia/Tokyo without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"Asia/Tokyo","mixedEquality":false,"explicitUtcEquality":true,"inferredDateEquality":false,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":false,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-02T01:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-02T01:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+CALENDAR_CONCURRENCY_DIAGNOSTIC {"events":["1:0:BEGIN","2:0:BEGIN","1:1:CALLBACK_ENTER","2:1:CALLBACK_ENTER","1:5:CALLBACK_RETURN","1:5:COMMITTED","3:5:BEGIN","2:9:CALLBACK_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:9:CALLBACK_ENTER","2:9:TRANSACTION_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:13:CALLBACK_RETURN","3:13:COMMITTED","4:16:BEGIN","4:17:CALLBACK_ENTER","4:23:CALLBACK_RETURN","4:23:COMMITTED","5:23:BEGIN","5:24:CALLBACK_ENTER","5:28:CALLBACK_RETURN","5:28:COMMITTED"],"outcomes":["FULFILLED","P2010_PrismaClientKnownRequestError_40001_SERIALIZATION"],"elapsedMs":28}
+
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (14 tests) 893ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  10:25:34
+   Duration  1.60s (transform 377ms, setup 0ms, import 551ms, tests 893ms, environment 0ms)
+
+
+{"testFile":"inbox.postgres.test.ts","database":"endvera_personal_210_0d8af35a810147a6a5e02817076f150b","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:25:40.9001906Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 390ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  10:25:37
+   Duration  3.12s (transform 1.19s, setup 0ms, import 2.57s, tests 390ms, environment 0ms)
+
+
+{"testFile":"outbox.postgres.test.ts","database":"endvera_personal_210_a83336426bb549af95799a2eb1875c4c","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:25:47.4426988Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (16 tests) 1601ms
+     ✓ persists DB-observed acceptance in canonical UTC under UTC, not the provider timestamp  439ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  10:25:43
+   Duration  3.98s (transform 991ms, setup 0ms, import 2.20s, tests 1.60s, environment 0ms)
+
+
+{"testFile":"personal-model-connection.postgres.test.ts","database":"endvera_personal_210_869ec0cfd1a846e99260270b8412877f","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:25:51.4756394Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests) 859ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  10:25:49
+   Duration  1.82s (transform 540ms, setup 0ms, import 785ms, tests 859ms, environment 0ms)
+
+
+{"testFile":"personal-model.postgres.test.ts","database":"endvera_personal_210_ef98bbdb8486410daaeb69289895fbc3","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:25:57.8611139Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests) 1492ms
+     ✓ finishes SMS source and stored review atomically, without pretending to fetch Google  324ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  10:25:53
+   Duration  3.94s (transform 1.11s, setup 0ms, import 2.28s, tests 1.49s, environment 0ms)
+
+
+{"testFile":"personal-subject.postgres.test.ts","database":"endvera_personal_210_6a61b864dc57476d870409522a6cad4a","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:26:01.2510144Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 298ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  10:26:00
+   Duration  994ms (transform 299ms, setup 0ms, import 475ms, tests 298ms, environment 0ms)
+
+
+{"testFile":"project-brain-voice-gateway.postgres.test.ts","database":"endvera_personal_210_8893c981227c4e39a9fb2321f5918ce7","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:26:06.7574570Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice-gateway.postgres.test.ts (12 tests) 1946ms
+     ✓ real gateway transaction lifecycle and instant round-trip under UTC  422ms
+     ✓ two concurrent dispatchers can persist only one synthetic result and replay never retries  303ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  10:26:03
+   Duration  2.94s (transform 576ms, setup 0ms, import 822ms, tests 1.95s, environment 0ms)
+
+
+{"testFile":"project-brain-voice.postgres.test.ts","database":"endvera_personal_210_0fb1bf3dffbc40fbab7c7d6576e02beb","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:26:16.5019615Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice.postgres.test.ts (15 tests) 6554ms
+     ✓ database-clock expiry refuses the read without extending or rewriting persisted evidence  5202ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  10:26:09
+   Duration  7.43s (transform 448ms, setup 0ms, import 710ms, tests 6.55s, environment 0ms)
+
+
+{"testFile":"recovery.postgres.test.ts","database":"endvera_personal_210_dcd38dc41a02483a9286ec92820b4b0a","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:26:19.6089302Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/recovery.postgres.test.ts (5 tests) 313ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  10:26:18
+   Duration  972ms (transform 336ms, setup 0ms, import 486ms, tests 313ms, environment 0ms)
+
+
+{"testFile":"sms-calendar-read.postgres.test.ts","database":"endvera_personal_210_4ad2f1216cb64532aa417121943b6177","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:26:25.1222260Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts (3 tests) 568ms
+     ✓ persists exact authority with one reply, no model admission, and survives reconnect  374ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  10:26:21
+   Duration  3.21s (transform 1.12s, setup 0ms, import 2.47s, tests 568ms, environment 0ms)
+
+
+{"testFile":"sms-inbound-recovery.postgres.test.ts","database":"endvera_personal_210_afd0140246dd425cae6c2458e643968b","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:26:30.6138270Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/sms-inbound-recovery.postgres.test.ts (6 tests) 494ms
+     ✓ updates at most 25 of 31 eligible rows, drains the remainder once, then replay is zero  328ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  10:26:27
+   Duration  2.95s (transform 1.03s, setup 0ms, import 2.28s, tests 494ms, environment 0ms)
+
+
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_7084177df2d64e85a0157f088cb043d0","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:26:44.1861896Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (32 tests) 8649ms
+     ✓ retains atomic source/question/registry with preparation ON  346ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  385ms
+     ✓ post-response Google revocation keeps the entire exposure and never creates WAITING  339ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry  337ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1659ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  434ms
+     ✓ five creations across both types share one permanent hourly cap  781ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  673ms
+
+ Test Files  1 passed (1)
+      Tests  32 passed (32)
+   Start at  10:26:32
+   Duration  11.32s (transform 1.18s, setup 0ms, import 2.51s, tests 8.65s, environment 0ms)
+
+
+{"testFile":"utc-datetime.postgres.test.ts","database":"endvera_personal_210_7dd33605f7364d48945f474dd08ece1e","template":"endvera_personal_210_b0c79de28ecf420ea57415bc1047fd35","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:26:47.3944154Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/utc-datetime.postgres.test.ts (4 tests) 144ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  10:26:46
+   Duration  797ms (transform 298ms, setup 0ms, import 489ms, tests 144ms, environment 0ms)
+
+
+PERSONAL_NATIVE_CLEANUP_REQUIRES_REVIEW
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-0a82149822dd4382ad5b30e59fc3b198

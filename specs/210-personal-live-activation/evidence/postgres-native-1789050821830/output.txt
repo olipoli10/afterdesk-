@@ -1,0 +1,28 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_b8cbf0c7aa2a489c93e545ad34917e2f","template":"endvera_personal_210_3d88c5842fd848919d0747aec8f6d02c","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:34:12.3820521Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (36 tests) 12193ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1317ms
+     ✓ expires WAITING once, retains source/question/budget/history  1200ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1193ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1312ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  302ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1648ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  317ms
+     ✓ five creations across both types share one permanent hourly cap  601ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  522ms
+
+ Test Files  1 passed (1)
+      Tests  36 passed (36)
+   Start at  10:33:57
+   Duration  14.44s (transform 974ms, setup 0ms, import 2.09s, tests 12.19s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-57dd32f4b6f2498086a0b8d1bd7c62a5
