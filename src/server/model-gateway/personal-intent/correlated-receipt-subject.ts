@@ -5,6 +5,8 @@ import { temporalActorSchema, temporalClaimSchema, temporalCheckedSource, tempor
   type TemporalRegistryContext, type TemporalRegistryDB } from "@/server/personal-assistant/sms-temporal-clarification-authority";
 import { temporalRegistryLockProof, temporalRegistryCurrentProof } from "@/server/personal-assistant/sms-temporal-clarification-proof";
 import { inspectCorrelatedPersonalReceiptProof } from "./correlated-receipt-proof";
+import { buildCorrelatedCalendarReferenceProof } from "./correlated-calendar-proof";
+import type { DurableSmsTemporalCorrelationInput } from "@/server/personal-assistant/sms-temporal-clarification";
 import { PERSONAL_MODEL_AUTHORITY } from "./budget-policy";
 import type { ConnectorEnvironment } from "@/server/personal-assistant/google-client";
 
@@ -76,16 +78,26 @@ export async function loadCorrelatedPersonalReceiptSubject(tx: TemporalRegistryD
   if (now >= row.expiresAt || now >= new Date(env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT ?? "")
     || row.waiting.questionReceipt.acceptedAt !== row.acceptedAt.toISOString() || row.waiting.questionReceipt.acceptedProviderSid !== row.acceptedProviderSid)
     throw new Error("CORRELATED_RECEIPT_EXPIRED_OR_ACCEPTANCE_CHANGED");
-  const proof = inspectCorrelatedPersonalReceiptProof({ waiting: row.waiting, currentBinding: loaded.binding, questionPhase: "CONSUMED", consumedReplyId: terminal.consumedReplyId,
+  const durableInput: DurableSmsTemporalCorrelationInput = { waiting: row.waiting, currentBinding: loaded.binding, questionPhase: "CONSUMED", consumedReplyId: terminal.consumedReplyId,
     receipt: { id: receipt.id, outcome: receipt.outcome, receivedAt: receipt.receivedAt.toISOString(), createdAt: receipt.createdAt.toISOString(), sourceClaim: receipt.sourceClaim },
     original: { source: original, status: originalRow.status, attempt: originalRow.attempts, leaseUntil: originalRow.leaseUntil },
-    answer: { source: answer, status: answerRow.status, attempt: answerRow.attempts, leaseUntil: answerRow.leaseUntil }, now: now.toISOString() },
-  { packet: receipt.packet, packetHash: receipt.packetHash });
+    answer: { source: answer, status: answerRow.status, attempt: answerRow.attempts, leaseUntil: answerRow.leaseUntil }, now: now.toISOString() };
+  const packet = { packet: receipt.packet, packetHash: receipt.packetHash };
+  const proof = inspectCorrelatedPersonalReceiptProof(durableInput, packet);
+  // A pure eight-field projection is built from these same authenticated facts,
+  // not from a caller-supplied object merely labeled "inspected". Still no write.
+  const reference = buildCorrelatedCalendarReferenceProof(durableInput, packet);
+  if (reference.proof.inspectedReceiptProofHash !== proof.proofHash) throw new Error("CORRELATED_RECEIPT_REFERENCE_CHANGED");
   live();
   const finalNow = await temporalRegistryClock(tx); live();
   if (finalNow < now) throw new Error("CORRELATED_RECEIPT_CLOCK_MOVED_BACKWARD");
   if (finalNow >= row.expiresAt || finalNow >= new Date(env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT!)) throw new Error("CORRELATED_RECEIPT_EXPIRED");
   return freeze({ status: "CORRELATED_RECEIPT_SUBJECT_INSPECTED_NOT_AUTHORIZED" as const, actor: input.actor, subject: input.subject,
-    proof, inspectedAt: finalNow.toISOString(), executionAuthorized: false as const, providerExecutionPerformed: false as const,
+    proof, reference, preparationContext: {
+      clarificationId: row.id, originalSourceOperationId: original.operationId, replySourceOperationId: answer.operationId,
+      modelChildOperationId: row.modelChildOperationId, modelGatewayOperationId: row.modelGatewayOperationId, reviewActionId: row.reviewActionId,
+      connectorAccountId: loaded.binding.calendarAccountId, accountVersion: loaded.binding.calendarAccountVersion,
+      questionExpiresAt: row.expiresAt.toISOString(), authorityRef: PERSONAL_MODEL_AUTHORITY, pilotExpiresAt: new Date(env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT!).toISOString(),
+    }, inspectedAt: finalNow.toISOString(), executionAuthorized: false as const, providerExecutionPerformed: false as const,
     persistencePerformed: false as const, committed: false as const, draft: null });
 }

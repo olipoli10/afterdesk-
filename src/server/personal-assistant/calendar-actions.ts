@@ -7,6 +7,7 @@ import { prepareGoogleCalendarInsert } from "@/lib/construction-operating-assist
 import { GoogleCalendarClient, requireGooglePilot, type ConnectorEnvironment } from "./google-client";
 import { googleTokensForOwner } from "./google-connection";
 import { GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/construction-operating-assistant-r3/connector-contracts";
+import { personalCorrelatedCalendarRequestId } from "@/server/model-gateway/personal-intent/correlated-calendar-id";
 
 export const personalCalendarDraftSchema = z.object({ title: z.string().trim().min(1).max(240), startsAt: z.string().datetime({ offset: true }), endsAt: z.string().datetime({ offset: true }), timezone: z.string().min(1).max(80) }).strict();
 const storedSchema = personalCalendarDraftSchema.extend({ accountVersion: z.number().int(), requestId: z.string().uuid() }).strict();
@@ -17,8 +18,20 @@ async function requireCalendarOwner(userId: string, workspaceId: string, db: Pri
 export async function preparePersonalCalendar(input: { userId: string; workspaceId: string; requestId: string; draft: unknown }) {
   return preparePersonalCalendarInTransaction(prisma, input);
 }
-/** Preparation only. Caller can include this in its serializable source CAS. */
-export async function preparePersonalCalendarInTransaction(db: Prisma.TransactionClient | typeof prisma, input: { userId: string; workspaceId: string; requestId: string; draft: unknown }) {
+const calendarOriginSchema = z.object({ kind: z.literal("personal_sms_temporal_receipt"), receiptId: z.string().min(1).max(191) }).strict();
+export type PersonalCalendarPreparationOrigin = Readonly<z.infer<typeof calendarOriginSchema>>;
+/** Preparation only. Internal origin requires the caller's SERIALIZABLE transaction;
+ * its mandatory provenance relation must commit atomically under the database guards. */
+export async function preparePersonalCalendarInTransaction(db: Prisma.TransactionClient | typeof prisma,
+  suppliedInput: { userId: string; workspaceId: string; requestId: string; draft: unknown }, suppliedOrigin?: PersonalCalendarPreparationOrigin) {
+  const origin = suppliedOrigin === undefined ? undefined : Object.freeze(calendarOriginSchema.parse(suppliedOrigin));
+  const input = origin ? { ...suppliedInput, draft: personalCalendarDraftSchema.parse(suppliedInput.draft) } : suppliedInput;
+  if (origin) {
+    if ("$transaction" in db) throw new Error("CALENDAR_CORRELATED_TRANSACTION_REQUIRED");
+    if (input.requestId !== personalCorrelatedCalendarRequestId(origin.receiptId)) throw new Error("CALENDAR_CORRELATED_REQUEST_ID_REQUIRED");
+    const isolation = await db.$queryRawUnsafe<Array<{ isolation: string }>>("SELECT current_setting('transaction_isolation') AS isolation");
+    if (isolation.length !== 1 || isolation[0].isolation !== "serializable") throw new Error("CALENDAR_CORRELATED_SERIALIZABLE_REQUIRED");
+  }
   await requireCalendarOwner(input.userId, input.workspaceId, db);
   const draft = personalCalendarDraftSchema.parse(input.draft);
   const requestId = z.string().uuid().parse(input.requestId);
@@ -28,8 +41,24 @@ export async function preparePersonalCalendarInTransaction(db: Prisma.Transactio
   prepareGoogleCalendarInsert({ ...draft, authority: { accountStatus: account.status as "connected", revokedAt: account.revokedAt as null, grantedScopes: account.grantedScopes }, workspaceId: input.workspaceId, calendarItemId: requestId, idempotencyKey: requestId });
   const existing = await db.personalAssistantOperation.findUnique({ where: { idempotencyKey: key } });
   const requestHash = hash(JSON.stringify(request));
-  if (existing) { if (existing.createdByUserId !== input.userId || existing.requestHash !== requestHash) throw new Error("CALENDAR_REPLAY_CONFLICT"); return { operationId: existing.id, requestHash, status: existing.status }; }
-  const row = await db.personalAssistantOperation.create({ data: { id: randomUUID(), workspaceId: input.workspaceId, connectorAccountId: account.id, createdByUserId: input.userId, kind: "calendar_write", status: "pending", request, requestHash, idempotencyKey: key } });
+  if (existing) {
+    if (existing.createdByUserId !== input.userId || existing.requestHash !== requestHash) throw new Error("CALENDAR_REPLAY_CONFLICT");
+    // No generic replay/adoption of a two-source draft, including a malformed foreign relation.
+    // The reverse Prisma relation is composite/scoped; use the globally unique scalar instead.
+    const review = await db.personalSmsCorrelatedCalendarReview.findUnique({ where: { calendarOperationId: existing.id },
+      select: { id: true, receiptId: true, calendarOperationId: true, workspaceId: true, userId: true, calendarRequestHash: true } });
+    if (origin) {
+      const replayRequest = storedSchema.safeParse(existing.request);
+      if (existing.kind !== "calendar_write" || existing.workspaceId !== input.workspaceId || existing.connectorAccountId !== account.id
+        || !replayRequest.success || hash(JSON.stringify(replayRequest.data)) !== requestHash
+        || existing.correlatedTemporalReceiptId !== origin.receiptId || !review || review.receiptId !== origin.receiptId
+        || review.calendarOperationId !== existing.id || review.workspaceId !== input.workspaceId || review.userId !== input.userId
+        || review.calendarRequestHash !== requestHash) throw new Error("CALENDAR_CORRELATED_REPLAY_CONFLICT");
+    } else if (existing.correlatedTemporalReceiptId !== null || review !== null) throw new Error("CALENDAR_CORRELATED_REVIEW_UNAVAILABLE");
+    return { operationId: existing.id, requestHash, status: existing.status };
+  }
+  const row = await db.personalAssistantOperation.create({ data: { id: randomUUID(), workspaceId: input.workspaceId, connectorAccountId: account.id, createdByUserId: input.userId, kind: "calendar_write", status: "pending", request, requestHash, idempotencyKey: key,
+    ...(origin ? { correlatedTemporalReceiptId: origin.receiptId } : {}) } });
   return { operationId: row.id, requestHash, status: row.status };
 }
 export type PersonalCalendarApproval = { userId: string; workspaceId: string; operationId: string; expectedRequestHash: string };
@@ -89,6 +118,8 @@ async function lockWrite(db: Prisma.TransactionClient, input: PersonalCalendarAp
     JOIN "ConstructionConnectorCredential" c ON c.id=a."credentialRef" AND c."connectorAccountId"=a.id AND c."workspaceId"=w.id
     JOIN "ConstructionConnectorGrant" g ON g."connectorAccountId"=a.id
     WHERE o.id=$1 AND o."workspaceId"=$2 AND o."createdByUserId"=$3 AND o.kind='calendar_write' AND o."requestHash"=$4
+      AND o."correlatedTemporalReceiptId" IS NULL
+      AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarReview" correlated WHERE correlated."calendarOperationId"=o.id)
       AND w.status='active' AND m.status='active' AND m.role IN ('owner','admin')
       AND a.provider='google_calendar' AND a.status='connected' AND a."revokedAt" IS NULL AND c."revokedAt" IS NULL
       AND g.capability='calendar_write' AND g.status='active' AND g."revokedAt" IS NULL
@@ -192,6 +223,11 @@ export async function approveAndInsertPersonalCalendar(input: PersonalCalendarAp
 }
 export async function personalCalendarActions(userId: string, workspaceId: string) {
   await requireCalendarOwner(userId, workspaceId);
-  const rows = await prisma.personalAssistantOperation.findMany({ where: { workspaceId, createdByUserId: userId, kind: "calendar_write" }, take: 30, orderBy: { createdAt: "desc" } });
+  const rows = await prisma.$queryRawUnsafe<Array<{ id: string; requestHash: string; status: string; request: unknown }>>(`
+    SELECT o.id,o."requestHash",o.status,o.request FROM "PersonalAssistantOperation" o
+    WHERE o."workspaceId"=$1 AND o."createdByUserId"=$2 AND o.kind='calendar_write'
+      AND o."correlatedTemporalReceiptId" IS NULL
+      AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarReview" correlated WHERE correlated."calendarOperationId"=o.id)
+    ORDER BY o."createdAt" DESC LIMIT 30`, workspaceId, userId);
   return { operations: rows.map(row => { const request = storedSchema.parse(row.request); return { id: row.id, requestHash: row.requestHash, status: row.status, draft: { title: request.title, startsAt: request.startsAt, endsAt: request.endsAt, timezone: request.timezone } }; }) };
 }

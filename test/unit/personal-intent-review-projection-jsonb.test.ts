@@ -31,6 +31,7 @@ describe("review projection storage-order equivalence", () => {
     const source = { id: "source", request: Object.fromEntries(Object.entries(envelope).reverse()), requestHash: hash(envelope),
       result: { personalModelReview: review }, createdAt: new Date(review.source.receivedAt), modelChildOperationId: "child" };
     shared.transaction.mockImplementation(fn => fn({ $queryRawUnsafe: vi.fn(async (sql: string) => sql.includes("SELECT w.id") ? [{ id: "workspace" }] : [source]),
+      personalSmsCorrelatedCalendarReview: { findMany: vi.fn(async () => []) },
       personalAssistantOperation: { findMany: vi.fn(async () => [{ id: "draft", kind: draftKind, status: "pending", request: stored, requestHash: hash(ordered) }]) } }));
     const result = await personalModelReviewsForOwner("owner", "workspace");
     if (change === "unchanged") expect(result.reviews[0].actions[0]).toMatchObject({ currentStatus: "pending", nextDecision: "REVIEW_EXACT_DRAFT", operationId: "draft", requestHash: hash(ordered) });

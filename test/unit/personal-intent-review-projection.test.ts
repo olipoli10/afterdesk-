@@ -15,7 +15,8 @@ function fixture() {
   const draft = { id: "draft", kind: "sms_outbound", status: "pending", requestHash: hash(request), request };
   const query = vi.fn().mockImplementation(async sql => sql.includes("SELECT w.id") ? [{ id: "workspace" }] : [row]);
   const drafts = vi.fn().mockResolvedValue([draft]);
-  shared.transaction.mockImplementation(fn => fn({ $queryRawUnsafe: query, personalAssistantOperation: { findMany: drafts } }));
+  shared.transaction.mockImplementation(fn => fn({ $queryRawUnsafe: query, personalAssistantOperation: { findMany: drafts },
+    personalSmsCorrelatedCalendarReview: { findMany: vi.fn(async () => []) } }));
   return { review, row, draft, query, drafts };
 }
 beforeEach(() => vi.clearAllMocks());

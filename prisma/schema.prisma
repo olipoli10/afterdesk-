@@ -2958,6 +2958,7 @@ model ModelGatewayOperation {
   auditEvents ModelGatewayAuditEvent[]
   personalModelOperation PersonalAssistantOperation?
   temporalClarifications PersonalSmsTemporalClarification[]
+  correlatedCalendarReviews PersonalSmsCorrelatedCalendarReview[]
 
   @@index([tenantId, status])
   @@index([policyVersionId])
@@ -5597,6 +5598,7 @@ model ConstructionConnectorAccount {
   operations ConstructionConnectorOperation[]
   credentials ConstructionConnectorCredential[]
   personalOperations PersonalAssistantOperation[]
+  correlatedCalendarReviews PersonalSmsCorrelatedCalendarReview[]
 
   @@unique([workspaceId, provider])
   @@unique([id, workspaceId])
@@ -5653,6 +5655,12 @@ model PersonalAssistantOperation {
   temporalClarificationChildren PersonalSmsTemporalClarification[] @relation("TemporalClarificationChild")
   temporalClarificationQuestions PersonalSmsTemporalClarification[] @relation("TemporalClarificationQuestion")
   temporalClarificationReplies PersonalSmsTemporalClarificationReply[] @relation("TemporalClarificationReplySource")
+  correlatedTemporalReceiptId String? @unique
+  correlatedTemporalReceipt PersonalSmsTemporalClarificationReply? @relation("CorrelatedCalendarMarker", fields: [correlatedTemporalReceiptId, workspaceId, createdByUserId], references: [id, workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_operation_receipt_fk")
+  correlatedCalendarReview PersonalSmsCorrelatedCalendarReview? @relation("CorrelatedCalendarDraft")
+  correlatedCalendarOriginalSources PersonalSmsCorrelatedCalendarReview[] @relation("CorrelatedCalendarOriginal")
+  correlatedCalendarReplySources PersonalSmsCorrelatedCalendarReview[] @relation("CorrelatedCalendarReply")
+  correlatedCalendarChildren PersonalSmsCorrelatedCalendarReview[] @relation("CorrelatedCalendarChild")
   modelGatewayOperationId String? @unique
   modelGatewayOperation ModelGatewayOperation? @relation(fields: [modelGatewayOperationId], references: [id], onDelete: Restrict)
   createdAt         DateTime                     @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
@@ -5661,6 +5669,7 @@ model PersonalAssistantOperation {
   @@index([workspaceId, kind, status])
   @@unique([id, workspaceId, createdByUserId])
   @@unique([sourcePersonalOperationId, kind])
+  @@unique([correlatedTemporalReceiptId, workspaceId, createdByUserId], map: "sms_correlated_calendar_marker_scope_key")
 }
 
 model PersonalCalendarSmsConfirmationNonce {
@@ -5763,6 +5772,7 @@ model PersonalSmsTemporalClarification {
   replies PersonalSmsTemporalClarificationReply[] @relation("TemporalClarificationReplies")
   consumedReply PersonalSmsTemporalClarificationReply? @relation("TemporalClarificationConsumedReply", fields: [consumedReplyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   conversationExpectation PersonalSmsConversationExpectation?
+  correlatedCalendarReviews PersonalSmsCorrelatedCalendarReview[]
   @@unique([id, workspaceId, userId])
   @@unique([sourceOperationId, reviewActionId])
   @@index([workspaceId, userId, phase, expiresAt])
@@ -5786,7 +5796,52 @@ model PersonalSmsTemporalClarificationReply {
   clarification PersonalSmsTemporalClarification @relation("TemporalClarificationReplies", fields: [clarificationId, workspaceId, userId], references: [id, workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
   source PersonalAssistantOperation @relation("TemporalClarificationReplySource", fields: [sourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict)
   consumedBy PersonalSmsTemporalClarification? @relation("TemporalClarificationConsumedReply")
+  correlatedCalendarOperation PersonalAssistantOperation? @relation("CorrelatedCalendarMarker")
+  correlatedCalendarReview PersonalSmsCorrelatedCalendarReview?
+  @@unique([id, workspaceId, userId])
   @@index([clarificationId, createdAt])
+}
+
+// Append-only local preparation provenance. No approval, action lease or budget.
+// SQL assigns createdAt at insertion and requires the exact marked pending draft
+// and this review to exist together at final commit. Current grants stay mutable.
+model PersonalSmsCorrelatedCalendarReview {
+  id String @id
+  workspaceId String
+  userId String
+  receiptId String @unique
+  clarificationId String
+  originalSourceOperationId String
+  replySourceOperationId String
+  modelChildOperationId String
+  modelGatewayOperationId String
+  reviewActionId String
+  calendarOperationId String @unique
+  calendarRequestId String
+  calendarRequestHash String
+  connectorAccountId String
+  accountVersion Int
+  packetHash String
+  reviewVersion String
+  proof Json
+  proofHash String
+  authorityRef String
+  pilotExpiresAt DateTime @db.Timestamp(3)
+  createdAt DateTime @default(dbgenerated("date_trunc('milliseconds'::text, (clock_timestamp() AT TIME ZONE 'UTC'::text))")) @db.Timestamp(3)
+  preparationExpiresAt DateTime @db.Timestamp(3)
+
+  receipt PersonalSmsTemporalClarificationReply @relation(fields: [receiptId, workspaceId, userId], references: [id, workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_receipt_fk")
+  clarification PersonalSmsTemporalClarification @relation(fields: [clarificationId, workspaceId, userId], references: [id, workspaceId, userId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_question_fk")
+  originalSource PersonalAssistantOperation @relation("CorrelatedCalendarOriginal", fields: [originalSourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_original_fk")
+  replySource PersonalAssistantOperation @relation("CorrelatedCalendarReply", fields: [replySourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_reply_fk")
+  modelChild PersonalAssistantOperation @relation("CorrelatedCalendarChild", fields: [modelChildOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_child_fk")
+  calendar PersonalAssistantOperation @relation("CorrelatedCalendarDraft", fields: [calendarOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_calendar_fk")
+  modelGateway ModelGatewayOperation @relation(fields: [modelGatewayOperationId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_gateway_fk")
+  account ConstructionConnectorAccount @relation(fields: [connectorAccountId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "personal_correlated_calendar_review_account_fk")
+
+  @@index([workspaceId, userId, createdAt, id], map: "sms_correlated_calendar_owner_created_idx")
+  @@unique([receiptId, workspaceId, userId], map: "sms_correlated_calendar_receipt_scope_key")
+  @@unique([calendarOperationId, workspaceId, userId], map: "sms_correlated_calendar_draft_scope_key")
 }
 
 model PersonalSmsConversationExpectation {

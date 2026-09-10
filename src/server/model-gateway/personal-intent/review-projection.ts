@@ -89,8 +89,15 @@ export async function personalModelReviewsForOwner(userId: string, workspaceId: 
       validated.push({ row, review: parsed.data });
     }
     const draftIds = [...new Set(validated.flatMap(({ review }) => review.actions.flatMap(action => action.operationId ? [action.operationId] : [])))];
-    const drafts = draftIds.length ? await tx.personalAssistantOperation.findMany({ where: { id: { in: draftIds }, workspaceId, createdByUserId: userId,
-      kind: { in: ["calendar_write", "sms_outbound", "voice_outbound"] } }, select: { id: true, kind: true, status: true, request: true, requestHash: true } }) : [];
+    // Bounded by the already bounded source/action list. Do not use the scoped reverse
+    // relation: even a malformed foreign relation must prevent a generic fallback.
+    const related = draftIds.length ? await tx.personalSmsCorrelatedCalendarReview.findMany({ where: { calendarOperationId: { in: draftIds } },
+      select: { calendarOperationId: true } }) : [];
+    const excluded = new Set(related.map(row => row.calendarOperationId));
+    const genericIds = draftIds.filter(id => !excluded.has(id));
+    const drafts = genericIds.length ? await tx.personalAssistantOperation.findMany({ where: { id: { in: genericIds }, workspaceId, createdByUserId: userId,
+      OR: [{ kind: "calendar_write", correlatedTemporalReceiptId: null },
+        { kind: { in: ["sms_outbound", "voice_outbound"] } }] }, select: { id: true, kind: true, status: true, request: true, requestHash: true } }) : [];
     const current = new Map(drafts.map(row => [row.id, row]));
     return freeze({ schemaVersion: 1 as const, readOnly: true as const, executionAuthorized: false as const, semanticInterpretationVerified: false as const,
       unavailableCount, limit: 20, reviews: validated.map(({ row, review }) => ({ sourceOperationId: row.id, modelChildOperationId: review.modelChildOperationId,

@@ -1,5 +1,48 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 16:30Z — actual atomic calendar preparation, local only
+
+Forward78 is applied only to new disposable native PostgreSQL databases;
+remote schema is untouched. Prisma first refused three singular composite
+relations (P1012); three explicitly mapped unique indexes were added before
+any native application. Re-review confirms no other SQL-body changes. Schema
+validate and isolated local client generation then passed. Applied78 is now
+immutable, fingerprint `78:9d69f861d1884ca2b789ed72a691b5c2`.
+
+The OFF-by-default, currently uncalled producer loads actual completed SMS
+receipt evidence and creates one marked pending calendar operation plus its
+append-only relation in one SERIALIZABLE transaction. Exact replay preserves
+identity/state; no generic adoption, second model call, new budget or action
+authority. Generic lists, replay, approval locks and summary selectors exclude
+the marker OR globally related operation before returning actionable data.
+Original one-source history is retained. Pure review and SQL provenance do not
+certify model quality or a real Google insertion.
+
+Native `postgres-native-1789057230555` retained79 PASS/3 failed list-return
+oracles (expected[] rather than existing{operations:[]}); product output was
+correct and no production relaxation followed. Corrected/expanded receipt
+`postgres-native-1789057476071`:85 PASS16:25:33.353Z. Real two-backend blocking
+proves one permanent review/draft; rollback, orphan refusal, expiry/revocation
+replay, immutable relation/marker and final pending constraints are exercised.
+Full20-file suite `postgres-native-1789057562951`:281 PASS16:29:30.753Z,20
+separate migrated clones with the same78 fingerprint; owned server STOPPED.
+This includes actual public SQL serializer/UUID/trim/UTF16 functions20 tests,
+not merely the earlier pg_temp proposal. Every native receipt is retained.
+
+Producer peer18 plus related91, isolation author36 plus peer6, TypeScript and
+focused lint pass. These peer tests use mocked transactions and are distinct
+from native proof. Full-root `root-1789057788841`:4935 PASS/3 historical
+skips across386 passing files, exit0 at16:31:02.761Z.
+Next authorized work is a private read-only projection and a mobile card with
+both exact texts. They must never prepare on GET or expose generic approval.
+Current reader TTL remains restrictive; expired evidence is unavailable,
+not reconstructed with a fabricated clock. New reader/card work is unverified.
+
+Three-minute heartbeat rechecked ACTIVE; no duplicate or timer change. No
+provider call, secret access, real SMS/call, remote migration, APK publication,
+push or deployment. Historical dashboard remains22% roadmap,46.75% local build,
+C2 18/18, real-test NO-GO, Verified-E2E0%; no rubric promoted.
+
 ## 2026-09-10 16:09Z — minimal preparation proof and Unicode SQL parity
 
 Reviewed helpers retain only eight proof fields; receipt/question/packet keep

@@ -66,7 +66,7 @@ const rawTitles = ["Inspection", "Québec — café e\u0301", 'La "job" \\ calen
   "Contrôle\b\f\n\r\t\u0001\u000b\u001finterne", "A\u2028B\u2029C", `${trimSet}Dosseret${trimSet}`,
   "\u200bPas un espace trim\u0085", "x".repeat(240)];
 
-describe("native proposal serializer proof, not a migrated correlated calendar producer", () => {
+describe("native legacy serializer parity plus actual forward78 public helpers, no correlated draft producer", () => {
   it.each(["UTC", "America/New_York", "Asia/Tokyo"])("matches actual existing preparer request bytes/hash in %s", async timezone => {
     await withFunctions(async tx => {
       await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", timezone);
@@ -76,24 +76,31 @@ describe("native proposal serializer proof, not a migrated correlated calendar p
         const row = await tx.personalAssistantOperation.findUniqueOrThrow({ where: { id: result.operationId } });
         const expected = { title: rawTitle.trim(), startsAt: "2026-09-12T14:00:00.000-04:00", endsAt: "2026-09-12T15:00:00.000-04:00",
           timezone: "America/Toronto", accountVersion: 1, requestId: (row.request as { requestId: string }).requestId };
-        const [sql] = await tx.$queryRawUnsafe<Array<{ bytes: string; hash: string; normalized: string }>>(`SELECT
+        const [sql] = await tx.$queryRawUnsafe<Array<{ bytes: string; hash: string; normalized: string; publicBytes: string; publicHash: string; publicNormalized: string; utf16Length: number }>>(`SELECT
           pg_temp.correlated_calendar_request_json(request) AS bytes,
           encode(sha256(convert_to(pg_temp.correlated_calendar_request_json(request),'UTF8')),'hex') AS hash,
-          btrim($2::text,$3::text) AS normalized FROM "PersonalAssistantOperation" WHERE id=$1`, row.id, rawTitle, trimSet);
-        expect(sql).toEqual({ bytes: JSON.stringify(expected), hash: result.requestHash, normalized: rawTitle.trim() });
+          btrim($2::text,$3::text) AS normalized,
+          public.sms_correlated_calendar_request_json(request) AS "publicBytes",
+          public.sms_correlated_calendar_request_hash(request) AS "publicHash",
+          public.sms_correlated_calendar_trim($2::text) AS "publicNormalized",
+          public.sms_correlated_calendar_utf16_length($2::text) AS "utf16Length"
+          FROM "PersonalAssistantOperation" WHERE id=$1`, row.id, rawTitle, trimSet);
+        expect(sql).toEqual({ bytes: JSON.stringify(expected), hash: result.requestHash, normalized: rawTitle.trim(),
+          publicBytes: JSON.stringify(expected), publicHash: result.requestHash, publicNormalized: rawTitle.trim(), utf16Length: rawTitle.length });
         expect(sql.hash).toBe(createHash("sha256").update(JSON.stringify(expected)).digest("hex"));
       }
     });
   });
   it("retains a counterexample against default btrim, without Unicode normalization", async () => {
     const input = "\ufeff\u00a0Café\u00a0\ufeff";
-    const [row] = await prisma.$queryRawUnsafe<Array<{ old: string; corrected: string }>>("SELECT btrim($1::text) AS old,btrim($1::text,$2::text) AS corrected", input, trimSet);
-    expect(row.old).not.toBe(input.trim()); expect(row.corrected).toBe(input.trim());
+    const [row] = await prisma.$queryRawUnsafe<Array<{ old: string; corrected: string; actual: string }>>("SELECT btrim($1::text) AS old,btrim($1::text,$2::text) AS corrected, public.sms_correlated_calendar_trim($1::text) AS actual", input, trimSet);
+    expect(row.old).not.toBe(input.trim()); expect(row.corrected).toBe(input.trim()); expect(row.actual).toBe(input.trim());
   });
   it.each(["receipt", "reçu-𐐀-🛠️", "x".repeat(191)])("matches the permanent request UUID producer for %s", async receipt => {
     await withFunctions(async tx => {
-      const [row] = await tx.$queryRawUnsafe<Array<{ id: string }>>("SELECT pg_temp.correlated_calendar_request_id($1::text) AS id", receipt);
+      const [row] = await tx.$queryRawUnsafe<Array<{ id: string; actual: string }>>("SELECT pg_temp.correlated_calendar_request_id($1::text) AS id,public.sms_correlated_calendar_request_id($1::text) AS actual", receipt);
       expect(row.id).toBe(personalCorrelatedCalendarRequestId(receipt));
+      expect(row.actual).toBe(personalCorrelatedCalendarRequestId(receipt));
       expect(row.id).toMatch(/^[a-f0-9]{8}-[a-f0-9]{4}-8[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
     });
   });
@@ -105,10 +112,20 @@ describe("native proposal serializer proof, not a migrated correlated calendar p
   it.each([null, [], {}, { title: "x", startsAt: "x", endsAt: "x", timezone: "x", requestId: "x", accountVersion: "1" }].map(bad => ({ bad })))("refuses malformed six-field envelope $bad", async ({ bad }) => {
     await expect(withFunctions(async tx => { await tx.$queryRawUnsafe("SELECT pg_temp.correlated_calendar_request_json($1::jsonb)", JSON.stringify(bad)); }))
       .rejects.toThrow("CORRELATED_CALENDAR_REQUEST_SHAPE_REQUIRED");
+    await expect(prisma.$queryRawUnsafe("SELECT public.sms_correlated_calendar_request_json($1::jsonb)", JSON.stringify(bad)))
+      .rejects.toThrow("CORRELATED_CALENDAR_REQUEST_SHAPE_REQUIRED");
   });
   it.each([0, -1, 1.2, 2147483648])("refuses nonpositive/noninteger/out-of-range account version %s", async accountVersion => {
     await expect(withFunctions(async tx => { await tx.$queryRawUnsafe("SELECT pg_temp.correlated_calendar_request_json($1::jsonb)",
       JSON.stringify({ title: "x", startsAt: "x", endsAt: "x", timezone: "x", requestId: "x", accountVersion })); }))
       .rejects.toThrow("CORRELATED_CALENDAR_ACCOUNT_VERSION_REQUIRED");
+    await expect(prisma.$queryRawUnsafe("SELECT public.sms_correlated_calendar_request_hash($1::jsonb)",
+      JSON.stringify({ title: "x", startsAt: "x", endsAt: "x", timezone: "x", requestId: "x", accountVersion })))
+      .rejects.toThrow("CORRELATED_CALENDAR_ACCOUNT_VERSION_REQUIRED");
+  });
+  it.each(["", "😀".repeat(96)])("public request-id refuses the same empty/UTF16 bound as TypeScript %#", async receipt => {
+    expect(() => personalCorrelatedCalendarRequestId(receipt)).toThrow();
+    await expect(prisma.$queryRawUnsafe("SELECT public.sms_correlated_calendar_request_id($1::text)", receipt))
+      .rejects.toThrow("CORRELATED_CALENDAR_RECEIPT_ID_REQUIRED");
   });
 });

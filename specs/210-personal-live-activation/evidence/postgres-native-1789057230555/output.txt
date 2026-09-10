@@ -1,0 +1,127 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_6f07c3b7050345659b0b89cd5cfad8fe","template":"endvera_personal_210_d9a487bf62684cbbb6d26ddf7c3b3128","migrationFingerprint":"78:9d69f861d1884ca2b789ed72a691b5c2","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T16:21:27.1916104Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (82 tests | 3 failed) 34382ms
+     × commits exactly one isolated pending review and stable replay in UTC 1239ms
+     × commits exactly one isolated pending review and stable replay in America/New_York 684ms
+     × commits exactly one isolated pending review and stable replay in Asia/Tokyo 637ms
+     ✓ remains OFF without writing a draft or changing sources  381ms
+     ✓ refuses a preexisting generic operation instead of adopting its request UUID  663ms
+     ✓ a marked operation without its review cannot commit  620ms
+     ✓ rolls back both new rows on a failure after provisional preparation  706ms
+     ✓ a committed review and marker cannot be rewritten or removed  608ms
+     ✓ current revocation refuses even a known replay without changing the saved review  627ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  498ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  643ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  541ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  535ms
+     ✓ a genuine refused ambiguous answer is not recast as a consumed accepted receipt  541ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  534ms
+     ✓ current MODEL grant revocation refuses without changing the historical receipt  463ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1221ms
+     ✓ keeps a later active question intact while inspecting the earlier inactive receipt  768ms
+     ✓ holds current owner authority against a real concurrent revocation, then refuses the next read  803ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate  340ms
+     ✓ STORE_OFF preserves evidence while selecting the correct oldest candidate 158ms
+     ✓ BRIDGE_OFF preserves evidence while selecting the correct oldest candidate 233ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1197ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1227ms
+     ✓ GOOGLE_REVOKED preserves evidence while selecting the correct oldest candidate 218ms
+     ✓ MODEL_REVOKED preserves evidence while selecting the correct oldest candidate 273ms
+     ✓ IDENTITY_REVISED preserves evidence while selecting the correct oldest candidate 201ms
+     ✓ OWNER_REVISED preserves evidence while selecting the correct oldest candidate 219ms
+     ✓ an orphan bare hour stays deterministic and never completes a source 66ms
+     ✓ a retained calendar confirmation reserves 14h without interpreting it 219ms
+     ✓ a retained calendar confirmation reserves Ajoute inspection vendredi à 14h without interpreting it  332ms
+     ✓ two distinct live reply backends commit at most one canonical receipt and acknowledgment  343ms
+     ✓ 14h uses the canonical consumer once and creates exactly one matching unsent acknowledgment  385ms
+     ✓ 3h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 271ms
+     ✓ independent or reserved message Qu’est-ce que j’ai demain? does not consume a pending answer 183ms
+     ✓ independent or reserved message Ajoute inspection vendredi à 14h does not consume a pending answer 185ms
+     ✓ independent or reserved message CONFIRME ENDVERA AGENDA bois lac lune sable does not consume a pending answer 199ms
+     ✓ OFF cannot consume or prepare an acknowledgment 235ms
+     ✓ BEFORE_ACCEPTANCE cannot consume or prepare an acknowledgment 157ms
+     ✓ REVOKED cannot consume or prepare an acknowledgment 166ms
+     ✓ AFTER_INSERT_FAILURE rolls back the real consumer/source CAS and acknowledgment insert 269ms
+     ✓ AFTER_INSERT_REVOKED rolls back the real consumer/source CAS and acknowledgment insert  312ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1229ms
+     ✓ expires WAITING once, retains source/question/budget/history  1172ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1171ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1253ms
+     ✓ existing ingress worker routes 14h without another model or source completion 224ms
+     ✓ existing ingress worker routes 3h without another model or source completion 210ms
+     ✓ existing ingress worker routes Ajoute une visite vendredi without another model or source completion 178ms
+     ✓ existing ingress worker routes OFF without another model or source completion 285ms
+     ✓ retains atomic source/question/registry with preparation ON 159ms
+     ✓ retains atomic source/question/registry with preparation OFF 94ms
+     ✓ retains atomic source/question/registry with preparation REVOKED_AFTER_SOURCE_CAS 143ms
+     ✓ prepares only START ambiguity and commits exact question plus source CAS 128ms
+     ✓ prepares only END ambiguity and commits exact question plus source CAS 153ms
+     ✓ missing-end model template requests full reformulation before any misleading question is inserted 107ms
+     ✓ current grant changed after inspection rolls back the inserted question and source state 203ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  360ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only 259ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only  332ms
+     ✓ attached but OFF refuses the ordinary approval path 123ms
+     ✓ post-response Google revocation keeps the entire exposure and never creates WAITING 196ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry 231ms
+     ✓ OFF does not require valid input or mutate the DB 1ms
+     ✓ commits exact complete wire + shared ledger without calendar draft or additional provider work 295ms
+     ✓ rolls registry, question and shared ledger back if source completion is omitted 119ms
+     ✓ rejects lease replacement after registry insertion even if a raw UPDATE tries to complete 95ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1678ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in UTC 291ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in America/New_York 229ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo 225ms
+     ✓ missing immutable acceptedAt refuses; historical updatedAt is never substituted 129ms
+     ✓ an SMS received before the durable question receipt cannot become its answer later 238ms
+     ✓ another actor cannot load the question or consume its reply 136ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  348ms
+     ✓ revocation remains possible but prevents attaching or consuming evidence 149ms
+     ✓ rejects a minimal forged ACCEPTED packet at the actual INSERT trigger 216ms
+     ✓ competing consumption of the same SMS commits at most one permanent receipt 186ms
+     ✓ five creations across both types share one permanent hourly cap  609ms
+     ✓ keeps one visible pair namespace after re-pairing into another workspace/owner 276ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  585ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends 249ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 79 passed (82)
+   Start at  12:20:49
+   Duration  38.10s (transform 1.84s, setup 0ms, import 3.51s, tests 34.38s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > atomic correlated calendar preparation from two real persisted synthetic SMS sources > commits exactly one isolated pending review and stable replay in UTC
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > atomic correlated calendar preparation from two real persisted synthetic SMS sources > commits exactly one isolated pending review and stable replay in America/New_York
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > atomic correlated calendar preparation from two real persisted synthetic SMS sources > commits exactly one isolated pending review and stable replay in Asia/Tokyo
+AssertionError: expected { operations: [] } to deeply equal []
+
+- Expected:
+[]
+
++ Received:
+{
+  "operations": [],
+}
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:232:72
+    230|     expect(after.operations.filter(op => op.kind === "calendar_write")…
+    231|     expect(await prisma.personalSmsCorrelatedCalendarReview.count({ wh…
+    232|     expect(await personalCalendarActions(x.f.userId, x.f.workspaceId))…
+       |                                                                        ^
+    233|     await expect(preparePersonalCalendar({ ...x.f.actor, requestId: pe…
+    234|       .rejects.toThrow("CALENDAR_CORRELATED_REVIEW_UNAVAILABLE");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-80e5e3de06c741dab10066fa9d9ce15a

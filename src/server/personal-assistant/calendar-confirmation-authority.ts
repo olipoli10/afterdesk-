@@ -74,6 +74,8 @@ async function binding(tx: DB, actor: Actor, input: { sourceOperationId: string;
       AND (($6::timestamptz IS NULL AND s.status='completed') OR ($6::timestamptz IS NOT NULL AND s.status='processing' AND s.attempts=1 AND s."leaseUntil"=($6::timestamptz AT TIME ZONE 'UTC') AND s."leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')))
       AND child.kind='personal_model_candidate_v1' AND child.status='completed'
       AND d.kind='calendar_write' AND d.status='pending' AND d.attempts=0 AND d."leaseUntil" IS NULL
+      AND d."correlatedTemporalReceiptId" IS NULL
+      AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarReview" correlated WHERE correlated."calendarOperationId"=d.id)
       AND w.status='active' AND m.status='active' AND m.role='owner'
       AND i.channel='sms' AND i.status='active' AND i.verified=true AND 'COMMAND'=ANY(i.permissions)
       AND i."normalizedAddress"=s.request->>'from'

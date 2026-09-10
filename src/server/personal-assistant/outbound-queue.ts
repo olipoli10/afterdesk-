@@ -121,6 +121,8 @@ export async function selectPersonalAutomaticOutboundCandidates(input: Input = {
               AND summary.kind='calendar_confirmation_summary' AND summary.status='pending' AND summary."requestHash"=c."summaryRequestHash"
               AND summary.request->>'challengeId'=c.id AND o.request->>'text'=summary.request->>'text'
               AND d.kind='calendar_write' AND d.status='pending' AND d.attempts=0 AND d."leaseUntil" IS NULL
+              AND d."correlatedTemporalReceiptId" IS NULL
+              AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarReview" correlated WHERE correlated."calendarOperationId"=d.id)
               AND d."requestHash"=c.prepared#>>'{binding,calendar,requestHash}'
               AND g.provider='google_calendar' AND g.status='connected' AND g."revokedAt" IS NULL AND credential."revokedAt" IS NULL
               AND g.id=c.prepared#>>'{binding,calendar,accountId}' AND g."stateVersion"::text=c.prepared#>>'{binding,calendar,accountVersion}'
