@@ -1,5 +1,15 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 23:36Z — private real preflight refused, diagnosis continues
+
+Bridge a8844c06 reviewed and physical nonsecret ingress confirmed no echo.
+One real Prisma T-only child completed0; final preflight REFUSED preserved.
+No automatic retry or migration. T suspended; separate READ ONLY connector
+diagnostic suggests backend pg_stat_ssl differs from client TLS. Do not assert
+the lost original snapshot or promote PASS. Fixed safe diagnostic and semantic
+peer review in progress. Root6742 PASS/3 historical skips; bridge69 targetPASS.
+See audits/PILOT_TRIAL_PRIVATE_HANDOFF_CONTROLLER.md. Continue authorized work.
+
 ## 2026-09-10 23:10Z — actual managed trial baseline captured
 
 T-only read-only transaction captured183tables/2624oldcolumns;81 total rows,
