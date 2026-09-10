@@ -8,7 +8,7 @@ import { createPersonalDraftRequests, loadPersonalServiceState, personalDelivery
 import { useMobileSession } from "@/state/mobile-session";
 import { PersonalModelConnection } from "@/components/personal-model-connection";
 import { PersonalModelReviewList } from "@/components/personal-model-reviews";
-import { PersonalCorrelatedCalendarReviewList } from "@/components/personal-correlated-calendar-review-list";
+import { PersonalCorrelatedCalendarApproval } from "@/components/personal-correlated-calendar-approval";
 
 function PersonalService({ workspaceId }: { workspaceId: string }) {
   const api = useMemo(() => new MobileApi({ getCookie: () => authClient.getCookie(), browserManagedCredentials: Platform.OS === "web" }), []);
@@ -80,7 +80,7 @@ function PersonalService({ workspaceId }: { workspaceId: string }) {
     <Button tone="secondary" onPress={() => router.push("/calendar-connections")}>2 · Connecter mon Google Agenda</Button>
     <PersonalModelConnection key={workspaceId} workspaceId={workspaceId} />
     <PersonalModelReviewList key={`reviews:${workspaceId}`} workspaceId={workspaceId} />
-    <PersonalCorrelatedCalendarReviewList key={`correlated:${workspaceId}`} workspaceId={workspaceId} />
+    <PersonalCorrelatedCalendarApproval key={`correlated:${workspaceId}`} workspaceId={workspaceId} />
     {message ? <Notice>{message}</Notice> : null}
     {readErrors.phoneUnavailable && !loading ? <Notice>Impossible de vérifier ton numéro. L’association et les envois sont désactivés jusqu’à une nouvelle vérification.</Notice> : null}
     {readErrors.outboxUnavailable && !loading ? <Notice>Le suivi des envois est indisponible. Tu peux associer ton numéro si sa configuration est confirmée, mais attends le retour du suivi avant de préparer ou d’envoyer un message.</Notice> : null}

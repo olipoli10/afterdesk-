@@ -9,6 +9,9 @@ import { personalOutboxSchema, personalPairingSchema, personalPhoneSchema } from
 import { personalModelCommand, personalModelStatusSchema, personalModelPreparedSchema, personalModelConsentSchema, personalModelDisconnectedSchema } from "@/lib/personal-model";
 import { personalModelReviewsSchema } from "@/lib/personal-model-reviews";
 import { parsePersonalCorrelatedCalendarList } from "@/lib/personal-correlated-calendar-list";
+import { correlatedApprovalId, snapshotCorrelatedApprovalJson, personalCorrelatedCalendarApprovalCommandSchema,
+  parsePersonalCorrelatedCalendarApprovalOffer, parsePersonalCorrelatedCalendarApprovalResult, parsePersonalCorrelatedCalendarApprovalResponse,
+  type PersonalCorrelatedCalendarApprovalCommand } from "@/lib/personal-correlated-calendar-approval";
 import { mobileCommandSchema } from "@/lib/commands";
 import {
   mobileAssistantHistorySchema,
@@ -147,6 +150,30 @@ function statusCode(status: number): MobileApiErrorCode {
 }
 
 export class MobileApi {
+  async personalCorrelatedCalendarApprovalOffer(workspaceId: string, reviewId: string, signal?: AbortSignal) {
+    const workspace = correlatedApprovalId.parse(workspaceId), review = correlatedApprovalId.parse(reviewId);
+    const value = await this.request(`/api/endvera/v1/personal/model/correlated-calendar-reviews/approval-offer?workspaceId=${encodeURIComponent(workspace)}&reviewId=${encodeURIComponent(review)}`, { method: "GET", signal }, 15_000);
+    if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");
+    let result: ReturnType<typeof parsePersonalCorrelatedCalendarApprovalOffer>;
+    try { result = parsePersonalCorrelatedCalendarApprovalOffer(value, workspace, review); } catch { throw new MobileApiError("INVALID_RESPONSE"); }
+    if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN"); return result;
+  }
+  async personalCorrelatedCalendarApprovalResult(workspaceId: string, reviewId: string, signal?: AbortSignal) {
+    const workspace = correlatedApprovalId.parse(workspaceId), review = correlatedApprovalId.parse(reviewId);
+    const value = await this.request(`/api/endvera/v1/personal/model/correlated-calendar-reviews/approval-result?workspaceId=${encodeURIComponent(workspace)}&reviewId=${encodeURIComponent(review)}`, { method: "GET", signal }, 15_000);
+    if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");
+    let result: ReturnType<typeof parsePersonalCorrelatedCalendarApprovalResult>;
+    try { result = parsePersonalCorrelatedCalendarApprovalResult(value, workspace, review); } catch { throw new MobileApiError("INVALID_RESPONSE"); }
+    if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN"); return result;
+  }
+  async approvePersonalCorrelatedCalendar(raw: PersonalCorrelatedCalendarApprovalCommand, signal?: AbortSignal) {
+    const command = personalCorrelatedCalendarApprovalCommandSchema.parse(snapshotCorrelatedApprovalJson(raw));
+    const value = await this.request("/api/endvera/v1/personal/model/correlated-calendar-reviews/approve", { method: "POST", signal, body: JSON.stringify(command) }, 30_000);
+    if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");
+    let result: ReturnType<typeof parsePersonalCorrelatedCalendarApprovalResponse>;
+    try { result = parsePersonalCorrelatedCalendarApprovalResponse(value, command); } catch { throw new MobileApiError("INVALID_RESPONSE"); }
+    if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN"); return result;
+  }
   async personalCorrelatedCalendarReviews(workspaceId: string, signal?: AbortSignal) {
     const value = await this.request(`/api/endvera/v1/personal/model/correlated-calendar-reviews?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET", signal }, 15_000);
     if (signal?.aborted) throw new MobileApiError("OUTCOME_UNKNOWN");

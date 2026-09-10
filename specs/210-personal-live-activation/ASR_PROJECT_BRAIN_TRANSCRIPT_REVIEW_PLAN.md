@@ -145,3 +145,44 @@ The controller next authorizes **GET only**, not mobile UI or R2:
 - Tests must falsify OFF/no downstream access, exact query bounds/duplicates, session-derived actor, role/email refusal, limiter identity, auth/rate/service exceptions, mid-await switch disable, response status/flags/no-store, and absence of mutation/dispatch exports. No new native inventory for this route without controller coordination.
 
 Installed Next route-handler guide plus the selected Next skill route/async/runtime references were read before this slice. Existing R1 reader source/native proof stays frozen for controller checkpoint; route code and its tests are a separate bounded delta.
+
+## 2026-09-10 20:37Z — controller continuation: disclosure deadline repair only
+
+Fresh controller inspection of the existing reader and GET found no original
+request abort/deadline propagation and no post-commit expiry check. The SQL read
+checks DB expiry before callback return, but commit latency and authenticated
+route latency can still make that snapshot obsolete before disclosure. This is
+a reproducible hypothesis to test first, not an observed external leak.
+
+Authorize the next bounded local repair and independent review under the active
+campaign: reader, existing GET, focused tests and controller native fixtures.
+No source discovery route, mobile synthetic-demo UI, schema/migration, audio
+session creation, decoding, provider or R2 fact writer is authorized by this
+addendum. A fake transcript panel is not the next user-facing deliverable.
+
+Required contract:
+
+- Capture immutable wall/monotone starts and request signal at GET entry before
+  authentication. Overall disclosure budget10s, never renewed by later awaits.
+  OFF still precedes auth/DB. After every await and before JSON publication,
+  reject aborted, expired or backward-clock work without protected content.
+- Reader accepts an optional original context; default bounded local7s (existing
+  maxWait2s + transaction5s), never expands caller remaining budget. Snapshot IDs,
+  deadline fields and signal references before await. No automatic retry.
+- Preserve current result grammar/fingerprint, provenance checks, shared lock
+  order and existing SQL79. Bound transaction options within remaining budget;
+  statement/lock maxima remain2000ms/250ms, lower when necessary.
+- Retain final DB clock internally with the immutable result. After transaction
+  settlement, use original monotone elapsed conservatively against the DB-derived
+  remaining expiry and check original wall/monotone budget. Do not return a new
+  client authority token or change existing reviewFingerprint.
+- Route must suppress an otherwise valid late reader result. No Promise.race
+  claim that Prisma/auth can be forcibly cancelled; post-await refusal plus
+  transaction limits are the tested guarantee. No diagnostics containing text.
+- First retain RED tests for late auth/rate/reader, abort, rollback, commit delay
+  and immutable context. Then correct narrowly, peer-review deltas and exercise
+  actual native read/commit expiration where the existing fixture permits it.
+
+The source-to-session discovery gap and real ASR routing/privacy/consent remain
+separate future design/activation prerequisites. Existing protected read hardening
+is useful independently; it must not manufacture a successful transcription.

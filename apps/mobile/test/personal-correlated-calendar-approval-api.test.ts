@@ -1,0 +1,21 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { MobileApi } from "../src/lib/api";
+import { approvalOfferFixture, approvalCommandFixture, approvalResponseFixture, approvalHistoryFixture } from "./fixtures/correlated-calendar-approval";
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
+const setup = (raw: unknown) => { const fetchImpl = vi.fn().mockResolvedValue(Response.json(raw)), getCookie = vi.fn(() => "synthetic-cookie");
+  return { api: new MobileApi({ baseUrl: "https://synthetic.invalid", fetchImpl, getCookie }), fetchImpl, getCookie }; };
+describe("three correlated mobile API methods, fake HTTP only", () => {
+  it("gets the selected offer without a write or actor field", async () => { const { api, fetchImpl } = setup(approvalOfferFixture()); await api.personalCorrelatedCalendarApprovalOffer("workspace", "review");
+    expect(fetchImpl).toHaveBeenCalledOnce(); expect(fetchImpl.mock.calls[0][0]).toBe("https://synthetic.invalid/api/endvera/v1/personal/model/correlated-calendar-reviews/approval-offer?workspaceId=workspace&reviewId=review"); expect(fetchImpl.mock.calls[0][1].method).toBe("GET"); });
+  it("gets history without expired source/approval endpoints", async () => { const { api, fetchImpl } = setup(approvalHistoryFixture()); await api.personalCorrelatedCalendarApprovalResult("workspace", "review"); expect(fetchImpl.mock.calls[0][0]).toContain("/approval-result?workspaceId=workspace&reviewId=review"); expect(fetchImpl.mock.calls[0][1].method).toBe("GET"); });
+  it("sends only the immutable exact command once", async () => { const { api, fetchImpl } = setup(approvalResponseFixture()), command = approvalCommandFixture(); const pending = api.approvePersonalCorrelatedCalendar(command); command.reviewId = "other";
+    await pending; expect(fetchImpl).toHaveBeenCalledOnce(); expect(fetchImpl.mock.calls[0][0]).toContain("/correlated-calendar-reviews/approve"); expect(JSON.parse(fetchImpl.mock.calls[0][1].body)).toEqual(approvalCommandFixture()); expect(fetchImpl.mock.calls[0][1].headers.Cookie).toBe("synthetic-cookie"); });
+  it.each(["offer", "result", "approve"])("pre-aborted %s sends nothing", async kind => { const { api, fetchImpl, getCookie } = setup(null), ac = new AbortController(); ac.abort();
+    const pending = kind === "offer" ? api.personalCorrelatedCalendarApprovalOffer("workspace", "review", ac.signal) : kind === "result" ? api.personalCorrelatedCalendarApprovalResult("workspace", "review", ac.signal) : api.approvePersonalCorrelatedCalendar(approvalCommandFixture(), ac.signal);
+    await expect(pending).rejects.toMatchObject({ code: "OUTCOME_UNKNOWN" }); expect(fetchImpl).not.toHaveBeenCalled(); expect(getCookie).not.toHaveBeenCalled(); });
+  it.each([401, 404, 409, 429, 500])( "HTTP %i never retries POST", async status => { const { api, fetchImpl } = setup(null); fetchImpl.mockResolvedValue(Response.json({}, { status })); await expect(api.approvePersonalCorrelatedCalendar(approvalCommandFixture())).rejects.toThrow(); expect(fetchImpl).toHaveBeenCalledOnce(); });
+  it("30s POST timeout remains unknown and removes listener without replay", async () => { vi.useFakeTimers(); const { api, fetchImpl } = setup(null); fetchImpl.mockReturnValue(new Promise(() => undefined)); const ac = new AbortController(), remove = vi.spyOn(ac.signal, "removeEventListener");
+    const assertion = expect(api.approvePersonalCorrelatedCalendar(approvalCommandFixture(), ac.signal)).rejects.toMatchObject({ code: "OUTCOME_UNKNOWN" }); await vi.advanceTimersByTimeAsync(30000); await assertion;
+    expect(fetchImpl).toHaveBeenCalledOnce(); expect(remove).toHaveBeenCalledOnce(); expect(vi.getTimerCount()).toBe(0); });
+  it("wrong response fingerprint remains opaque", async () => { const { api } = setup({ ...approvalResponseFixture(), expectedReviewFingerprint: "f".repeat(64) }); await expect(api.approvePersonalCorrelatedCalendar(approvalCommandFixture())).rejects.toMatchObject({ code: "INVALID_RESPONSE" }); });
+});

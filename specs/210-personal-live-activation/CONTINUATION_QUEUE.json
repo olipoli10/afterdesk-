@@ -62,12 +62,12 @@
     },
     {
       "id": "SMS_CORRELATED_EXPLICIT_APPROVAL",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": ["SMS_CLARIFICATION_CORRELATION"],
       "evidence": "SMS_CORRELATED_TYPED_APPROVAL_BACKEND_PLAN.md",
       "completed": ["Controller fully read backend/mobile plans and independent design review; selected immutable approval identity, same existing executor, strict owner and original expiry, separate historical result lookup without reopening SMS or action", "Pure A view/command/claim/state contract reviewed; twelve reproduced __proto__ unknown-key bypass failures corrected before canonicalization. Author149, peer103 and controller103 PASS; fresh root5324 PASS/3 historical skips17:49:12.866Z, TypeScript and scoped lint PASS. No caller or action authority"],
       "checkpoint": "C2c same executor and typed POST reviewed; native171 PASS20:04:49.833Z/STOPPED proves real encrypted synthetic token loader with injected HTTP, claim and terminal ACK loss, expiry and revocation. Earlier169/1 expiry-sentinel failure retained and fixture timing corrected. Root6003 PASS/3 historical skips20:05:04.850Z, build1789070619221 PASS; offer7 and POST7 actual OFF HTTP PASS with both servers stopped/ports closed20:07:55.780Z. SQL79 frozen05163.../fingerprint79:41de317b70655965d494f1c3e0ea5940; remote70 unchanged.",
-      "remaining": ["Fresh combined20-clone native367/367 PASS20:10:16.995Z/STOPPED at1789070733399; all20 clone fingerprints match immutable79", "Mobile selected exact offer, one-use gesture, metadata-only persist-before-POST and historical C3 result panel implementation active; peer review and full mobile/export remain", "No actual provider execution, Google consent, APK/device verification or rollout is implied; live prerequisites remain separately blocked"],
+      "remaining": ["Fresh combined20-clone native367/367 PASS20:10:16.995Z/STOPPED at1789070733399; all20 clone fingerprints match immutable79", "Mobile exact-offer approval and persisted one-use metadata/C3 history reviewed and implemented. Controller full mobile766 PASS20:29:58.773Z, Android Hermes export PASS20:30:56.160Z and root6030 PASS/3 historical skips20:31:43.043Z. See audits/SMS_CORRELATED_MOBILE_CONTROLLER.md; no actual SecureStore/Samsung proof", "No actual provider execution, Google consent, APK/device verification or rollout is implied; live prerequisites remain separately blocked"],
       "liveObserved": false
     },
     {

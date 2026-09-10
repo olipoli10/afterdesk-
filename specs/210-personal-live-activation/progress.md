@@ -1,5 +1,23 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 20:32Z — mobile exact approval verified locally; continue voice prerequisites
+
+Selected offered card, explicit single approval, durable metadata-before-POST and
+historical result controls implemented; account/origin/background/expiry fences.
+Separate reviewers preserved and closed contract preflight/provenance defects and
+six storage/lifecycle REDs. Controller eighteen rendered cases join full mobile
+766/766 PASS at20:29:58.773Z (1789072190008), Android Hermes export PASS at
+20:30:56.160Z (1789072199920), root6030 PASS/3 historical skips at20:31:43.043Z
+(1789072210645), mobile TypeScript and scoped lint exit0. Exact scope/hashes in
+audits/SMS_CORRELATED_MOBILE_CONTROLLER.md. No new APK/device/provider evidence.
+
+The correlated explicit approval queue entry is DONE_LOCAL, not live completion.
+Continue voice prerequisites: existing GET needs a session ID absent from mobile
+sources, and only exposes deterministic synthetic test text. Do not fabricate an
+ASR session or present a test card as useful real transcription. No external action,
+SQL migration, secret access or rubric change. Dashboard22%/46.75%/C2 18of18/
+real-test NO-GO/Verified-E2E0% remains unchanged.
+
 ## 2026-09-10 20:10Z — same executor and HTTP verified; mobile implementation active
 
 Native171 PASS20:04:49.833Z/STOPPED, receipt1789070541270; real PostgreSQL,
