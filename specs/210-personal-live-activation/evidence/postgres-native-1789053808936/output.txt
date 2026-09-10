@@ -1,0 +1,21 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"project-brain-voice-transcript-review.postgres.test.ts","database":"endvera_personal_210_9d2f5695ed374da8b9ae0007ea17319a","template":"endvera_personal_210_d2cdee865b714b0491f981fe48f8ff3c","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T15:23:56.7499205Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts (12 tests) 10273ms
+     ✓ reads exact accepted synthetic evidence and changes nothing under UTC  423ms
+     ✓ an actually expired short consent/session never renews protected content  8052ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  11:23:45
+   Duration  11.22s (transform 544ms, setup 0ms, import 793ms, tests 10.27s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-0d3cc2f516a44d1ea3f35b17292dc402

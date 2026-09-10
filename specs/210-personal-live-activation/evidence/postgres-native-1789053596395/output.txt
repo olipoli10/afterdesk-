@@ -1,0 +1,170 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"project-brain-voice-transcript-review.postgres.test.ts","database":"endvera_personal_210_e12e97e2db37459a93e4b81f6dd417cb","template":"endvera_personal_210_64a4056ea34f456bbac32005cb056509","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T15:20:15.6426705Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts (12 tests | 9 failed) 2761ms
+     × reads exact accepted synthetic evidence and changes nothing under UTC 418ms
+     × reads exact accepted synthetic evidence and changes nothing under America/New_York 184ms
+     × reads exact accepted synthetic evidence and changes nothing under Asia/Tokyo 168ms
+     ✓ OFF and incomplete admitted session disclose no content and change no evidence 123ms
+     ✓ an application CLIENT admin in the same workspace and a mismatched workspace are not the PB owner 162ms
+     × revoke/regrant membership cannot revive the original pinned epoch 153ms
+     ✓ unknown synthetic outcome is not a readable transcript or settled exposure 146ms
+     × real immutable transcript guards reject text/expiry tampering; reader does not repair evidence 159ms
+     × a legal content-only purge makes the former result unreadable without changing its lineage 160ms
+     × an actually expired short consent/session never renews protected content 147ms
+     × two real reader backends may share the canonical lock and return the same immutable evidence 275ms
+     × the current-owner read holds a real revocation until its transaction completes; next read refuses 662ms
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 3 passed (12)
+   Start at  11:20:11
+   Duration  3.80s (transform 586ms, setup 0ms, import 853ms, tests 2.76s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > reads exact accepted synthetic evidence and changes nothing under UTC
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > reads exact accepted synthetic evidence and changes nothing under America/New_York
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > reads exact accepted synthetic evidence and changes nothing under Asia/Tokyo
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > two real reader backends may share the canonical lock and return the same immutable evidence
+PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `N/A`. Message: `Failed to deserialize column of type 'void'. If you're using $queryRaw and this column is explicitly marked as `Unsupported` in your Prisma schema, try casting this column to any supported Prisma type such as `String`.`
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7268
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ prisma.$transaction.isolationLevel src/server/model-gateway/voice/project-brain-transcript-review.ts:44:5
+     42|     // Shared form of the existing session namespace, acquired before …
+     43|     // locks. Writers use its exclusive form. No provider/day locks or…
+     44|     await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock_shared(hash…
+       |     ^
+     45|     const inspected = await inspectProjectBrainVoiceSessionInTransacti…
+     46|     const session = inspected.projection;
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > revoke/regrant membership cannot revive the original pinned epoch
+AssertionError: expected [Function] to throw error including 'AUTHORITY_CHANGED' but got '\nInvalid `prisma.$queryRawUnsafe()` …'
+
+- Expected
++ Received
+
+- AUTHORITY_CHANGED
++
++ Invalid `prisma.$queryRawUnsafe()` invocation:
++
++
++ Raw query failed. Code: `N/A`. Message: `Failed to deserialize column of type 'void'. If you're using $queryRaw and this column is explicitly marked as `Unsupported` in your Prisma schema, try casting this column to any supported Prisma type such as `String`.`
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts:86:63
+     84|     await expect(readFixture(f)).rejects.toThrow();
+     85|     await prisma.constructionWorkspaceMember.update({ where: { workspa…
+     86|     const before = await rows(f); await expect(readFixture(f)).rejects…
+       |                                                               ^
+     87|   });
+     88|   it("unknown synthetic outcome is not a readable transcript or settle…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > real immutable transcript guards reject text/expiry tampering; reader does not repair evidence
+PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `N/A`. Message: `Failed to deserialize column of type 'void'. If you're using $queryRaw and this column is explicitly marked as `Unsupported` in your Prisma schema, try casting this column to any supported Prisma type such as `String`.`
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7268
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ prisma.$transaction.isolationLevel src/server/model-gateway/voice/project-brain-transcript-review.ts:44:5
+     42|     // Shared form of the existing session namespace, acquired before …
+     43|     // locks. Writers use its exclusive form. No provider/day locks or…
+     44|     await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock_shared(hash…
+       |     ^
+     45|     const inspected = await inspectProjectBrainVoiceSessionInTransacti…
+     46|     const session = inspected.projection;
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts:99:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > a legal content-only purge makes the former result unreadable without changing its lineage
+AssertionError: expected [Function] to throw error including 'REVIEW_REFUSED' but got '\nInvalid `prisma.$queryRawUnsafe()` …'
+
+- Expected
++ Received
+
+- REVIEW_REFUSED
++
++ Invalid `prisma.$queryRawUnsafe()` invocation:
++
++
++ Raw query failed. Code: `N/A`. Message: `Failed to deserialize column of type 'void'. If you're using $queryRaw and this column is explicitly marked as `Unsupported` in your Prisma schema, try casting this column to any supported Prisma type such as `String`.`
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts:104:63
+    102|     const f = await fixture(storage); await succeed(f); const before =…
+    103|     await prisma.voiceTranscriptSegment.update({ where: { id: before.t…
+    104|     const purged = await rows(f); await expect(readFixture(f)).rejects…
+       |                                                               ^
+    105|     expect(purged.transcripts[0].textFingerprint).toBe(before.transcri…
+    106|     expect(purged.attempt).toEqual(before.attempt); expect(purged.ai).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > an actually expired short consent/session never renews protected content
+PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `N/A`. Message: `Failed to deserialize column of type 'void'. If you're using $queryRaw and this column is explicitly marked as `Unsupported` in your Prisma schema, try casting this column to any supported Prisma type such as `String`.`
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7268
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ prisma.$transaction.isolationLevel src/server/model-gateway/voice/project-brain-transcript-review.ts:44:5
+     42|     // Shared form of the existing session namespace, acquired before …
+     43|     // locks. Writers use its exclusive form. No provider/day locks or…
+     44|     await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock_shared(hash…
+       |     ^
+     45|     const inspected = await inspectProjectBrainVoiceSessionInTransacti…
+     46|     const session = inspected.projection;
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts:110:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > the current-owner read holds a real revocation until its transaction completes; next read refuses
+PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `N/A`. Message: `Failed to deserialize column of type 'void'. If you're using $queryRaw and this column is explicitly marked as `Unsupported` in your Prisma schema, try casting this column to any supported Prisma type such as `String`.`
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7268
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ prisma.$transaction.isolationLevel src/server/model-gateway/voice/project-brain-transcript-review.ts:44:5
+     42|     // Shared form of the existing session namespace, acquired before …
+     43|     // locks. Writers use its exclusive form. No provider/day locks or…
+     44|     await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock_shared(hash…
+       |     ^
+     45|     const inspected = await inspectProjectBrainVoiceSessionInTransacti…
+     46|     const session = inspected.projection;
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts:138:22
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-fa83ce0c17354f51875e301b9287df34

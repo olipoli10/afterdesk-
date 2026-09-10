@@ -154,6 +154,10 @@ export function fingerprintVoiceGatewayProjection(projection: Omit<VoiceSegmentP
   return canonicalFingerprint({ projection: minimumProjection, subject: parsed });
 }
 
+export function voiceTranscriptOutputContractFingerprint(): `sha256:${string}` {
+  return canonicalFingerprint(VOICE_TRANSCRIPT_OUTPUT_CONTRACT);
+}
+
 export function buildVoiceGatewayRequest(input: {
   logicalOperationKey: string;
   tenantId: string;
@@ -181,7 +185,7 @@ export function buildVoiceGatewayRequest(input: {
     operationType: "intake_voice_transcription" as const,
     subject,
     requestFingerprint,
-    outputContractHash: canonicalFingerprint(VOICE_TRANSCRIPT_OUTPUT_CONTRACT),
+    outputContractHash: voiceTranscriptOutputContractFingerprint(),
     dataClass: input.dataClass,
     privacyRequirement: input.privacyRequirement,
     policyKey: input.policyKey,

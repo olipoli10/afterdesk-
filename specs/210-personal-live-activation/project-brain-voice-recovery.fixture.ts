@@ -13,8 +13,10 @@ import type { PreparedProjectBrainVoiceAdmission } from "@/server/model-gateway/
 // No tests/hooks/mocks register on import. No database access until a helper call.
 const audio = Buffer.from("AAAAHGZ0eXBNNEEgAAACAE00QSBpc29taXNvMgAAAs5tb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAgAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACHXRyYWsAAABcdGtoZAAAAAMAAAAAAAAAAAAAAAEAAAAAAAAAgAAAAAAAAAAAAAAAAQEAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAAIAAAAQAAAEAAAAAAZVtZGlhAAAAIG1kaGQAAAAAAAAAAAAAAAAAAB9AAAAIAFXEAAAAAAAtaGRscgAAAAAAAAAAc291bgAAAAAAAAAAAAAAAFNvdW5kSGFuZGxlcgAAAAFAbWluZgAAABBzbWhkAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAEEc3RibAAAAGpzdHNkAAAAAAAAAAEAAABabXA0YQAAAAAAAAABAAAAAAAAAAAAAQAQAAAAAB9AAAAAAAA2ZXNkcwAAAAADgICAJQABAASAgIAXQBUAAAAAAD6AAAAA+gWAgIAFFYhW5QAGgICAAQIAAAAYc3R0cwAAAAAAAAABAAAAAgAABAAAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAIAAAABAAAAFHN0c3oAAAAAAAAABAAAAAIAAAAUc3RjbwAAAAAAAAABAAAC+gAAABpzZ3BkAQAAAHJvbGwAAAACAAAAAf//AAAAHHNiZ3AAAAAAcm9sbAAAAAEAAAACAAAAAQAAAD11ZHRhAAAANW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAACGlsc3QAAAAIZnJlZQAAABBtZGF0ARggBwEYIAc=", "base64");
 
-export async function projectBrainRecoveryFixture(storage: ReadonlyMap<string, Buffer>) {
+export async function projectBrainRecoveryFixture(storage: ReadonlyMap<string, Buffer>, fixtureOptions: { consentLifetimeMs?: number } = {}) {
   requirePersonalDisposableDatabase();
+  const consentLifetimeMs = fixtureOptions.consentLifetimeMs ?? 3_600_000;
+  if (!Number.isInteger(consentLifetimeMs) || consentLifetimeMs < 2000 || consentLifetimeMs > 3_600_000) throw new Error("SYNTHETIC_CONSENT_LIFETIME_INVALID");
   const user = await prisma.user.create({ data: { email: `voice-recovery-${randomUUID()}@example.invalid`, name: "Synthetic PB recovery owner", emailVerified: true, role: "CLIENT" } });
   const { workspaceId } = await initializeConstructionWorkspace({ userId: user.id, name: "Synthetic PB recovery" });
   const project = await createConstructionProject({ userId: user.id, workspaceId, code: `PB-${randomUUID()}`, name: "Synthetic chantier" });
@@ -34,7 +36,7 @@ export async function projectBrainRecoveryFixture(storage: ReadonlyMap<string, B
     commandId: randomUUID(),
     consent: { schemaVersion: 1, purpose: "PROJECT_BRAIN_VOICE_LOCAL_SYNTHETIC", accepted: true, externalProcessingAllowed: false,
       version: "SYNTHETIC_CONSENT_NOT_PROVIDER_PERMISSION-v1", actorUserId: user.id, workspaceId, projectId: project.id, intakeId: intake.intakeId,
-      sourceId: source.id, sourceContentHash: source.contentHash, acceptedAt: new Date(now - 1000).toISOString(), expiresAt: new Date(now + 3_600_000).toISOString(),
+      sourceId: source.id, sourceContentHash: source.contentHash, acceptedAt: new Date(now - 1000).toISOString(), expiresAt: new Date(now + consentLifetimeMs).toISOString(),
       languageHint: "fr", maxTotalCostMicros: "1000000", retentionHours: 24 },
     segmentation: { transformer: { id: "synthetic-identity-fixture", version: "1", encodingProfile: "existing-small-fixture", mode: "SYNTHETIC_LOCAL" },
       segments: [{ ordinal: 0, startMs: 0, endMs: source.durationMs!, durationMs: source.durationMs!, mediaFormat: "m4a", mimeType: source.mimeType,
