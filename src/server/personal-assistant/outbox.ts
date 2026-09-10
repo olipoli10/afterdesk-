@@ -241,7 +241,10 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
       return outcome.value;
     }, operationId, { deadlineAt: execution.deadlineAt, signal: execution.signal });
     const finished = await execution.wait(() => withOutboundClaim(owned, env, execution, async tx => {
-      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"externalTransportPerformed"=true,"leaseUntil"=NULL,result=$9::jsonb,"updatedAt"=(now() AT TIME ZONE 'UTC')
+      // acceptedAt is the database's observation of this validated REST receipt,
+      // not Twilio's own acceptance instant, delivery, or a timestamp from input.
+      // It is persisted atomically with the exact claimed one-attempt completion.
+      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"externalTransportPerformed"=true,"leaseUntil"=NULL,result=$9::jsonb || jsonb_build_object('acceptedAt',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')),"updatedAt"=(now() AT TIME ZONE 'UTC')
       WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "requestHash"=$4 AND status='processing' AND attempts=1
         AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC') AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC') AND "budgetId"=$6 AND "reservedCadMicros"=$7 AND kind=$8 AND result=$10::jsonb`,
     owned.row.id, owned.row.workspaceId, owned.row.createdByUserId, owned.row.requestHash, owned.leaseUntil, owned.budgetId, owned.reservation, owned.row.kind,

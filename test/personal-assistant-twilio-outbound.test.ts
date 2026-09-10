@@ -52,6 +52,31 @@ describe("bounded personal Twilio transport with fake HTTP", () => {
     const form = new URLSearchParams(transport.mock.calls[0][1].body); expect(form.get("Body")).toBe(request.text); expect(form.get("ValidityPeriod")).toBe("60"); expect(form.get("MaxPrice")).toBeNull();
     expect(form.get("StatusCallback")).toContain(`operationId=${operationId}`); expect(transport).toHaveBeenCalledOnce();
   });
+  it.each(["failed", "undelivered", "canceled", "received", "receiving", "scheduled", "accepted", "read", "invented", ""])("does not return SMS acceptance for REST status %s", async status => {
+    const transport = vi.fn().mockResolvedValue(Response.json({ sid: `SM${"c".repeat(32)}`, account_sid: env.TWILIO_ACCOUNT_SID, from: request.from, to: request.to, status }));
+    await expect(sendPersonalTwilio("sms_outbound", request, env, transport, operationId)).rejects.toThrow("TWILIO_OUTCOME_UNKNOWN");
+    expect(transport).toHaveBeenCalledOnce();
+  });
+  it.each(["failed", "busy", "no-answer", "canceled", "initiated", "invented", ""])("does not return voice acceptance for REST status %s", async status => {
+    const transport = vi.fn().mockResolvedValue(Response.json({ sid: `CA${"c".repeat(32)}`, account_sid: env.TWILIO_ACCOUNT_SID, from: request.from, to: request.to, status }));
+    await expect(sendPersonalTwilio("voice_outbound", request, env, transport, operationId)).rejects.toThrow("TWILIO_OUTCOME_UNKNOWN");
+    expect(transport).toHaveBeenCalledOnce();
+  });
+  it.each(["queued", "sending", "sent", "delivered"])("records SMS progression %s without claiming delivery", async status => {
+    const transport = vi.fn().mockResolvedValue(Response.json({ sid: `SM${"c".repeat(32)}`, account_sid: env.TWILIO_ACCOUNT_SID, from: request.from, to: request.to, status, error_code: null, error_message: null }));
+    expect(await sendPersonalTwilio("sms_outbound", request, env, transport, operationId)).toMatchObject({ providerStatus: status, delivered: false });
+    expect(transport).toHaveBeenCalledOnce();
+  });
+  it.each(["queued", "ringing", "in-progress", "completed"])("records voice progression %s without claiming a human heard it", async status => {
+    const transport = vi.fn().mockResolvedValue(Response.json({ sid: `CA${"c".repeat(32)}`, account_sid: env.TWILIO_ACCOUNT_SID, from: request.from, to: request.to, status }));
+    expect(await sendPersonalTwilio("voice_outbound", request, env, transport, operationId)).toMatchObject({ providerStatus: status, delivered: false });
+    expect(transport).toHaveBeenCalledOnce();
+  });
+  it.each([{ error_code: 30001 }, { error_message: "synthetic private failure" }])("does not accept a queued SMS carrying a contradictory error %j", async error => {
+    const transport = vi.fn().mockResolvedValue(Response.json({ sid: `SM${"c".repeat(32)}`, account_sid: env.TWILIO_ACCOUNT_SID, from: request.from, to: request.to, status: "queued", ...error }));
+    await expect(sendPersonalTwilio("sms_outbound", request, env, transport, operationId)).rejects.toThrow("TWILIO_OUTCOME_UNKNOWN");
+    expect(transport).toHaveBeenCalledOnce();
+  });
   it("escapes voice XML, disables recording and limits the call to 60 seconds", async () => {
     const transport = vi.fn().mockResolvedValue(Response.json({ sid: `CA${"c".repeat(32)}`, account_sid: env.TWILIO_ACCOUNT_SID, from: request.from, to: request.to, status: "queued" }));
     await sendPersonalTwilio("voice_outbound", { ...request, text: "Texte <Dial>+123</Dial> & autre" }, env, transport, operationId);

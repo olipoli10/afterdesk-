@@ -76,6 +76,19 @@ beforeEach(() => { vi.resetAllMocks(); });
 afterEach(() => vi.restoreAllMocks());
 
 describe("separate guarded calendar confirmation outbox branch", () => {
+  it("records provider acceptance with the DB clock inside the exact terminal CAS, never an input date", async () => {
+    const f = fixture();
+    await dispatchPersonalOutbound(f.row.id, f.env, f.transport);
+    const completion = mock.execute.mock.calls.find(call => call[0].includes("SET status='completed'"));
+    expect(completion).toBeDefined();
+    expect(completion![0]).toContain(`jsonb_build_object('acceptedAt',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'))`);
+    const providerReceipt = JSON.parse(completion![9]);
+    expect(providerReceipt).toMatchObject({ acceptedByProvider: true, delivered: false, approvalHash: f.row.requestHash });
+    expect(providerReceipt).not.toHaveProperty("acceptedAt");
+    expect(f.transport).toHaveBeenCalledOnce();
+    // The mock does not execute PostgreSQL or manufacture its clock result.
+    expect(mock.waiting).toHaveBeenCalledOnce();
+  });
   it("checks the current immutable source at claim, pre-HTTP and postresponse, then commits WAITING with completion", async () => {
     const f = fixture();
     expect(await dispatchPersonalOutbound(f.row.id, f.env, f.transport)).toMatchObject({ delivered: false });

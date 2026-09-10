@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it, vi } from "vitest";
+import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { initializeConstructionWorkspace } from "@/server/construction-assistant-v1/workspace";
 import { startPhonePairing, acceptPersonalSms, personalPhoneStatus, disconnectPersonalPhone } from "@/server/personal-assistant/phone-pairing";
@@ -27,6 +28,56 @@ async function fixture(budget = "10") {
 }
 async function prepare(f: Awaited<ReturnType<typeof fixture>>) { return preparePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, kind: "sms_outbound", to: f.envelope.from, text: "Bonjour synthétique", requestId: randomUUID() }, f.env); }
 describe("PostgreSQL phone pairing, immutable approval and outbound reservation", () => {
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("persists DB-observed acceptance in canonical UTC under %s, not the provider timestamp", async timezone => {
+    const f = await fixture(); const prepared = await prepare(f);
+    await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
+    const nativeTransaction = prisma.$transaction.bind(prisma);
+    const transaction = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: (tx: Prisma.TransactionClient) => Promise<unknown>, options?: { maxWait?: number; timeout?: number; isolationLevel?: Prisma.TransactionIsolationLevel }) =>
+      nativeTransaction(async tx => {
+        await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", timezone);
+        return work(tx);
+      }, options)) as typeof prisma.$transaction);
+    const clock = async () => (await prisma.$queryRawUnsafe<{ epochMs: number }[]>("SELECT floor(extract(epoch FROM clock_timestamp())*1000)::double precision AS \"epochMs\""))[0].epochMs;
+    let responseObservedAfter = 0;
+    const transport = vi.fn<typeof fetch>(async (_url, init) => {
+      const body = new URLSearchParams(String(init?.body));
+      responseObservedAfter = await clock();
+      return Response.json({ sid: `SM${randomUUID().replaceAll("-", "")}`, status: "queued", account_sid: f.env.TWILIO_ACCOUNT_SID,
+        from: body.get("From"), to: body.get("To"), acceptedAt: "2099-01-01T00:00:00.000Z" });
+    });
+    try {
+      const sent = await dispatchPersonalOutbound(prepared.operationId, f.env, transport);
+      const after = await clock();
+      const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } });
+      const receipt = row.result as { acceptedAt: string; providerSid: string; acceptedByProvider: boolean; delivered: boolean; approvalHash: string };
+      expect(row).toMatchObject({ status: "completed", attempts: 1, externalTransportPerformed: true, reservedCadMicros: 100000n });
+      expect(receipt).toMatchObject({ providerSid: sent.providerSid, acceptedByProvider: true, delivered: false, approvalHash: prepared.requestHash });
+      expect(receipt.acceptedAt).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/);
+      expect(new Date(receipt.acceptedAt).toISOString()).toBe(receipt.acceptedAt);
+      expect(Date.parse(receipt.acceptedAt)).toBeGreaterThanOrEqual(responseObservedAfter);
+      expect(Date.parse(receipt.acceptedAt)).toBeLessThanOrEqual(after);
+      expect(sent).not.toHaveProperty("acceptedAt"); expect(sent.delivered).toBe(false);
+      await expect(dispatchPersonalOutbound(row.id, f.env, transport)).rejects.toThrow("APPROVAL_REQUIRED");
+      expect(transport).toHaveBeenCalledOnce();
+      expect((await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: row.id } })).result).toEqual(row.result);
+    } finally { transaction.mockRestore(); }
+  });
+  it.each(["failed", "undelivered", "canceled"])("retains uncertainty, not an acceptance receipt, after a 2xx SMS %s response", async status => {
+    const f = await fixture(); const prepared = await prepare(f);
+    await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
+    const transport = vi.fn<typeof fetch>(async (_url, init) => {
+      const body = new URLSearchParams(String(init?.body));
+      return Response.json({ sid: `SM${randomUUID().replaceAll("-", "")}`, status, account_sid: f.env.TWILIO_ACCOUNT_SID, from: body.get("From"), to: body.get("To") });
+    });
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, transport)).rejects.toThrow("OUTBOUND_OUTCOME_REQUIRES_REVIEW");
+    const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } });
+    expect(row).toMatchObject({ status: "uncertain", attempts: 1, externalTransportPerformed: true, reservedCadMicros: 100000n });
+    expect(row.result).toMatchObject({ reviewRequired: true, automaticRetry: false, deliveryConfirmed: false });
+    expect(row.result).not.toHaveProperty("acceptedAt"); expect(row.result).not.toHaveProperty("acceptedByProvider");
+    await expect(dispatchPersonalOutbound(row.id, f.env, transport)).rejects.toThrow("APPROVAL_REQUIRED");
+    expect(transport).toHaveBeenCalledOnce();
+    expect((await prisma.personalAssistantBudget.findUniqueOrThrow({ where: { id: row.budgetId! } })).reservedCadMicros).toBe(100000n);
+  });
   it("automatically replies only to the original sender with standing self-SMS consent", async () => {
     const f = await fixture(); const workerEnv = { ...f.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" };
     const inbound = await enqueuePersonalSms({ ...f.envelope, messageSid: `SM${randomUUID().replaceAll("-", "")}`, body: "Bonjour", contentHash: "a".repeat(64) });

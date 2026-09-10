@@ -83,7 +83,14 @@ export async function sendPersonalTwilio(kind: OutboundKind, value: PersonalOutb
   try {
     while (true) { const part = await execution.wait(() => bodyReader.read()); if (part.done) break; size += part.value.byteLength; if (size > 65536) throw new Error(); parts.push(part.value); }
     execution.requireLive();
-    const parsed = z.object({ sid: z.string().regex(kind === "sms_outbound" ? /^SM[0-9a-f]{32}$/i : /^CA[0-9a-f]{32}$/i), status: z.string().max(40), account_sid: z.literal(env.TWILIO_ACCOUNT_SID!), to: z.literal(request.to), from: z.literal(request.from) }).parse(JSON.parse(Buffer.concat(parts).toString("utf8")));
+    // This immediate, explicit-From adapter does not schedule or use Messaging
+    // Services. A 2xx resource with a negative/inbound/unknown state is not an
+    // acceptance receipt. Keep the unknown-outcome path and never resend here.
+    const statusSchema = kind === "sms_outbound"
+      ? z.enum(["queued", "sending", "sent", "delivered"])
+      : z.enum(["queued", "ringing", "in-progress", "completed"]);
+    const parsed = z.object({ sid: z.string().regex(kind === "sms_outbound" ? /^SM[0-9a-f]{32}$/i : /^CA[0-9a-f]{32}$/i), status: statusSchema, account_sid: z.literal(env.TWILIO_ACCOUNT_SID!), to: z.literal(request.to), from: z.literal(request.from),
+      error_code: z.null().optional(), error_message: z.null().optional() }).parse(JSON.parse(Buffer.concat(parts).toString("utf8")));
     return { providerSid: parsed.sid, providerStatus: parsed.status, delivered: false as const };
   } catch { throw new Error("TWILIO_OUTCOME_UNKNOWN"); }
   } finally {
