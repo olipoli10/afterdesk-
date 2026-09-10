@@ -1,5 +1,17 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 23:10Z — actual managed trial baseline captured
+
+T-only read-only transaction captured183tables/2624oldcolumns;81 total rows,
+9nonempty tables, no application rows exported. Private baseline validated and
+T endpoint confirmedidle/suspended23:09:46Z. No migration yet. See
+audits/PILOT_TRIAL_AGGREGATE_CONTROLLER.md for exact capture/query/plan pins.
+Prisma canonical formatting repaired actual GENERATED_SCHEMA_MISMATCH in owned
+clean worktree; source now byte-matches generated schema. No generated client
+or migration change. Root6712/28 retains27 WIPfixture failures and1 spacing
+assertion; scoped78PASS after fixes, frozen root rerun pending. Trial runner
+85PASS committed456df894; private bridge still under separate review. Continue.
+
 ## 2026-09-10 22:47Z — old-data native proof and source binding
 
 Native PG17 aggregate preservation PASS:183 old tables/2624 old columns match

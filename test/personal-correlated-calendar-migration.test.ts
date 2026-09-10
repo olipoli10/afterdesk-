@@ -11,8 +11,10 @@ describe("forward78 correlated calendar provenance migration contract", () => {
     expect(sql).toContain('"PersonalAssistantOperation_correlatedTemporalReceiptId_key"');
     expect(sql).toContain('"PersonalSmsCorrelatedCalendarReview_receiptId_key"');
     expect(sql).toContain('"PersonalSmsCorrelatedCalendarReview_calendarOperationId_key"');
-    expect(prisma).toContain('correlatedTemporalReceiptId String? @unique');
-    expect(prisma).toContain('correlatedCalendarReview PersonalSmsCorrelatedCalendarReview? @relation("CorrelatedCalendarDraft")');
+    // Prisma's formatter aligns fields. Keep exact field/type/attribute tokens,
+    // but do not mistake horizontal spacing for a schema contract change.
+    expect(prisma).toMatch(/^[ \t]*correlatedTemporalReceiptId[ \t]+String\?[ \t]+@unique[ \t]*\r?$/m);
+    expect(prisma).toMatch(/^[ \t]*correlatedCalendarReview[ \t]+PersonalSmsCorrelatedCalendarReview\?[ \t]+@relation\("CorrelatedCalendarDraft"\)[ \t]*\r?$/m);
     for (const name of ["sms_correlated_calendar_marker_scope_key", "sms_correlated_calendar_receipt_scope_key", "sms_correlated_calendar_draft_scope_key"]) {
       expect(sql).toContain(`CREATE UNIQUE INDEX ${name}`); expect(prisma).toContain(`map: "${name}"`);
     }
