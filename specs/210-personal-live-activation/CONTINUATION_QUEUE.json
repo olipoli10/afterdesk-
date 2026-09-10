@@ -10,8 +10,9 @@
     {"id":"GOOGLE_OAUTH","status":"DONE_LOCAL","dependencies":[],"evidence":"progress.md","liveObserved":false,"limitations":["Google account consent not performed","Remote Google grant revocation not yet implemented; local encrypted credentials are cleared"]},
     {"id":"GUARDED_SMS_WORKER","status":"DONE_LOCAL","dependencies":["SIGNED_SMS_INGRESS","SMS_POSTGRES_CONCURRENCY"],"evidence":"progress.md","liveObserved":false},
     {"id":"APPROVED_SMS_VOICE_DELIVERY","status":"DONE_LOCAL","dependencies":["GUARDED_SMS_WORKER"],"evidence":"progress.md","liveObserved":false,"limitations":["Self-recipient pilot only","Tariff-reviewed reservations are not a ceiling on all provider invoice charges"]},
-    {"id":"HTTPS_ANDROID_CONFIGURATION","status":"IN_PROGRESS","dependencies":[],"evidence":"deployment/RELEASE.md","remaining":["Build and validate corrected connected Android versionCode 4 APK","Actual owner Samsung login remains unobserved"]},
-    {"id":"OPENROUTER_PERSONAL_ENGINE","status":"PENDING","dependencies":["PERSONAL_EXTERNAL_SETUP"],"remaining":["Current local credential access and per-request budget verification","Connect untrusted model intent to deterministic personal-service validation; current SMS worker uses local engine"],"liveObserved":false},
+    {"id":"HTTPS_ANDROID_CONFIGURATION","status":"IN_PROGRESS","dependencies":[],"evidence":"deployment/android-corrected-build.json","remaining":["Actual owner Samsung installation/login remains unobserved; signed EAS build FINISHED and artifact origin verified"]},
+    {"id":"PERSONAL_MODEL_ENGINE_LOCAL","status":"PENDING","dependencies":[],"remaining":["Extend existing model gateway beyond classification/transcription using a typed personal-intent operation, not an unrelated replacement gateway","Add authenticated database-reloading wrapper: pure guarded-intent snapshot inspection is not authorization","Bind current pilot authority, replay protection, cost reservation and uncertain outcomes; no old R37 grant","Test Quebec requests and malicious/cross-workspace proposals locally with fake transport; no live API call required for this work"],"liveObserved":false},
+    {"id":"OPENROUTER_PERSONAL_ENGINE","status":"PENDING","dependencies":["PERSONAL_EXTERNAL_SETUP","PERSONAL_MODEL_ENGINE_LOCAL"],"remaining":["Current credential access and provider pricing/privacy verification inside fresh 20 CAD envelope","Observe guarded personal conversation, preserving deterministic approval for effects"],"liveObserved":false},
     {"id":"PHONE_BINDING_AND_CALENDAR_APPROVAL","status":"DONE_LOCAL","dependencies":["GOOGLE_OAUTH"],"evidence":"progress.md","liveObserved":false},
     {"id":"PERSONAL_EXTERNAL_SETUP","status":"IN_PROGRESS","dependencies":["GOOGLE_OAUTH"],"authorization":"authorization.json"},
     {"id":"LIVE_OBSERVATION","status":"PENDING","dependencies":["PERSONAL_EXTERNAL_SETUP","APPROVED_SMS_VOICE_DELIVERY"]}
@@ -20,8 +21,8 @@
     "totalPilotBudgetCad": 100,
     "twilioBudgetCad": 30,
     "pilotExpiresAt": "2026-10-10T01:18:26Z",
-    "twilioAccountAndNumber": "NOT_VERIFIED",
-    "googleOAuthConnection": "NOT_CONFIGURED",
+    "twilioAccountAndNumber": "AUTHENTICATED_ACTIVE_20USD_CREDIT_AUTORECHARGE_OFF_PRIMARY_COMPLIANCE_PROFILE_REQUIRED",
+    "googleOAuthConnection": "GOOGLE_CLOUD_SIGNED_OUT_VERIFIED_BROWSER_20260910",
     "deploymentAccountAndOrigin": "VERCEL_READY_DEDICATED_ALIAS_ACTIVE_PILOT_DATABASE_MIGRATED_EXECUTION_DISABLED",
     "approvedPilotRecipient": "NOT_BOUND"
   },

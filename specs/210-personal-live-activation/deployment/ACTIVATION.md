@@ -6,7 +6,9 @@ The implementation supports an owner's verified phone, signed incoming SMS,
 bounded replies, separately approved SMS or short synthesized calls to that same
 phone, and Google primary-calendar reads and approved event inserts. It does not
 yet authorize employees, customer numbers, bulk sends, inbound voice conversation,
-arbitrary device control, or an external AI provider. Existing local intent routing
+or arbitrary device control. Fresh authorization.json now permits OpenRouter within
+its separate 20 CAD envelope, subject to current credentials and budget gates;
+that integration is not activated. Existing local intent routing
 is not evidence of an OpenRouter conversation. Do not reuse historical R37 budgets.
 
 Current authority is authorization.json: 100 CAD TOTAL through 2026-10-10T01:18:26Z,

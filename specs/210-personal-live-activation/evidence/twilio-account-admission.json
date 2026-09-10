@@ -1,0 +1,14 @@
+{
+  "dateUtc": "2026-09-10",
+  "accountSid": "ACda5af663544145019ccdb94e1e40aabc",
+  "authority": "ENDVERA-PERSONAL-20260910-100CAD",
+  "userReported": "DONE TWIULLIO",
+  "browserVerified": {"accountActive":true,"currency":"USD","balance":"20.00","monthToDateUsage":"0.00"},
+  "mutation": "Canceled auto-recharge previously set to refill to USD20 below USD10",
+  "verification": "Twilio settings displays Auto-recharge not set up",
+  "purchaseState": "NO_NUMBER_PURCHASED",
+  "blockingRequirement": "Twilio requires a primary compliance profile before purchasing a number. Creation page requires identity information and owner accuracy/use attestation. Left open for owner; no identity attestation submitted by agent.",
+  "apiCredentialsCopiedOrShown": false,
+  "phoneIdentityVerified": false,
+  "smsOrCallsSent": 0
+}

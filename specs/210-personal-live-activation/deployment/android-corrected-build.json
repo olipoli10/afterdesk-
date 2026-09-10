@@ -1,0 +1,20 @@
+{
+  "id": "fccebc0b-b48f-4a99-99e2-5eda00d37711",
+  "sourceHead": "15a47d966184618b1d894947b10a73c0f5b7da94",
+  "createdAt": "2026-09-10T02:06:19.357Z",
+  "status": "FINISHED",
+  "completedAt": "2026-09-10T02:20:01.389Z",
+  "artifactUrl": "https://expo.dev/artifacts/eas/BeLO0nI1JTvcZS4mFsixhXnLz-usVT2BKK4wVlaQKE4.apk",
+  "artifactSha256": "f33de2e1076d6bffeaf644371197b04153c371649d2d2dd82495758caeb1907e",
+  "artifactBytes": 127420084,
+  "bundleBytes": 3980172,
+  "downloadedZipAndConfiguredOriginVerified": true,
+  "independentAndroidSignatureVerification": false,
+  "version": "0.2.0",
+  "versionCode": 4,
+  "distribution": "INTERNAL_APK",
+  "apiOrigin": "https://endvera-core-sandbox-afterdesk.vercel.app",
+  "actualSamsungInstallationObserved": false,
+  "actualSamsungLoginObserved": false,
+  "liveAssistantObserved": false
+}
