@@ -1,69 +1,51 @@
 [CmdletBinding()]
-param()
+param(
+  [string]$ExpectedHead = '',
+  [string]$ExpectedApiOrigin = '',
+  [string]$ExpectedVersionCode = ''
+)
 
 $ErrorActionPreference = "Stop"
 $easCliVersion = "23.2.0"
-$easProjectId = "a7b2c087-f8e1-48e4-8798-f6fabefb69fe"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $mobileRoot = Join-Path $repoRoot "apps\mobile"
+$inputGuard = Join-Path $PSScriptRoot 'check-founder-android-inputs.mjs'
 
-function Invoke-Eas {
+function Assert-FounderBuildInputs {
+  # Never print caller values, Git paths/status, environment values or raw errors.
+  $guardOutput = @(& node $inputGuard --expected-head $ExpectedHead --expected-api-origin $ExpectedApiOrigin --expected-version-code $ExpectedVersionCode 2>&1)
+  if ($LASTEXITCODE -ne 0) { throw 'FOUNDER_ANDROID_LOCAL_PREFLIGHT_REFUSED' }
+  try { $receipt = ($guardOutput -join "`n") | ConvertFrom-Json -ErrorAction Stop }
+  catch { throw 'FOUNDER_ANDROID_LOCAL_PREFLIGHT_REFUSED' }
+  if ($receipt.status -cne 'FOUNDER_ANDROID_INPUTS_VALIDATED_LOCAL_ONLY' -or $receipt.trackedSourceBindingVerified -ne $true) {
+    throw 'FOUNDER_ANDROID_LOCAL_PREFLIGHT_REFUSED'
+  }
+}
+
+function Invoke-FounderEas {
   param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
 
-  & npx --yes "eas-cli@$easCliVersion" @Arguments
+  # Recheck before every external CLI invocation, including immediately before
+  # the build after authentication latency. This launcher never configures login.
+  Assert-FounderBuildInputs
+  $cliOutput = @(& npx --yes "eas-cli@$easCliVersion" @Arguments 2>&1)
   if ($LASTEXITCODE -ne 0) {
-    throw "FOUNDER_ANDROID_EAS_COMMAND_FAILED:$($Arguments -join '-'):$LASTEXITCODE"
+    throw 'FOUNDER_ANDROID_EAS_COMMAND_FAILED'
   }
-}
-
-$initialStatus = @(& git -C $repoRoot status --porcelain=v1)
-if ($LASTEXITCODE -ne 0 -or $initialStatus.Count -ne 0) {
-  throw "FOUNDER_ANDROID_BUILD_REQUIRES_CLEAN_GIT"
+  # No arbitrary EAS output or authenticated account name is echoed.
+  $cliOutput = $null
 }
 
 Push-Location $mobileRoot
 try {
-  $identityOutput = @(& npx --yes "eas-cli@$easCliVersion" whoami 2>&1)
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "Connexion Expo requise. Le navigateur va s'ouvrir; aucun jeton ne doit etre colle dans PowerShell."
-    Invoke-Eas login --browser
-    $identityOutput = @(& npx --yes "eas-cli@$easCliVersion" whoami 2>&1)
-    if ($LASTEXITCODE -ne 0) {
-      throw "FOUNDER_ANDROID_EXPO_AUTH_REFUSED"
-    }
-  }
-  $account = [string]($identityOutput | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Last 1)
-  if ([string]::IsNullOrWhiteSpace($account)) {
-    throw "FOUNDER_ANDROID_EXPO_ACCOUNT_UNRESOLVED"
-  }
-  Write-Host "Compte Expo authentifie: $account"
-
-  Invoke-Eas project:init --id $easProjectId --force --non-interactive
-} finally {
-  Pop-Location
-}
-
-$postInitStatus = @(& git -C $repoRoot status --porcelain=v1)
-if ($LASTEXITCODE -ne 0) {
-  throw "FOUNDER_ANDROID_GIT_STATUS_FAILED"
-}
-$unexpected = @($postInitStatus | Where-Object { $_ -notmatch '^\s*M\s+apps/mobile/app\.json$' })
-if ($unexpected.Count -gt 0) {
-  throw "FOUNDER_ANDROID_PROJECT_INIT_UNEXPECTED_MUTATION:$($unexpected -join ',')"
-}
-if ($postInitStatus.Count -gt 0) {
-  & git -C $repoRoot add -- apps/mobile/app.json
-  if ($LASTEXITCODE -ne 0) { throw "FOUNDER_ANDROID_PROJECT_ID_STAGE_FAILED" }
-  & git -C $repoRoot diff --cached --check
-  if ($LASTEXITCODE -ne 0) { throw "FOUNDER_ANDROID_PROJECT_ID_DIFF_INVALID" }
-  & git -C $repoRoot commit -m "chore: link founder Android EAS project"
-  if ($LASTEXITCODE -ne 0) { throw "FOUNDER_ANDROID_PROJECT_ID_COMMIT_FAILED" }
-}
-
-Push-Location $mobileRoot
-try {
-  Write-Host "Demarrage du build Android interne signe. Aucun store ne sera contacte."
-  Invoke-Eas build --platform android --profile founder-device --wait
+  Invoke-FounderEas whoami
+  Write-Host 'Verification locale avant build Android interne; aucune preuve de compatibilite distante.'
+  Invoke-FounderEas build --platform android --profile founder-device --non-interactive --wait
+  Write-Host 'Commande de build terminee. Validation du binaire et du backend encore requise.'
+} catch {
+  # A CLI failure can be an unknown remote outcome. Never automatically resubmit.
+  Write-Output 'FOUNDER_ANDROID_BUILD_STOPPED_NO_AUTOMATIC_RETRY'
+  exit 1
 } finally {
   Pop-Location
 }

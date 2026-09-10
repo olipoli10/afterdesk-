@@ -88,4 +88,3 @@ All names below belong to `public`. Source is `prisma/migrations/<migration>/mig
 - Full deparsed function-definition equality, PG17/PG18 environmental differences, owners/ACLs, collations/extensions, backup/restore, and all other comparator findings are not cleared by this body check.
 - A pure re-hash of supplied files does not independently authenticate remote capture provenance or prove runtime behavior.
 - **No change** to comparator status, hash inputs, source/applied migrations, flags, deployment/build, or readiness. `executionAuthorized:false`; no DB/provider calls. Overall drift decision remains with the controller.
-

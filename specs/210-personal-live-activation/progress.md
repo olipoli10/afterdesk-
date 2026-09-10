@@ -1,5 +1,24 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 22:27Z — real pilot fork checkpoint and Android guard
+
+Created A br-long-waterfall-ax3zhqtl from explicit pilot70, without compute;
+created T br-holy-brook-ax7k68oh from A at inherited forkLSN0/293B828. First
+T request rejected HTTP412 for unsupported Free suspend configuration; verified
+no T existed, omitted that optional field, kept0.25CU fixed. No paid upgrade.
+Actual T PG18 catalog is byte-identical to earlier pilot capture:7474objects,
+zero comparator differences;70 finished histories match47exact/23LF. These are
+metadata observations, not a row-recovery or full database backup certification.
+T endpoint explicitly suspended22:22:51Z, both ancestors untouched. Exactly
+two new branches, no SQLwrite/deployment/provider dispatch/newAPK. Details in
+evidence/pilot-checkpoint-20260910T2222Z.json; retention review bySep17.
+
+Founder APK input guard implemented/reviewed57/57PASS, types/lint/PSparsePASS.
+Requires exactHEAD/origin/version and whole-checkout binding; removes implicit
+project-init/login/Git mutation. Current missing-source-origin profile correctly
+refuses. Next: real clean temporary Git positive test and full-definition hash
+reconciliation, then reviewed PG18 rehearsal. Goal/heartbeat stay active.
+
 ## 2026-09-10 22:15Z — actual catalog captures and compatibility continuation
 
 Read-only comparator and private native capture implemented/reviewed. ActualPG17
