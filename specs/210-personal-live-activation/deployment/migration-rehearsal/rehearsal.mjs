@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 import { buildPilotMigrationCatalog } from '../pilot-migration-catalog.mjs';
+import { PILOT_SCHEMA_CATALOG_SQL, compareSuppliedPilotSchemaSnapshots } from '../pilot-schema-drift.mjs';
 import { assertReleaseRegularFile } from '../../../../scripts/endvera-release-source-binding.mjs';
 
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
@@ -106,8 +107,9 @@ export function stageMigrationRehearsal(root, cluster) {
   if (seed.length > 32768) fail('SEED_SIZE');
   write('seed-70.sql', seed);
   write('snapshot-70.sql', snapshotSql(false)); write('snapshot-79.sql', snapshotSql(true));
+  write('schema-catalog.sql', PILOT_SCHEMA_CATALOG_SQL);
   write('catalog.json', JSON.stringify(catalog));
-  write('inputs.json', JSON.stringify({ schemaSha256: sha(schemaBytes), seedSha256: sha(seed), lockSha256: sha(lock), catalogSha256: catalog.catalogSha256 }));
+  write('inputs.json', JSON.stringify({ schemaSha256: sha(schemaBytes), seedSha256: sha(seed), lockSha256: sha(lock), catalogSha256: catalog.catalogSha256, schemaCatalogQuerySha256: sha(PILOT_SCHEMA_CATALOG_SQL) }));
   return { destination, migrationCount: 79, baselineCount: 70, providerCallsAuthorized: false };
 }
 
@@ -167,6 +169,14 @@ function jsonFile(file) {
   if (bytes.length > 4_000_000) fail('SNAPSHOT_SIZE');
   return JSON.parse(bytes.toString('utf8'));
 }
+/** Self-comparison validates captured shape, not provenance or remote equivalence. */
+export function verifyCatalogCapture(snapshot) {
+  const comparison = compareSuppliedPilotSchemaSnapshots(snapshot, snapshot);
+  if (snapshot.server.versionNum !== 170011) fail('CATALOG_RUNTIME');
+  return { version: 'personal-native-catalog-capture-v1',
+    querySha256: sha(PILOT_SCHEMA_CATALOG_SQL), objectCount: snapshot.objectCount,
+    familyCounts: snapshot.familyCounts, comparison, remoteObserved: false };
+}
 /** Read-only dependency exception: the existing r03 -> r9 -> r8 dependency
  * junctions only. Source, staging and paths below the final target reject links. */
 export function verifyInstalledPrisma(root) {
@@ -206,10 +216,11 @@ export function verifyStagedInputs(root, cluster) {
   const schema = readFileSync(assertReleaseRegularFile(root, 'prisma/schema.prisma'));
   const seed = readFileSync(assertReleaseRegularFile(root, 'specs/210-personal-live-activation/deployment/migration-rehearsal/seed-70.sql'));
   const lock = readFileSync(assertReleaseRegularFile(root, 'prisma/migrations/migration_lock.toml'));
-  const expectedInputs = { schemaSha256: sha(schema), seedSha256: sha(seed), lockSha256: sha(lock), catalogSha256: catalog.catalogSha256 };
+  const expectedInputs = { schemaSha256: sha(schema), seedSha256: sha(seed), lockSha256: sha(lock), catalogSha256: catalog.catalogSha256, schemaCatalogQuerySha256: sha(PILOT_SCHEMA_CATALOG_SQL) };
   if (!isDeepStrictEqual(jsonFile(path.join(staged, 'inputs.json')), expectedInputs)) fail('SOURCE_CHANGED');
   exact(path.join(staged, 'schema.prisma'), schema); exact(path.join(staged, 'seed-70.sql'), seed);
   exact(path.join(staged, 'snapshot-70.sql'), snapshotSql(false)); exact(path.join(staged, 'snapshot-79.sql'), snapshotSql(true));
+  exact(path.join(staged, 'schema-catalog.sql'), PILOT_SCHEMA_CATALOG_SQL);
   for (const [label, count] of [['70', 70], ['79', 79]]) {
     const migrations = path.join(staged, label, 'migrations');
     const names = catalog.entries.slice(0, count).map(entry => entry.migrationName);
@@ -230,9 +241,14 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const [mode, cluster] = process.argv.slice(2);
     const staged = clusterPath(ROOT, cluster);
     if (mode === 'stage') console.log(JSON.stringify(stageMigrationRehearsal(ROOT, cluster)));
-    else if (mode === 'verify-inputs' || mode === 'baseline' || mode === 'verify') {
+    else if (['verify-inputs', 'baseline', 'verify', 'catalog-70', 'catalog-79'].includes(mode)) {
       const catalog = verifyStagedInputs(ROOT, cluster);
       if (mode === 'verify-inputs') { console.log('PERSONAL_REHEARSAL_INPUTS_VERIFIED'); process.exitCode = 0; }
+      else if (mode === 'catalog-70' || mode === 'catalog-79') {
+        const receipt = verifyCatalogCapture(jsonFile(path.join(staged, `${mode}.json`)));
+        writeFileSync(path.join(staged, `${mode}-receipt.json`), JSON.stringify(receipt, null, 2), { flag: 'wx' });
+        console.log(JSON.stringify(receipt));
+      }
       else {
       const before = jsonFile(path.join(staged, 'before.json'));
       if (mode === 'baseline') { verifyBaseline(before, catalog); console.log('PERSONAL_REHEARSAL_BASELINE_70_VERIFIED'); }

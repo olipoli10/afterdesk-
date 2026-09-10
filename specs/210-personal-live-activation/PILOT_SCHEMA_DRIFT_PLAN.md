@@ -43,6 +43,15 @@ until explicitly adjudicated. No broad role-name replacement and no user-supplie
 allowlist that can manufacture equivalence. Bound object counts, bytes, string
 lengths and output. Reject accessors/prototypes/unknown fields before comparing.
 
+Controller arbitration21:51Z: retain mathematical equality separately from
+visible guard review. Two identical snapshots with an unenforced/unvalidated
+constraint or NOT NULL, invalid/not-ready/nonlive index, or D/R trigger must
+surface knownGuardReviewCount and GUARD_REVIEW_REQUIRED, not an unqualified
+supplied-match status. This is not complete health certification: RLSfalse and
+SECURITY DEFINERtrue are not universally invalid. Check dense-array length bound
+before descriptor enumeration so oversized input does not require enumerating
+all of its indexed properties first.
+
 ## Verification and reporting
 
 Positive modeled snapshots plus independent negative cases for changed columns,
@@ -56,6 +65,20 @@ executionAuthorized:false, backupVerified:false and snapshotProvenanceVerified:
 false for supplied inputs. Count-only fresh remote receipt shows PG18.6,183tables,
 676indexes,65application functions and vector0.8.6; it is not definition proof.
 No rubric or APK/version/environment/provider change.
+
+## Controller capture continuation — 2026-09-10T22:00Z
+
+After the two distinct reviews and controller's full source read, extend only the
+existing private native MigrationRehearsal branch and staging helper. Stage the
+fixed catalog query as exact bytes and include its SHA256 in inputs.json; verify
+those bytes before each capture. Capture schema70 before sealing the baseline
+and schema79 after migrate deploy, using the existing bounded psql subprocess.
+Validate each snapshot through self-comparison, retaining coverage/guard flags,
+and save a separate controller receipt without claiming cross-version equality.
+No new launcher, unsealing, shared dependencies, applied SQL changes or remote
+write. Re-run the native synthetic rehearsal to establish real PG17 parsing.
+Only then may the controller perform a separately reviewed metadata-only PG18
+capture through the already authorized read-only connection.
 
 Primary documentation checked by controller2026-09-10:
 - https://www.postgresql.org/docs/17/catalog-pg-constraint.html

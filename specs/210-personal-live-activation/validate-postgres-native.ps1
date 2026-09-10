@@ -222,6 +222,17 @@ try {
       $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
       $null = Invoke-NativeChild $taskNode @($taskRehearsalHelper, 'verify-inputs', $taskCluster) ($Label + '-inputs') $remaining
     }
+    function Save-RehearsalCatalog([string]$Label) {
+      if ($Label -cnotin @('catalog-70', 'catalog-79')) { throw 'PERSONAL_NATIVE_CATALOG_LABEL_INVALID' }
+      Assert-RehearsalInputs $Label
+      $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+      $catalogJson = Invoke-NativeChild $taskSql @('-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $taskRehearsal 'schema-catalog.sql')) $Label $remaining
+      $catalogFile = Join-Path $taskRehearsal ($Label + '.json')
+      if (Test-Path -LiteralPath $catalogFile) { throw 'PERSONAL_NATIVE_CATALOG_REPLAY_REFUSED' }
+      [IO.File]::WriteAllText($catalogFile, $catalogJson.Trim(), [Text.UTF8Encoding]::new($false))
+      $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
+      Write-Output (Invoke-NativeChild $taskNode @($taskRehearsalHelper, $Label, $taskCluster) ($Label + '-verify') $remaining)
+    }
     $taskStage = 'REHEARSAL_STAGE'
     $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
     $null = Invoke-NativeChild $taskNode @($taskRehearsalHelper, 'stage', $taskCluster) 'rehearsal-stage' $remaining
@@ -242,6 +253,8 @@ try {
     $beforeHash = (Get-FileHash -LiteralPath $beforeFile -Algorithm SHA256).Hash
     $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
     $null = Invoke-NativeChild $taskNode @($taskRehearsalHelper, 'baseline', $taskCluster) 'rehearsal-baseline' $remaining
+    $taskStage = 'REHEARSAL_CATALOG_70'
+    Save-RehearsalCatalog 'catalog-70'
     # Preserve the complete populated70 database. No connection termination or deletion.
     $taskBaseline = $taskDatabase
     $taskChildEnvironment['PGDATABASE'] = 'postgres'
@@ -270,6 +283,8 @@ try {
     $after = Invoke-NativeChild $taskSql @('-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $taskRehearsal 'snapshot-79.sql')) 'rehearsal-snapshot-79' $remaining
     [IO.File]::WriteAllText((Join-Path $taskRehearsal 'after.json'), $after.Trim(), [Text.UTF8Encoding]::new($false))
     if ((Get-FileHash -LiteralPath $beforeFile -Algorithm SHA256).Hash -ne $beforeHash) { throw 'PERSONAL_NATIVE_REHEARSAL_SNAPSHOT_CHANGED' }
+    $taskStage = 'REHEARSAL_CATALOG_79'
+    Save-RehearsalCatalog 'catalog-79'
     $taskStage = 'REHEARSAL_VERIFY'
     $remaining = Get-NativeCampaignRemainingMs $taskRehearsalClock
     Write-Output (Invoke-NativeChild $taskNode @($taskRehearsalHelper, 'verify', $taskCluster) 'rehearsal-verify' $remaining)

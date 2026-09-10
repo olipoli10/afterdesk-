@@ -1,0 +1,13 @@
+{
+  "kind": "postgres-native",
+  "databaseRuntime": "NATIVE_POSTGRESQL",
+  "postgresTestFile": null,
+  "migrationRehearsal": "SYNTHETIC_POPULATED_70_TO_79",
+  "remotePg18Verified": false,
+  "exitCode": 1,
+  "finishedAt": "2026-09-10T22:01:23.653Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\postgres-native-1789077665225",
+  "buildDirectory": null
+}

@@ -1,5 +1,18 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 22:15Z — actual catalog captures and compatibility continuation
+
+Read-only comparator and private native capture implemented/reviewed. ActualPG17
+parser failure retained, three explicit char casts fixed; populated70->79 rerun
+PASS22:02:56.562Z with7470/8031 catalog objects, old14rows/history preserved and
+both owned servers stopped. Same fixed SELECT observed pilotPG18.6/7474objects.
+Comparison still DIFFERENT;26body hashes exactly reconciled against historical
+whole-file LF checksums, definition/extra/owner environment adjudication pending.
+See audits/PILOT_SCHEMA_CAPTURE_CONTROLLER.md and dedicated capture receipt.
+Root6423/1timeout/3skips retained; unchanged rerun6424PASS/3skips22:09:10.651Z.
+Local webpack buildPASS22:13:45.684Z. No remote SQLwrite/deployment/provider/newAPK yet. Next:
+bounded recoverable checkpoint and coherent founder-build input guard.
+
 ## 2026-09-10 21:38Z — populated upgrade rehearsal and regressions verified
 
 Actual local Prisma70->seed14 old rows->sealed baseline->clone->79 PASS21:30:11Z.

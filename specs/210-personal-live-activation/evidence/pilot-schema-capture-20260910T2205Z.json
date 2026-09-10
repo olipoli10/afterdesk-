@@ -1,0 +1,32 @@
+{
+  "version": "personal-pilot-controller-schema-capture-v1",
+  "captureWindowUtc": {"after": "2026-09-10T22:02:56.562Z", "before": "2026-09-10T22:05:24Z"},
+  "method": "MANAGED_NEON_SINGLE_READ_ONLY_CATALOG_SELECT",
+  "projectId": "withered-mud-08129552",
+  "branchId": "br-nameless-moon-ax8nmuwj",
+  "database": "neondb",
+  "querySha256": "4a22d4adf2d74a48a4bc6d4d42bce6558ac2cef2f59ca44b9c64c7e6cd6be338",
+  "serverVersionNum": 180006,
+  "retainedMetadataPath": ".scratch/pilot-schema-remote-20260910T2204Z.json",
+  "retainedMetadataSha256": "05425e32b60aa07113376652535395241ca43733dc775a13b1d00d72804229f4",
+  "retainedMetadataBytes": 2313280,
+  "objectCount": 7474,
+  "familyCounts": {"acl":2962,"enum":87,"index":676,"table":183,"column":2624,"policy":0,"trigger":111,"function":65,"extension":2,"constraint":764,"unsupported":0},
+  "selfComparisonStatus": "SUPPLIED_SUPPORTED_PUBLIC_CATALOG_MATCH",
+  "comparisonToSyntheticPg17Baseline70": {
+    "status":"DIFFERENT", "normalizedDefinitionsMatch":false,
+    "totalDifferences":2991,"definitionDifferences":30,"environmentDifferences":2961,
+    "knownGuardReviewCount":0,"detailsTruncated":true,
+    "leftSha256":"4712414bd28abe78b9c3f2b89a67b5cd271d58825ac29e4014ded4b6b3b176ed",
+    "rightSha256":"b1c8f9902f0d30d6f0da0c1534f66e72d839a50c5f20af93fff58c2909fd1966"
+  },
+  "applicationRowsRead":false,
+  "rawFunctionBodiesOrSettingsRead":false,
+  "databaseWritePerformed":false,
+  "providerCallPerformed":false,
+  "backupVerified":false,
+  "fullPublicSchemaEquivalent":false,
+  "fullDatabaseEquivalent":false,
+  "deploymentPerformed":false,
+  "note":"Controller observed metadata through the managed connector. Supplied-input comparator itself cannot authenticate provenance and retains all authority/provenance flags false. Differences are not silently normalized or adjudicated by this receipt."
+}
