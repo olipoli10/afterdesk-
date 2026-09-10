@@ -13,6 +13,7 @@ apps
 docs
 specs
 tests
+test
 coverage
 storage
 *.log

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "attempts": [
+    {
+      "deploymentId": "dpl_CN4TR4gNURxKug5jPwgBFv8fZJFN",
+      "sourceHead": "940c8a696b273a7db9339aa43cdd5170beb48626",
+      "status": "BUILD_FAILED_NOT_PROMOTED",
+      "cause": "Deployment packaging retained singular test/ directory while excluding mobile source imported by integration tests; TypeScript module resolution failed.",
+      "fix": "Exclude singular test/ from server deployment package; full repository tests remain intact and unchanged.",
+      "productionAliasesChanged": false
+    }
+  ],
+  "androidBuild": {
+    "id": "78ef1211-b710-4f2e-8e21-c429f1c9247e",
+    "sourceHead": "940c8a696b273a7db9339aa43cdd5170beb48626",
+    "version": "0.2.0",
+    "versionCode": 4,
+    "status": "SUBMITTED",
+    "apiOrigin": "https://endvera-core-sandbox-afterdesk.vercel.app"
+  },
+  "liveServiceObserved": false
+}
