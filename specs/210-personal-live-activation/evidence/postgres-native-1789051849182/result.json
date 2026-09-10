@@ -1,0 +1,11 @@
+{
+  "kind": "postgres-native",
+  "databaseRuntime": "NATIVE_POSTGRESQL",
+  "postgresTestFile": "project-brain-voice-recovery.postgres.test.ts",
+  "exitCode": 0,
+  "finishedAt": "2026-09-10T14:51:21.161Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\postgres-native-1789051849182",
+  "buildDirectory": null
+}

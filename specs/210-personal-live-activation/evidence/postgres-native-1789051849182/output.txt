@@ -1,0 +1,29 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"project-brain-voice-recovery.postgres.test.ts","database":"endvera_personal_210_d41e8b5c278d4eed97a73b6db3d19a9c","template":"endvera_personal_210_dd3dbe81869c4dfc9412297b9cca4f9d","migrationFingerprint":"77:f072fe1fe84f1d2f87bd61dfc0d642ef","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T14:51:18.6922936Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice-recovery.postgres.test.ts (11 tests) 13783ms
+     ✓ prepared claim expires by DB clock and cancels without budget release under UTC  689ms
+     ✓ prepared claim expires by DB clock and cancels without budget release under America/New_York  421ms
+     ✓ prepared claim expires by DB clock and cancels without budget release under Asia/Tokyo  414ms
+     ✓ a committed dispatch marker produces uncertainty, not a claimed invocation, and fences a late exact writer  430ms
+     ✓ OFF leaves an expired admitted claim completely unchanged  391ms
+     ✓ two overlapping real backends terminalize one expired claim at most once  434ms
+     ✓ an occupied canonical session advisory is skipped, then processed only after release  403ms
+     ✓ revocation does not prevent evidence-only recovery or alter the retained source  384ms
+     ✓ the bounded sweep processes 25 of 26 real independent sessions then exactly one  9469ms
+     ✓ an existing synthetic AiUsage linked by physical operationId blocks recovery even without attempt usage FK  521ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  10:51:03
+   Duration  14.67s (transform 501ms, setup 0ms, import 739ms, tests 13.78s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-847ec37b7a4f408f836beb2047f68164
