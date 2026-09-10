@@ -1,0 +1,507 @@
+{
+  "schemaVersion": 1,
+  "kind": "REMOTE_PILOT_MIGRATION_METADATA_READ",
+  "observedAt": "2026-09-10 21:05:02 UTC",
+  "projectId": "withered-mud-08129552",
+  "branchId": "br-nameless-moon-ax8nmuwj",
+  "databaseName": "neondb",
+  "readOnly": true,
+  "query": "SELECT migration_name, checksum, finished_at, rolled_back_at, applied_steps_count FROM public._prisma_migrations ORDER BY migration_name LIMIT 100",
+  "rowLimit": 100,
+  "rows": [
+    {
+      "migration_name": "20260730000000_baseline",
+      "checksum": "17b5eb948aeb171986c21b2b4fa3f965c9edcb362387abf231a772680a7595ec",
+      "finished_at": "2026-08-20T01:58:15.818Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260730000500_legacy_upgrade",
+      "checksum": "f77db9f843feb5d820c9f23dd7a5761470b5517e92cc37f67a5a640188275376",
+      "finished_at": "2026-08-20T01:58:15.993Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260730001000_integrity_triggers",
+      "checksum": "84c2ea3e7727a31a2563ed8ffc0a46e2d96c8457558ba1948b3992a015270c6a",
+      "finished_at": "2026-08-20T01:58:16.172Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260730002000_chargeback_status",
+      "checksum": "49ab0f9b827e8bd35204c01437025ebb2585547952ad6d19a2c7c47836f25dac",
+      "finished_at": "2026-08-20T01:58:16.345Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260730003000_ai_pricing_suggestions",
+      "checksum": "b9ae3684ea53710faf6f83d48ba3442c5705ac628a8c9c91be8a34c3fb8a026a",
+      "finished_at": "2026-08-20T01:58:16.543Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260731020000_payment_authorize_capture",
+      "checksum": "42a024f887f7e7ac97c6d71e7d379fe937a4fb9e4ea7cc98e6e93592a9d803b0",
+      "finished_at": "2026-08-20T01:58:16.717Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260731210000_standing_capacity",
+      "checksum": "9b9efe9db8151beba66f21a5e1ca014fdab4f28113e52a0a4d6f0267783fb6d9",
+      "finished_at": "2026-08-20T01:58:16.931Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260801000000_dispute_window",
+      "checksum": "042da09b8e7e5fcaf755c60fd806053d5cb98d95e885595fe988288e53d85b63",
+      "finished_at": "2026-08-20T01:58:17.104Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260801010000_reference_rate",
+      "checksum": "b806a02b9efbd9660afaeac9435341d9a42ceacd6262800bc920c5c389e786b7",
+      "finished_at": "2026-08-20T01:58:17.303Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260801020000_assistant",
+      "checksum": "a49fedaa57ced42f62c80f3d0d8a637680b73da3a40070f1a6f221daa4e55942",
+      "finished_at": "2026-08-20T01:58:17.488Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260801030000_closed_job_log",
+      "checksum": "c82573ab7ee6c4530f6d5792932c9d357b49f925871550bb136a421504c60d67",
+      "finished_at": "2026-08-20T01:58:17.669Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260802120000_fix_escrow_and_standing_invariants",
+      "checksum": "c63c59b2dd66a3b31da6ef855f27d2832822735ca8e871fee928d1cd4688cdf7",
+      "finished_at": "2026-08-20T01:58:17.841Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260802130000_standing_account_is_internal",
+      "checksum": "96339f9b7b2b52102f2d7c453f8e9c1488e6a91f4de9954319aadbbbc3dc10b4",
+      "finished_at": "2026-08-20T01:58:18.015Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260802140000_one_active_standing_assignment",
+      "checksum": "417d3deaa883b4144c8a1bc7b81fe15cf97b62e8916a7cb03821848d965b2b3d",
+      "finished_at": "2026-08-20T01:58:18.192Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260802150000_standing_task_never_quoted",
+      "checksum": "7f7b4aa806ef6ea2cdbe63dfad7c7da0b6cfa3a440f6595905d3c8f9d8d55723",
+      "finished_at": "2026-08-20T01:58:18.363Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260802160000_one_standing_payment_per_period",
+      "checksum": "7b89670d748ecff33f30e7fc6266aa1699ff1478f0e24320d5e571bec07b0db9",
+      "finished_at": "2026-08-20T01:58:18.536Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260805120000_submission_delivery_metrics",
+      "checksum": "d6cecaf1240c952f31bff5f3af8092daa55291621fc76253314311182ed2f111",
+      "finished_at": "2026-08-20T01:58:18.707Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260806120000_ai_work_engine_phase1a",
+      "checksum": "cb960f0a48c404c4b9818efeb3dcaac1a9cefa1a6bf5a64ac1f011fab87cc359",
+      "finished_at": "2026-08-20T01:58:18.910Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260806160000_money_intent_lease",
+      "checksum": "886959eb9bbc608b1f5b6e7ae13d2966302307d097fd7f28acbfdab24cd5cddf",
+      "finished_at": "2026-08-20T01:58:19.087Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260806170000_workflow_enum_values",
+      "checksum": "c0604c0e6acf4c5767b66ef7598a4ad8abde18a1966ea15e621812c5e40f0114",
+      "finished_at": "2026-08-20T01:58:19.262Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260806170100_workflow_execution",
+      "checksum": "a90719f9e56f8624e4b350cb63d522b295a72162d5d87fb7f249a275d963737d",
+      "finished_at": "2026-08-20T01:58:19.477Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260806170200_workflow_guards",
+      "checksum": "f69b65b4b5ac7098d1b7b6df958b1a3e7a0f55d708044aff0ccaf8b344757dc5",
+      "finished_at": "2026-08-20T01:58:19.659Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260807100000_operational_intelligence",
+      "checksum": "0fc84dbaea6353d16f3bebf224d9a8616fadf8bd21ef767ea0e90bb3714c8d4e",
+      "finished_at": "2026-08-20T01:58:19.963Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260807100100_operational_baseline_immutable",
+      "checksum": "7c0f4d63e616250bd7556419339fb183471c6ca34b0f3e13e415c2068093f3f3",
+      "finished_at": "2026-08-20T01:58:20.152Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260808100000_tool_fabric_foundation",
+      "checksum": "261acad5c537eb7505a99c6fbbb1738c83261e354b3d721bcbbb52a42c06a0b8",
+      "finished_at": "2026-08-20T01:58:20.345Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260809100000_accepted_plan_economics",
+      "checksum": "f65d141507ac4e68c7b85f82661bab9a5c7210a32e48c9869220326a4f8523b7",
+      "finished_at": "2026-08-20T01:58:20.532Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260810100000_funded_attempts_at_quote",
+      "checksum": "a0b68cec6c5be78e5ccd608fb5d2ec0fce2d820904852fc9caa52a17da2ec5cb",
+      "finished_at": "2026-08-20T01:58:20.710Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260810200000_file_and_data_foundation",
+      "checksum": "d775b501f66d0202a483e27b1734f012627d1fbf2ce41811a393e9f29855b52c",
+      "finished_at": "2026-08-20T01:58:20.899Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260811100000_web_fetch_telemetry",
+      "checksum": "9257d2bb7914816b09e1cacaa850e15eed8f116cf4d439570733007b23a28710",
+      "finished_at": "2026-08-20T01:58:21.072Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260811210000_out_of_scope_reason",
+      "checksum": "002f27b368aaec551c0ae1a5765cf0d6587820171d975ed1b45d77d4679c15d5",
+      "finished_at": "2026-08-20T01:58:21.244Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260811233000_intake_framing",
+      "checksum": "fe852fb7ff157e99ed18b53dc75e4c5dd67771ed67089610a9e6ecccbe9901c9",
+      "finished_at": "2026-08-20T01:58:21.420Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260813120000_account_provider_spend_ceiling",
+      "checksum": "65d12b79541e2f84aa5ddde4c4d8e34a84e74b646cdc2d6cee9fe225c13082bc",
+      "finished_at": "2026-08-20T01:58:21.603Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260815120000_human_work_unit_enums",
+      "checksum": "40e1c425c543443bc8fb56a879fc687d037e46e9636f526ca16bb29bcf0280c5",
+      "finished_at": "2026-09-07T18:49:50.962Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260815120100_human_work_unit",
+      "checksum": "0e90876d382b66825e26c838e8bf136b239981c4e4a8e5d9cc8937ee3be1bc26",
+      "finished_at": "2026-09-07T18:49:51.398Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260819150000_human_unit_admission_refusal",
+      "checksum": "260e3c40dd6ec4f7589095189a875c482e12cbd4a886ed6781cab8d53d3331ee",
+      "finished_at": "2026-09-07T18:49:51.567Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260819213000_model_gateway_v1",
+      "checksum": "163840684215cf4d7908d8fb5f372cbf86d0861a51cc99cbbb046dab0785ab0c",
+      "finished_at": "2026-09-07T18:49:51.830Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260819233000_model_gateway_audit_events",
+      "checksum": "150b388870f6e1ada89f13148467dfeb7145f341b098ea05e0da286177c8c3cc",
+      "finished_at": "2026-09-07T18:49:52.015Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260820120000_intake_voice_transcription",
+      "checksum": "73f85fc4f1b72d23480c6f30d162bebe9b149faefd6a841118f7887011e43061",
+      "finished_at": "2026-09-07T18:49:52.226Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260831110000_endvera_construction_assistant_v1",
+      "checksum": "c279a42c9464512cfd610b3786724f8acfa26209c426df3aefd5ef6a4f76ba9d",
+      "finished_at": "2026-09-07T18:49:52.483Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260901020000_endvera_construction_open_loop_r0",
+      "checksum": "0571a2f65659181d7a4f3138e611661d3b40967f7acd2e7abd57e62985dd21e8",
+      "finished_at": "2026-09-07T18:49:52.717Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260901132000_endvera_construction_operating_assistant_r2_core",
+      "checksum": "5d792f66de71304a659f38373ab2abd793b520c8929608bdb1883d7a2ba7962c",
+      "finished_at": "2026-09-07T18:49:52.885Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260901150000_endvera_google_calendar_connector_r3",
+      "checksum": "bb5a4fe216d559a31a5d1bdda05da69a1e29ec8cba7e1eda61fc4b9814447ea4",
+      "finished_at": "2026-09-07T18:49:53.081Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260901190000_endvera_sms_voice_connectors_r4",
+      "checksum": "500a588ad1308c0893040fa3d7b6fcea98f65ba591b97c713fc3c3ff281102b9",
+      "finished_at": "2026-09-07T18:49:53.249Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260901210000_endvera_construction_human_escalation_r5",
+      "checksum": "586c7aeddd7859a697160c7706de43922ebe58b5ffdef91bd9ec27f3eee8b936",
+      "finished_at": "2026-09-07T18:49:53.430Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260901230000_endvera_construction_receivables_followups_r6",
+      "checksum": "2b526e29d756fc5b6decb9afd14f008bd1539912beb4a55d85856096cc98f17f",
+      "finished_at": "2026-09-07T18:49:53.635Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260901233000_construction_operating_assistant_r19_job_scheduling",
+      "checksum": "ca072ee98ffa83c9995d63f1699888744aa9dbc366a4e4f6db2e9a648cacc1d9",
+      "finished_at": "2026-09-07T18:49:53.873Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902001000_construction_operating_assistant_r20_follow_up_engine",
+      "checksum": "f5c02eb2f8f7f17ad4f1513ae167f8c6a864c37b8f24df366c94b44ea97b1638",
+      "finished_at": "2026-09-07T18:49:54.123Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902002000_construction_operating_assistant_r21_receivables_invoice",
+      "checksum": "e1e78bfdca5f67ab175dbcadeaf1482526cfb48bf844b2f37c05130025e48b98",
+      "finished_at": "2026-09-07T18:49:54.321Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902014500_construction_operating_assistant_r23_calendar_connectors",
+      "checksum": "bf1828f064cb9f4b3e8a929a1942a146afdbdae971c73c583f12a2d53c2b91cc",
+      "finished_at": "2026-09-07T18:49:54.488Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902022100_construction_operating_assistant_r24_sms_mms",
+      "checksum": "39c0b8b1fd88270d0b3d0b48e4e347f1d32c8aaf58936408d149d19a96736f73",
+      "finished_at": "2026-09-07T18:49:54.692Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902022200_construction_operating_assistant_r24_sms_mms_operation",
+      "checksum": "054b35364bbda1cd114c204f10cbb5bd0e0a08d5b6a3dfe8480533ee9fd39a21",
+      "finished_at": "2026-09-07T18:49:54.859Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902030400_construction_operating_assistant_r25_voice_calls",
+      "checksum": "070d655cefc68d04dcd05ae08528a9125a500678a4df8d9350afe269e3372fe1",
+      "finished_at": "2026-09-07T18:49:55.070Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902040000_construction_operating_assistant_r26_email_inbox",
+      "checksum": "df052b7e4fe445e1b2b78e164629b2d9bbf4c8ddcafefb5fef93889031f47916",
+      "finished_at": "2026-09-07T18:49:55.289Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902050000_construction_operating_assistant_r27_accounting",
+      "checksum": "60b5b43d44aa4f94cdf0a3c1767aff7e664510e837a51fbd5855a1b88d7549a2",
+      "finished_at": "2026-09-07T18:49:55.503Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902053000_construction_operating_assistant_r28_authority_policies",
+      "checksum": "11410ab8512ef2cfd1776fa6b0df1f0f342309e488b436127834a16b61b7702d",
+      "finished_at": "2026-09-07T18:49:55.722Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902063000_construction_operating_assistant_r30_tenant_privacy",
+      "checksum": "1f096d225d48237e8ef5aa279d04feecf8111021069580f691db7ceea51d005f",
+      "finished_at": "2026-09-07T18:49:55.946Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902081500_construction_operating_assistant_r31_observability_recovery",
+      "checksum": "6aabee1e48926112e51d56602f0c80fb84628a84199bbb080a18d2b887c486e1",
+      "finished_at": "2026-09-07T18:49:56.176Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902101500_construction_operating_assistant_r32_onboarding_import",
+      "checksum": "605d6f8cdc0fc3ebf4455305bf9a1b54e77b48cfe1db5cc9ddee9392b6220385",
+      "finished_at": "2026-09-07T18:49:56.390Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902120500_construction_operating_assistant_r34_commercial_account",
+      "checksum": "4e44046e0f8ff0ee704e0fd3c2c68c17bea11fddb8fb40708869dcf179688e8e",
+      "finished_at": "2026-09-07T18:49:56.583Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902170000_construction_assistant_r37b_provider_activation",
+      "checksum": "3d00b16001ed18391f88e8d7b5ef6c398e7144375267ad3aefd3f8c70e8ec227",
+      "finished_at": "2026-09-07T18:49:56.785Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260902180000_construction_assistant_r37c_controlled_run",
+      "checksum": "a6bb7a012ecfaa251f9766c4ed3587a58d15015cd42251accc2c86252537fea1",
+      "finished_at": "2026-09-07T18:49:56.970Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260903024000_construction_assistant_r37f_provider_delivery",
+      "checksum": "8536f65c5854836b4a6c347372c37813f9ed667f30a1f5e5213d2d3bd2688e87",
+      "finished_at": "2026-09-07T18:49:57.137Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260903180000_construction_assistant_r36v_project_brain_intake",
+      "checksum": "e813a331596d365aa958a2d40141ca61d2fcbe4d602de96771d14613a430dba0",
+      "finished_at": "2026-09-07T18:49:57.363Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260903220000_construction_assistant_r36w_project_brain_fact_candidates",
+      "checksum": "1dc6f2261f3fa3e5a352cfb0db917edc75c82763f64356444246121a31045653",
+      "finished_at": "2026-09-07T18:49:57.572Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260904010000_construction_assistant_r36x_project_brain_understanding",
+      "checksum": "058d01fe505ff5a60629017c2c4246192301049f3aa495aa4912e73d3844e936",
+      "finished_at": "2026-09-07T18:49:57.808Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260904040000_construction_assistant_r36y_project_brain_assistant_memory",
+      "checksum": "7c25ae88404b60ef3476201e7e2a681fa6f25a88caa5bfc3897c78ae6418f6fc",
+      "finished_at": "2026-09-07T18:49:58.023Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260906010000_construction_assistant_r38e_secretary_broadcast",
+      "checksum": "3e7c2ec5ecdd528c6c73e5630e337efa50f2c7e2e8b57d22713ea75a96facfa9",
+      "finished_at": "2026-09-07T18:49:58.201Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260906020000_construction_assistant_r38f_broadcast_approval",
+      "checksum": "ea2bfde64a79a4adf98864de5416c9e1b494048d1603f5fd67dfefe7da20827f",
+      "finished_at": "2026-09-07T18:49:58.372Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260909235000_personal_connector_credential_vault",
+      "checksum": "2562306e18cf2c0f847bfe5a1aee3f8f1062bfaa16aa3ef8c8fd61d1f4c9ebd4",
+      "finished_at": "2026-09-10T01:38:01.588Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    },
+    {
+      "migration_name": "20260910002000_personal_outbound_budget",
+      "checksum": "9b84fed7eeb044b8b7192fac22569e15f276233b609b29670490a898898fb726",
+      "finished_at": "2026-09-10T01:38:01.803Z",
+      "rolled_back_at": null,
+      "applied_steps_count": 1
+    }
+  ],
+  "backupObserved": false,
+  "schemaDriftChecked": false,
+  "migrationExecuted": false,
+  "customerRowsRead": false
+}

@@ -1,0 +1,1213 @@
+{
+  "catalog": {
+    "version": "personal-pilot-migration-catalog-v1",
+    "mode": "LOCAL_BYTES_ONLY",
+    "totalCount": 79,
+    "historicalBaselineCount": 70,
+    "pendingCount": 9,
+    "orderedNamesSha256": "84ebabbc759dd8aeca8ebaae742dbddf1228629b4f5c81d1b62aba6066ba4f79",
+    "entries": [
+      {
+        "ordinal": 1,
+        "migrationName": "20260730000000_baseline",
+        "relativePath": "prisma/migrations/20260730000000_baseline/migration.sql",
+        "byteSize": 23384,
+        "sha256": "17b5eb948aeb171986c21b2b4fa3f965c9edcb362387abf231a772680a7595ec",
+        "lineEnding": "CRLF",
+        "lfSha256": "e17b517f27cb25d41d7a07c0eb508412e40da53529fe360a246b2db0f1adf41c",
+        "crlfSha256": "17b5eb948aeb171986c21b2b4fa3f965c9edcb362387abf231a772680a7595ec"
+      },
+      {
+        "ordinal": 2,
+        "migrationName": "20260730000500_legacy_upgrade",
+        "relativePath": "prisma/migrations/20260730000500_legacy_upgrade/migration.sql",
+        "byteSize": 3184,
+        "sha256": "f77db9f843feb5d820c9f23dd7a5761470b5517e92cc37f67a5a640188275376",
+        "lineEnding": "CRLF",
+        "lfSha256": "27b5b46db931a2ebbf12714e2e55092ed8215f4b2a0f0940b8ef38b8e1116e77",
+        "crlfSha256": "f77db9f843feb5d820c9f23dd7a5761470b5517e92cc37f67a5a640188275376"
+      },
+      {
+        "ordinal": 3,
+        "migrationName": "20260730001000_integrity_triggers",
+        "relativePath": "prisma/migrations/20260730001000_integrity_triggers/migration.sql",
+        "byteSize": 4582,
+        "sha256": "84c2ea3e7727a31a2563ed8ffc0a46e2d96c8457558ba1948b3992a015270c6a",
+        "lineEnding": "CRLF",
+        "lfSha256": "66d63e9ce716ca08e365b8c768e44b09b1e9e06c56af2332bf58fa8ebead5668",
+        "crlfSha256": "84c2ea3e7727a31a2563ed8ffc0a46e2d96c8457558ba1948b3992a015270c6a"
+      },
+      {
+        "ordinal": 4,
+        "migrationName": "20260730002000_chargeback_status",
+        "relativePath": "prisma/migrations/20260730002000_chargeback_status/migration.sql",
+        "byteSize": 66,
+        "sha256": "49ab0f9b827e8bd35204c01437025ebb2585547952ad6d19a2c7c47836f25dac",
+        "lineEnding": "CRLF",
+        "lfSha256": "84c60b128b865c755e0ff693496d75ee1a18b7ba79145a3363bbc842289d3202",
+        "crlfSha256": "49ab0f9b827e8bd35204c01437025ebb2585547952ad6d19a2c7c47836f25dac"
+      },
+      {
+        "ordinal": 5,
+        "migrationName": "20260730003000_ai_pricing_suggestions",
+        "relativePath": "prisma/migrations/20260730003000_ai_pricing_suggestions/migration.sql",
+        "byteSize": 1376,
+        "sha256": "b9ae3684ea53710faf6f83d48ba3442c5705ac628a8c9c91be8a34c3fb8a026a",
+        "lineEnding": "CRLF",
+        "lfSha256": "39155c68308dcaef0a1093f805df41f2a56b03d5a1e5b224e8545ccc84325249",
+        "crlfSha256": "b9ae3684ea53710faf6f83d48ba3442c5705ac628a8c9c91be8a34c3fb8a026a"
+      },
+      {
+        "ordinal": 6,
+        "migrationName": "20260731020000_payment_authorize_capture",
+        "relativePath": "prisma/migrations/20260731020000_payment_authorize_capture/migration.sql",
+        "byteSize": 289,
+        "sha256": "42a024f887f7e7ac97c6d71e7d379fe937a4fb9e4ea7cc98e6e93592a9d803b0",
+        "lineEnding": "CRLF",
+        "lfSha256": "6c9c368c43cf3d46b1211743c845ccbd55568cad25d527366d206ab6efd22249",
+        "crlfSha256": "42a024f887f7e7ac97c6d71e7d379fe937a4fb9e4ea7cc98e6e93592a9d803b0"
+      },
+      {
+        "ordinal": 7,
+        "migrationName": "20260731210000_standing_capacity",
+        "relativePath": "prisma/migrations/20260731210000_standing_capacity/migration.sql",
+        "byteSize": 6403,
+        "sha256": "9b9efe9db8151beba66f21a5e1ca014fdab4f28113e52a0a4d6f0267783fb6d9",
+        "lineEnding": "CRLF",
+        "lfSha256": "65b6e04e0c75b3530a6e978ba7b574911f6e38aa47528206a766acf86315dedb",
+        "crlfSha256": "9b9efe9db8151beba66f21a5e1ca014fdab4f28113e52a0a4d6f0267783fb6d9"
+      },
+      {
+        "ordinal": 8,
+        "migrationName": "20260801000000_dispute_window",
+        "relativePath": "prisma/migrations/20260801000000_dispute_window/migration.sql",
+        "byteSize": 88,
+        "sha256": "042da09b8e7e5fcaf755c60fd806053d5cb98d95e885595fe988288e53d85b63",
+        "lineEnding": "CRLF",
+        "lfSha256": "c7ea7d41eb5c5ccb619792d5ca7794efeca9ed89d66fa75ac83de2f25ebf4157",
+        "crlfSha256": "042da09b8e7e5fcaf755c60fd806053d5cb98d95e885595fe988288e53d85b63"
+      },
+      {
+        "ordinal": 9,
+        "migrationName": "20260801010000_reference_rate",
+        "relativePath": "prisma/migrations/20260801010000_reference_rate/migration.sql",
+        "byteSize": 96,
+        "sha256": "b806a02b9efbd9660afaeac9435341d9a42ceacd6262800bc920c5c389e786b7",
+        "lineEnding": "CRLF",
+        "lfSha256": "54d0d52f0a565071746ebc4dc3488f4362295017a374836438bec286a0b71c54",
+        "crlfSha256": "b806a02b9efbd9660afaeac9435341d9a42ceacd6262800bc920c5c389e786b7"
+      },
+      {
+        "ordinal": 10,
+        "migrationName": "20260801020000_assistant",
+        "relativePath": "prisma/migrations/20260801020000_assistant/migration.sql",
+        "byteSize": 1639,
+        "sha256": "a49fedaa57ced42f62c80f3d0d8a637680b73da3a40070f1a6f221daa4e55942",
+        "lineEnding": "CRLF",
+        "lfSha256": "93f5e375234f3cb5bd600ab6891568d9a244b3062edf59e74e647d5e61a4bf80",
+        "crlfSha256": "a49fedaa57ced42f62c80f3d0d8a637680b73da3a40070f1a6f221daa4e55942"
+      },
+      {
+        "ordinal": 11,
+        "migrationName": "20260801030000_closed_job_log",
+        "relativePath": "prisma/migrations/20260801030000_closed_job_log/migration.sql",
+        "byteSize": 1344,
+        "sha256": "c82573ab7ee6c4530f6d5792932c9d357b49f925871550bb136a421504c60d67",
+        "lineEnding": "CRLF",
+        "lfSha256": "95b87b7a02a6cb952e3c96fbd738195211ab9a5839af2790662a39a2bc5fbe15",
+        "crlfSha256": "c82573ab7ee6c4530f6d5792932c9d357b49f925871550bb136a421504c60d67"
+      },
+      {
+        "ordinal": 12,
+        "migrationName": "20260802120000_fix_escrow_and_standing_invariants",
+        "relativePath": "prisma/migrations/20260802120000_fix_escrow_and_standing_invariants/migration.sql",
+        "byteSize": 3963,
+        "sha256": "c63c59b2dd66a3b31da6ef855f27d2832822735ca8e871fee928d1cd4688cdf7",
+        "lineEnding": "CRLF",
+        "lfSha256": "16c7acdcb34db28a01192d14a3f59a13d3d251f0d58f37a26b540e14ed64cfd7",
+        "crlfSha256": "c63c59b2dd66a3b31da6ef855f27d2832822735ca8e871fee928d1cd4688cdf7"
+      },
+      {
+        "ordinal": 13,
+        "migrationName": "20260802130000_standing_account_is_internal",
+        "relativePath": "prisma/migrations/20260802130000_standing_account_is_internal/migration.sql",
+        "byteSize": 599,
+        "sha256": "96339f9b7b2b52102f2d7c453f8e9c1488e6a91f4de9954319aadbbbc3dc10b4",
+        "lineEnding": "CRLF",
+        "lfSha256": "79b429286f87edc5a3e5e748f3c8bde2996806b0a83e0bbeec7722a863ccb430",
+        "crlfSha256": "96339f9b7b2b52102f2d7c453f8e9c1488e6a91f4de9954319aadbbbc3dc10b4"
+      },
+      {
+        "ordinal": 14,
+        "migrationName": "20260802140000_one_active_standing_assignment",
+        "relativePath": "prisma/migrations/20260802140000_one_active_standing_assignment/migration.sql",
+        "byteSize": 1585,
+        "sha256": "417d3deaa883b4144c8a1bc7b81fe15cf97b62e8916a7cb03821848d965b2b3d",
+        "lineEnding": "CRLF",
+        "lfSha256": "4e4f100fc472d11d7739db01ddb76e0cc4431e423015bad7cd49cc8d48daf9da",
+        "crlfSha256": "417d3deaa883b4144c8a1bc7b81fe15cf97b62e8916a7cb03821848d965b2b3d"
+      },
+      {
+        "ordinal": 15,
+        "migrationName": "20260802150000_standing_task_never_quoted",
+        "relativePath": "prisma/migrations/20260802150000_standing_task_never_quoted/migration.sql",
+        "byteSize": 2599,
+        "sha256": "7f7b4aa806ef6ea2cdbe63dfad7c7da0b6cfa3a440f6595905d3c8f9d8d55723",
+        "lineEnding": "CRLF",
+        "lfSha256": "5216deaff17e471339ebb87e39114d587807846b0aff5123ae35b057886498cb",
+        "crlfSha256": "7f7b4aa806ef6ea2cdbe63dfad7c7da0b6cfa3a440f6595905d3c8f9d8d55723"
+      },
+      {
+        "ordinal": 16,
+        "migrationName": "20260802160000_one_standing_payment_per_period",
+        "relativePath": "prisma/migrations/20260802160000_one_standing_payment_per_period/migration.sql",
+        "byteSize": 1480,
+        "sha256": "7b89670d748ecff33f30e7fc6266aa1699ff1478f0e24320d5e571bec07b0db9",
+        "lineEnding": "CRLF",
+        "lfSha256": "cdf6073787a4a2adc1fab9fb45be26458eedadf78feb145d2e87d5d131ec7464",
+        "crlfSha256": "7b89670d748ecff33f30e7fc6266aa1699ff1478f0e24320d5e571bec07b0db9"
+      },
+      {
+        "ordinal": 17,
+        "migrationName": "20260805120000_submission_delivery_metrics",
+        "relativePath": "prisma/migrations/20260805120000_submission_delivery_metrics/migration.sql",
+        "byteSize": 1932,
+        "sha256": "d6cecaf1240c952f31bff5f3af8092daa55291621fc76253314311182ed2f111",
+        "lineEnding": "CRLF",
+        "lfSha256": "7e60374f801e2e7f6ace7c5179014befc6588a314da2d278903a3932f01cef1c",
+        "crlfSha256": "d6cecaf1240c952f31bff5f3af8092daa55291621fc76253314311182ed2f111"
+      },
+      {
+        "ordinal": 18,
+        "migrationName": "20260806120000_ai_work_engine_phase1a",
+        "relativePath": "prisma/migrations/20260806120000_ai_work_engine_phase1a/migration.sql",
+        "byteSize": 10883,
+        "sha256": "cb960f0a48c404c4b9818efeb3dcaac1a9cefa1a6bf5a64ac1f011fab87cc359",
+        "lineEnding": "CRLF",
+        "lfSha256": "0fd7798b66f2e9e643a2767a9fcb30f77cf677ca74fd185e5d7fb0152c93a1be",
+        "crlfSha256": "cb960f0a48c404c4b9818efeb3dcaac1a9cefa1a6bf5a64ac1f011fab87cc359"
+      },
+      {
+        "ordinal": 19,
+        "migrationName": "20260806160000_money_intent_lease",
+        "relativePath": "prisma/migrations/20260806160000_money_intent_lease/migration.sql",
+        "byteSize": 1153,
+        "sha256": "886959eb9bbc608b1f5b6e7ae13d2966302307d097fd7f28acbfdab24cd5cddf",
+        "lineEnding": "CRLF",
+        "lfSha256": "c07f9095d444b1d1cc3ca789ce814435acb9917ec11904f69ab8bd1849b7dbd1",
+        "crlfSha256": "886959eb9bbc608b1f5b6e7ae13d2966302307d097fd7f28acbfdab24cd5cddf"
+      },
+      {
+        "ordinal": 20,
+        "migrationName": "20260806170000_workflow_enum_values",
+        "relativePath": "prisma/migrations/20260806170000_workflow_enum_values/migration.sql",
+        "byteSize": 1067,
+        "sha256": "c0604c0e6acf4c5767b66ef7598a4ad8abde18a1966ea15e621812c5e40f0114",
+        "lineEnding": "CRLF",
+        "lfSha256": "f065f2bd80a4edf4d3cf28e3695205cc9913260ccdb5f8c7e3d32cc6f1581887",
+        "crlfSha256": "c0604c0e6acf4c5767b66ef7598a4ad8abde18a1966ea15e621812c5e40f0114"
+      },
+      {
+        "ordinal": 21,
+        "migrationName": "20260806170100_workflow_execution",
+        "relativePath": "prisma/migrations/20260806170100_workflow_execution/migration.sql",
+        "byteSize": 8508,
+        "sha256": "a90719f9e56f8624e4b350cb63d522b295a72162d5d87fb7f249a275d963737d",
+        "lineEnding": "CRLF",
+        "lfSha256": "335057a7475461097613f85996f3af59de55bce396ecc0f64ce762c7c792f14f",
+        "crlfSha256": "a90719f9e56f8624e4b350cb63d522b295a72162d5d87fb7f249a275d963737d"
+      },
+      {
+        "ordinal": 22,
+        "migrationName": "20260806170200_workflow_guards",
+        "relativePath": "prisma/migrations/20260806170200_workflow_guards/migration.sql",
+        "byteSize": 5639,
+        "sha256": "f69b65b4b5ac7098d1b7b6df958b1a3e7a0f55d708044aff0ccaf8b344757dc5",
+        "lineEnding": "CRLF",
+        "lfSha256": "d4df6066ad7af77d856aea46313afee8cd284e7940235d43297e6aed544a50d0",
+        "crlfSha256": "f69b65b4b5ac7098d1b7b6df958b1a3e7a0f55d708044aff0ccaf8b344757dc5"
+      },
+      {
+        "ordinal": 23,
+        "migrationName": "20260807100000_operational_intelligence",
+        "relativePath": "prisma/migrations/20260807100000_operational_intelligence/migration.sql",
+        "byteSize": 16944,
+        "sha256": "0fc84dbaea6353d16f3bebf224d9a8616fadf8bd21ef767ea0e90bb3714c8d4e",
+        "lineEnding": "CRLF",
+        "lfSha256": "5b9c2b544a876ceec17900f44cae9b6b3713034ead36a4a1b75f2bde90f27a0a",
+        "crlfSha256": "0fc84dbaea6353d16f3bebf224d9a8616fadf8bd21ef767ea0e90bb3714c8d4e"
+      },
+      {
+        "ordinal": 24,
+        "migrationName": "20260807100100_operational_baseline_immutable",
+        "relativePath": "prisma/migrations/20260807100100_operational_baseline_immutable/migration.sql",
+        "byteSize": 1510,
+        "sha256": "7c0f4d63e616250bd7556419339fb183471c6ca34b0f3e13e415c2068093f3f3",
+        "lineEnding": "CRLF",
+        "lfSha256": "5491b52b56c972eba9206ecf17d0c2498cc450c65bf06c844337745e91c07112",
+        "crlfSha256": "7c0f4d63e616250bd7556419339fb183471c6ca34b0f3e13e415c2068093f3f3"
+      },
+      {
+        "ordinal": 25,
+        "migrationName": "20260808100000_tool_fabric_foundation",
+        "relativePath": "prisma/migrations/20260808100000_tool_fabric_foundation/migration.sql",
+        "byteSize": 3346,
+        "sha256": "261acad5c537eb7505a99c6fbbb1738c83261e354b3d721bcbbb52a42c06a0b8",
+        "lineEnding": "CRLF",
+        "lfSha256": "b201b41757a745cb94bdbc448b54bc52b3af6b3f28d40c34c33564361d7fbbb0",
+        "crlfSha256": "261acad5c537eb7505a99c6fbbb1738c83261e354b3d721bcbbb52a42c06a0b8"
+      },
+      {
+        "ordinal": 26,
+        "migrationName": "20260809100000_accepted_plan_economics",
+        "relativePath": "prisma/migrations/20260809100000_accepted_plan_economics/migration.sql",
+        "byteSize": 7746,
+        "sha256": "f65d141507ac4e68c7b85f82661bab9a5c7210a32e48c9869220326a4f8523b7",
+        "lineEnding": "CRLF",
+        "lfSha256": "041e68f063b7561bddf466c8910183678f574d6491dbc5eeb40bc6bad9759f73",
+        "crlfSha256": "f65d141507ac4e68c7b85f82661bab9a5c7210a32e48c9869220326a4f8523b7"
+      },
+      {
+        "ordinal": 27,
+        "migrationName": "20260810100000_funded_attempts_at_quote",
+        "relativePath": "prisma/migrations/20260810100000_funded_attempts_at_quote/migration.sql",
+        "byteSize": 985,
+        "sha256": "a0b68cec6c5be78e5ccd608fb5d2ec0fce2d820904852fc9caa52a17da2ec5cb",
+        "lineEnding": "CRLF",
+        "lfSha256": "9ba7430be09fe6e7398b1eebf0b7c5ddcc9e2076e42ebcaa777d59c8e194ae9d",
+        "crlfSha256": "a0b68cec6c5be78e5ccd608fb5d2ec0fce2d820904852fc9caa52a17da2ec5cb"
+      },
+      {
+        "ordinal": 28,
+        "migrationName": "20260810200000_file_and_data_foundation",
+        "relativePath": "prisma/migrations/20260810200000_file_and_data_foundation/migration.sql",
+        "byteSize": 4186,
+        "sha256": "d775b501f66d0202a483e27b1734f012627d1fbf2ce41811a393e9f29855b52c",
+        "lineEnding": "CRLF",
+        "lfSha256": "600318781829d5adcc1fd75d3b6d1f9ee9dbaef507c4bdbd58e23d896deb4a1c",
+        "crlfSha256": "d775b501f66d0202a483e27b1734f012627d1fbf2ce41811a393e9f29855b52c"
+      },
+      {
+        "ordinal": 29,
+        "migrationName": "20260811100000_web_fetch_telemetry",
+        "relativePath": "prisma/migrations/20260811100000_web_fetch_telemetry/migration.sql",
+        "byteSize": 727,
+        "sha256": "9257d2bb7914816b09e1cacaa850e15eed8f116cf4d439570733007b23a28710",
+        "lineEnding": "CRLF",
+        "lfSha256": "98375b29d917c4aca9a7c9a461a18920bd8619a4a3dd22270f39d919317af3d5",
+        "crlfSha256": "9257d2bb7914816b09e1cacaa850e15eed8f116cf4d439570733007b23a28710"
+      },
+      {
+        "ordinal": 30,
+        "migrationName": "20260811210000_out_of_scope_reason",
+        "relativePath": "prisma/migrations/20260811210000_out_of_scope_reason/migration.sql",
+        "byteSize": 527,
+        "sha256": "002f27b368aaec551c0ae1a5765cf0d6587820171d975ed1b45d77d4679c15d5",
+        "lineEnding": "CRLF",
+        "lfSha256": "c1de52179dff832d2bf3bad7d894260ad5a195785a4e4d8ff7684b56f7ed8a82",
+        "crlfSha256": "002f27b368aaec551c0ae1a5765cf0d6587820171d975ed1b45d77d4679c15d5"
+      },
+      {
+        "ordinal": 31,
+        "migrationName": "20260811233000_intake_framing",
+        "relativePath": "prisma/migrations/20260811233000_intake_framing/migration.sql",
+        "byteSize": 672,
+        "sha256": "fe852fb7ff157e99ed18b53dc75e4c5dd67771ed67089610a9e6ecccbe9901c9",
+        "lineEnding": "CRLF",
+        "lfSha256": "dbab4333bad4ecba2ab15c7f320883f9172349a0f05501ceed3e5ef81d502d62",
+        "crlfSha256": "fe852fb7ff157e99ed18b53dc75e4c5dd67771ed67089610a9e6ecccbe9901c9"
+      },
+      {
+        "ordinal": 32,
+        "migrationName": "20260813120000_account_provider_spend_ceiling",
+        "relativePath": "prisma/migrations/20260813120000_account_provider_spend_ceiling/migration.sql",
+        "byteSize": 1557,
+        "sha256": "65d12b79541e2f84aa5ddde4c4d8e34a84e74b646cdc2d6cee9fe225c13082bc",
+        "lineEnding": "CRLF",
+        "lfSha256": "48e0e94bb25c48c784e89aaf33a1fbfe460148c6708906f0ce4b6c0e0f2fc17b",
+        "crlfSha256": "65d12b79541e2f84aa5ddde4c4d8e34a84e74b646cdc2d6cee9fe225c13082bc"
+      },
+      {
+        "ordinal": 33,
+        "migrationName": "20260815120000_human_work_unit_enums",
+        "relativePath": "prisma/migrations/20260815120000_human_work_unit_enums/migration.sql",
+        "byteSize": 2445,
+        "sha256": "40e1c425c543443bc8fb56a879fc687d037e46e9636f526ca16bb29bcf0280c5",
+        "lineEnding": "CRLF",
+        "lfSha256": "c643fb05b2f02fd6d876baac5bda7fe2880fbfe1d24cee8b4ca1c82a47ff5b87",
+        "crlfSha256": "40e1c425c543443bc8fb56a879fc687d037e46e9636f526ca16bb29bcf0280c5"
+      },
+      {
+        "ordinal": 34,
+        "migrationName": "20260815120100_human_work_unit",
+        "relativePath": "prisma/migrations/20260815120100_human_work_unit/migration.sql",
+        "byteSize": 31956,
+        "sha256": "0e90876d382b66825e26c838e8bf136b239981c4e4a8e5d9cc8937ee3be1bc26",
+        "lineEnding": "CRLF",
+        "lfSha256": "d58514339461c2eb89616d15910f162c33a93a7b22f20379f7f94bc113358078",
+        "crlfSha256": "0e90876d382b66825e26c838e8bf136b239981c4e4a8e5d9cc8937ee3be1bc26"
+      },
+      {
+        "ordinal": 35,
+        "migrationName": "20260819150000_human_unit_admission_refusal",
+        "relativePath": "prisma/migrations/20260819150000_human_unit_admission_refusal/migration.sql",
+        "byteSize": 329,
+        "sha256": "260e3c40dd6ec4f7589095189a875c482e12cbd4a886ed6781cab8d53d3331ee",
+        "lineEnding": "CRLF",
+        "lfSha256": "b38570ec3e421a4d7071cbcc9c2f63a1774b38de2bec232a86e8d4b35a29cb25",
+        "crlfSha256": "260e3c40dd6ec4f7589095189a875c482e12cbd4a886ed6781cab8d53d3331ee"
+      },
+      {
+        "ordinal": 36,
+        "migrationName": "20260819213000_model_gateway_v1",
+        "relativePath": "prisma/migrations/20260819213000_model_gateway_v1/migration.sql",
+        "byteSize": 15477,
+        "sha256": "163840684215cf4d7908d8fb5f372cbf86d0861a51cc99cbbb046dab0785ab0c",
+        "lineEnding": "CRLF",
+        "lfSha256": "3f48b2e2eda332f12dcdf6ed02c9d6408077293568d70649c1ada1fce618273a",
+        "crlfSha256": "163840684215cf4d7908d8fb5f372cbf86d0861a51cc99cbbb046dab0785ab0c"
+      },
+      {
+        "ordinal": 37,
+        "migrationName": "20260819233000_model_gateway_audit_events",
+        "relativePath": "prisma/migrations/20260819233000_model_gateway_audit_events/migration.sql",
+        "byteSize": 2812,
+        "sha256": "150b388870f6e1ada89f13148467dfeb7145f341b098ea05e0da286177c8c3cc",
+        "lineEnding": "CRLF",
+        "lfSha256": "93575212aec4491ba1242011d3c142249af85933c39b560e3f657628e8567924",
+        "crlfSha256": "150b388870f6e1ada89f13148467dfeb7145f341b098ea05e0da286177c8c3cc"
+      },
+      {
+        "ordinal": 38,
+        "migrationName": "20260820120000_intake_voice_transcription",
+        "relativePath": "prisma/migrations/20260820120000_intake_voice_transcription/migration.sql",
+        "byteSize": 13107,
+        "sha256": "73f85fc4f1b72d23480c6f30d162bebe9b149faefd6a841118f7887011e43061",
+        "lineEnding": "CRLF",
+        "lfSha256": "bd60b77b12da4f8936f0ebc59cb7d53a4097844dff5530727b2e983d2714925c",
+        "crlfSha256": "73f85fc4f1b72d23480c6f30d162bebe9b149faefd6a841118f7887011e43061"
+      },
+      {
+        "ordinal": 39,
+        "migrationName": "20260831110000_endvera_construction_assistant_v1",
+        "relativePath": "prisma/migrations/20260831110000_endvera_construction_assistant_v1/migration.sql",
+        "byteSize": 15991,
+        "sha256": "c279a42c9464512cfd610b3786724f8acfa26209c426df3aefd5ef6a4f76ba9d",
+        "lineEnding": "CRLF",
+        "lfSha256": "95a015b5051035304b990e9f29cf17e343d43067fe06822eefbf9e698e01b4e2",
+        "crlfSha256": "c279a42c9464512cfd610b3786724f8acfa26209c426df3aefd5ef6a4f76ba9d"
+      },
+      {
+        "ordinal": 40,
+        "migrationName": "20260901020000_endvera_construction_open_loop_r0",
+        "relativePath": "prisma/migrations/20260901020000_endvera_construction_open_loop_r0/migration.sql",
+        "byteSize": 10341,
+        "sha256": "0571a2f65659181d7a4f3138e611661d3b40967f7acd2e7abd57e62985dd21e8",
+        "lineEnding": "CRLF",
+        "lfSha256": "bfc9a65d37b1677f199a4d923b10521b20a9b004e54aeb0565a019cc84e88b64",
+        "crlfSha256": "0571a2f65659181d7a4f3138e611661d3b40967f7acd2e7abd57e62985dd21e8"
+      },
+      {
+        "ordinal": 41,
+        "migrationName": "20260901132000_endvera_construction_operating_assistant_r2_core",
+        "relativePath": "prisma/migrations/20260901132000_endvera_construction_operating_assistant_r2_core/migration.sql",
+        "byteSize": 529,
+        "sha256": "5d792f66de71304a659f38373ab2abd793b520c8929608bdb1883d7a2ba7962c",
+        "lineEnding": "CRLF",
+        "lfSha256": "cbb833794bf5e2532bcf21b57ed0819728a35097678a08904dc4b9ac0b5a628a",
+        "crlfSha256": "5d792f66de71304a659f38373ab2abd793b520c8929608bdb1883d7a2ba7962c"
+      },
+      {
+        "ordinal": 42,
+        "migrationName": "20260901150000_endvera_google_calendar_connector_r3",
+        "relativePath": "prisma/migrations/20260901150000_endvera_google_calendar_connector_r3/migration.sql",
+        "byteSize": 6531,
+        "sha256": "bb5a4fe216d559a31a5d1bdda05da69a1e29ec8cba7e1eda61fc4b9814447ea4",
+        "lineEnding": "CRLF",
+        "lfSha256": "44bce3c2bfd7d25c7b769a0bb1600cb055d2561a91e79ac16f52dd7ff3a4d415",
+        "crlfSha256": "bb5a4fe216d559a31a5d1bdda05da69a1e29ec8cba7e1eda61fc4b9814447ea4"
+      },
+      {
+        "ordinal": 43,
+        "migrationName": "20260901190000_endvera_sms_voice_connectors_r4",
+        "relativePath": "prisma/migrations/20260901190000_endvera_sms_voice_connectors_r4/migration.sql",
+        "byteSize": 1451,
+        "sha256": "500a588ad1308c0893040fa3d7b6fcea98f65ba591b97c713fc3c3ff281102b9",
+        "lineEnding": "CRLF",
+        "lfSha256": "86a972465d53aded9a83daa2b94bb6e8f9f310c7b42e9f73a3635104179f7d5e",
+        "crlfSha256": "500a588ad1308c0893040fa3d7b6fcea98f65ba591b97c713fc3c3ff281102b9"
+      },
+      {
+        "ordinal": 44,
+        "migrationName": "20260901210000_endvera_construction_human_escalation_r5",
+        "relativePath": "prisma/migrations/20260901210000_endvera_construction_human_escalation_r5/migration.sql",
+        "byteSize": 4849,
+        "sha256": "586c7aeddd7859a697160c7706de43922ebe58b5ffdef91bd9ec27f3eee8b936",
+        "lineEnding": "CRLF",
+        "lfSha256": "911d965e7068278513b8df32d00af2d4739738930e75c59110c9d02d6eb6d723",
+        "crlfSha256": "586c7aeddd7859a697160c7706de43922ebe58b5ffdef91bd9ec27f3eee8b936"
+      },
+      {
+        "ordinal": 45,
+        "migrationName": "20260901230000_endvera_construction_receivables_followups_r6",
+        "relativePath": "prisma/migrations/20260901230000_endvera_construction_receivables_followups_r6/migration.sql",
+        "byteSize": 11846,
+        "sha256": "2b526e29d756fc5b6decb9afd14f008bd1539912beb4a55d85856096cc98f17f",
+        "lineEnding": "CRLF",
+        "lfSha256": "5b2ea9f1f03b70e414cef602ef0938b31f42eaea785146f878853efc024ce1ef",
+        "crlfSha256": "2b526e29d756fc5b6decb9afd14f008bd1539912beb4a55d85856096cc98f17f"
+      },
+      {
+        "ordinal": 46,
+        "migrationName": "20260901233000_construction_operating_assistant_r19_job_scheduling",
+        "relativePath": "prisma/migrations/20260901233000_construction_operating_assistant_r19_job_scheduling/migration.sql",
+        "byteSize": 9854,
+        "sha256": "49e5987c037c5ac3a704e075d2707f0f723b9c085ab9016f2467dd95a79fdd4f",
+        "lineEnding": "CRLF",
+        "lfSha256": "ca072ee98ffa83c9995d63f1699888744aa9dbc366a4e4f6db2e9a648cacc1d9",
+        "crlfSha256": "49e5987c037c5ac3a704e075d2707f0f723b9c085ab9016f2467dd95a79fdd4f"
+      },
+      {
+        "ordinal": 47,
+        "migrationName": "20260902001000_construction_operating_assistant_r20_follow_up_engine",
+        "relativePath": "prisma/migrations/20260902001000_construction_operating_assistant_r20_follow_up_engine/migration.sql",
+        "byteSize": 13783,
+        "sha256": "14c52607d2b7be44228c0216a3a613e07ea4ecb5e61bad958442d38fe949b3c9",
+        "lineEnding": "CRLF",
+        "lfSha256": "f5c02eb2f8f7f17ad4f1513ae167f8c6a864c37b8f24df366c94b44ea97b1638",
+        "crlfSha256": "14c52607d2b7be44228c0216a3a613e07ea4ecb5e61bad958442d38fe949b3c9"
+      },
+      {
+        "ordinal": 48,
+        "migrationName": "20260902002000_construction_operating_assistant_r21_receivables_invoice",
+        "relativePath": "prisma/migrations/20260902002000_construction_operating_assistant_r21_receivables_invoice/migration.sql",
+        "byteSize": 8897,
+        "sha256": "54c0decd3bb9897f661e2183b6ed52ff2a7357736a2f88310e927e5aba807787",
+        "lineEnding": "CRLF",
+        "lfSha256": "e1e78bfdca5f67ab175dbcadeaf1482526cfb48bf844b2f37c05130025e48b98",
+        "crlfSha256": "54c0decd3bb9897f661e2183b6ed52ff2a7357736a2f88310e927e5aba807787"
+      },
+      {
+        "ordinal": 49,
+        "migrationName": "20260902014500_construction_operating_assistant_r23_calendar_connectors",
+        "relativePath": "prisma/migrations/20260902014500_construction_operating_assistant_r23_calendar_connectors/migration.sql",
+        "byteSize": 659,
+        "sha256": "f2e973dc7fff0a948b4795c4bc6b198dc8b0a31224a4ae7fd48226fea2f9632b",
+        "lineEnding": "CRLF",
+        "lfSha256": "bf1828f064cb9f4b3e8a929a1942a146afdbdae971c73c583f12a2d53c2b91cc",
+        "crlfSha256": "f2e973dc7fff0a948b4795c4bc6b198dc8b0a31224a4ae7fd48226fea2f9632b"
+      },
+      {
+        "ordinal": 50,
+        "migrationName": "20260902022100_construction_operating_assistant_r24_sms_mms",
+        "relativePath": "prisma/migrations/20260902022100_construction_operating_assistant_r24_sms_mms/migration.sql",
+        "byteSize": 7519,
+        "sha256": "6917aae532c838e8d4ec76a5d899523543f06917eb2b2610a79b076e9a457113",
+        "lineEnding": "CRLF",
+        "lfSha256": "39c0b8b1fd88270d0b3d0b48e4e347f1d32c8aaf58936408d149d19a96736f73",
+        "crlfSha256": "6917aae532c838e8d4ec76a5d899523543f06917eb2b2610a79b076e9a457113"
+      },
+      {
+        "ordinal": 51,
+        "migrationName": "20260902022200_construction_operating_assistant_r24_sms_mms_operation",
+        "relativePath": "prisma/migrations/20260902022200_construction_operating_assistant_r24_sms_mms_operation/migration.sql",
+        "byteSize": 659,
+        "sha256": "a5e0b42f6a0ea41b7cb7eaf1f28db5007b31cb985cc70f4b9499aa6fd04cebb5",
+        "lineEnding": "CRLF",
+        "lfSha256": "054b35364bbda1cd114c204f10cbb5bd0e0a08d5b6a3dfe8480533ee9fd39a21",
+        "crlfSha256": "a5e0b42f6a0ea41b7cb7eaf1f28db5007b31cb985cc70f4b9499aa6fd04cebb5"
+      },
+      {
+        "ordinal": 52,
+        "migrationName": "20260902030400_construction_operating_assistant_r25_voice_calls",
+        "relativePath": "prisma/migrations/20260902030400_construction_operating_assistant_r25_voice_calls/migration.sql",
+        "byteSize": 10737,
+        "sha256": "84f6b995a5a006b8a9f9a1f6085ae762acc9037837caeddc81dba03cbf726f12",
+        "lineEnding": "CRLF",
+        "lfSha256": "070d655cefc68d04dcd05ae08528a9125a500678a4df8d9350afe269e3372fe1",
+        "crlfSha256": "84f6b995a5a006b8a9f9a1f6085ae762acc9037837caeddc81dba03cbf726f12"
+      },
+      {
+        "ordinal": 53,
+        "migrationName": "20260902040000_construction_operating_assistant_r26_email_inbox",
+        "relativePath": "prisma/migrations/20260902040000_construction_operating_assistant_r26_email_inbox/migration.sql",
+        "byteSize": 8859,
+        "sha256": "3f0c1effbddb7300d57f0b19db807dd935d5a5df5388834dc55ed732eee98f74",
+        "lineEnding": "CRLF",
+        "lfSha256": "df052b7e4fe445e1b2b78e164629b2d9bbf4c8ddcafefb5fef93889031f47916",
+        "crlfSha256": "3f0c1effbddb7300d57f0b19db807dd935d5a5df5388834dc55ed732eee98f74"
+      },
+      {
+        "ordinal": 54,
+        "migrationName": "20260902050000_construction_operating_assistant_r27_accounting",
+        "relativePath": "prisma/migrations/20260902050000_construction_operating_assistant_r27_accounting/migration.sql",
+        "byteSize": 8482,
+        "sha256": "04988f2bb0ab2a3b57e8917af851136b24de7beb78011ea77b5946ef487d0cb9",
+        "lineEnding": "CRLF",
+        "lfSha256": "60b5b43d44aa4f94cdf0a3c1767aff7e664510e837a51fbd5855a1b88d7549a2",
+        "crlfSha256": "04988f2bb0ab2a3b57e8917af851136b24de7beb78011ea77b5946ef487d0cb9"
+      },
+      {
+        "ordinal": 55,
+        "migrationName": "20260902053000_construction_operating_assistant_r28_authority_policies",
+        "relativePath": "prisma/migrations/20260902053000_construction_operating_assistant_r28_authority_policies/migration.sql",
+        "byteSize": 10327,
+        "sha256": "429c859c22920a0c152f68c395937397149288d04c0c666bd9e3949344868e24",
+        "lineEnding": "CRLF",
+        "lfSha256": "11410ab8512ef2cfd1776fa6b0df1f0f342309e488b436127834a16b61b7702d",
+        "crlfSha256": "429c859c22920a0c152f68c395937397149288d04c0c666bd9e3949344868e24"
+      },
+      {
+        "ordinal": 56,
+        "migrationName": "20260902063000_construction_operating_assistant_r30_tenant_privacy",
+        "relativePath": "prisma/migrations/20260902063000_construction_operating_assistant_r30_tenant_privacy/migration.sql",
+        "byteSize": 7627,
+        "sha256": "9948d1ffd6e20e1fa090c41f066f400bf8a917134911aa030b63917bc87fbf5f",
+        "lineEnding": "CRLF",
+        "lfSha256": "1f096d225d48237e8ef5aa279d04feecf8111021069580f691db7ceea51d005f",
+        "crlfSha256": "9948d1ffd6e20e1fa090c41f066f400bf8a917134911aa030b63917bc87fbf5f"
+      },
+      {
+        "ordinal": 57,
+        "migrationName": "20260902081500_construction_operating_assistant_r31_observability_recovery",
+        "relativePath": "prisma/migrations/20260902081500_construction_operating_assistant_r31_observability_recovery/migration.sql",
+        "byteSize": 12428,
+        "sha256": "1e0501583a4691845fefc99b0e221a4f10da3068882737b518d34e68adb9179f",
+        "lineEnding": "CRLF",
+        "lfSha256": "6aabee1e48926112e51d56602f0c80fb84628a84199bbb080a18d2b887c486e1",
+        "crlfSha256": "1e0501583a4691845fefc99b0e221a4f10da3068882737b518d34e68adb9179f"
+      },
+      {
+        "ordinal": 58,
+        "migrationName": "20260902101500_construction_operating_assistant_r32_onboarding_import",
+        "relativePath": "prisma/migrations/20260902101500_construction_operating_assistant_r32_onboarding_import/migration.sql",
+        "byteSize": 7125,
+        "sha256": "50b7a0290a18811ae4b59415557fae85e37cd2a43f7013649749deb391b8293d",
+        "lineEnding": "CRLF",
+        "lfSha256": "605d6f8cdc0fc3ebf4455305bf9a1b54e77b48cfe1db5cc9ddee9392b6220385",
+        "crlfSha256": "50b7a0290a18811ae4b59415557fae85e37cd2a43f7013649749deb391b8293d"
+      },
+      {
+        "ordinal": 59,
+        "migrationName": "20260902120500_construction_operating_assistant_r34_commercial_account",
+        "relativePath": "prisma/migrations/20260902120500_construction_operating_assistant_r34_commercial_account/migration.sql",
+        "byteSize": 3407,
+        "sha256": "b0fd57011113bb195eda1c39fc27128c54f7ac4937ec1f64e31976a13362623f",
+        "lineEnding": "CRLF",
+        "lfSha256": "4e44046e0f8ff0ee704e0fd3c2c68c17bea11fddb8fb40708869dcf179688e8e",
+        "crlfSha256": "b0fd57011113bb195eda1c39fc27128c54f7ac4937ec1f64e31976a13362623f"
+      },
+      {
+        "ordinal": 60,
+        "migrationName": "20260902170000_construction_assistant_r37b_provider_activation",
+        "relativePath": "prisma/migrations/20260902170000_construction_assistant_r37b_provider_activation/migration.sql",
+        "byteSize": 7105,
+        "sha256": "bb875c672cce25ff524368757c42bb23545b5539b484762850752fe1122dbabe",
+        "lineEnding": "CRLF",
+        "lfSha256": "3d00b16001ed18391f88e8d7b5ef6c398e7144375267ad3aefd3f8c70e8ec227",
+        "crlfSha256": "bb875c672cce25ff524368757c42bb23545b5539b484762850752fe1122dbabe"
+      },
+      {
+        "ordinal": 61,
+        "migrationName": "20260902180000_construction_assistant_r37c_controlled_run",
+        "relativePath": "prisma/migrations/20260902180000_construction_assistant_r37c_controlled_run/migration.sql",
+        "byteSize": 3546,
+        "sha256": "b5d48e787780d9379d6a980926ccec1c2dad2a22e677685156a4110bcc9b2411",
+        "lineEnding": "CRLF",
+        "lfSha256": "a6bb7a012ecfaa251f9766c4ed3587a58d15015cd42251accc2c86252537fea1",
+        "crlfSha256": "b5d48e787780d9379d6a980926ccec1c2dad2a22e677685156a4110bcc9b2411"
+      },
+      {
+        "ordinal": 62,
+        "migrationName": "20260903024000_construction_assistant_r37f_provider_delivery",
+        "relativePath": "prisma/migrations/20260903024000_construction_assistant_r37f_provider_delivery/migration.sql",
+        "byteSize": 536,
+        "sha256": "748f31e1d5a0df23ce1f66a1d07580a1cc875fb047691c9c54cc3f19b0d6032f",
+        "lineEnding": "CRLF",
+        "lfSha256": "8536f65c5854836b4a6c347372c37813f9ed667f30a1f5e5213d2d3bd2688e87",
+        "crlfSha256": "748f31e1d5a0df23ce1f66a1d07580a1cc875fb047691c9c54cc3f19b0d6032f"
+      },
+      {
+        "ordinal": 63,
+        "migrationName": "20260903180000_construction_assistant_r36v_project_brain_intake",
+        "relativePath": "prisma/migrations/20260903180000_construction_assistant_r36v_project_brain_intake/migration.sql",
+        "byteSize": 41920,
+        "sha256": "aef8b168e6ef8c62e92880f6cb031f3929e5a13e425650f1de5e22abf382a7f1",
+        "lineEnding": "CRLF",
+        "lfSha256": "e813a331596d365aa958a2d40141ca61d2fcbe4d602de96771d14613a430dba0",
+        "crlfSha256": "aef8b168e6ef8c62e92880f6cb031f3929e5a13e425650f1de5e22abf382a7f1"
+      },
+      {
+        "ordinal": 64,
+        "migrationName": "20260903220000_construction_assistant_r36w_project_brain_fact_candidates",
+        "relativePath": "prisma/migrations/20260903220000_construction_assistant_r36w_project_brain_fact_candidates/migration.sql",
+        "byteSize": 15158,
+        "sha256": "0e3d3c90a843439b9853ba409de18bfbb3d8713b536b9248800175b7df21b97f",
+        "lineEnding": "CRLF",
+        "lfSha256": "1dc6f2261f3fa3e5a352cfb0db917edc75c82763f64356444246121a31045653",
+        "crlfSha256": "0e3d3c90a843439b9853ba409de18bfbb3d8713b536b9248800175b7df21b97f"
+      },
+      {
+        "ordinal": 65,
+        "migrationName": "20260904010000_construction_assistant_r36x_project_brain_understanding",
+        "relativePath": "prisma/migrations/20260904010000_construction_assistant_r36x_project_brain_understanding/migration.sql",
+        "byteSize": 21114,
+        "sha256": "78d0482f910a4b309374399c2e4ddc717a66c7f0339c4b0522b3ee552635daed",
+        "lineEnding": "CRLF",
+        "lfSha256": "058d01fe505ff5a60629017c2c4246192301049f3aa495aa4912e73d3844e936",
+        "crlfSha256": "78d0482f910a4b309374399c2e4ddc717a66c7f0339c4b0522b3ee552635daed"
+      },
+      {
+        "ordinal": 66,
+        "migrationName": "20260904040000_construction_assistant_r36y_project_brain_assistant_memory",
+        "relativePath": "prisma/migrations/20260904040000_construction_assistant_r36y_project_brain_assistant_memory/migration.sql",
+        "byteSize": 17269,
+        "sha256": "d3567dbff4e44781036e8c87b942a7c183bb0a1f5ad7cca0f607f2823693b495",
+        "lineEnding": "CRLF",
+        "lfSha256": "7c25ae88404b60ef3476201e7e2a681fa6f25a88caa5bfc3897c78ae6418f6fc",
+        "crlfSha256": "d3567dbff4e44781036e8c87b942a7c183bb0a1f5ad7cca0f607f2823693b495"
+      },
+      {
+        "ordinal": 67,
+        "migrationName": "20260906010000_construction_assistant_r38e_secretary_broadcast",
+        "relativePath": "prisma/migrations/20260906010000_construction_assistant_r38e_secretary_broadcast/migration.sql",
+        "byteSize": 2085,
+        "sha256": "5993fc32825fd2c314dc67b62dae6df626e296cf6e64588419629aa0631fd066",
+        "lineEnding": "CRLF",
+        "lfSha256": "3e7c2ec5ecdd528c6c73e5630e337efa50f2c7e2e8b57d22713ea75a96facfa9",
+        "crlfSha256": "5993fc32825fd2c314dc67b62dae6df626e296cf6e64588419629aa0631fd066"
+      },
+      {
+        "ordinal": 68,
+        "migrationName": "20260906020000_construction_assistant_r38f_broadcast_approval",
+        "relativePath": "prisma/migrations/20260906020000_construction_assistant_r38f_broadcast_approval/migration.sql",
+        "byteSize": 819,
+        "sha256": "9b6eb028a59b89df205c9ffb3515e9dbdbdf101b066616a6cfb19c0c46d26371",
+        "lineEnding": "CRLF",
+        "lfSha256": "ea2bfde64a79a4adf98864de5416c9e1b494048d1603f5fd67dfefe7da20827f",
+        "crlfSha256": "9b6eb028a59b89df205c9ffb3515e9dbdbdf101b066616a6cfb19c0c46d26371"
+      },
+      {
+        "ordinal": 69,
+        "migrationName": "20260909235000_personal_connector_credential_vault",
+        "relativePath": "prisma/migrations/20260909235000_personal_connector_credential_vault/migration.sql",
+        "byteSize": 2044,
+        "sha256": "2562306e18cf2c0f847bfe5a1aee3f8f1062bfaa16aa3ef8c8fd61d1f4c9ebd4",
+        "lineEnding": "LF",
+        "lfSha256": "2562306e18cf2c0f847bfe5a1aee3f8f1062bfaa16aa3ef8c8fd61d1f4c9ebd4",
+        "crlfSha256": "3d311039373bfd32ecceef95804549651160b92da8a764c3b1819fd5ed8542bd"
+      },
+      {
+        "ordinal": 70,
+        "migrationName": "20260910002000_personal_outbound_budget",
+        "relativePath": "prisma/migrations/20260910002000_personal_outbound_budget/migration.sql",
+        "byteSize": 1988,
+        "sha256": "9b84fed7eeb044b8b7192fac22569e15f276233b609b29670490a898898fb726",
+        "lineEnding": "LF",
+        "lfSha256": "9b84fed7eeb044b8b7192fac22569e15f276233b609b29670490a898898fb726",
+        "crlfSha256": "36a1e0bf36ca8f0dfd547918836fd2ab357e2eb507cf5cc71f2712227befcd12"
+      },
+      {
+        "ordinal": 71,
+        "migrationName": "20260910030000_personal_gateway_subject",
+        "relativePath": "prisma/migrations/20260910030000_personal_gateway_subject/migration.sql",
+        "byteSize": 1713,
+        "sha256": "832fdbbf6170c14e65edfb7f932321d668e07fc3606689bcefd78f27c94cc982",
+        "lineEnding": "LF",
+        "lfSha256": "832fdbbf6170c14e65edfb7f932321d668e07fc3606689bcefd78f27c94cc982",
+        "crlfSha256": "a75d3b42ee283ced85ac8af9b8c59777bc5ca37fac8fbdf5720e4cf88710370d"
+      },
+      {
+        "ordinal": 72,
+        "migrationName": "20260910040000_personal_model_gateway_admission",
+        "relativePath": "prisma/migrations/20260910040000_personal_model_gateway_admission/migration.sql",
+        "byteSize": 7338,
+        "sha256": "9f5f5583b466d22ec6f5094606956d29ffc78c5d0fa9d70924319aaab4a36dc9",
+        "lineEnding": "LF",
+        "lfSha256": "9f5f5583b466d22ec6f5094606956d29ffc78c5d0fa9d70924319aaab4a36dc9",
+        "crlfSha256": "4df54ec75c40acbf00029afde6d452c7225d008b3accc3bcb128459d2da53262"
+      },
+      {
+        "ordinal": 73,
+        "migrationName": "20260910050000_calendar_sms_confirmation_store_off",
+        "relativePath": "prisma/migrations/20260910050000_calendar_sms_confirmation_store_off/migration.sql",
+        "byteSize": 27174,
+        "sha256": "1da48c74903c6dab4b1acc79c01dda85c4e09fe1c7a77cd2e75a5decba7876b6",
+        "lineEnding": "LF",
+        "lfSha256": "1da48c74903c6dab4b1acc79c01dda85c4e09fe1c7a77cd2e75a5decba7876b6",
+        "crlfSha256": "08310fd49300a4f15ba824b602fedea2bafe2ff06896a04c1f31e74af14c67a2"
+      },
+      {
+        "ordinal": 74,
+        "migrationName": "20260910100000_personal_utc_naive_datetime_fix",
+        "relativePath": "prisma/migrations/20260910100000_personal_utc_naive_datetime_fix/migration.sql",
+        "byteSize": 17747,
+        "sha256": "c4a016a08aabdea8104094232a8d297c0610c076b5441a1be5a7cfb223d63a83",
+        "lineEnding": "LF",
+        "lfSha256": "c4a016a08aabdea8104094232a8d297c0610c076b5441a1be5a7cfb223d63a83",
+        "crlfSha256": "2adc5e92de9ba2982f22dee6f6dcc369cf73b3181f1ccff46e4ec12e902e2ef5"
+      },
+      {
+        "ordinal": 75,
+        "migrationName": "20260910120000_project_brain_voice_sessions_off",
+        "relativePath": "prisma/migrations/20260910120000_project_brain_voice_sessions_off/migration.sql",
+        "byteSize": 18430,
+        "sha256": "2c8c8f73f492a0630fb2671cc56fd72409e6f24252ca71e956175e99056d9dff",
+        "lineEnding": "LF",
+        "lfSha256": "2c8c8f73f492a0630fb2671cc56fd72409e6f24252ca71e956175e99056d9dff",
+        "crlfSha256": "620c396d5926ff5d008942384c7e5118d86f3aa1b0029ddeb84d673d1d6ee74c"
+      },
+      {
+        "ordinal": 76,
+        "migrationName": "20260910130000_sms_temporal_clarification_registry",
+        "relativePath": "prisma/migrations/20260910130000_sms_temporal_clarification_registry/migration.sql",
+        "byteSize": 39100,
+        "sha256": "7729a5e5434578d616a6b3b5b0fc1027011597ec305e07373068a001bd436c5e",
+        "lineEnding": "LF",
+        "lfSha256": "7729a5e5434578d616a6b3b5b0fc1027011597ec305e07373068a001bd436c5e",
+        "crlfSha256": "5f6bdd318f4aa983996ba55038fbeef134389fe6d99d843dac2b4e1257c7a734"
+      },
+      {
+        "ordinal": 77,
+        "migrationName": "20260910140000_sms_temporal_trigger_record_dispatch",
+        "relativePath": "prisma/migrations/20260910140000_sms_temporal_trigger_record_dispatch/migration.sql",
+        "byteSize": 6037,
+        "sha256": "1ee47b173de743c64a2fe114be3cc2649a8528358348239329244be9358372b5",
+        "lineEnding": "LF",
+        "lfSha256": "1ee47b173de743c64a2fe114be3cc2649a8528358348239329244be9358372b5",
+        "crlfSha256": "3b3e3229d714f5e462d0f0f5a21e653516d3848a3001af20397d0da6dd7dde45"
+      },
+      {
+        "ordinal": 78,
+        "migrationName": "20260910160000_sms_correlated_calendar_review",
+        "relativePath": "prisma/migrations/20260910160000_sms_correlated_calendar_review/migration.sql",
+        "byteSize": 27141,
+        "sha256": "2517fa32d1d4bb1ef2d8888ea82cf1df09cf0c6fe0c07549de12f447bf8b98ef",
+        "lineEnding": "LF",
+        "lfSha256": "2517fa32d1d4bb1ef2d8888ea82cf1df09cf0c6fe0c07549de12f447bf8b98ef",
+        "crlfSha256": "8b7a6a363945e0fc4db0a6c942fc3f00f11533bad6e73a76201a25c3e21a30e2"
+      },
+      {
+        "ordinal": 79,
+        "migrationName": "20260910180000_sms_correlated_calendar_approval",
+        "relativePath": "prisma/migrations/20260910180000_sms_correlated_calendar_approval/migration.sql",
+        "byteSize": 27850,
+        "sha256": "05163ed1dae6a7421ea3c2a1ecbd83cc7ed2abce77d6fda2cb4d34869060e1f7",
+        "lineEnding": "LF",
+        "lfSha256": "05163ed1dae6a7421ea3c2a1ecbd83cc7ed2abce77d6fda2cb4d34869060e1f7",
+        "crlfSha256": "2282581fabe8b181a498da7fbbed0742fd04c2f04c95fc59c6f7ae236cf4d197"
+      }
+    ],
+    "readOnly": true,
+    "remoteObserved": false,
+    "executionAuthorized": false,
+    "backupVerified": false,
+    "driftVerified": false,
+    "catalogSha256": "a9ebecf12c010c42090b01c64c5683e275fcf779c432467a56eb06ad5e2a1f93"
+  },
+  "comparison": {
+    "version": "personal-pilot-migration-comparison-v1",
+    "status": "SUPPLIED_ROWS_MATCH_HISTORICAL_70_ONLY",
+    "catalogProvenanceVerified": false,
+    "catalogSha256": "a9ebecf12c010c42090b01c64c5683e275fcf779c432467a56eb06ad5e2a1f93",
+    "matchedCount": 70,
+    "matches": [
+      {
+        "ordinal": 1,
+        "migrationName": "20260730000000_baseline",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 2,
+        "migrationName": "20260730000500_legacy_upgrade",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 3,
+        "migrationName": "20260730001000_integrity_triggers",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 4,
+        "migrationName": "20260730002000_chargeback_status",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 5,
+        "migrationName": "20260730003000_ai_pricing_suggestions",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 6,
+        "migrationName": "20260731020000_payment_authorize_capture",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 7,
+        "migrationName": "20260731210000_standing_capacity",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 8,
+        "migrationName": "20260801000000_dispute_window",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 9,
+        "migrationName": "20260801010000_reference_rate",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 10,
+        "migrationName": "20260801020000_assistant",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 11,
+        "migrationName": "20260801030000_closed_job_log",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 12,
+        "migrationName": "20260802120000_fix_escrow_and_standing_invariants",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 13,
+        "migrationName": "20260802130000_standing_account_is_internal",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 14,
+        "migrationName": "20260802140000_one_active_standing_assignment",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 15,
+        "migrationName": "20260802150000_standing_task_never_quoted",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 16,
+        "migrationName": "20260802160000_one_standing_payment_per_period",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 17,
+        "migrationName": "20260805120000_submission_delivery_metrics",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 18,
+        "migrationName": "20260806120000_ai_work_engine_phase1a",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 19,
+        "migrationName": "20260806160000_money_intent_lease",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 20,
+        "migrationName": "20260806170000_workflow_enum_values",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 21,
+        "migrationName": "20260806170100_workflow_execution",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 22,
+        "migrationName": "20260806170200_workflow_guards",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 23,
+        "migrationName": "20260807100000_operational_intelligence",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 24,
+        "migrationName": "20260807100100_operational_baseline_immutable",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 25,
+        "migrationName": "20260808100000_tool_fabric_foundation",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 26,
+        "migrationName": "20260809100000_accepted_plan_economics",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 27,
+        "migrationName": "20260810100000_funded_attempts_at_quote",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 28,
+        "migrationName": "20260810200000_file_and_data_foundation",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 29,
+        "migrationName": "20260811100000_web_fetch_telemetry",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 30,
+        "migrationName": "20260811210000_out_of_scope_reason",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 31,
+        "migrationName": "20260811233000_intake_framing",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 32,
+        "migrationName": "20260813120000_account_provider_spend_ceiling",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 33,
+        "migrationName": "20260815120000_human_work_unit_enums",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 34,
+        "migrationName": "20260815120100_human_work_unit",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 35,
+        "migrationName": "20260819150000_human_unit_admission_refusal",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 36,
+        "migrationName": "20260819213000_model_gateway_v1",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 37,
+        "migrationName": "20260819233000_model_gateway_audit_events",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 38,
+        "migrationName": "20260820120000_intake_voice_transcription",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 39,
+        "migrationName": "20260831110000_endvera_construction_assistant_v1",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 40,
+        "migrationName": "20260901020000_endvera_construction_open_loop_r0",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 41,
+        "migrationName": "20260901132000_endvera_construction_operating_assistant_r2_core",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 42,
+        "migrationName": "20260901150000_endvera_google_calendar_connector_r3",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 43,
+        "migrationName": "20260901190000_endvera_sms_voice_connectors_r4",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 44,
+        "migrationName": "20260901210000_endvera_construction_human_escalation_r5",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 45,
+        "migrationName": "20260901230000_endvera_construction_receivables_followups_r6",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 46,
+        "migrationName": "20260901233000_construction_operating_assistant_r19_job_scheduling",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 47,
+        "migrationName": "20260902001000_construction_operating_assistant_r20_follow_up_engine",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 48,
+        "migrationName": "20260902002000_construction_operating_assistant_r21_receivables_invoice",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 49,
+        "migrationName": "20260902014500_construction_operating_assistant_r23_calendar_connectors",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 50,
+        "migrationName": "20260902022100_construction_operating_assistant_r24_sms_mms",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 51,
+        "migrationName": "20260902022200_construction_operating_assistant_r24_sms_mms_operation",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 52,
+        "migrationName": "20260902030400_construction_operating_assistant_r25_voice_calls",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 53,
+        "migrationName": "20260902040000_construction_operating_assistant_r26_email_inbox",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 54,
+        "migrationName": "20260902050000_construction_operating_assistant_r27_accounting",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 55,
+        "migrationName": "20260902053000_construction_operating_assistant_r28_authority_policies",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 56,
+        "migrationName": "20260902063000_construction_operating_assistant_r30_tenant_privacy",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 57,
+        "migrationName": "20260902081500_construction_operating_assistant_r31_observability_recovery",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 58,
+        "migrationName": "20260902101500_construction_operating_assistant_r32_onboarding_import",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 59,
+        "migrationName": "20260902120500_construction_operating_assistant_r34_commercial_account",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 60,
+        "migrationName": "20260902170000_construction_assistant_r37b_provider_activation",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 61,
+        "migrationName": "20260902180000_construction_assistant_r37c_controlled_run",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 62,
+        "migrationName": "20260903024000_construction_assistant_r37f_provider_delivery",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 63,
+        "migrationName": "20260903180000_construction_assistant_r36v_project_brain_intake",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 64,
+        "migrationName": "20260903220000_construction_assistant_r36w_project_brain_fact_candidates",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 65,
+        "migrationName": "20260904010000_construction_assistant_r36x_project_brain_understanding",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 66,
+        "migrationName": "20260904040000_construction_assistant_r36y_project_brain_assistant_memory",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 67,
+        "migrationName": "20260906010000_construction_assistant_r38e_secretary_broadcast",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 68,
+        "migrationName": "20260906020000_construction_assistant_r38f_broadcast_approval",
+        "checksumMatch": "LF_BYTES_ONLY"
+      },
+      {
+        "ordinal": 69,
+        "migrationName": "20260909235000_personal_connector_credential_vault",
+        "checksumMatch": "EXACT_BYTES"
+      },
+      {
+        "ordinal": 70,
+        "migrationName": "20260910002000_personal_outbound_budget",
+        "checksumMatch": "EXACT_BYTES"
+      }
+    ],
+    "pending": [
+      {
+        "migrationName": "20260910030000_personal_gateway_subject",
+        "sha256": "832fdbbf6170c14e65edfb7f932321d668e07fc3606689bcefd78f27c94cc982"
+      },
+      {
+        "migrationName": "20260910040000_personal_model_gateway_admission",
+        "sha256": "9f5f5583b466d22ec6f5094606956d29ffc78c5d0fa9d70924319aaab4a36dc9"
+      },
+      {
+        "migrationName": "20260910050000_calendar_sms_confirmation_store_off",
+        "sha256": "1da48c74903c6dab4b1acc79c01dda85c4e09fe1c7a77cd2e75a5decba7876b6"
+      },
+      {
+        "migrationName": "20260910100000_personal_utc_naive_datetime_fix",
+        "sha256": "c4a016a08aabdea8104094232a8d297c0610c076b5441a1be5a7cfb223d63a83"
+      },
+      {
+        "migrationName": "20260910120000_project_brain_voice_sessions_off",
+        "sha256": "2c8c8f73f492a0630fb2671cc56fd72409e6f24252ca71e956175e99056d9dff"
+      },
+      {
+        "migrationName": "20260910130000_sms_temporal_clarification_registry",
+        "sha256": "7729a5e5434578d616a6b3b5b0fc1027011597ec305e07373068a001bd436c5e"
+      },
+      {
+        "migrationName": "20260910140000_sms_temporal_trigger_record_dispatch",
+        "sha256": "1ee47b173de743c64a2fe114be3cc2649a8528358348239329244be9358372b5"
+      },
+      {
+        "migrationName": "20260910160000_sms_correlated_calendar_review",
+        "sha256": "2517fa32d1d4bb1ef2d8888ea82cf1df09cf0c6fe0c07549de12f447bf8b98ef"
+      },
+      {
+        "migrationName": "20260910180000_sms_correlated_calendar_approval",
+        "sha256": "05163ed1dae6a7421ea3c2a1ecbd83cc7ed2abce77d6fda2cb4d34869060e1f7"
+      }
+    ],
+    "readOnly": true,
+    "remoteObserved": false,
+    "executionAuthorized": false,
+    "backupVerified": false,
+    "driftVerified": false
+  },
+  "sourceMetadataReceipt": "pilot-migration-metadata-20260910T2106Z.json",
+  "remoteObservedAt": "2026-09-10 21:05:02 UTC",
+  "comparedAt": "2026-09-10T21:09:34.738Z"
+}

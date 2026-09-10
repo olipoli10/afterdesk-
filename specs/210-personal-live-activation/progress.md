@@ -1,5 +1,18 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 21:14Z — real metadata reconciled; populated local upgrade implementation active
+
+New local catalog79/compare70 reviewed and62/62 PASS17:13:40; types/lint PASS.
+Fresh managedNeon pilot70 migration metadata matches47exact/23LF-only localpins;
+no customer/credential data requested. Current dedicatedVercel still READY at
+06e26ce7, not currentlocalcode. In-appTwilio logged out does not mean backend
+connectors unavailable. See audits/PILOT_MIGRATION_CATALOG_CONTROLLER.md.
+
+Nine SQL reviewed for populateddata/locks/compatibility; no SQL rewritten. Native
+synthetic70→79 rehearsal being implemented in existingharness under explicitmode,
+with private first70/full79 configs, realPrismahistory, preservedseed and old70clone.
+Review beforeexecution. No remoteupgrade/newAPK or servicecompletion yet.
+
 ## 2026-09-10 21:02Z — protected voice deadlines verified; prepare coherent pilot upgrade
 
 Reader and GET late-expiry/abort publication fixed and reviewed. Native baseline

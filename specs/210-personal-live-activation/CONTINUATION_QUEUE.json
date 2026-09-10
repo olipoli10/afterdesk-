@@ -19,8 +19,8 @@
       "status": "IN_PROGRESS",
       "dependencies": ["VOICE_DISCLOSURE_DEADLINE_REPAIR", "SMS_CORRELATED_EXPLICIT_APPROVAL"],
       "evidence": "PILOT_BACKEND_APK_UPGRADE_PLAN.md",
-      "completed": ["Historical remote70/local79 mismatch identified; bootstrap68-to70 and APK builder are not sufficient upgrade gates"],
-      "remaining": ["Read-only exact migration catalog and peer review", "Fresh remote identity/checksums, backup/drift and populated rehearsal before migration", "Compatible dedicated backend before coherent signed internal APK; real owner connections remain separate"],
+      "completed": ["Historical remote70/local79 mismatch identified; bootstrap68-to70 and APK builder are not sufficient upgrade gates", "Read-only exactcatalog79 and peerreview62 PASS; controller fresh managedNeon metadata70 matches47exact/23LF, old dedicatedVercel06e26ce7 READY confirmed without writes/secrets"],
+      "remaining": ["Reviewed native synthetic populated70-to79 rehearsal in progress", "RemotePG18 catalog drift, recoverable backup and rehearsal before migration", "Compatible dedicated backend before coherent signed internal APK; real owner connections remain separate"],
       "liveObserved": false
     },
     {
@@ -510,9 +510,9 @@
     "totalPilotBudgetCad": 100,
     "twilioBudgetCad": 30,
     "pilotExpiresAt": "2026-10-10T01:18:26Z",
-    "twilioAccountAndNumber": "AUTHENTICATED_NUMBER_14503676562_PRESENT_BALANCE_18_85USD_WEBHOOK_EMPTY_NO_API_KEYS",
+    "twilioAccountAndNumber": "CURRENT_IN_APP_SESSION_LOGGED_OUT_20260910; PRIOR_NUMBER_14503676562_BALANCE_18_85USD_WEBHOOK_EMPTY_NO_API_KEYS_NOT_REFRESHED",
     "googleOAuthConnection": "GOOGLE_CLOUD_SIGNED_OUT_VERIFIED_BROWSER_20260910",
-    "deploymentAccountAndOrigin": "VERCEL_READY_DEDICATED_ALIAS_ACTIVE_PILOT_DATABASE_MIGRATED_EXECUTION_DISABLED",
+    "deploymentAccountAndOrigin": "LIVE_METADATA_RECHECK_20260910: DEDICATED_VERCEL_READY_06e26ce7; PILOT_NEON70_FINISHED_MIGRATIONS_READ; LOCAL79_NOT_DEPLOYED; FLAGS_NOT_FRESHLY_READ",
     "approvedPilotRecipient": "NOT_BOUND"
   },
   "resumeRule": "Recheck changed owner configuration and Git. Continue eligible work without GO. No repeated paid attempts, old R37 budget, fabricated observation or routine unchanged notification. Keep timer active; projectComplete remains false."

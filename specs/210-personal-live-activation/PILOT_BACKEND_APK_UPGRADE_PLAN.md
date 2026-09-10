@@ -48,6 +48,42 @@ remains incomplete until real owner pairing, consent and observed flows exist.
 
 ## Current factual limits
 
+## Local populated rehearsal addendum — 2026-09-10 21:12Z
+
+Use a mutually exclusive MigrationRehearsal switch on the existing approved
+native PostgreSQL harness. Preserve its normal twenty-file migrated-template
+path, pinned binaries, private ACL/ephemeral SCRAM/loopback network boundary,
+bounded process waits and exact retained-cluster shutdown. No new launcher or
+remote connection. Before the ordinary full migration path, the rehearsal stages
+two private configs with exact regular migration bytes: prefix70 and full79.
+Both stages use actual installed Prisma migrate deploy, not forged history rows.
+Never regenerate the shared Prisma client, rewrite applied SQL or node_modules.
+
+Seed only explicit synthetic legacy data valid at70 using the existing psql
+child runner. Minimum: owner/workspace/member, revoked connector accounts,
+bounded budget/reservation, legacy operation and receipt records, legacy voice
+session/segment and ordinary AiOperation where their actual70 constraints allow.
+Keep all external execution disabled. Capture all old columns of seeded rows and
+the actual70 migration history, upgrade with Prisma, then require identical old
+data/history, only expected new nullable/default columns, and empty new proof
+tables. A genuine seed constraint failure is retained and fixed locally without
+weakening the database. No customer data or real approval is inserted.
+
+Review executable changes by a distinct agent before running the native mode.
+Static tests alone are not rehearsal evidence. Real successful local rehearsal
+is PostgreSQL17.11 with synthetic data, not a remote PG18 restore, full catalog
+drift certification, workload benchmark or permission to publish. Preserve failed
+receipts, private clusters and immutable migration hashes; no recursive cleanup.
+
+Controller subsequent read-only reconciliation: managed Neon/Vercel connectors
+are available despite the in-app Twilio logout. Exact pilot branch metadata and
+70 finished migration rows were fetched without customer rows or credential
+values; Vercel still advertises dedicated deployment dpl_9bNdAWKT2FKA2JRRSpwcf7kszh7N
+from06e26ce7. See pilot-migration-metadata-20260910T2106Z.json and
+pilot-backend-readonly-20260910T2108Z.json for actual observedAt. Local comparator
+must still verify checksums; schema drift, backups and populated rehearsal remain
+unverified. These reads are not an external mutation or expanded budget.
+
 Local schema79; historical dedicated remote receipt70; original remote main68
 must remain untouched. Existing bootstrap hardcodes68 and writes70; do not rerun
 it as an upgrader. Current in-app Twilio session is logged out. Current owner

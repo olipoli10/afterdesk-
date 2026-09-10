@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "kind": "DEDICATED_BACKEND_READONLY_RECONCILIATION",
+  "observedAt": "2026-09-10 21:06:37 UTC",
+  "projectId": "prj_cEvjMH8iJ2C9khbZ0vsQlGKQ4Y75",
+  "teamId": "team_txoYNQAo21jmENCfI2EG4pdP",
+  "projectName": "endvera-core-sandbox",
+  "deploymentId": "dpl_9bNdAWKT2FKA2JRRSpwcf7kszh7N",
+  "sourceHead": "06e26ce7a3f4f373548405fb451bd4b45861b644",
+  "readyState": "READY",
+  "target": "production",
+  "aliases": [
+    "endvera-core-sandbox-afterdesk.vercel.app"
+  ],
+  "localHead": "c26efc070f0a69a804e9025f3d6a7c2a7a72d612",
+  "localMigrations": 79,
+  "remoteMigrations": 70,
+  "migrationMetadataReceipt": "pilot-migration-metadata-20260910T2106Z.json",
+  "externalMutation": false,
+  "secretAccess": false,
+  "ownerPhonePairingObserved": false,
+  "googleConsentObserved": false,
+  "notes": [
+    "Vercel metadata READY is not current authenticated user-flow proof.",
+    "No production environment secret values or customer rows requested.",
+    "Neon project free_v3 PG18, history retention21600s; not proof of recoverable backup.",
+    "Current in-app Twilio session logged out; independent backend connectors remain accessible."
+  ]
+}
