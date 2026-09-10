@@ -1,0 +1,453 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (17 tests | 16 failed) 605ms
+     ✓ OFF does not require valid input or mutate the DB 132ms
+     × commits exact complete wire + shared ledger without calendar draft or additional provider work 87ms
+     × rolls registry, question and shared ledger back if source completion is omitted 30ms
+     × rejects lease replacement after registry insertion even if a raw UPDATE tries to complete 23ms
+     × rejects a source lease expiring after insertion but before the final exact completion 25ms
+     × preserves canonical DB acceptance time and two-source resolution in UTC 20ms
+     × preserves canonical DB acceptance time and two-source resolution in America/New_York 20ms
+     × preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo 25ms
+     × missing immutable acceptedAt refuses; historical updatedAt is never substituted 22ms
+     × an SMS received before the durable question receipt cannot become its answer later 21ms
+     × another actor cannot load the question or consume its reply 25ms
+     × each rejected SMS increments once; fifth closes active question and preserves evidence 29ms
+     × revocation remains possible but prevents attaching or consuming evidence 32ms
+     × rejects a minimal forged ACCEPTED packet at the actual INSERT trigger 26ms
+     × competing consumption of the same SMS commits at most one permanent receipt 28ms
+     × five creations across both types share one permanent hourly cap 28ms
+     × native overlapping clarification/confirmation creation has one winner and different backends 30ms
+
+ Test Files  1 failed (1)
+      Tests  16 failed | 1 passed (17)
+   Start at  09:35:59
+   Duration  1.63s (transform 606ms, setup 0ms, import 875ms, tests 605ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > commits exact complete wire + shared ledger without calendar draft or additional provider work
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvkltzk000pi5hklf8ou3tb, cmtvkltxy0002i5hknwgo15ta, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvkltzp000si5hkowg439st, null, primary, 1, null, null, cmtvkltxl0000i5hkywp4fxuk, 2026-09-10 13:36:00.273, 2026-09-10 13:36:00.278)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:135:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > rolls registry, question and shared ledger back if source completion is omitted
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu0o001ii5hkox7s5oif, cmtvklu01000vi5hkzxketzw6, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu0p001li5hkgmfxum2o, null, primary, 1, null, null, cmtvkltzy000ti5hk5rxihp91, 2026-09-10 13:36:00.312, 2026-09-10 13:36:00.314)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:142:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > rejects lease replacement after registry insertion even if a raw UPDATE tries to complete
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu1c002bi5hkisgz4ofu, cmtvklu0u001oi5hkd0vzib20, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu1d002ei5hk6s8xqg3p, null, primary, 1, null, null, cmtvklu0s001mi5hkqwvzr5l5, 2026-09-10 13:36:00.336, 2026-09-10 13:36:00.338)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:148:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > rejects a source lease expiring after insertion but before the final exact completion
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu1z0034i5hk5m23ay9z, cmtvklu1k002hi5hkqkmchuif, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu210037i5hkxwjwyfdt, null, primary, 1, null, null, cmtvklu1g002fi5hk324z46ul, 2026-09-10 13:36:00.359, 2026-09-10 13:36:00.362)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:155:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > preserves canonical DB acceptance time and two-source resolution in UTC
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu2l003xi5hk7trijiii, cmtvklu26003ai5hk73gabs0m, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu2m0040i5hk79rq4i8m, null, primary, 1, null, null, cmtvklu240038i5hkrq8kiylo, 2026-09-10 13:36:00.381, 2026-09-10 13:36:00.383)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:166:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > preserves canonical DB acceptance time and two-source resolution in America/New_York
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu35004qi5hkvgrziyyk, cmtvklu2q0043i5hkg26817c9, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu36004ti5hkipqjyu4q, null, primary, 1, null, null, cmtvklu2o0041i5hkd3x8ldv3, 2026-09-10 13:36:00.402, 2026-09-10 13:36:00.403)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:166:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu3t005ji5hk1exigwhr, cmtvklu3c004wi5hkcm0ucmk2, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu3v005mi5hk0upiq2cq, null, primary, 1, null, null, cmtvklu39004ui5hk8mppiutl, 2026-09-10 13:36:00.426, 2026-09-10 13:36:00.428)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:166:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > missing immutable acceptedAt refuses; historical updatedAt is never substituted
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu4g006ci5hkimmbi96q, cmtvklu40005pi5hkqj2j7efb, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu4h006fi5hkb7y7swh6, null, primary, 1, null, null, cmtvklu3y005ni5hki95e4j7s, 2026-09-10 13:36:00.448, 2026-09-10 13:36:00.45)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:177:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > an SMS received before the durable question receipt cannot become its answer later
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu520075i5hkar4gi5ec, cmtvklu4m006ii5hk28nz7lit, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu530078i5hk7x3l4z8b, null, primary, 1, null, null, cmtvklu4k006gi5hked2mzgm7, 2026-09-10 13:36:00.47, 2026-09-10 13:36:00.472)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:184:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > another actor cannot load the question or consume its reply
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu5p007yi5hkcn6xeocv, cmtvklu58007bi5hkcn0ved0r, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu5s0081i5hke97jfsb5, null, primary, 1, null, null, cmtvklu550079i5hkojsbzwrk, 2026-09-10 13:36:00.494, 2026-09-10 13:36:00.497)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:191:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > each rejected SMS increments once; fifth closes active question and preserves evidence
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu6h008ri5hkn8ar24s0, cmtvklu5z0084i5hkno3ux4te, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu6i008ui5hkr3yxv3br, null, primary, 1, null, null, cmtvklu5u0082i5hk6nvmvlhv, 2026-09-10 13:36:00.521, 2026-09-10 13:36:00.525)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:197:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > revocation remains possible but prevents attaching or consuming evidence
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu7d009ki5hkwxwphbbn, cmtvklu6r008xi5hk54iobo8x, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu7f009ni5hkroa81qhq, null, primary, 1, null, null, cmtvklu6o008vi5hk9kysaaam, 2026-09-10 13:36:00.553, 2026-09-10 13:36:00.556)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:208:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > rejects a minimal forged ACCEPTED packet at the actual INSERT trigger
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu8400adi5hk4n1fp8pm, cmtvklu7n009qi5hkpxnhgunk, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu8600agi5hk88qz2w9b, null, primary, 1, null, null, cmtvklu7k009oi5hkrlhkzbgh, 2026-09-10 13:36:00.581, 2026-09-10 13:36:00.583)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:214:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > competing consumption of the same SMS commits at most one permanent receipt
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu8s00b6i5hkyzn0f8tt, cmtvklu8b00aji5hk7mw5tjb5, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu8w00b9i5hkr5wrq3s7, null, primary, 1, null, null, cmtvklu8900ahi5hkl3db5t44, 2026-09-10 13:36:00.605, 2026-09-10 13:36:00.61)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:228:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > five creations across both types share one permanent hourly cap
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvklu9p00bzi5hkrsdub5x7, cmtvklu9400bci5hk41ym0ull, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvklu9q00c2i5hkb5kr0fl9, null, primary, 1, null, null, cmtvklu9000bai5hkbzeppxzj, 2026-09-10 13:36:00.637, 2026-09-10 13:36:00.639)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:235:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > native overlapping clarification/confirmation creation has one winner and different backends
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:45
+
+  42   grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+  43     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  44 const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+→ 45 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvkluai00csi5hkhvck2zyl, cmtvklu9x00c5i5hk1ypulya1, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, null, cmtvkluak00cvi5hkbrpwo5wa, null, primary, 1, null, null, cmtvklu9t00c3i5hk6ucj6lnr, 2026-09-10 13:36:00.667, 2026-09-10 13:36:00.669)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/temporal-registry.postgres.test.ts:45:3
+     43|       requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: […
+     44|   const credential = await prisma.constructionConnectorCredential.crea…
+     45|   await prisma.constructionConnectorAccount.update({ where: { id: goog…
+       |   ^
+     46|   async function candidate(kind: "temporal" | "calendar" = "temporal",…
+     47|     const body = kind === "temporal" ? temporalBody : calendarBody;
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:247:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-b07d25f730424ed4a8bfae628760cef6

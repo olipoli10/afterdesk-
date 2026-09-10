@@ -7,6 +7,8 @@ import type { ConnectorEnvironment } from "./google-client";
 import { requireGoogleReadAuthority } from "./google-connection";
 import { requireCalendarConfirmationOutboundSourceInTransaction, markCalendarSmsConfirmationWaitingInTransaction } from "./calendar-confirmation-authority";
 import { isReservedCalendarConfirmationMessage } from "./calendar-confirmation-routing";
+import { inspectTemporalOutboundSourceInTransaction, requireTemporalOutboundBridgeEnabled } from "./sms-temporal-outbound-authority";
+import { markSmsTemporalClarificationAskedInTransaction } from "./sms-temporal-clarification-store";
 
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 type DB = Prisma.TransactionClient | typeof prisma;
@@ -51,9 +53,9 @@ function requireConfirmationBridgeEnabled(env: ConnectorEnvironment) {
   if (env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED !== "true" || env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED !== "true") throw new Error("CONFIRMATION_BRIDGE_DISABLED");
 }
 function confirmationSourceDeadline(source: Awaited<ReturnType<typeof requireCurrentOutboundSource>>) {
-  if (source?.kind !== "CALENDAR_CONFIRMATION") return Infinity;
+  if (source?.kind !== "CALENDAR_CONFIRMATION" && source?.kind !== "TEMPORAL_CLARIFICATION") return Infinity;
   const expiresAt = Date.parse(source.expiresAt);
-  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) throw new Error("CONFIRMATION_EXPIRED");
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) throw new Error(source.kind === "TEMPORAL_CLARIFICATION" ? "TEMPORAL_OUTBOUND_EXPIRED" : "CONFIRMATION_EXPIRED");
   return expiresAt;
 }
 function requireOrdinaryOutboundText(text: string) {
@@ -71,6 +73,19 @@ async function withOutboundClaim<T>(claim: OutboundClaim, env: ConnectorEnvironm
       const current = await requireCalendarConfirmationOutboundSourceInTransaction(tx, claim.row, claim.request, env);
       if (current.challengeId !== claim.source.challengeId || current.fingerprint !== claim.source.fingerprint
         || current.expiresAt !== claim.source.expiresAt) throw new Error("CONFIRMATION_BINDING_CHANGED");
+      confirmationSourceDeadline(claim.source);
+      requireLive();
+    }
+    if (claim.source?.kind !== "CALENDAR_CONFIRMATION") {
+      const current = await inspectTemporalOutboundSourceInTransaction(tx, claim.row, claim.request, env,
+        { deadlineAt: execution.deadlineAt, signal: execution.signal });
+      if (claim.source?.kind === "TEMPORAL_CLARIFICATION") {
+        if (!current || current.fingerprint !== claim.source.fingerprint) throw new Error("TEMPORAL_OUTBOUND_BINDING_CHANGED");
+      } else if (current) {
+        // A claim cannot gain a new meaning while waiting; never upgrade or
+        // ignore an attachment discovered after the original claim.
+        throw new Error("TEMPORAL_OUTBOUND_ATTACHMENT_CHANGED");
+      }
       confirmationSourceDeadline(claim.source);
       requireLive();
     }
@@ -106,17 +121,19 @@ async function withOutboundClaim<T>(claim: OutboundClaim, env: ConnectorEnvironm
     new Date(a.grant.updatedAt), a.grant.scopes, claim.ceiling, claim.budgetExpiresAt);
     if (rows.length !== 1 || claim.approvedUntil <= Date.now()) throw new Error("OUTBOUND_CLAIM_OR_AUTHORITY_CHANGED");
     requireLive();
-    if (claim.source?.kind === "ORDINARY_REPLY") {
+    if (claim.source?.kind === "ORDINARY_REPLY" || claim.source?.kind === "TEMPORAL_CLARIFICATION") {
+      const original = claim.source.kind === "TEMPORAL_CLARIFICATION" ? claim.source.ordinarySource : claim.source;
       const sources = await tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT id FROM "PersonalAssistantOperation"
         WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND kind='personal_sms_inbound' AND status='completed'
           AND "requestHash"=$4 AND request=$5::jsonb AND result=$6::jsonb FOR SHARE`,
-      claim.source.id, claim.row.workspaceId, claim.row.createdByUserId, claim.source.requestHash, claim.source.requestJson, claim.source.resultJson);
+      original.id, claim.row.workspaceId, claim.row.createdByUserId, original.requestHash, original.requestJson, original.resultJson);
       if (sources.length !== 1) throw new Error("AUTOMATIC_REPLY_REFUSED");
       await requireCurrentReplySource(tx, claim.row, claim.request, env);
     }
     requireLive();
     confirmationSourceDeadline(claim.source);
     if (claim.source?.kind === "CALENDAR_CONFIRMATION") requireConfirmationBridgeEnabled(env);
+    if (claim.source?.kind === "TEMPORAL_CLARIFICATION") requireTemporalOutboundBridgeEnabled(env);
     if (claim.automatic && env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED !== "true") throw new Error("AUTOMATIC_REPLIES_DISABLED");
     if (currentOutboundPolicy(claim.row, claim.request, env).fingerprint !== claim.policyFingerprint
       || credentialFingerprint(env) !== claim.credentialFingerprint) throw new Error("OUTBOUND_POLICY_CHANGED");
@@ -142,13 +159,20 @@ async function requireCurrentReplySource(db: DB, row: { workspaceId: string; cre
 }
 /** Explicitly separated sources: confirmation summaries never inherit the ordinary
  * reply's authority, and the existing reply grammar/disclosure checks stay strict. */
-async function requireCurrentOutboundSource(tx: Prisma.TransactionClient, row: OutboundOwner, request: PersonalOutbound, env: ConnectorEnvironment) {
+async function requireCurrentOutboundSource(tx: Prisma.TransactionClient, row: OutboundOwner, request: PersonalOutbound, env: ConnectorEnvironment,
+  context: PersonalOutboundExecutionContext = { deadlineAt: Date.now() + 5000 }) {
   if (row.idempotencyKey.startsWith("calendar-confirmation:")) {
     requireConfirmationBridgeEnabled(env);
     if (row.kind !== "sms_outbound" || !request.sourceOperationId) throw new Error("CONFIRMATION_OUTBOX_BRIDGE_CHANGED");
     return requireCalendarConfirmationOutboundSourceInTransaction(tx, row, request, env);
   }
+  const temporal = await inspectTemporalOutboundSourceInTransaction(tx, row, request, env,
+    { deadlineAt: context.deadlineAt ?? Date.now() + 5000, signal: context.signal });
   const source = await requireCurrentReplySource(tx, row, request, env);
+  if (temporal) {
+    if (!source || source.id !== temporal.sourceOperationId) throw new Error("TEMPORAL_OUTBOUND_SOURCE_CHANGED");
+    return Object.freeze({ kind: "TEMPORAL_CLARIFICATION" as const, ...temporal, ordinarySource: source });
+  }
   return source ? Object.freeze({ kind: "ORDINARY_REPLY" as const, ...source }) : null;
 }
 export async function preparePersonalOutbound(input: { userId: string; workspaceId: string; kind: OutboundKind; to: string; text: string; requestId: string }, env: ConnectorEnvironment = process.env) {
@@ -200,9 +224,9 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
     if (approval?.approvedBy !== row.createdByUserId || approval.approvedHash !== row.requestHash || !(Date.parse(approval.approvedUntil ?? "") > Date.now())) throw new Error("APPROVAL_EXPIRED_OR_CHANGED");
     const request = personalOutboundSchema.parse(row.request);
     if (hash(JSON.stringify(request)) !== row.requestHash || request.from !== env.TWILIO_PHONE_NUMBER) throw new Error("OUTBOUND_CONTENT_CHANGED");
-    const authority = await currentOutboundAuthority(tx, row, request, env);
+    const source = await requireCurrentOutboundSource(tx, row, request, env, { deadlineAt: execution.deadlineAt, signal: execution.signal });
     execution.requireLive();
-    const source = await requireCurrentOutboundSource(tx, row, request, env);
+    const authority = await currentOutboundAuthority(tx, row, request, env);
     execution.requireLive();
     const sourceDeadline = confirmationSourceDeadline(source);
     const { policy, fingerprint: policyFingerprint } = currentOutboundPolicy(row, request, env);
@@ -255,6 +279,14 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
           challengeId: owned.source.challengeId, bridgeOutboundOperationId: owned.row.id }, env);
         if (waiting.status !== "WAITING_FOR_EXACT_CONFIRMATION") throw new Error("CONFIRMATION_NOT_PREPARED");
         requireConfirmationBridgeEnabled(env);
+        confirmationSourceDeadline(owned.source);
+      }
+      if (owned.source?.kind === "TEMPORAL_CLARIFICATION") {
+        const waiting = await markSmsTemporalClarificationAskedInTransaction(tx,
+          { actor: { userId: owned.row.createdByUserId, workspaceId: owned.row.workspaceId }, clarificationId: owned.source.clarificationId,
+            questionOutboundOperationId: owned.row.id }, env, { deadlineAt: execution.deadlineAt, signal: execution.signal });
+        if (waiting.status !== "WAITING_FOR_TEMPORAL_REPLY") throw new Error("TEMPORAL_OUTBOUND_WAITING_REQUIRED");
+        requireTemporalOutboundBridgeEnabled(env);
         confirmationSourceDeadline(owned.source);
       }
       execution.requireLive();

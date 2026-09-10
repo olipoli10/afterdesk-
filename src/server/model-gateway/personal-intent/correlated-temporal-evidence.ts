@@ -38,8 +38,7 @@ export function inspectCorrelatedPersonalTemporalEvidence(input: CorrelatedPerso
   };
   const insufficient = (reason: "UNSAFE_SOURCE_CONTEXT" | "INCOMPLETE_ORIGINAL_TEMPLATE" | "UNSUPPORTED_SLOT_GRAMMAR" | "NON_UNIQUE_AMBIGUOUS_SLOT" | "TEMPORAL_QUESTION_CHANGED") =>
     freeze({ ...base, status: "INSUFFICIENT_ORIGINAL_TEMPLATE" as const, reason });
-  const fullSource = normalize(original.body);
-  if (/\b(?:ne|pas|jamais|non|sauf|annule|annuler|si|sinon|unless|except|not|never|cancel|cannot|puis|ensuite|avant|then|after|before|appelle|telephone|texte|envoie)\b|\b(?:do|does|did|is|are|was|were|wo|would|should|could|must|ca)n['’]t\b|\baprès\b(?!-midi\b)|\bn['’]/.test(fullSource)) return insufficient("UNSAFE_SOURCE_CONTEXT");
+  if (hasUnsafePersonalTemporalSourceContext(original.body)) return insufficient("UNSAFE_SOURCE_CONTEXT");
   const action = inspected.proposal.actions[0];
   if (inspected.proposal.actions.length !== 1 || action.id !== correlation.actionId || action.dependsOn.length
     || action.kind !== "PREPARE_CALENDAR_EVENT") return insufficient("INCOMPLETE_ORIGINAL_TEMPLATE");
@@ -60,3 +59,7 @@ export function inspectCorrelatedPersonalTemporalEvidence(input: CorrelatedPerso
   return freeze({ ...value, evidenceHash: hash(value) });
 }
 export type CorrelatedPersonalTemporalEvidence = ReturnType<typeof inspectCorrelatedPersonalTemporalEvidence>;
+/** Existing closed lexical refusal predicate; not general-language comprehension. */
+export function hasUnsafePersonalTemporalSourceContext(text: string): boolean {
+  return /\b(?:ne|pas|jamais|non|sauf|annule|annuler|si|sinon|unless|except|not|never|cancel|cannot|puis|ensuite|avant|then|after|before|appelle|telephone|texte|envoie)\b|\b(?:do|does|did|is|are|was|were|wo|would|should|could|must|ca)n['’]t\b|\baprès\b(?!-midi\b)|\bn['’]/.test(normalize(text));
+}

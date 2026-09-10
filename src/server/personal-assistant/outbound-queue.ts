@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { externalCapabilityDecision } from "@/lib/release/external-capabilities";
 import { GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/construction-operating-assistant-r3/connector-contracts";
+import { PERSONAL_MODEL_AUTHORITY } from "@/server/model-gateway/personal-intent/budget-policy";
 import type { ConnectorEnvironment } from "./google-client";
 
 type Input = Readonly<{ enabled?: boolean; limit?: number; includeConfirmations?: boolean; deadlineAt?: number; signal?: AbortSignal }>;
@@ -26,8 +27,12 @@ export async function selectPersonalAutomaticOutboundCandidates(input: Input = {
   const confirmations = () => input.includeConfirmations === true && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true"
     && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true" && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true";
   const withConfirmations = confirmations();
+  const temporalQuestions = () => env.ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED === "true"
+    && env.ENDVERA_SMS_TEMPORAL_CLARIFICATION_BRIDGE_ENABLED === "true"
+    && env.ENDVERA_EXTERNAL_AUTHORITY_REF === PERSONAL_MODEL_AUTHORITY && env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT === "2026-10-10T01:18:26Z";
+  const withTemporalQuestions = temporalQuestions();
   const remaining = () => {
-    if (!enabled(input, env) || confirmations() !== withConfirmations) throw new Error("OUTBOUND_QUEUE_DISABLED");
+    if (!enabled(input, env) || confirmations() !== withConfirmations || temporalQuestions() !== withTemporalQuestions) throw new Error("OUTBOUND_QUEUE_DISABLED");
     if (input.signal?.aborted) throw new Error("OUTBOUND_QUEUE_ABORTED");
     const value = Math.floor(deadlineAt - Date.now()); if (value < 2) throw new Error("OUTBOUND_QUEUE_DEADLINE"); return value;
   };
@@ -52,7 +57,46 @@ export async function selectPersonalAutomaticOutboundCandidates(input: Input = {
           AND i.channel='sms' AND i.status='active' AND i.verified=true AND 'COMMAND'=ANY(i.permissions) AND i."normalizedAddress"=o.request->>'to')
         AND EXISTS (SELECT 1 FROM "ConstructionConnectorGrant" send WHERE send."connectorAccountId"=a.id
           AND send.capability='personal_sms_send' AND send.status='active' AND send."revokedAt" IS NULL)
-        AND ((o."idempotencyKey"='reply:'||s.id AND o.request->>'text'=s.result->>'reply')
+        AND ((o."idempotencyKey"='reply:'||s.id AND o.request->>'text'=s.result->>'reply'
+          AND (NOT EXISTS (SELECT 1 FROM "PersonalSmsTemporalClarification" attached WHERE attached."questionOutboundOperationId"=o.id)
+            OR ($6 AND EXISTS (SELECT 1 FROM "PersonalSmsTemporalClarification" q
+              JOIN "ConstructionWorkspaceMember" qm ON qm.id=q.prepared#>>'{binding,memberId}' AND qm."workspaceId"=q."workspaceId" AND qm."userId"=q."userId"
+              JOIN "ConstructionCommunicationIdentity" qi ON qi.id=q."identityId" AND qi."workspaceId"=q."workspaceId" AND qi."userId"=q."userId"
+              JOIN "ConstructionConnectorGrant" qs ON qs.id=q.prepared#>>'{binding,smsInboundGrantId}' AND qs."connectorAccountId"=a.id
+              JOIN "PersonalAssistantOperation" qc ON qc.id=q."modelChildOperationId" AND qc."workspaceId"=q."workspaceId" AND qc."createdByUserId"=q."userId" AND qc."sourcePersonalOperationId"=s.id
+              JOIN "ConstructionConnectorAccount" qa ON qa.id=qc."connectorAccountId" AND qa.id=q.prepared#>>'{binding,modelAccountId}' AND qa."workspaceId"=q."workspaceId" AND qa."createdByUserId"=q."userId"
+              JOIN "ConstructionConnectorCredential" qac ON qac.id=qa."credentialRef" AND qac."connectorAccountId"=qa.id AND qac."workspaceId"=q."workspaceId"
+              JOIN "ConstructionConnectorGrant" qag ON qag.id=q.prepared#>>'{binding,modelGrantId}' AND qag."connectorAccountId"=qa.id
+              JOIN "ConstructionConnectorAccount" qg ON qg.id=q.prepared#>>'{binding,calendarAccountId}' AND qg."workspaceId"=q."workspaceId" AND qg."createdByUserId"=q."userId"
+              JOIN "ConstructionConnectorCredential" qgc ON qgc.id=qg."credentialRef" AND qgc."connectorAccountId"=qg.id AND qgc."workspaceId"=q."workspaceId"
+              JOIN "ConstructionConnectorGrant" qgg ON qgg.id=q.prepared#>>'{binding,calendarWriteGrantId}' AND qgg."connectorAccountId"=qg.id
+              WHERE q."questionOutboundOperationId"=o.id AND q."workspaceId"=o."workspaceId" AND q."userId"=o."createdByUserId" AND q."sourceOperationId"=s.id
+                AND q.phase='PREPARED' AND q."expiresAt">(clock_timestamp() AT TIME ZONE 'UTC') AND q."acceptedAt" IS NULL AND q."failedAttempts"=0
+                AND q."questionRequestHash"=o."requestHash" AND o.request->>'text'=q.prepared->>'wireText' AND s.result->'personalModelReview'=q."reviewSnapshot"
+                AND s."requestHash"=q.prepared#>>'{source,requestHash}' AND s.request->>'body'=q.prepared#>>'{source,body}'
+                AND w."ownerUserId"=q."userId" AND w."defaultTimezone"=q.prepared#>>'{binding,timezone}'
+                AND to_char(w."updatedAt",'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')=q.prepared#>>'{binding,workspaceRevision}'
+                AND qm.status='active' AND qm.role='owner' AND to_char(qm."updatedAt",'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')=q.prepared#>>'{binding,memberRevision}'
+                AND qi.status='active' AND qi.channel='sms' AND qi.verified=true AND 'COMMAND'=ANY(qi.permissions)
+                AND qi.id=s.request->>'identityId' AND qi."normalizedAddress"=o.request->>'to'
+                AND to_char(qi."updatedAt",'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')=q.prepared#>>'{binding,identityRevision}'
+                AND NOT EXISTS (SELECT 1 FROM "ConstructionCommunicationIdentity" other_identity JOIN "ConstructionWorkspace" other_workspace ON other_workspace.id=other_identity."workspaceId"
+                  WHERE other_identity.id<>qi.id AND other_identity.channel='sms' AND other_identity.status='active' AND other_identity.verified=true
+                    AND 'COMMAND'=ANY(other_identity.permissions) AND other_workspace.status='active' AND other_identity."normalizedAddress"=qi."normalizedAddress")
+                AND a.id=q.prepared#>>'{binding,smsAccountId}' AND a."stateVersion"::text=q.prepared#>>'{binding,smsAccountVersion}'
+                AND qs.capability='sms_inbound' AND qs.status='active' AND qs."revokedAt" IS NULL AND qs."stateVersion"::text=q.prepared#>>'{binding,smsInboundGrantVersion}'
+                AND qc.kind='personal_model_candidate_v1' AND qc.status='completed' AND qc.attempts=1 AND qc."modelGatewayOperationId"=q."modelGatewayOperationId"
+                AND qa.provider='openrouter' AND qa.status='connected' AND qa."revokedAt" IS NULL AND qac."revokedAt" IS NULL
+                AND qa."stateVersion"::text=q.prepared#>>'{binding,modelAccountVersion}'
+                AND qag.capability='personal_model_inference' AND qag.status='active' AND qag."revokedAt" IS NULL
+                AND qag."stateVersion"::text=q.prepared#>>'{binding,modelGrantVersion}' AND 'personal_data:inference'=ANY(qag."grantedScopes") AND $7=ANY(qag."grantedScopes")
+                AND qag."grantedAt">=('2026-09-10T01:18:26Z'::timestamptz AT TIME ZONE 'UTC') AND qag."grantedAt"<=(clock_timestamp() AT TIME ZONE 'UTC')
+                AND qg.provider='google_calendar' AND qg.status='connected' AND qg."revokedAt" IS NULL AND qgc."revokedAt" IS NULL
+                AND qg."stateVersion"::text=q.prepared#>>'{binding,calendarAccountVersion}' AND $5=ANY(qg."grantedScopes")
+                AND qgg.capability='calendar_write' AND qgg.status='active' AND qgg."revokedAt" IS NULL AND $5=ANY(qgg."grantedScopes")
+                AND qgg."stateVersion"::text=q.prepared#>>'{binding,calendarWriteGrantVersion}'
+                AND EXISTS (SELECT 1 FROM "PersonalSmsConversationExpectation" qe WHERE qe.id='temporal:'||q.id AND qe."clarificationId"=q.id
+                  AND qe.kind='TEMPORAL_CLARIFICATION' AND qe.namespace=q.namespace AND qe.active)))))
           OR ($4 AND EXISTS (SELECT 1 FROM "PersonalCalendarSmsConfirmation" c
             JOIN "PersonalAssistantOperation" d ON d.id=c."calendarOperationId" AND d."workspaceId"=c."workspaceId" AND d."createdByUserId"=c."userId"
             JOIN "PersonalAssistantOperation" summary ON summary.id=c."summaryOperationId" AND summary."workspaceId"=c."workspaceId" AND summary."createdByUserId"=c."userId"
@@ -87,7 +131,7 @@ export async function selectPersonalAutomaticOutboundCandidates(input: Input = {
               AND inbound."stateVersion"::text=c.prepared#>>'{binding,owner,smsInboundGrantVersion}'
               AND a.id=c.prepared#>>'{binding,owner,smsAccountId}' AND a."stateVersion"::text=c.prepared#>>'{binding,owner,smsAccountVersion}')))
       ORDER BY o."createdAt",o.id LIMIT $1`, limit, env.TWILIO_PHONE_NUMBER,
-    createHash("sha256").update(env.TWILIO_ACCOUNT_SID ?? "").digest("hex"), withConfirmations, GOOGLE_CALENDAR_WRITE_SCOPE);
+    createHash("sha256").update(env.TWILIO_ACCOUNT_SID ?? "").digest("hex"), withConfirmations, GOOGLE_CALENDAR_WRITE_SCOPE, withTemporalQuestions, `authority:${PERSONAL_MODEL_AUTHORITY}`);
     remaining(); return candidates;
   }, { isolationLevel: "Serializable", maxWait, timeout: Math.min(2000, time - maxWait) });
   remaining();

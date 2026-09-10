@@ -60,7 +60,7 @@ export class PersonalIntentAdmissionRefused extends Error {
 function refuse(reason: string): never { throw new PersonalIntentAdmissionRefused(reason); }
 
 /** This account is explicit owner consent for AI, not an SMS or Calendar grant. */
-export async function inspectModelAuthority(tx: Tx, source: PersonalIntentAdmission["source"], now: Date): Promise<PersonalModelAuthority> {
+export async function inspectModelAuthority(tx: Tx, source: Pick<PersonalIntentAdmission["source"], "subject" | "actorUserId">, now: Date): Promise<PersonalModelAuthority> {
   const rows = await tx.$queryRawUnsafe<Array<{
     accountId: string; accountStatus: string; createdByUserId: string; accountVersion: number;
     accountRevokedAt: Date | null; credentialsPrepared: boolean; credentialRef: string | null; externalAccountKeyHash: string | null;

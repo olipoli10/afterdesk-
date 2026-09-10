@@ -1,0 +1,600 @@
+import { createHash, randomUUID } from "node:crypto";
+import { afterAll, describe, expect, it, vi } from "vitest";
+import type { Prisma } from "@prisma-client";
+import { prisma } from "@/lib/db";
+import { GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/construction-operating-assistant-r3/connector-contracts";
+import { PERSONAL_MODEL_AUTHORITY } from "@/server/model-gateway/personal-intent/budget-policy";
+import { admitPersonalIntent } from "@/server/model-gateway/personal-intent/admission";
+import { dispatchPersonalIntent } from "@/server/model-gateway/personal-intent/dispatch";
+import { createOpenRouterPersonalIntentAdapter } from "@/server/model-gateway/personal-intent/openrouter-adapter";
+import { prepareStoredPersonalIntentReview } from "@/server/model-gateway/personal-intent/review-consumer";
+import { formatPersonalModelReviewMessage } from "@/server/personal-assistant/model-review-message";
+import { prepareSmsTemporalClarificationInTransaction, markSmsTemporalClarificationAskedInTransaction, consumeSmsTemporalClarificationInTransaction } from "@/server/personal-assistant/sms-temporal-clarification-store";
+import { prepareCalendarSmsConfirmationInTransaction } from "@/server/personal-assistant/calendar-sms-confirmation-store";
+import { enqueuePersonalSms } from "@/server/personal-assistant/sms-inbox";
+import { canonicalJson } from "@/server/model-gateway/evidence";
+import { personalModelFixture, requirePersonalDisposableDatabase } from "./personal-model.fixture";
+import { approvePersonalOutbound, dispatchPersonalOutbound } from "@/server/personal-assistant/outbox";
+import { inspectSmsTemporalQuestionPreparationInTransaction, attachSmsTemporalQuestionInTransaction } from "@/server/personal-assistant/sms-temporal-question-preparation";
+import { processPersonalSms, type PersonalSmsSourceClaim } from "@/server/personal-assistant/sms-worker";
+import { maintainSmsTemporalClarifications, maintainSmsTemporalClarificationsInTransaction } from "@/server/personal-assistant/sms-temporal-maintenance";
+import { selectPersonalAutomaticOutboundCandidates } from "@/server/personal-assistant/outbound-queue";
+
+requirePersonalDisposableDatabase();
+afterAll(() => prisma.$disconnect());
+const sha = (s: string) => createHash("sha256").update(s).digest("hex");
+const context = () => ({ deadlineAt: Date.now() + 15000 });
+const txOptions = { isolationLevel: "Serializable" as const, timeout: 15000 };
+const temporalBody = "Ajoute inspection demain à 2h, fin 15h.";
+const calendarBody = "Ajoute inspection le 2026-09-12 à 14:00 jusqu’à 15:00.";
+const span = (body: string, quote: string) => ({ quote, start: body.indexOf(quote), end: body.indexOf(quote) + quote.length });
+
+// Native SQL fixture only. Real persisted gateway chain, but injected synthetic
+// model adapter; fake credential records never decrypted. SMS acceptance below
+// is explicitly TEST-CREATED database evidence, never a provider/delivery claim.
+async function fixture(temporalOptions: { body?: string; start?: string; end?: string; missingEnd?: boolean } = {}) {
+  const chosenTemporalBody = temporalOptions.body ?? temporalBody;
+  const f = await personalModelFixture(chosenTemporalBody);
+  const actor = { userId: f.userId, workspaceId: f.workspaceId };
+  const env: NodeJS.ProcessEnv = { NODE_ENV: "test", ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED: "true", ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED: "true",
+    ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true", ENDVERA_EXTERNAL_AUTHORITY_REF: PERSONAL_MODEL_AUTHORITY, ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner",
+    ENDVERA_PERSONAL_PILOT_EXPIRES_AT: "2026-10-10T01:18:26Z", ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS: "20000000",
+    TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+    ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+    GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+  const modelCredential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: f.modelAccountId, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+  await prisma.constructionConnectorAccount.update({ where: { id: f.modelAccountId }, data: { credentialRef: modelCredential.id } });
+  const google = await prisma.constructionConnectorAccount.create({ data: { workspaceId: f.workspaceId, createdByUserId: f.userId, provider: "google_calendar", status: "prepared",
+    externalAccountKeyHash: sha(`synthetic-google:${f.workspaceId}`),
+    grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+      requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
+  await prisma.constructionConnectorAccount.update({ where: { id: google.id }, data: { status: "connected", credentialRef: credential.id } });
+  async function candidate(kind: "temporal" | "calendar" = "temporal", original = false, existingClaim?: PersonalSmsSourceClaim) {
+    const body = kind === "temporal" ? chosenTemporalBody : calendarBody;
+    const wire = { accountSid: f.accountSid, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from: f.from, to: env.TWILIO_PHONE_NUMBER!, body };
+    const sourceId = original ? f.sourceOperationId : (await enqueuePersonalSms({ ...wire, contentHash: sha(JSON.stringify(wire)) })).operationId;
+    const claim = existingClaim ? { ...existingClaim } : { ...actor, operationId: sourceId, attempt: 1 as const, leaseUntil: new Date(Date.now() + 60000).toISOString() };
+    if (existingClaim) {
+      expect(existingClaim).toMatchObject({ ...actor, operationId: sourceId, attempt: 1 });
+      expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: sourceId } })).toMatchObject({ status: "processing", attempts: 1, leaseUntil: new Date(claim.leaseUntil) });
+    } else await prisma.personalAssistantOperation.update({ where: { id: sourceId }, data: { status: "processing", attempts: 1, leaseUntil: new Date(claim.leaseUntil) } });
+    const envelope = { authorityId: PERSONAL_MODEL_AUTHORITY, reviewRef: "SYNTHETIC_ONLY", reviewedAt: new Date().toISOString(), nonModelExposureCeilingCadMicros: 80000000, totalCeilingCadMicros: 100000000 };
+    const admitted = await admitPersonalIntent({ subject: { ...f.subject, operationId: sourceId }, policyVersionId: f.policy.id, rateConfiguration: f.rate, pilotEnvelopeReview: envelope, enabled: true }, env);
+    if (admitted.status !== "ADMITTED_NOT_DISPATCHED") throw new Error("SYNTHETIC_ADMISSION_REQUIRED");
+    const adapter = createOpenRouterPersonalIntentAdapter({ enabled: true, modelKey: f.rate.model, providerEndpointSlug: f.rate.providerEndpoint,
+      maxOutputTokens: f.rate.maxOutputTokens, timeoutMs: 1000, transportMode: "SYNTHETIC_LOCAL", transport: async () => ({ httpStatus: 200, body: JSON.stringify({ id: "synthetic-response", model: f.rate.model,
+        choices: [{ index: 0, finish_reason: "stop", message: { role: "assistant", content: JSON.stringify({ schemaVersion: 1, requestFingerprint: admitted.source.input.requestFingerprint,
+          actions: kind === "temporal" && temporalOptions.missingEnd ? [{ id: "event", kind: "CLARIFY", dependsOn: [], reason: "MISSING_END_TIME" }]
+            : [{ id: "event", kind: "PREPARE_CALENDAR_EVENT", dependsOn: [], title: span(body, "inspection"), starts: span(body, kind === "temporal" ? temporalOptions.start ?? "demain à 2h" : "2026-09-12 à 14:00"), ends: span(body, kind === "temporal" ? temporalOptions.end ?? "15h" : "15:00") }] }) } }] }) }) });
+    expect((await dispatchPersonalIntent({ admission: admitted, adapter, currentRateConfiguration: f.rate, currentPilotEnvelopeReview: envelope,
+      abortSignal: new AbortController().signal, enabled: true, transportMode: "SYNTHETIC_LOCAL" }, env)).status).toBe("PROPOSAL_STORED_NOT_AUTHORIZED");
+    return { claim, childId: admitted.childOperationId, kind, body };
+  }
+  return { ...f, actor, env, google, modelCredential, candidate };
+}
+type Fixture = Awaited<ReturnType<typeof fixture>>;
+type Candidate = Awaited<ReturnType<Fixture["candidate"]>>;
+async function prepareIn(tx: Prisma.TransactionClient, f: Fixture, c: Candidate, options: { finalize?: boolean; ttlMs?: number; afterInsert?: (tx: Prisma.TransactionClient) => Promise<void> } = {}) {
+  const review = await prepareStoredPersonalIntentReview(tx, { enabled: true, ...f.actor, sourceOperationId: c.claim.operationId, modelChildOperationId: c.childId }, f.env);
+  if (review.status !== "REVIEW_PREPARED_NOT_AUTHORIZED") throw new Error("SYNTHETIC_REVIEW_REQUIRED");
+  if (c.kind === "calendar") {
+    const action = review.actions[0]; if (!action.operationId) throw new Error("SYNTHETIC_CALENDAR_DRAFT_REQUIRED");
+    const prepared = await prepareCalendarSmsConfirmationInTransaction(tx, { actor: f.actor, sourceClaim: c.claim, modelChildOperationId: c.childId, reviewActionId: "event", calendarOperationId: action.operationId }, f.env);
+    if (prepared.status !== "PREPARED_DURABLE_OFF") throw new Error("SYNTHETIC_CONFIRMATION_REQUIRED");
+    await tx.personalAssistantOperation.update({ where: { id: c.claim.operationId }, data: { status: "completed", leaseUntil: null,
+      result: { source: "MODEL_REVIEW_ONLY", reply: "Aucun rendez-vous exécuté.", personalModelReview: prepared.requiredSourceReview } } });
+    return { kind: c.kind, id: prepared.challengeId, questionId: prepared.summaryOperationId };
+  }
+  expect(review.actions).toMatchObject([{ status: "CLARIFY" }]);
+  const text = formatPersonalModelReviewMessage(review), request = { to: f.from, from: f.env.TWILIO_PHONE_NUMBER!, text, sourceOperationId: c.claim.operationId };
+  const question = await tx.personalAssistantOperation.create({ data: { workspaceId: f.workspaceId, createdByUserId: f.userId, connectorAccountId: f.smsAccountId,
+    kind: "sms_outbound", status: "pending", attempts: 0, idempotencyKey: `reply:${c.claim.operationId}`, request, requestHash: sha(JSON.stringify(request)) } });
+  const prepared = await prepareSmsTemporalClarificationInTransaction(tx, { actor: f.actor, sourceClaim: c.claim, modelChildOperationId: c.childId,
+    reviewActionId: "event", questionOutboundOperationId: question.id, ...(options.ttlMs === undefined ? {} : { ttlMs: options.ttlMs }) }, f.env, context());
+  if (prepared.status !== "PREPARED_FOR_SOURCE_COMMIT") throw new Error("SYNTHETIC_TEMPORAL_PREPARATION_REQUIRED");
+  expect(prepared.requiredSourceReview).toEqual(review);
+  if (options.afterInsert) await options.afterInsert(tx);
+  if (options.finalize !== false) {
+    // Actual exact CAS. The migration separately verifies OLD live claim at the
+    // transition and exact final review when constraints fire at COMMIT.
+    const n = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"leaseUntil"=NULL,result=$3::jsonb
+      WHERE id=$1 AND status='processing' AND attempts=1 AND "leaseUntil"=($2::timestamptz AT TIME ZONE 'UTC')`, c.claim.operationId, new Date(c.claim.leaseUntil),
+    JSON.stringify({ source: "MODEL_REVIEW_ONLY", reply: text, personalModelReview: prepared.requiredSourceReview }));
+    if (n !== 1) throw new Error("SYNTHETIC_SOURCE_CAS_LOST");
+  } else {
+    // Invoke the same deferred final constraint while the source is incomplete;
+    // an explicit SQL boundary exposes its exact error instead of a generic
+    // Prisma COMMIT wrapper message. The whole transaction still rolls back.
+    await tx.$executeRawUnsafe("SET CONSTRAINTS ALL IMMEDIATE");
+  }
+  return { kind: c.kind, id: prepared.clarificationId, questionId: question.id };
+}
+const prepare = (f: Fixture, c: Candidate, options?: Parameters<typeof prepareIn>[3], zone = "UTC") => prisma.$transaction(async tx => {
+  await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone);
+  return prepareIn(tx, f, c, options);
+}, txOptions);
+type Prepared = Awaited<ReturnType<typeof prepare>>;
+async function stored(id: string) {
+  const [row] = await prisma.$queryRawUnsafe<Array<{ id: string; phase: string; namespace: string; prepared: Record<string, unknown>; failedAttempts: number; consumedReplyId: string | null }>>('SELECT * FROM "PersonalSmsTemporalClarification" WHERE id=$1', id);
+  return row;
+}
+async function syntheticAccepted(f: Fixture, p: Prepared, zone = "UTC") {
+  await prisma.$transaction(async tx => {
+    await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone);
+    await tx.personalAssistantOperation.update({ where: { id: p.questionId }, data: { status: "processing", attempts: 1, leaseUntil: new Date(Date.now() + 30000) } });
+    await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"leaseUntil"=NULL,"externalTransportPerformed"=true,
+      result=jsonb_build_object('providerSid',$2::text,'acceptedByProvider',true,'delivered',false,'approvalHash',"requestHash",
+        'acceptedAt',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')) WHERE id=$1`, p.questionId, `SM${randomUUID().replaceAll("-", "")}`);
+    expect(await markSmsTemporalClarificationAskedInTransaction(tx, { actor: f.actor, clarificationId: p.id, questionOutboundOperationId: p.questionId }, f.env, context())).toMatchObject({ status: "WAITING_FOR_TEMPORAL_REPLY", committed: false });
+  }, txOptions);
+}
+async function reply(f: Fixture, body = "14h") {
+  await prisma.$queryRawUnsafe("SELECT pg_sleep(0.005)::text"); // Separate recorded ms; no assumed causal ordering from equal timestamps.
+  const wire = { accountSid: f.accountSid, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from: f.from, to: f.env.TWILIO_PHONE_NUMBER!, body };
+  const source = await enqueuePersonalSms({ ...wire, contentHash: sha(JSON.stringify(wire)) });
+  const claim = { ...f.actor, operationId: source.operationId, attempt: 1 as const, leaseUntil: new Date(Date.now() + 30000).toISOString() };
+  await prisma.personalAssistantOperation.update({ where: { id: claim.operationId }, data: { status: "processing", attempts: 1, leaseUntil: new Date(claim.leaseUntil), result: { syntheticPrior: "preserve" } } });
+  return claim;
+}
+const consume = (f: Fixture, p: Prepared, claim: Awaited<ReturnType<typeof reply>>, zone = "UTC") => prisma.$transaction(async tx => {
+  await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone);
+  return consumeSmsTemporalClarificationInTransaction(tx, { actor: f.actor, clarificationId: p.id, replySourceClaim: claim }, f.env, context());
+}, txOptions);
+async function counts(workspaceId: string) {
+  return prisma.$queryRawUnsafe(`SELECT kind,count(*)::int FROM "PersonalAssistantOperation" WHERE "workspaceId"=$1 GROUP BY kind ORDER BY kind`, workspaceId);
+}
+async function budget() {
+  return prisma.$queryRawUnsafe(`SELECT id,"reservedCadMicros","ceilingCadMicros" FROM "PersonalAssistantBudget" ORDER BY id`);
+}
+
+async function outboundFixture(ttlMs?: number) {
+  const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c, ttlMs === undefined ? undefined : { ttlMs });
+  const grant = await prisma.constructionConnectorGrant.create({ data: { connectorAccountId: f.smsAccountId, capability: "personal_sms_send",
+    status: "active", grantedAt: new Date(), requestedScopes: ["personal_sms_send"], grantedScopes: ["personal_sms_send"] } });
+  const env: NodeJS.ProcessEnv = { ...f.env, ENDVERA_SMS_TEMPORAL_CLARIFICATION_BRIDGE_ENABLED: "true", ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED",
+    ENDVERA_PERSONAL_OUTBOUND_ENABLED: "true", TWILIO_API_KEY_SID: `SK${"b".repeat(32)}`, TWILIO_API_KEY_SECRET: "synthetic-secret",
+    TWILIO_AUTH_TOKEN: "synthetic-token", ENDVERA_PROVIDER_WEBHOOK_ORIGIN: "https://endvera.example",
+    ENDVERA_TWILIO_STATUS_WEBHOOK_URL: "https://endvera.example/api/webhooks/twilio/status", ENDVERA_TWILIO_RATE_REVIEWED_AT: new Date().toISOString(),
+    ENDVERA_TWILIO_RATE_REVIEW_REF: "SYNTHETIC_RECEIPT_TEST_ONLY", ENDVERA_PERSONAL_BUDGET_CAD: "30", ENDVERA_SMS_SEGMENT_RESERVE_CAD: "0.10" };
+  const question = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: p.questionId } });
+  const approve = () => approvePersonalOutbound({ ...f.actor, operationId: p.questionId, expectedRequestHash: question.requestHash }, env);
+  const response = (status = "queued") => Response.json({ sid: `SM${randomUUID().replaceAll("-", "")}`, status, account_sid: f.accountSid,
+    from: env.TWILIO_PHONE_NUMBER, to: f.from });
+  return { f, p, env, grant, approve, response };
+}
+
+async function waitForQuestionExpiry(id: string) {
+  // Real bounded DB-clock wait, never rewriting an immutable expiry to fake age.
+  const [remaining] = await prisma.$queryRawUnsafe<Array<{ ms: number }>>(`SELECT GREATEST(0,EXTRACT(EPOCH FROM ("expiresAt"-(clock_timestamp() AT TIME ZONE 'UTC')))*1000)::float8 AS ms FROM "PersonalSmsTemporalClarification" WHERE id=$1`, id);
+  if (!remaining || remaining.ms > 1500) throw new Error("SYNTHETIC_SHORT_EXPIRY_REQUIRED");
+  await prisma.$queryRawUnsafe("SELECT pg_sleep($1::double precision)::text", (remaining.ms + 50) / 1000);
+}
+
+describe("native temporal scheduling excludes retained invalid questions before LIMIT1", () => {
+  it.each(["ELIGIBLE", "STORE_OFF", "BRIDGE_OFF", "EXPIRED", "TERMINAL", "GOOGLE_REVOKED", "MODEL_REVOKED", "IDENTITY_REVISED", "OWNER_REVISED"])("%s preserves evidence while selecting the correct oldest candidate", async mode => {
+    const short = mode === "EXPIRED" || mode === "TERMINAL";
+    const { f, p, env } = await outboundFixture(short ? 1000 : undefined);
+    const selectorEnv: NodeJS.ProcessEnv = { ...env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" };
+    // Create a genuinely later ordinary source/reply, retaining the old question.
+    await prisma.$queryRawUnsafe("SELECT pg_sleep(0.005)::text");
+    const next = await reply(f, "Quel est le statut du chantier?");
+    const text = "Réponse ordinaire synthétique, aucun envoi.";
+    await prisma.personalAssistantOperation.update({ where: { id: next.operationId }, data: { status: "completed", leaseUntil: null, result: { reply: text } } });
+    const request = { to: f.from, from: env.TWILIO_PHONE_NUMBER!, text, sourceOperationId: next.operationId };
+    const ordinary = await prisma.personalAssistantOperation.create({ data: { workspaceId: f.workspaceId, createdByUserId: f.userId,
+      connectorAccountId: f.smsAccountId, kind: "sms_outbound", status: "pending", attempts: 0,
+      idempotencyKey: `reply:${next.operationId}`, request, requestHash: sha(JSON.stringify(request)) } });
+    const question = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: p.questionId } });
+    expect(question.createdAt.getTime()).toBeLessThan(ordinary.createdAt.getTime());
+    if (mode === "STORE_OFF") selectorEnv.ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED = "false";
+    if (mode === "BRIDGE_OFF") selectorEnv.ENDVERA_SMS_TEMPORAL_CLARIFICATION_BRIDGE_ENABLED = "false";
+    if (short) await waitForQuestionExpiry(p.id);
+    if (mode === "TERMINAL") expect(await maintainSmsTemporalClarifications({ actor: f.actor }, { ...env, ENDVERA_SMS_TEMPORAL_MAINTENANCE_ENABLED: "true" })).toMatchObject({ expired: 1 });
+    if (mode === "GOOGLE_REVOKED" || mode === "MODEL_REVOKED") await prisma.constructionConnectorGrant.update({
+      where: { id: mode === "GOOGLE_REVOKED" ? f.google.grants[0].id : f.modelGrantId }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+    if (mode === "IDENTITY_REVISED") await prisma.constructionCommunicationIdentity.update({ where: { id: f.identityId }, data: { updatedAt: new Date() } });
+    if (mode === "OWNER_REVISED") await prisma.constructionWorkspaceMember.updateMany({ where: { workspaceId: f.workspaceId, userId: f.userId }, data: { updatedAt: new Date() } });
+    const before = { entry: await stored(p.id), budget: await budget(), operations: await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId }, orderBy: { id: "asc" } }) };
+    const selection = await selectPersonalAutomaticOutboundCandidates({ enabled: true, limit: 1 }, selectorEnv);
+    expect(selection.candidates).toEqual([{ id: mode === "ELIGIBLE" ? p.questionId : ordinary.id, idempotencyKey: mode === "ELIGIBLE" ? question.idempotencyKey : ordinary.idempotencyKey }]);
+    expect(selection.executionAuthorized).toBe(false);
+    expect({ entry: await stored(p.id), budget: await budget(), operations: await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId }, orderBy: { id: "asc" } }) }).toEqual(before);
+  });
+});
+
+describe("native temporal expiry preserves evidence and frees only the active ledger mirror", () => {
+  it.each(["PREPARED", "WAITING", "REVOKED"])("expires %s once, retains source/question/budget/history", async mode => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c, { ttlMs: 1000 });
+    if (mode === "WAITING") await syntheticAccepted(f, p);
+    if (mode === "REVOKED") await prisma.constructionConnectorGrant.update({ where: { id: f.google.grants[0].id }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+    const sourceBefore = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: c.claim.operationId } });
+    const questionBefore = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: p.questionId } });
+    const budgetBefore = await budget(), entryBefore = await stored(p.id);
+    const env = { ...f.env, ENDVERA_SMS_TEMPORAL_MAINTENANCE_ENABLED: "true" };
+    expect(await maintainSmsTemporalClarifications({ actor: f.actor }, { ...env, ENDVERA_SMS_TEMPORAL_MAINTENANCE_ENABLED: "false" })).toMatchObject({ status: "DISABLED", expired: 0 });
+    await waitForQuestionExpiry(p.id);
+    expect(await maintainSmsTemporalClarifications({ actor: f.actor }, env)).toMatchObject({ status: "TEMPORAL_MAINTENANCE_COMMITTED", expired: 1, committed: true, executionAuthorized: false });
+    const after = await stored(p.id);
+    expect(after).toEqual({ ...entryBefore, phase: "EXPIRED", updatedAt: (after as unknown as { updatedAt: Date }).updatedAt });
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: c.claim.operationId } })).toEqual(sourceBefore);
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: p.questionId } })).toEqual(questionBefore);
+    expect(await budget()).toEqual(budgetBefore);
+    expect(await prisma.$queryRawUnsafe('SELECT id,active FROM "PersonalSmsConversationExpectation" WHERE "clarificationId"=$1', p.id)).toEqual([{ id: `temporal:${p.id}`, active: false }]);
+    expect(await maintainSmsTemporalClarifications({ actor: f.actor }, env)).toMatchObject({ expired: 0 });
+    expect(await stored(p.id)).toEqual(after);
+  });
+  it("two real backends expire the same question at most once without losing permanent history", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c, { ttlMs: 1000 });
+    await waitForQuestionExpiry(p.id);
+    const env = { ...f.env, ENDVERA_SMS_TEMPORAL_MAINTENANCE_ENABLED: "true" }, pids: number[] = [];
+    let release!: () => void; const ready = new Promise<void>(resolve => { release = resolve; }), timer = setTimeout(release, 2000);
+    const outcomes = await Promise.allSettled([0, 1].map(() => prisma.$transaction(async tx => {
+      const [backend] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); pids.push(backend.pid); if (pids.length === 2) release();
+      await ready;
+      return maintainSmsTemporalClarificationsInTransaction(tx, { actor: f.actor }, env);
+    }, txOptions))).finally(() => clearTimeout(timer));
+    expect(new Set(pids).size).toBe(2);
+    const successes = outcomes.filter((r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof maintainSmsTemporalClarificationsInTransaction>>> => r.status === "fulfilled");
+    for (const outcome of outcomes) {
+      if (outcome.status === "fulfilled") expect(outcome.value).toMatchObject({ status: "TEMPORAL_MAINTENANCE_PREPARED_NOT_COMMITTED", committed: false });
+      else {
+        const error = outcome.reason as { code?: string; meta?: { code?: string } };
+        expect(error.code === "P2034" || (error.code === "P2010" && error.meta?.code === "40001")).toBe(true);
+      }
+    }
+    expect(successes.reduce((n, r) => n + r.value.expired, 0)).toBe(1);
+    expect((await stored(p.id)).phase).toBe("EXPIRED");
+    expect(await prisma.$queryRawUnsafe('SELECT id,active FROM "PersonalSmsConversationExpectation" WHERE "clarificationId"=$1', p.id)).toEqual([{ id: `temporal:${p.id}`, active: false }]);
+  });
+});
+
+describe("real SMS worker prepares its temporal question with a synthetic-only candidate", () => {
+  it.each(["ON", "OFF", "REVOKED_AFTER_SOURCE_CAS"])("retains atomic source/question/registry with preparation %s", async mode => {
+    const f = await fixture();
+    const env: NodeJS.ProcessEnv = { ...f.env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED",
+      TWILIO_API_KEY_SID: "synthetic-key-id", TWILIO_API_KEY_SECRET: "synthetic-secret", TWILIO_AUTH_TOKEN: "synthetic-token",
+      ENDVERA_PROVIDER_WEBHOOK_ORIGIN: "https://endvera.example", ENDVERA_SMS_TEMPORAL_QUESTION_PREPARATION_ENABLED: mode === "OFF" ? "false" : "true" };
+    let modelCalls = 0, reachedFinalCas = false;
+    const nativeTransaction = prisma.$transaction.bind(prisma);
+    const wrapped = mode !== "REVOKED_AFTER_SOURCE_CAS" ? null : vi.spyOn(prisma, "$transaction").mockImplementation((async (work: (tx: Prisma.TransactionClient) => Promise<unknown>, options?: { isolationLevel?: Prisma.TransactionIsolationLevel; timeout?: number; maxWait?: number }) =>
+      nativeTransaction(async tx => {
+        const guarded = new Proxy(tx, { get(target, key) {
+          if (key !== "$executeRawUnsafe") return Reflect.get(target, key);
+          return async (sql: string, ...args: unknown[]) => {
+            const result = await tx.$executeRawUnsafe(sql, ...args);
+            if (sql.includes("status='completed'") && sql.includes("result=$6::jsonb") && args[0] === f.sourceOperationId) {
+              expect(result).toBe(1); reachedFinalCas = true; env.ENDVERA_SMS_TEMPORAL_QUESTION_PREPARATION_ENABLED = "false";
+            }
+            return result;
+          };
+        } });
+        return work(guarded);
+      }, options)) as typeof prisma.$transaction);
+    let result;
+    try {
+      result = await processPersonalSms(f.sourceOperationId, env, { model: async ctx => {
+        modelCalls++;
+        const c = await f.candidate("temporal", true, ctx.claim);
+        return { reply: "Proposition synthétique à vérifier.", finalizeReview: tx => prepareStoredPersonalIntentReview(tx,
+          { enabled: true, ...f.actor, sourceOperationId: c.claim.operationId, modelChildOperationId: c.childId }, env) };
+      } });
+    } finally { wrapped?.mockRestore(); }
+    expect(modelCalls).toBe(1);
+    const source = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: f.sourceOperationId } });
+    const questions = await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId, kind: "sms_outbound" } });
+    const entries = await prisma.$queryRawUnsafe<Array<{ phase: string; questionOutboundOperationId: string }>>('SELECT phase,"questionOutboundOperationId" FROM "PersonalSmsTemporalClarification" WHERE "workspaceId"=$1', f.workspaceId);
+    if (mode === "REVOKED_AFTER_SOURCE_CAS") {
+      expect(reachedFinalCas).toBe(true); expect(result).toMatchObject({ status: "REVIEW_REQUIRED", recorded: true });
+      expect(source.status).toBe("uncertain"); expect(questions).toEqual([]); expect(entries).toEqual([]);
+    } else {
+      expect(result).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" }); expect(source.status).toBe("completed");
+      expect(questions).toHaveLength(1); expect(questions[0]).toMatchObject({ status: "pending", attempts: 0, externalTransportPerformed: false });
+      expect((questions[0].request as { text: string }).text).toBe((source.result as { reply: string }).reply);
+      expect(entries).toEqual(mode === "OFF" ? [] : [{ phase: "PREPARED", questionOutboundOperationId: questions[0].id }]);
+    }
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } })).toBe(0);
+  });
+});
+
+describe("standalone temporal lower uses real SQL before and after the existing question", () => {
+  it.each(["START", "END"])("prepares only %s ambiguity and commits exact question plus source CAS", async slot => {
+    const f = await fixture(slot === "END" ? { body: "Ajoute inspection demain à 14h, fin 3h.", start: "demain à 14h", end: "3h" } : {});
+    const c = await f.candidate("temporal", true), env = { ...f.env, ENDVERA_SMS_TEMPORAL_QUESTION_PREPARATION_ENABLED: "true" };
+    const beforeBudget = await budget();
+    const result = await prisma.$transaction(async tx => {
+      const args = { actor: f.actor, sourceClaim: c.claim, modelChildOperationId: c.childId };
+      const inspected = await inspectSmsTemporalQuestionPreparationInTransaction(tx, args, env, context());
+      expect(inspected).toMatchObject({ status: "ELIGIBLE_QUESTION_NOT_AUTHORIZED", slot, executionAuthorized: false, registryPrepared: false });
+      if (inspected.status !== "ELIGIBLE_QUESTION_NOT_AUTHORIZED") throw new Error("LOWER_NATIVE_ELIGIBILITY_REQUIRED");
+      expect(await tx.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "sms_outbound" } })).toBe(0);
+      expect(await tx.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarification" WHERE "workspaceId"=$1', f.workspaceId)).toEqual([]);
+      const q = await tx.personalAssistantOperation.create({ data: { workspaceId: f.workspaceId, createdByUserId: f.userId, connectorAccountId: f.smsAccountId,
+        kind: "sms_outbound", status: "pending", attempts: 0, idempotencyKey: `reply:${c.claim.operationId}`, request: inspected.request, requestHash: inspected.requestHash } });
+      const attached = await attachSmsTemporalQuestionInTransaction(tx, { ...args, questionOutboundOperationId: q.id }, env, context());
+      expect(attached).toMatchObject({ status: "PREPARED_FOR_SOURCE_COMMIT", committed: false, executionAuthorized: false });
+      if (attached.status !== "PREPARED_FOR_SOURCE_COMMIT") throw new Error("LOWER_NATIVE_ATTACHMENT_REQUIRED");
+      const n = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"leaseUntil"=NULL,result=$3::jsonb
+        WHERE id=$1 AND status='processing' AND attempts=1 AND "leaseUntil"=($2::timestamptz AT TIME ZONE 'UTC')`, c.claim.operationId, new Date(c.claim.leaseUntil),
+      JSON.stringify({ source: "MODEL_REVIEW_ONLY", reply: inspected.wireText, personalModelReview: attached.requiredSourceReview }));
+      expect(n).toBe(1);
+      return { q, attached, inspected };
+    }, txOptions);
+    expect((await stored(result.attached.clarificationId)).phase).toBe("PREPARED");
+    const source = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: c.claim.operationId } });
+    expect(source.status).toBe("completed"); expect(source.result).toMatchObject({ reply: result.inspected.wireText });
+    const question = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: result.q.id } });
+    expect(question).toMatchObject({ status: "pending", attempts: 0, externalTransportPerformed: false, requestHash: result.inspected.requestHash });
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } })).toBe(0);
+    expect(await budget()).toEqual(beforeBudget);
+  });
+  it("missing-end model template requests full reformulation before any misleading question is inserted", async () => {
+    const f = await fixture({ body: "Ajoute inspection demain à 14h.", missingEnd: true }), c = await f.candidate("temporal", true);
+    const env = { ...f.env, ENDVERA_SMS_TEMPORAL_QUESTION_PREPARATION_ENABLED: "true" }, beforeCounts = await counts(f.workspaceId), beforeBudget = await budget();
+    const result = await prisma.$transaction(tx => inspectSmsTemporalQuestionPreparationInTransaction(tx,
+      { actor: f.actor, sourceClaim: c.claim, modelChildOperationId: c.childId }, env, context()), txOptions);
+    expect(result).toMatchObject({ status: "REFORMULATION_REQUIRED", reason: "INCOMPLETE_ORIGINAL_TEMPLATE", registryPrepared: false, executionAuthorized: false });
+    if (result.status !== "REFORMULATION_REQUIRED") throw new Error("LOWER_NATIVE_REFORMULATION_REQUIRED");
+    expect(result.reply).toContain("rendez-vous complet");
+    expect(await counts(f.workspaceId)).toEqual(beforeCounts); expect(await budget()).toEqual(beforeBudget);
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarification" WHERE "workspaceId"=$1', f.workspaceId)).toEqual([]);
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "sms_outbound" } })).toBe(0);
+  });
+  it("current grant changed after inspection rolls back the inserted question and source state", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), env = { ...f.env, ENDVERA_SMS_TEMPORAL_QUESTION_PREPARATION_ENABLED: "true" };
+    let insertedQuestionId: string | null = null, reachedAttachment = false;
+    const beforeBudget = await budget();
+    await expect(prisma.$transaction(async tx => {
+      const args = { actor: f.actor, sourceClaim: c.claim, modelChildOperationId: c.childId };
+      const inspected = await inspectSmsTemporalQuestionPreparationInTransaction(tx, args, env, context());
+      if (inspected.status !== "ELIGIBLE_QUESTION_NOT_AUTHORIZED") throw new Error("LOWER_NATIVE_ELIGIBILITY_REQUIRED");
+      const q = await tx.personalAssistantOperation.create({ data: { workspaceId: f.workspaceId, createdByUserId: f.userId, connectorAccountId: f.smsAccountId,
+        kind: "sms_outbound", status: "pending", attempts: 0, idempotencyKey: `reply:${c.claim.operationId}`, request: inspected.request, requestHash: inspected.requestHash } });
+      insertedQuestionId = q.id;
+      await tx.constructionConnectorGrant.update({ where: { id: f.google.grants[0].id }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+      reachedAttachment = true;
+      return attachSmsTemporalQuestionInTransaction(tx, { ...args, questionOutboundOperationId: q.id }, env, context());
+    }, txOptions)).rejects.toThrow("TEMPORAL_REGISTRY_CURRENT_BINDING_REQUIRED");
+    expect(reachedAttachment).toBe(true); expect(insertedQuestionId).not.toBeNull();
+    expect(await prisma.personalAssistantOperation.findUnique({ where: { id: insertedQuestionId! } })).toBeNull();
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarification" WHERE "workspaceId"=$1', f.workspaceId)).toEqual([]);
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: c.claim.operationId } })).toMatchObject({ status: "processing", attempts: 1, leaseUntil: new Date(c.claim.leaseUntil) });
+    expect(await prisma.constructionConnectorGrant.findUniqueOrThrow({ where: { id: f.google.grants[0].id } })).toMatchObject({ status: "active" });
+    expect(await budget()).toEqual(beforeBudget);
+  });
+});
+
+describe("ordinary outbox completion atomically marks its temporal question WAITING", () => {
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("actual outbox + registry commit under %s with synthetic HTTP only", async zone => {
+    const x = await outboundFixture(), nativeTransaction = prisma.$transaction.bind(prisma);
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: (tx: Prisma.TransactionClient) => Promise<unknown>, options?: { isolationLevel?: Prisma.TransactionIsolationLevel; timeout?: number; maxWait?: number }) =>
+      nativeTransaction(async tx => { await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone); return work(tx); }, options)) as typeof prisma.$transaction);
+    const transport = vi.fn<typeof fetch>(async () => x.response());
+    try {
+      await x.approve();
+      expect(await dispatchPersonalOutbound(x.p.questionId, x.env, transport)).toMatchObject({ delivered: false });
+      const question = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: x.p.questionId } });
+      const [registry] = await prisma.$queryRawUnsafe<Array<{ phase: string; acceptedAt: Date; acceptedProviderSid: string }>>('SELECT phase,"acceptedAt","acceptedProviderSid" FROM "PersonalSmsTemporalClarification" WHERE id=$1', x.p.id);
+      const receipt = question.result as { acceptedAt: string; providerSid: string; delivered: boolean };
+      expect(question).toMatchObject({ status: "completed", attempts: 1, externalTransportPerformed: true });
+      expect(registry).toMatchObject({ phase: "WAITING", acceptedProviderSid: receipt.providerSid });
+      expect(registry.acceptedAt.toISOString()).toBe(receipt.acceptedAt); expect(receipt.delivered).toBe(false);
+      expect(await consume(x.f, x.p, await reply(x.f), zone)).toMatchObject({ status: "CORRELATED_NOT_EXECUTED" });
+      await expect(dispatchPersonalOutbound(x.p.questionId, x.env, transport)).rejects.toThrow("APPROVAL_REQUIRED");
+      expect(transport).toHaveBeenCalledTimes(1);
+    } finally { wrapped.mockRestore(); }
+  });
+  it("attached but OFF refuses the ordinary approval path", async () => {
+    const x = await outboundFixture(); x.env.ENDVERA_SMS_TEMPORAL_CLARIFICATION_BRIDGE_ENABLED = "false";
+    await expect(x.approve()).rejects.toThrow("BRIDGE_DISABLED");
+    expect((await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: x.p.questionId } })).status).toBe("pending");
+    expect((await stored(x.p.id)).phase).toBe("PREPARED");
+  });
+  it("post-response Google revocation keeps the entire exposure and never creates WAITING", async () => {
+    const x = await outboundFixture(); await x.approve();
+    const transport = vi.fn<typeof fetch>(async () => {
+      await prisma.constructionConnectorGrant.update({ where: { id: x.f.google.grants[0].id }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+      return x.response();
+    });
+    await expect(dispatchPersonalOutbound(x.p.questionId, x.env, transport)).rejects.toThrow("OUTBOUND_OUTCOME_REQUIRES_REVIEW");
+    const question = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: x.p.questionId } });
+    expect(question).toMatchObject({ status: "uncertain", attempts: 1, externalTransportPerformed: true });
+    expect(question.reservedCadMicros).toBeGreaterThan(0n); expect(question.result).not.toHaveProperty("acceptedAt");
+    expect((await stored(x.p.id)).phase).toBe("PREPARED");
+    await expect(dispatchPersonalOutbound(x.p.questionId, x.env, transport)).rejects.toThrow(); expect(transport).toHaveBeenCalledTimes(1);
+  });
+  it("a failed REST status leaves the question PREPARED and cannot retry", async () => {
+    const x = await outboundFixture(); await x.approve(); const transport = vi.fn<typeof fetch>(async () => x.response("failed"));
+    await expect(dispatchPersonalOutbound(x.p.questionId, x.env, transport)).rejects.toThrow("OUTBOUND_OUTCOME_REQUIRES_REVIEW");
+    const question = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: x.p.questionId } });
+    expect(question.status).toBe("uncertain"); expect(question.reservedCadMicros).toBeGreaterThan(0n);
+    expect((await stored(x.p.id)).phase).toBe("PREPARED");
+    await expect(dispatchPersonalOutbound(x.p.questionId, x.env, transport)).rejects.toThrow(); expect(transport).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("OFF temporal registry / real disposable PostgreSQL constraints and source transactions", () => {
+  it("OFF does not require valid input or mutate the DB", async () => {
+    expect(await prisma.$transaction(tx => prepareSmsTemporalClarificationInTransaction(tx, {} as never, {}, { deadlineAt: NaN }))).toEqual({ status: "DISABLED", executionAuthorized: false });
+  });
+  it("commits exact complete wire + shared ledger without calendar draft or additional provider work", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), before = await budget(), p = await prepare(f, c);
+    expect(await stored(p.id)).toMatchObject({ phase: "PREPARED", failedAttempts: 0 });
+    const [ledger] = await prisma.$queryRawUnsafe<Array<{ active: boolean; kind: string; createdAt: Date; clock: Date }>>('SELECT *,clock_timestamp() AS clock FROM "PersonalSmsConversationExpectation" WHERE "clarificationId"=$1', p.id);
+    expect(ledger).toMatchObject({ active: true, kind: "TEMPORAL_CLARIFICATION" }); expect(Math.abs(ledger.clock.getTime() - ledger.createdAt.getTime())).toBeLessThan(5000);
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } })).toBe(0); expect(await budget()).toEqual(before);
+  });
+  it("rolls registry, question and shared ledger back if source completion is omitted", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), before = await counts(f.workspaceId);
+    await expect(prepare(f, c, { finalize: false })).rejects.toThrow(/temporal final source candidate question binding mismatch/);
+    expect(await counts(f.workspaceId)).toEqual(before);
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarification" WHERE "workspaceId"=$1', f.workspaceId)).toEqual([]);
+  });
+  it("rejects lease replacement after registry insertion even if a raw UPDATE tries to complete", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), before = await counts(f.workspaceId);
+    let reachedAfterInsert = false;
+    await expect(prepare(f, c, { afterInsert: async tx => {
+      reachedAfterInsert = true;
+      await tx.$executeRawUnsafe('UPDATE "PersonalAssistantOperation" SET "leaseUntil"="leaseUntil"+interval \'1 second\' WHERE id=$1', c.claim.operationId);
+      await tx.$executeRawUnsafe('UPDATE "PersonalAssistantOperation" SET status=\'completed\',"leaseUntil"=NULL WHERE id=$1', c.claim.operationId);
+    } })).rejects.toThrow(/temporal original live source claim required at completion/); expect(reachedAfterInsert).toBe(true); expect(await counts(f.workspaceId)).toEqual(before);
+  });
+  it("rejects a source lease expiring after insertion but before the final exact completion", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), before = await counts(f.workspaceId);
+    let reachedAfterInsert = false;
+    c.claim.leaseUntil = new Date(Date.now() + 1500).toISOString();
+    await prisma.personalAssistantOperation.update({ where: { id: c.claim.operationId }, data: { leaseUntil: new Date(c.claim.leaseUntil) } });
+    await expect(prepare(f, c, { afterInsert: async tx => {
+      reachedAfterInsert = true;
+      await tx.$queryRawUnsafe("SELECT pg_sleep(1.55)::text");
+    } })).rejects.toThrow(/temporal original live source claim required at completion/);
+    expect(reachedAfterInsert).toBe(true); expect(await counts(f.workspaceId)).toEqual(before);
+  });
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("preserves canonical DB acceptance time and two-source resolution in %s", async zone => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c, undefined, zone); await syntheticAccepted(f, p, zone);
+    const before = await budget(), claim = await reply(f), result = await consume(f, p, claim, zone);
+    expect(result).toMatchObject({ status: "CORRELATED_NOT_EXECUTED", executionAuthorized: false, committed: false });
+    const row = await stored(p.id); expect(row.phase).toBe("CONSUMED");
+    const [receipt] = await prisma.$queryRawUnsafe<Array<{ packet: { status: string; sources: Array<{ body: string }> }; packetHash: string }>>('SELECT * FROM "PersonalSmsTemporalClarificationReply" WHERE id=$1', row.consumedReplyId);
+    expect(receipt.packet).toMatchObject({ status: "RESOLVED_NOT_AUTHORIZED", sources: [{ body: temporalBody }, { body: "14h" }] }); expect(receipt.packetHash).toBe(sha(canonicalJson(receipt.packet)));
+    expect((await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: claim.operationId } })).result).toMatchObject({ syntheticPrior: "preserve", priorClaimResult: { syntheticPrior: "preserve" }, executionAuthorized: false, externalTransportPerformed: false });
+    expect(await budget()).toEqual(before); expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } })).toBe(0);
+    await expect(consume(f, p, claim)).rejects.toThrow();
+  });
+  it("missing immutable acceptedAt refuses; historical updatedAt is never substituted", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c);
+    await prisma.personalAssistantOperation.update({ where: { id: p.questionId }, data: { status: "completed", attempts: 1, externalTransportPerformed: true,
+      result: { providerSid: `SM${randomUUID().replaceAll("-", "")}`, acceptedByProvider: true, delivered: false, approvalHash: (await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: p.questionId } })).requestHash } } });
+    await expect(prisma.$transaction(tx => markSmsTemporalClarificationAskedInTransaction(tx, { actor: f.actor, clarificationId: p.id, questionOutboundOperationId: p.questionId }, f.env, context()), txOptions)).rejects.toThrow();
+    expect((await stored(p.id)).phase).toBe("PREPARED");
+  });
+  it("an SMS received before the durable question receipt cannot become its answer later", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c), oldReply = await reply(f);
+    await prisma.$queryRawUnsafe("SELECT pg_sleep(0.005)::text"); await syntheticAccepted(f, p);
+    await expect(consume(f, p, oldReply)).rejects.toThrow("CAUSALITY");
+    expect((await stored(p.id)).failedAttempts).toBe(0);
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1', p.id)).toEqual([]);
+  });
+  it("another actor cannot load the question or consume its reply", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c); await syntheticAccepted(f, p); const claim = await reply(f);
+    await expect(prisma.$transaction(tx => consumeSmsTemporalClarificationInTransaction(tx, { actor: { ...f.actor, userId: "another-user" }, clarificationId: p.id,
+      replySourceClaim: { ...claim, userId: "another-user" } }, f.env, context()), txOptions)).rejects.toThrow("OWNER_REQUIRED");
+    expect((await stored(p.id)).phase).toBe("WAITING"); expect((await stored(p.id)).failedAttempts).toBe(0);
+  });
+  it("each rejected SMS increments once; fifth closes active question and preserves evidence", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c); await syntheticAccepted(f, p);
+    for (let n = 1; n <= 5; n++) {
+      const claim = await reply(f, "oui"); expect(await consume(f, p, claim)).toMatchObject({ status: "REFUSED" });
+      expect((await stored(p.id)).failedAttempts).toBe(n); await expect(consume(f, p, claim)).rejects.toThrow(); expect((await stored(p.id)).failedAttempts).toBe(n);
+    }
+    expect((await stored(p.id)).phase).toBe("REFUSED");
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsConversationExpectation" WHERE "clarificationId"=$1 AND active', p.id)).toEqual([]);
+    await expect(prisma.$executeRawUnsafe('DELETE FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1', p.id)).rejects.toThrow();
+    await expect(prisma.$executeRawUnsafe('DELETE FROM "PersonalSmsConversationExpectation" WHERE "clarificationId"=$1', p.id)).rejects.toThrow();
+  });
+  it("revocation remains possible but prevents attaching or consuming evidence", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c); await syntheticAccepted(f, p); const claim = await reply(f);
+    await prisma.constructionConnectorGrant.update({ where: { id: f.google.grants[0].id }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+    await expect(consume(f, p, claim)).rejects.toThrow(); expect((await stored(p.id)).phase).toBe("WAITING");
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1', p.id)).toEqual([]);
+  });
+  it("rejects a minimal forged ACCEPTED packet at the actual INSERT trigger", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c); await syntheticAccepted(f, p); const claim = await reply(f);
+    let reachedInsert = false;
+    await expect(prisma.$transaction(async tx => {
+      const guarded = { $queryRawUnsafe: tx.$queryRawUnsafe.bind(tx), $executeRawUnsafe: async (sql: string, ...args: unknown[]) => {
+        if (sql.includes('INSERT INTO "PersonalSmsTemporalClarificationReply"')) {
+          reachedInsert = true;
+          const packet = { executionAuthorized: false, persistencePerformed: false }; args[8] = "ACCEPTED"; args[9] = JSON.stringify(packet); args[10] = sha(canonicalJson(packet));
+        }
+        return tx.$executeRawUnsafe(sql, ...args);
+      } } as unknown as Prisma.TransactionClient;
+      return consumeSmsTemporalClarificationInTransaction(guarded, { actor: f.actor, clarificationId: p.id, replySourceClaim: claim }, f.env, context());
+    }, txOptions)).rejects.toThrow(/temporal accepted packet must be a bound resolution/);
+    expect(reachedInsert).toBe(true);
+    expect((await stored(p.id)).phase).toBe("WAITING");
+    expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTemporalClarificationReply" WHERE "clarificationId"=$1', p.id)).toEqual([]);
+  });
+  it("competing consumption of the same SMS commits at most one permanent receipt", async () => {
+    const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c); await syntheticAccepted(f, p); const claim = await reply(f);
+    const results = await Promise.allSettled([consume(f, p, claim), consume(f, p, claim)]);
+    expect(results.filter(result => result.status === "fulfilled")).toHaveLength(1);
+    expect(await prisma.$queryRawUnsafe<Array<{ count: number }>>('SELECT count(*)::int FROM "PersonalSmsTemporalClarificationReply" WHERE "sourceOperationId"=$1', claim.operationId)).toEqual([{ count: 1 }]);
+    expect((await stored(p.id)).phase).toBe("CONSUMED");
+  });
+  it("five creations across both types share one permanent hourly cap", async () => {
+    const f = await fixture();
+    for (let n = 0; n < 5; n++) {
+      const c = await f.candidate(n % 2 ? "calendar" : "temporal", n === 0), p = await prepare(f, c);
+      const table = p.kind === "calendar" ? "PersonalCalendarSmsConfirmation" : "PersonalSmsTemporalClarification";
+      await prisma.$executeRawUnsafe(`UPDATE "${table}" SET phase='REFUSED' WHERE id=$1`, p.id);
+    }
+    const sixth = await f.candidate(); await expect(prepare(f, sixth)).rejects.toThrow(/conversation global creation limit/);
+    const [count] = await prisma.$queryRawUnsafe<Array<{ count: number }>>('SELECT count(*)::int FROM "PersonalSmsConversationExpectation" WHERE namespace=$1', sha(JSON.stringify(["ENDVERA_CALENDAR_CONFIRMATION", f.from, f.env.TWILIO_PHONE_NUMBER])));
+    expect(count.count).toBe(5);
+    await expect(prisma.$executeRawUnsafe('UPDATE "PersonalSmsConversationExpectation" SET "createdAt"="createdAt"-interval \'2 hours\' WHERE namespace=$1', sha(JSON.stringify(["ENDVERA_CALENDAR_CONFIRMATION", f.from, f.env.TWILIO_PHONE_NUMBER])))).rejects.toThrow();
+    // Directly supplied ledger timestamps cannot alter the DB-clock cap. These
+    // rows would also collide with permanent uniqueness; require the cap error
+    // specifically to prove the BEFORE guard runs before that independent fence.
+    for (const forgedTime of ["2000-01-01T00:00:00Z", "2100-01-01T00:00:00Z"]) {
+      await expect(prisma.$transaction(tx => tx.$executeRawUnsafe(`INSERT INTO "PersonalSmsConversationExpectation"
+        (id,namespace,kind,"confirmationId","clarificationId",active,"createdAt")
+        SELECT id,namespace,kind,"confirmationId","clarificationId",active,($2::timestamptz AT TIME ZONE 'UTC')
+        FROM "PersonalSmsConversationExpectation" WHERE namespace=$1 ORDER BY id LIMIT 1`,
+      sha(JSON.stringify(["ENDVERA_CALENDAR_CONFIRMATION", f.from, f.env.TWILIO_PHONE_NUMBER])), forgedTime), txOptions)).rejects.toThrow(/conversation global creation limit/);
+    }
+  });
+  it("keeps one visible pair namespace after re-pairing into another workspace/owner", async () => {
+    const first = await fixture(), firstCandidate = await first.candidate("temporal", true), firstQuestion = await prepare(first, firstCandidate);
+    const namespace = (await stored(firstQuestion.id)).namespace;
+    await prisma.constructionCommunicationIdentity.update({ where: { id: first.identityId }, data: { status: "revoked", permissions: [] } });
+    const second = await fixture();
+    await prisma.constructionCommunicationIdentity.update({ where: { id: second.identityId }, data: { normalizedAddress: first.from } });
+    const original = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: second.sourceOperationId } });
+    const old = original.request as { accountSid: string; messageSid: string; to: string; body: string; identityId: string };
+    const wire = { accountSid: old.accountSid, messageSid: old.messageSid, from: first.from, to: old.to, body: old.body }, requestHash = sha(JSON.stringify(wire));
+    await prisma.personalAssistantOperation.update({ where: { id: original.id }, data: { request: { schemaVersion: 1, ...wire, contentHash: requestHash, identityId: old.identityId }, requestHash } });
+    // candidate() closes over the same fixture's from field at creation time;
+    // original=true uses the explicitly rebound stored source, not a new SMS.
+    second.from = first.from;
+    const secondCandidate = await second.candidate("temporal", true);
+    await expect(prepare(second, secondCandidate)).rejects.toThrow(/sms_conversation_one_active_pair|namespace/);
+    expect((await stored(firstQuestion.id)).phase).toBe("PREPARED");
+    await prisma.$executeRawUnsafe('UPDATE "PersonalSmsTemporalClarification" SET phase=\'REFUSED\' WHERE id=$1', firstQuestion.id);
+    const secondQuestion = await prepare(second, secondCandidate);
+    expect((await stored(secondQuestion.id)).namespace).toBe(namespace);
+    expect(await prisma.$queryRawUnsafe<Array<{ count: number }>>('SELECT count(*)::int FROM "PersonalSmsConversationExpectation" WHERE namespace=$1', namespace)).toEqual([{ count: 2 }]);
+  });
+  it("two native backends competing for the fifth creation commit only one even when both terminalize", async () => {
+    const f = await fixture();
+    for (let n = 0; n < 4; n++) {
+      const c = await f.candidate(n % 2 ? "calendar" : "temporal", n === 0), p = await prepare(f, c);
+      const table = p.kind === "calendar" ? "PersonalCalendarSmsConfirmation" : "PersonalSmsTemporalClarification";
+      await prisma.$executeRawUnsafe(`UPDATE "${table}" SET phase='REFUSED' WHERE id=$1`, p.id);
+    }
+    const candidates = [await f.candidate("temporal"), await f.candidate("calendar")], pids: number[] = [];
+    let release!: () => void; const ready = new Promise<void>(resolve => { release = resolve; }), timer = setTimeout(release, 3000);
+    const results = await Promise.allSettled(candidates.map(c => prisma.$transaction(async tx => {
+      const [backend] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); pids.push(backend.pid); if (pids.length === 2) release();
+      await ready; const p = await prepareIn(tx, f, c);
+      const table = p.kind === "calendar" ? "PersonalCalendarSmsConfirmation" : "PersonalSmsTemporalClarification";
+      await tx.$executeRawUnsafe(`UPDATE "${table}" SET phase='REFUSED' WHERE id=$1`, p.id);
+      return p;
+    }, txOptions))).finally(() => clearTimeout(timer));
+    expect(new Set(pids).size).toBe(2); expect(results.filter(r => r.status === "fulfilled")).toHaveLength(1);
+    const namespace = sha(JSON.stringify(["ENDVERA_CALENDAR_CONFIRMATION", f.from, f.env.TWILIO_PHONE_NUMBER]));
+    expect(await prisma.$queryRawUnsafe<Array<{ count: number; active: number }>>('SELECT count(*)::int,count(*) FILTER (WHERE active)::int AS active FROM "PersonalSmsConversationExpectation" WHERE namespace=$1', namespace)).toEqual([{ count: 5, active: 0 }]);
+  });
+  it("native overlapping clarification/confirmation creation has one winner and different backends", async () => {
+    const f = await fixture(), a = await f.candidate("temporal", true), b = await f.candidate("calendar"), pids: number[] = [];
+    let release!: () => void; const ready = new Promise<void>(resolve => { release = resolve; });
+    const timer = setTimeout(release, 3000);
+    const results = await Promise.allSettled([a, b].map(c => prisma.$transaction(async tx => {
+      const [row] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); pids.push(row.pid); if (pids.length === 2) release();
+      await ready; return prepareIn(tx, f, c);
+    }, txOptions))).finally(() => clearTimeout(timer));
+    expect(new Set(pids).size).toBe(2); expect(results.filter(result => result.status === "fulfilled")).toHaveLength(1);
+    const namespace = sha(JSON.stringify(["ENDVERA_CALENDAR_CONFIRMATION", f.from, f.env.TWILIO_PHONE_NUMBER]));
+    expect(await prisma.$queryRawUnsafe<Array<{ count: number }>>('SELECT count(*)::int FROM "PersonalSmsConversationExpectation" WHERE namespace=$1 AND active', namespace)).toEqual([{ count: 1 }]);
+  });
+});

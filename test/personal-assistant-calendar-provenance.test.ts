@@ -9,7 +9,9 @@ vi.mock("@/lib/db", () => ({ prisma: {
   constructionCalendarItem: { findFirst: mocks.legacyItem }, $transaction: mocks.transaction,
 } }));
 vi.mock("@/server/personal-assistant/sms-inbox", () => ({ enqueuePersonalSms: mocks.admission }));
-vi.mock("@/server/personal-assistant/calendar-actions", () => ({ preparePersonalCalendar: mocks.prepareGoogle }));
+vi.mock("@/server/personal-assistant/calendar-actions", async importOriginal => ({
+  ...await importOriginal<typeof import("@/server/personal-assistant/calendar-actions")>(), preparePersonalCalendar: mocks.prepareGoogle,
+}));
 vi.mock("@/server/construction-operating-assistant-r36c/orchestrator", () => ({ processUnifiedAssistantRequest: vi.fn() }));
 vi.mock("@/server/personal-assistant/google-connection", () => ({ readGoogleCalendar: vi.fn() }));
 vi.mock("@/server/personal-assistant/outbox", () => ({ sendAutomaticPersonalReply: vi.fn() }));

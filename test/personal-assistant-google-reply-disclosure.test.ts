@@ -24,7 +24,9 @@ function fixture(status = "approved") {
     request, requestHash: hash(JSON.stringify(request)), idempotencyKey: "reply:source",
     result: { approvedBy: "owner", approvedHash: hash(JSON.stringify(request)), approvedUntil: "2099-01-01T00:00:00Z" } };
   const source = { id: "source", requestHash: "synthetic-source-hash", request: { from: request.to, to: request.from }, result: { reply: request.text, source: "GOOGLE_CALENDAR", googleReadAuthority: authority } };
-  shared.query.mockImplementation(async (sql: string) => [{ id: sql.includes('JOIN "ConstructionWorkspace"') ? row.id : source.id }]);
+  shared.query.mockImplementation(async (sql: string) => sql.includes('FROM "PersonalSmsTemporalClarification"')
+    ? [] // This historical Google reply has no temporal attachment; all disclosure gates still execute.
+    : [{ id: sql.includes('JOIN "ConstructionWorkspace"') ? row.id : source.id }]);
   shared.find.mockResolvedValue(row); shared.first.mockImplementation(async query => query.where.id === "source" ? source : row);
   shared.transaction.mockImplementation(fn => fn(prisma)); shared.authority.mockResolvedValue(authority);
   vi.mocked(prisma.constructionConnectorAccount.findUniqueOrThrow).mockResolvedValue({ id: "sms-account", workspaceId: "workspace", provider: "endvera_sms", stateVersion: 1, status: "connected", revokedAt: null, externalAccountKeyHash: hash(env.TWILIO_ACCOUNT_SID) } as never);

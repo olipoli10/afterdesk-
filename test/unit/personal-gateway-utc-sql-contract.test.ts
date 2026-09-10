@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const read = (name: string) => readFileSync(resolve(process.cwd(), `src/server/model-gateway/${name}.ts`), "utf8");
 
 describe("personal gateway UTC-naive raw SQL contract (static, native proof separate)", () => {
-  it.each(["personal-ai-operations", "personal-intent/admission", "personal-intent/dispatch", "personal-intent/recovery", "personal-intent/review-consumer", "operations", "evidence", "breakers"])("normalizes each SQL now() into the UTC-naive storage convention in %s", name => {
+  it.each(["personal-ai-operations", "personal-intent/admission", "personal-intent/dispatch", "personal-intent/recovery", "personal-intent/review-proof", "operations", "evidence", "breakers"])("normalizes each SQL now() into the UTC-naive storage convention in %s", name => {
     const source = read(name);
     expect(source).toContain("(now() AT TIME ZONE 'UTC')");
     expect(source).not.toMatch(/now\(\)(?! AT TIME ZONE 'UTC')/);
@@ -20,6 +20,7 @@ describe("personal gateway UTC-naive raw SQL contract (static, native proof sepa
   });
   it("keeps returned SQL clocks as genuine instants rather than locale-dependent naive Dates", () => {
     expect(read("personal-intent/admission")).toContain("SELECT CURRENT_TIMESTAMP AS now");
-    expect(read("personal-intent/review-consumer")).toContain("CURRENT_TIMESTAMP AS now");
+    expect(read("personal-intent/review-proof")).toContain("CURRENT_TIMESTAMP AS now");
+    expect(read("personal-intent/review-consumer")).toContain("await loadStoredPersonalIntentReviewProof(tx, untrusted, env)");
   });
 });

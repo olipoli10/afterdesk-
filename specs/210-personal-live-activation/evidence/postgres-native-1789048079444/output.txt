@@ -1,0 +1,20 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (19 tests) 5381ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1685ms
+     ✓ five creations across both types share one permanent hourly cap  672ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  453ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  09:48:13
+   Duration  6.41s (transform 609ms, setup 0ms, import 877ms, tests 5.38s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-9e0cf1aa61ce4801befec940100d2b31

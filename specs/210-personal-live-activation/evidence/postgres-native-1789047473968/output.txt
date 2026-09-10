@@ -1,0 +1,169 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (17 tests | 12 failed) 3268ms
+     ✓ OFF does not require valid input or mutate the DB 29ms
+     × commits exact complete wire + shared ledger without calendar draft or additional provider work 266ms
+     ✓ rolls registry, question and shared ledger back if source completion is omitted 99ms
+     ✓ rejects lease replacement after registry insertion even if a raw UPDATE tries to complete 96ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1651ms
+     × preserves canonical DB acceptance time and two-source resolution in UTC 81ms
+     × preserves canonical DB acceptance time and two-source resolution in America/New_York 81ms
+     × preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo 93ms
+     × missing immutable acceptedAt refuses; historical updatedAt is never substituted 91ms
+     × an SMS received before the durable question receipt cannot become its answer later 91ms
+     × another actor cannot load the question or consume its reply 105ms
+     × each rejected SMS increments once; fifth closes active question and preserves evidence 79ms
+     × revocation remains possible but prevents attaching or consuming evidence 70ms
+     × rejects a minimal forged ACCEPTED packet at the actual INSERT trigger 74ms
+     × competing consumption of the same SMS commits at most one permanent receipt 68ms
+     × five creations across both types share one permanent hourly cap 63ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends 225ms
+
+ Test Files  1 failed (1)
+      Tests  12 failed | 5 passed (17)
+   Start at  09:38:07
+   Duration  4.30s (transform 613ms, setup 0ms, import 877ms, tests 3.27s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > commits exact complete wire + shared ledger without calendar draft or additional provider work
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:136:102
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > preserves canonical DB acceptance time and two-source resolution in UTC
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > preserves canonical DB acceptance time and two-source resolution in America/New_York
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:167:77
+    165|   });
+    166|   it.each(["UTC", "America/New_York", "Asia/Tokyo"])("preserves canoni…
+    167|     const f = await fixture(), c = await f.candidate("temporal", true)…
+       |                                                                             ^
+    168|     const before = await budget(), claim = await reply(f), result = aw…
+    169|     expect(result).toMatchObject({ status: "CORRELATED_NOT_EXECUTED", …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > missing immutable acceptedAt refuses; historical updatedAt is never substituted
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:178:77
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > an SMS received before the durable question receipt cannot become its answer later
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:185:77
+    183|   });
+    184|   it("an SMS received before the durable question receipt cannot becom…
+    185|     const f = await fixture(), c = await f.candidate("temporal", true)…
+       |                                                                             ^
+    186|     await prisma.$queryRawUnsafe("SELECT pg_sleep(0.005)::text"); awai…
+    187|     await expect(consume(f, p, oldReply)).rejects.toThrow("CAUSALITY");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > another actor cannot load the question or consume its reply
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:192:77
+    190|   });
+    191|   it("another actor cannot load the question or consume its reply", as…
+    192|     const f = await fixture(), c = await f.candidate("temporal", true)…
+       |                                                                             ^
+    193|     await expect(prisma.$transaction(tx => consumeSmsTemporalClarifica…
+    194|       replySourceClaim: { ...claim, userId: "another-user" } }, f.env,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > each rejected SMS increments once; fifth closes active question and preserves evidence
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:198:77
+    196|   });
+    197|   it("each rejected SMS increments once; fifth closes active question …
+    198|     const f = await fixture(), c = await f.candidate("temporal", true)…
+       |                                                                             ^
+    199|     for (let n = 1; n <= 5; n++) {
+    200|       const claim = await reply(f, "oui"); expect(await consume(f, p, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > revocation remains possible but prevents attaching or consuming evidence
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:209:77
+    207|   });
+    208|   it("revocation remains possible but prevents attaching or consuming …
+    209|     const f = await fixture(), c = await f.candidate("temporal", true)…
+       |                                                                             ^
+    210|     await prisma.constructionConnectorGrant.update({ where: { id: f.go…
+    211|     await expect(consume(f, p, claim)).rejects.toThrow(); expect((awai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > rejects a minimal forged ACCEPTED packet at the actual INSERT trigger
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:215:77
+    213|   });
+    214|   it("rejects a minimal forged ACCEPTED packet at the actual INSERT tr…
+    215|     const f = await fixture(), c = await f.candidate("temporal", true)…
+       |                                                                             ^
+    216|     await expect(prisma.$transaction(async tx => {
+    217|       const guarded = { $queryRawUnsafe: tx.$queryRawUnsafe.bind(tx), …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > competing consumption of the same SMS commits at most one permanent receipt
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:229:77
+    227|   });
+    228|   it("competing consumption of the same SMS commits at most one perman…
+    229|     const f = await fixture(), c = await f.candidate("temporal", true)…
+       |                                                                             ^
+    230|     const results = await Promise.allSettled([consume(f, p, claim), co…
+    231|     expect(results.filter(result => result.status === "fulfilled")).to…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > five creations across both types share one permanent hourly cap
+PrismaClientKnownRequestError: The column `new` does not exist in the current database.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8154
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:238:82
+    236|     const f = await fixture();
+    237|     for (let n = 0; n < 5; n++) {
+    238|       const c = await f.candidate(n % 2 ? "calendar" : "temporal", n =…
+       |                                                                                  ^
+    239|       const table = p.kind === "calendar" ? "PersonalCalendarSmsConfir…
+    240|       await prisma.$executeRawUnsafe(`UPDATE "${table}" SET phase='REF…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-1397b7f26cb2480aa5ba9a0780581a93

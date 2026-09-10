@@ -1,0 +1,62 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (17 tests | 1 failed) 5140ms
+     ✓ OFF does not require valid input or mutate the DB 35ms
+     ✓ commits exact complete wire + shared ledger without calendar draft or additional provider work 262ms
+     ✓ rolls registry, question and shared ledger back if source completion is omitted 110ms
+     ✓ rejects lease replacement after registry insertion even if a raw UPDATE tries to complete 100ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1650ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in UTC 206ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in America/New_York 216ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo 216ms
+     ✓ missing immutable acceptedAt refuses; historical updatedAt is never substituted 146ms
+     ✓ an SMS received before the durable question receipt cannot become its answer later 169ms
+     ✓ another actor cannot load the question or consume its reply 136ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  349ms
+     × revocation remains possible but prevents attaching or consuming evidence 162ms
+     ✓ rejects a minimal forged ACCEPTED packet at the actual INSERT trigger 165ms
+     ✓ competing consumption of the same SMS commits at most one permanent receipt 193ms
+     ✓ five creations across both types share one permanent hourly cap  824ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends 196ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  09:43:27
+   Duration  6.14s (transform 586ms, setup 0ms, import 847ms, tests 5.14s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > OFF temporal registry / real disposable PostgreSQL constraints and source transactions > revocation remains possible but prevents attaching or consuming evidence
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorGrant.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/temporal-registry.postgres.test.ts:222:45
+
+  219 });
+  220 it("revocation remains possible but prevents attaching or consuming evidence", async () => {
+  221   const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c); await syntheticAccepted(f, p); const claim = await reply(f);
+→ 222   await prisma.constructionConnectorGrant.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorGrant\" violates check constraint \"ConstructionConnectorGrant_revoked_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtvkviqy00b2i55gz75x5t84, cmtvkviqy00b1i55gmarw4zog, calendar_write, revoked, {https://www.googleapis.com/auth/calendar.events}, {https://www.googleapis.com/auth/calendar.events}, 2, 2026-09-10 13:43:32.24, 2026-09-10 13:43:32.4, 2026-09-10 13:43:32.266, 2026-09-10 13:43:32.401)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:222:5
+    220|   it("revocation remains possible but prevents attaching or consuming …
+    221|     const f = await fixture(), c = await f.candidate("temporal", true)…
+    222|     await prisma.constructionConnectorGrant.update({ where: { id: f.go…
+       |     ^
+    223|     await expect(consume(f, p, claim)).rejects.toThrow(); expect((awai…
+    224|     expect(await prisma.$queryRawUnsafe('SELECT id FROM "PersonalSmsTe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-107d095ed5474857a4f951943a1b6f1e

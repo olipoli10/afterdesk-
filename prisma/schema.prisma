@@ -2957,6 +2957,7 @@ model ModelGatewayOperation {
   decisions   ModelGatewayDecision[]
   auditEvents ModelGatewayAuditEvent[]
   personalModelOperation PersonalAssistantOperation?
+  temporalClarifications PersonalSmsTemporalClarification[]
 
   @@index([tenantId, status])
   @@index([policyVersionId])
@@ -3714,6 +3715,7 @@ model ConstructionCommunicationIdentity {
   updatedAt         DateTime                     @updatedAt
 
   calendarConfirmations PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationIdentity")
+  temporalClarifications PersonalSmsTemporalClarification[] @relation("TemporalClarificationIdentity")
 
   @@unique([workspaceId, channel, normalizedAddress])
   @@index([userId, status])
@@ -5647,6 +5649,10 @@ model PersonalAssistantOperation {
   calendarConfirmationSummaries PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationSummary")
   calendarConfirmationBridges PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationBridge")
   calendarConfirmationConsumptionSources PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationConsumptionSource")
+  temporalClarificationSources PersonalSmsTemporalClarification[] @relation("TemporalClarificationSource")
+  temporalClarificationChildren PersonalSmsTemporalClarification[] @relation("TemporalClarificationChild")
+  temporalClarificationQuestions PersonalSmsTemporalClarification[] @relation("TemporalClarificationQuestion")
+  temporalClarificationReplies PersonalSmsTemporalClarificationReply[] @relation("TemporalClarificationReplySource")
   modelGatewayOperationId String? @unique
   modelGatewayOperation ModelGatewayOperation? @relation(fields: [modelGatewayOperationId], references: [id], onDelete: Restrict)
   createdAt         DateTime                     @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
@@ -5709,12 +5715,92 @@ model PersonalCalendarSmsConfirmation {
   summary PersonalAssistantOperation @relation("CalendarConfirmationSummary", fields: [summaryOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_summary_fkey")
   bridgeOutbound PersonalAssistantOperation? @relation("CalendarConfirmationBridge", fields: [bridgeOutboundOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_bridge_fkey")
   confirmationSource PersonalAssistantOperation? @relation("CalendarConfirmationConsumptionSource", fields: [confirmationSourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict, map: "calendar_confirmation_consumption_source_fkey")
+  conversationExpectation PersonalSmsConversationExpectation?
 
   @@unique([sourceOperationId, reviewActionId], map: "calendar_confirmation_source_action_key")
   @@index([namespace, createdAt], map: "calendar_confirmation_namespace_created_idx")
   @@index([workspaceId, userId, phase, expiresAt], map: "calendar_confirmation_owner_phase_expiry_idx")
   // SQL-only: UNIQUE(namespace) WHERE phase IN ('PREPARED','WAITING','CONSUMED').
   // Never model this as unconditional @unique or as a time-dependent predicate.
+}
+
+model PersonalSmsTemporalClarification {
+  id String @id
+  workspaceId String
+  userId String
+  identityId String
+  sourceOperationId String
+  modelChildOperationId String
+  modelGatewayOperationId String
+  reviewActionId String
+  questionOutboundOperationId String @unique
+  namespace String
+  phase String @default("PREPARED")
+  prepared Json
+  sourceClaim Json
+  reviewSnapshot Json
+  preparedHash String
+  bindingHash String
+  questionRequestHash String
+  proposalEvidenceRef String
+  proposalSerializationVersion String
+  wireTextHash String
+  wireFormatterVersion String
+  waiting Json?
+  waitingHash String?
+  acceptedProviderSid String? @unique
+  acceptedAt DateTime? @db.Timestamp(3)
+  consumedReplyId String? @unique
+  failedAttempts Int @default(0)
+  createdAt DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)")) @db.Timestamp(3)
+  expiresAt DateTime @db.Timestamp(3)
+  updatedAt DateTime @db.Timestamp(3)
+  identity ConstructionCommunicationIdentity @relation("TemporalClarificationIdentity", fields: [identityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  source PersonalAssistantOperation @relation("TemporalClarificationSource", fields: [sourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict)
+  modelChild PersonalAssistantOperation @relation("TemporalClarificationChild", fields: [modelChildOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict)
+  question PersonalAssistantOperation @relation("TemporalClarificationQuestion", fields: [questionOutboundOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict)
+  modelGateway ModelGatewayOperation @relation(fields: [modelGatewayOperationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies PersonalSmsTemporalClarificationReply[] @relation("TemporalClarificationReplies")
+  consumedReply PersonalSmsTemporalClarificationReply? @relation("TemporalClarificationConsumedReply", fields: [consumedReplyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  conversationExpectation PersonalSmsConversationExpectation?
+  @@unique([id, workspaceId, userId])
+  @@unique([sourceOperationId, reviewActionId])
+  @@index([workspaceId, userId, phase, expiresAt])
+  @@index([namespace, createdAt])
+}
+
+model PersonalSmsTemporalClarificationReply {
+  id String @id
+  clarificationId String
+  workspaceId String
+  userId String
+  sourceOperationId String @unique
+  providerSid String @unique
+  requestHash String
+  sourceClaim Json
+  outcome String
+  packet Json
+  packetHash String
+  receivedAt DateTime @db.Timestamp(3)
+  createdAt DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)")) @db.Timestamp(3)
+  clarification PersonalSmsTemporalClarification @relation("TemporalClarificationReplies", fields: [clarificationId, workspaceId, userId], references: [id, workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  source PersonalAssistantOperation @relation("TemporalClarificationReplySource", fields: [sourceOperationId, workspaceId, userId], references: [id, workspaceId, createdByUserId], onDelete: Restrict, onUpdate: Restrict)
+  consumedBy PersonalSmsTemporalClarification? @relation("TemporalClarificationConsumedReply")
+  @@index([clarificationId, createdAt])
+}
+
+model PersonalSmsConversationExpectation {
+  id String @id
+  namespace String
+  kind String
+  confirmationId String? @unique
+  clarificationId String? @unique
+  active Boolean
+  createdAt DateTime @db.Timestamp(3)
+  confirmation PersonalCalendarSmsConfirmation? @relation(fields: [confirmationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  clarification PersonalSmsTemporalClarification? @relation(fields: [clarificationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  @@index([namespace, createdAt])
+  // SQL-only UNIQUE(namespace) WHERE active; both kinds share visible phone pair.
 }
 
 model PersonalAssistantBudget {

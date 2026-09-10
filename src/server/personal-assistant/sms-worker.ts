@@ -12,18 +12,18 @@ import { GoogleCalendarClient, type ConnectorEnvironment } from "./google-client
 import { sendAutomaticPersonalReply } from "./outbox";
 import { processPersonalModelSms, personalModelReviewReply, type PersonalModelSmsResult } from "./model-worker";
 import { isReservedCalendarConfirmationMessage } from "./calendar-confirmation-routing";
+import { smsCalendarDay } from "./sms-calendar-routing";
+export { smsCalendarDay } from "./sms-calendar-routing";
 import { recoverExpiredPersonalSmsClaims } from "./sms-inbound-recovery";
 import { selectPersonalAutomaticOutboundCandidates } from "./outbound-queue";
+import { canonicalJson } from "@/server/model-gateway/evidence";
+import { temporalLockSourceNamespace, temporalRegistryTransaction } from "./sms-temporal-clarification-authority";
+import { inspectSmsTemporalQuestionPreparationInTransaction, attachSmsTemporalQuestionInTransaction } from "./sms-temporal-question-preparation";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 export function personalSmsWorkerEnabled(env: ConnectorEnvironment, now = Date.now()) {
   return externalCapabilityDecision("SMS", env).enabled && env.ENDVERA_PERSONAL_SMS_WORKER_ENABLED === "true" && Date.parse(env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT ?? "") > now;
-}
-export function smsCalendarDay(message: string): "TODAY" | "TOMORROW" | null {
-  const normalized = message.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[’']/g, " ").replace(/[-?!.]/g, " ").replace(/\s+/g, " ").trim();
-  const match = /^(?:(?:hey|salut) )?(?:qu est ce que j ai|qu ai je|j ai quoi|c est quoi mon horaire|mon horaire|mon agenda|mon calendrier(?: google)?|mes rendez vous)(?: pour)? (demain|aujourd hui)$/.exec(normalized);
-  return match ? match[1] === "demain" ? "TOMORROW" : "TODAY" : null;
 }
 export function personalCalendarWindow(now: Date, timezone: string, day: "TODAY" | "TOMORROW") {
   new Intl.DateTimeFormat("fr-CA", { timeZone: timezone }).format(now);
@@ -172,8 +172,37 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       requireLive();
       if (source === "GOOGLE_CALENDAR") await requireGoogleReadAuthority(tx, row.createdByUserId, row.workspaceId, googleReadAuthority, env);
       requireLive();
+      const temporalPreparation = Boolean(finalizeReview)
+        && env.ENDVERA_SMS_TEMPORAL_QUESTION_PREPARATION_ENABLED === "true"
+        && env.ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED === "true";
+      const temporalContext = Object.freeze({ deadlineAt, signal: controller.signal });
+      const temporalActor = Object.freeze({ userId: claim.userId, workspaceId: claim.workspaceId });
+      const requireTemporalPreparationCurrent = () => {
+        requireLive();
+        if (temporalPreparation && (env.ENDVERA_SMS_TEMPORAL_QUESTION_PREPARATION_ENABLED !== "true"
+          || env.ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED !== "true")) throw new Error("SMS_TEMPORAL_PREPARATION_REVOKED");
+      };
+      // The review closure locks the source. Acquire the shared conversation
+      // namespace first, including when the final review proves ineligible.
+      if (temporalPreparation) {
+        await temporalRegistryTransaction(tx, temporalContext, env);
+        await temporalLockSourceNamespace(tx, temporalActor, claim.operationId);
+        requireLive();
+      }
       const personalModelReview = finalizeReview ? await finalizeReview(tx) : undefined;
+      requireTemporalPreparationCurrent();
       if (personalModelReview) reply = personalModelReviewReply(personalModelReview);
+      let temporalQuestion: Extract<Awaited<ReturnType<typeof inspectSmsTemporalQuestionPreparationInTransaction>>, { status: "ELIGIBLE_QUESTION_NOT_AUTHORIZED" }> | undefined;
+      if (temporalPreparation && personalModelReview?.status === "REVIEW_PREPARED_NOT_AUTHORIZED"
+        && personalModelReview.actions.length === 1 && personalModelReview.actions[0].status === "CLARIFY"
+        && personalModelReview.actions[0].kind === "PREPARE_CALENDAR_EVENT") {
+        const inspected = await inspectSmsTemporalQuestionPreparationInTransaction(tx, { actor: temporalActor, sourceClaim: claim,
+          modelChildOperationId: personalModelReview.modelChildOperationId }, env, temporalContext);
+        requireLive();
+        if (inspected.status === "DISABLED") throw new Error("SMS_TEMPORAL_PREPARATION_REVOKED");
+        if (inspected.status === "ELIGIBLE_QUESTION_NOT_AUTHORIZED") { temporalQuestion = inspected; reply = inspected.wireText; }
+        else reply = inspected.reply;
+      }
       let calendarConfirmationId: string | undefined;
       if (personalModelReview && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true"
         && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true" && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true"
@@ -187,16 +216,24 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         }
       }
       requireLive();
+      if (temporalQuestion && (reply !== temporalQuestion.wireText || reply.length > 1500)) throw new Error("SMS_TEMPORAL_QUESTION_CHANGED");
       if (reply.length > 1500) reply = "Ta demande et les précisions nécessaires sont conservées dans ENDVERA. Consulte la demande originale et chaque proposition dans l’app. Aucun effet exécuté par ces propositions.";
       const request = { to: received.from, from: received.to, text: reply, sourceOperationId: row.id };
-      await tx.personalAssistantOperation.create({ data: { workspaceId: row.workspaceId, connectorAccountId: row.connectorAccountId, kind: "sms_outbound", status: "pending", idempotencyKey: `reply:${row.id}`, request, requestHash: hash(JSON.stringify(request)), createdByUserId: row.createdByUserId } });
-      requireLive();
+      const outbound = await tx.personalAssistantOperation.create({ data: { workspaceId: row.workspaceId, connectorAccountId: row.connectorAccountId, kind: "sms_outbound", status: "pending", idempotencyKey: `reply:${row.id}`, request, requestHash: hash(JSON.stringify(request)), createdByUserId: row.createdByUserId } });
+      if (temporalQuestion) {
+        const attached = await attachSmsTemporalQuestionInTransaction(tx, { actor: temporalActor, sourceClaim: claim,
+          modelChildOperationId: temporalQuestion.modelChildOperationId, questionOutboundOperationId: outbound.id }, env, temporalContext);
+        requireLive();
+        if (attached.status !== "PREPARED_FOR_SOURCE_COMMIT" || canonicalJson(attached.requiredSourceReview) !== canonicalJson(personalModelReview)) throw new Error("SMS_TEMPORAL_SOURCE_REVIEW_CHANGED");
+      }
+      requireTemporalPreparationCurrent();
       const finished = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"leaseUntil"=NULL,result=$6::jsonb,"updatedAt"=(now() AT TIME ZONE 'UTC')
         WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC')
           AND kind='personal_sms_inbound' AND status='processing' AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')`,
         claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil), JSON.stringify({ reply, source, replyDelivery: "PREPARED_UNSENT",
           ...(source === "GOOGLE_CALENDAR" ? { googleReadAuthority, googleReadRange } : {}), ...(personalModelReview ? { personalModelReview } : {}) }));
       if (finished !== 1) throw new Error("SMS_SOURCE_CLAIM_LOST");
+      requireTemporalPreparationCurrent();
       if (calendarConfirmationId) {
         const { prepareCalendarConfirmationOutboundInTransaction } = await import("./calendar-confirmation-bridge");
         requireLive();
@@ -204,6 +241,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         if (bridge.status !== "PREPARED_UNSENT") throw new Error("SMS_CONFIRMATION_BRIDGE_DISABLED");
         requireLive();
       }
+      requireTemporalPreparationCurrent();
     }, { isolationLevel: "Serializable", maxWait: 1000, timeout: Math.max(1, Math.min(5000, deadlineAt - Date.now())) });
     requireLive();
     return { status: "COMPLETED_REPLY_PREPARED" as const };

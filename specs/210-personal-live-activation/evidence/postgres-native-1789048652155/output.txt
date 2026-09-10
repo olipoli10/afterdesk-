@@ -1,0 +1,26 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (25 tests) 7841ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  868ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only  387ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only  307ms
+     ✓ post-response Google revocation keeps the entire exposure and never creates WAITING  330ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry  360ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1641ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  416ms
+     ✓ five creations across both types share one permanent hourly cap  603ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  480ms
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  09:57:47
+   Duration  9.34s (transform 867ms, setup 0ms, import 1.25s, tests 7.84s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-9ac9a63e788342fb93552cff31e7ac78
