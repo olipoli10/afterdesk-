@@ -18,6 +18,56 @@ vi.mock('node:fs', async original => {
       : actual.readdirSync(file, options as never),
   };
 });
+
+describe('closed preflight diagnostics — child zero is not successful verification', () => {
+  it.each([
+    ['tlsNull', 'HISTORY', 'TLS_TYPE'], ['tlsType', 'HISTORY', 'TLS_TYPE'],
+    ['database', 'HISTORY', 'DATABASE_MISMATCH'], ['role', 'HISTORY', 'ROLE_MISMATCH'],
+    ['sessionRole', 'HISTORY', 'SESSION_ROLE_MISMATCH'], ['versionType', 'HISTORY', 'VERSION_TYPE'],
+    ['versionRange', 'HISTORY', 'VERSION_RANGE'], ['readOnly', 'HISTORY', 'READ_ONLY_NOT_CONFIRMED'],
+    ['countType', 'HISTORY', 'HISTORY_COUNT_TYPE'], ['count', 'HISTORY', 'HISTORY_COUNT_MISMATCH'],
+    ['shape', 'HISTORY', 'INPUT_SHAPE'], ['rows', 'HISTORY', 'HISTORY_SHAPE'],
+    ['order', 'HISTORY', 'HISTORY_ORDER'], ['checksum', 'HISTORY', 'HISTORY_PREFIX_REJECTED'],
+    ['state', 'HISTORY', 'HISTORY_PREFIX_REJECTED'], ['json', 'HISTORY', 'SNAPSHOT_JSON_INVALID'],
+    ['outputType', 'CHILD', 'CHILD_OUTPUT_TYPE'], ['outputBound', 'CHILD', 'CHILD_OUTPUT_BOUND'],
+    ['deadline', 'CHILD', 'DEADLINE'],
+  ])('records only fixed %s classification and never the mismatched value', async (kind, stage, reason) => {
+    const original = mock.spawn.getMockImplementation()!;
+    mock.spawn.mockImplementation((exe: string, args: string[], options: object) => {
+      if (!isProbe(args)) return original(exe, args, options);
+      const value = snapshot();
+      if (kind === 'tlsNull') Object.assign(value, { tls: null });
+      if (kind === 'tlsType') Object.assign(value, { tls: PASSWORD });
+      if (kind === 'database') value.database = PASSWORD;
+      if (kind === 'role') value.role = PASSWORD;
+      if (kind === 'sessionRole') value.sessionRole = PASSWORD;
+      if (kind === 'versionType') Object.assign(value, { versionNum: PASSWORD });
+      if (kind === 'versionRange') value.versionNum = 170011;
+      if (kind === 'readOnly') value.readOnly = PASSWORD;
+      if (kind === 'countType') Object.assign(value, { historyCount: PASSWORD });
+      if (kind === 'count') value.historyCount = 69;
+      if (kind === 'shape') Object.assign(value, { extra: PASSWORD });
+      if (kind === 'rows') value.rows.pop();
+      if (kind === 'order') value.rows.reverse();
+      if (kind === 'checksum') value.rows[0].checksum = PASSWORD;
+      if (kind === 'state') Object.assign(value.rows[0], { finished_at: null });
+      if (kind === 'deadline') vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 61000);
+      return { status: 0, signal: null, stdout: kind === 'json' ? PASSWORD : kind === 'outputType' ? Buffer.from(PASSWORD)
+        : kind === 'outputBound' ? PASSWORD.repeat(10000) : JSON.stringify(value), stderr: PASSWORD };
+    });
+    let error: unknown; try { await run(); } catch (caught) { error = caught; }
+    const diagnostic = { version: 'pilot-trial-preflight-diagnostic-v1', stage, reason };
+    expect(error).toMatchObject({ message: 'PILOT_TRIAL_PREFLIGHT_REFUSED', diagnostic });
+    expect(Object.isFrozen(Object.getOwnPropertyDescriptor(error as object, 'diagnostic')?.value)).toBe(true);
+    expect(probes()).toHaveLength(1);
+    const receiptBytes = [...mock.files.entries()].find(([file]) => file.endsWith('receipt.json'))?.[1];
+    expect(receiptBytes).toBeDefined();
+    const receipt = JSON.parse(receiptBytes!.toString());
+    expect(receipt).toMatchObject({ status: 'PREFLIGHT_REFUSED', childExit: 0, diagnostic, automaticRetry: false, migrationInvoked: false });
+    expect(receiptBytes!.toString()).not.toContain(PASSWORD);
+    expect(Object.keys(diagnostic).sort()).toEqual(['reason', 'stage', 'version']);
+  });
+});
 vi.mock('../specs/208-astra-r02-local-preflight/preflight.mjs', async original => ({ ...await original<object>(), generatedClientFingerprint: mock.client }));
 import { buildPilotMigrationCatalog } from '../specs/210-personal-live-activation/deployment/pilot-migration-catalog.mjs';
 import { classifyPilotTrialProcessOutcome, decodePilotTrialCredential, inspectPilotTrialHistory, PILOT_TRIAL_HISTORY_SQL,
@@ -56,6 +106,24 @@ beforeEach(() => {
   });
 });
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
+
+describe('client transport policy versus backend observation — synthetic transport only', () => {
+  it.each([true, false])('pure history preserves backend SSL %s without certifying client policy', tls => {
+    const history = inspectPilotTrialHistory({ ...snapshot(), tls }, catalog, 70);
+    expect(history).toHaveProperty('backendConnectionSslObserved', tls);
+    expect(history).not.toHaveProperty('clientTransportPolicy');
+  });
+  it('guarded runner emits its fixed client policy with a false backend observation', async () => {
+    const original = mock.spawn.getMockImplementation()!;
+    mock.spawn.mockImplementation((exe: string, args: string[]) => isProbe(args)
+      ? { status: 0, signal: null, stdout: JSON.stringify({ ...snapshot(), tls: false }), stderr: '' }
+      : original(exe, args));
+    const receipt = await run();
+    expect(receipt).toMatchObject({ status: 'READ_ONLY_PREFLIGHT_70_MATCH', clientTransportPolicy: 'PRISMA_REQUIRE_TLS_STRICT_CERT',
+      history: { backendConnectionSslObserved: false }, migrationInvoked: false, executionAuthorized: false });
+    expect(probes()).toHaveLength(1);
+  });
+});
 
 describe('trial credential boundary — synthetic bytes only', () => {
   it('accepts only the exact single target and a strict canonical envelope', () => {
@@ -123,7 +191,7 @@ describe('fixed actual Prisma/history selection — no DB execution', () => {
       if (kind === 'sessionRole') value.sessionRole = 'other';
       if (kind === 'versionNum') value.versionNum = 170011;
       if (kind === 'readOnly') value.readOnly = 'off';
-      if (kind === 'tls') value.tls = false;
+      if (kind === 'tls') Object.assign(value, { tls: null });
       if (kind === 'historyCount') value.historyCount = 71;
       if (kind === 'extra') Object.assign(value, { secret: PASSWORD });
       if (kind === 'checksum') value.rows[0].checksum = '0'.repeat(64);

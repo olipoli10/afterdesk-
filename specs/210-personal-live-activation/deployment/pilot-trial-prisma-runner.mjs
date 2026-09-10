@@ -18,8 +18,22 @@ const SOURCES = [SELF, 'scripts/endvera-release-source-binding.mjs', 'specs/208-
   'specs/210-personal-live-activation/deployment/pilot-migration-catalog.mjs',
   'specs/210-personal-live-activation/deployment/migration-rehearsal/rehearsal.mjs', 'prisma.config.ts', 'package.json', 'package-lock.json'];
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+// Classify only errors created by this module. Never inspect an arbitrary
+// error's message, stack, code, properties or string conversion for diagnostics.
+const failureReasons = new WeakMap(), refusalDiagnostics = new WeakMap();
+const diagnosticReasons = new Set(['DEADLINE', 'HEAD_CHANGED', 'DIRTY_SOURCE', 'CATALOG_CHANGED', 'SOURCE_CHANGED', 'SOURCE_BINDING',
+  'SOURCE_SIZE', 'LOCAL_SOURCE_REFUSED', 'CREDENTIAL_REFUSED', 'PRIVATE_STDIN_REQUIRED', 'STAGING_PATH', 'STAGED_BYTES_CHANGED',
+  'STAGED_INVENTORY_CHANGED', 'INPUT_SHAPE', 'HISTORY_SHAPE', 'HISTORY_ORDER', 'POST_HISTORY_REFUSED', 'HISTORY_PREFIX_REJECTED',
+  'DATABASE_MISMATCH', 'ROLE_MISMATCH', 'SESSION_ROLE_MISMATCH', 'VERSION_TYPE', 'VERSION_RANGE', 'READ_ONLY_NOT_CONFIRMED',
+  'TLS_TYPE', 'TLS_NOT_CONFIRMED', 'HISTORY_COUNT_TYPE', 'HISTORY_COUNT_MISMATCH', 'SNAPSHOT_JSON_INVALID',
+  'CHILD_PROCESS_FAILURE', 'CHILD_OUTPUT_TYPE', 'CHILD_OUTPUT_BOUND']);
+function classifiedError(code, reason = code) {
+  const error = new Error(`PILOT_TRIAL_${code}`);
+  failureReasons.set(error, diagnosticReasons.has(reason) ? reason : 'LOCAL_VALIDATION_REFUSED');
+  return error;
+}
 /** @returns {never} */
-const fail = code => { throw new Error(`PILOT_TRIAL_${code}`); };
+const fail = (code, reason = code) => { throw classifiedError(code, reason); };
 const frozen = value => { if (value && typeof value === 'object') { Object.values(value).forEach(frozen); Object.freeze(value); } return value; };
 function fields(value, keys) {
   if (!value || typeof value !== 'object' || types.isProxy(value) || Object.getPrototypeOf(value) !== Object.prototype) fail('INPUT_SHAPE');
@@ -122,7 +136,7 @@ async function readCredential(input, remaining) {
       // Cancellation is bounded; never await a producer's close or print errors.
       try { input.pause(); } catch { /* No producer error disclosure. */ }
       for (const chunk of chunks) chunk.fill(0);
-      if (error) reject(new Error('PILOT_TRIAL_CREDENTIAL_REFUSED')); else resolve(value);
+      if (error) reject(classifiedError('CREDENTIAL_REFUSED')); else resolve(value);
     };
     const data = chunk => {
       if (!(chunk instanceof Uint8Array) || chunk.byteLength === 0 || ++count > 64 || (size += chunk.byteLength) > 4096) return done(true);
@@ -168,22 +182,30 @@ export function inspectPilotTrialHistory(raw, suppliedCatalog, count) {
   if (count !== 70 && count !== 79) fail('PHASE');
   const catalog = inspectSuppliedPilotMigrationCatalog(suppliedCatalog);
   const snapshot = fields(raw, ['database', 'role', 'sessionRole', 'versionNum', 'readOnly', 'tls', 'historyCount', 'rows']);
-  if (snapshot.database !== 'neondb' || snapshot.role !== 'neondb_owner' || snapshot.sessionRole !== 'neondb_owner'
-    || !Number.isInteger(snapshot.versionNum) || snapshot.versionNum < 180000 || snapshot.versionNum >= 190000
-    || snapshot.readOnly !== 'on' || snapshot.tls !== true || snapshot.historyCount !== count) fail('TARGET_HISTORY_REFUSED');
+  // pg_stat_ssl observes the backend connection, not necessarily the client-to-
+  // proxy segment. Preserve its boolean without inventing client transport proof.
+  if (snapshot.database !== 'neondb') fail('TARGET_HISTORY_REFUSED', 'DATABASE_MISMATCH');
+  if (snapshot.role !== 'neondb_owner') fail('TARGET_HISTORY_REFUSED', 'ROLE_MISMATCH');
+  if (snapshot.sessionRole !== 'neondb_owner') fail('TARGET_HISTORY_REFUSED', 'SESSION_ROLE_MISMATCH');
+  if (!Number.isInteger(snapshot.versionNum)) fail('TARGET_HISTORY_REFUSED', 'VERSION_TYPE');
+  if (snapshot.versionNum < 180000 || snapshot.versionNum >= 190000) fail('TARGET_HISTORY_REFUSED', 'VERSION_RANGE');
+  if (snapshot.readOnly !== 'on') fail('TARGET_HISTORY_REFUSED', 'READ_ONLY_NOT_CONFIRMED');
+  if (typeof snapshot.tls !== 'boolean') fail('TARGET_HISTORY_REFUSED', 'TLS_TYPE');
+  if (snapshot.historyCount !== count) fail('TARGET_HISTORY_REFUSED', typeof snapshot.historyCount === 'number' ? 'HISTORY_COUNT_MISMATCH' : 'HISTORY_COUNT_TYPE');
   // The native transport emits JSON, but this exported pure boundary also refuses
   // proxies, sparse arrays and accessors before reading any row or array method.
   const rows = historyRows(snapshot.rows, count);
   const names = rows.map(row => row.migration_name);
   if (names.some((name, i) => name !== catalog.entries[i].migrationName)) fail('HISTORY_ORDER');
-  compareSuppliedPilotMigrationRows(catalog, rows.slice(0, 70));
+  try { compareSuppliedPilotMigrationRows(catalog, rows.slice(0, 70)); }
+  catch { fail('HISTORY_PREFIX_REJECTED'); }
   for (let i = 70; i < count; i++) {
     const row = rows[i], entry = catalog.entries[i];
     if (row.checksum !== entry.sha256 || row.rolled_back_at !== null || row.applied_steps_count !== 1
       || typeof row.finished_at !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(row.finished_at)
       || !Number.isFinite(Date.parse(row.finished_at)) || new Date(row.finished_at).toISOString() !== row.finished_at) fail('POST_HISTORY_REFUSED');
   }
-  return frozen({ count, versionNum: snapshot.versionNum, historySha256: hash(JSON.stringify(rows)),
+  return frozen({ count, versionNum: snapshot.versionNum, backendConnectionSslObserved: snapshot.tls, historySha256: hash(JSON.stringify(rows)),
     prior70Sha256: hash(JSON.stringify(rows.slice(0, 70))), targetProviderProvenanceVerified: false, dataPreservationVerified: false });
 }
 
@@ -260,36 +282,53 @@ export async function runPilotTrialPrisma(mode, rawExpected, options = {}) {
   if (mode !== 'PREFLIGHT_70') fail('MODE');
   const { repositoryRoot = ROOT, input = process.stdin } = options;
   const expected = expectations(rawExpected), root = path.resolve(repositoryRoot), remaining = budget();
-  let stage, url, env, childExit = null;
+  let stage, url, env, childExit = null, diagnosticStage = 'SOURCE';
   try {
     const source = inspectSource(root, expected, remaining);
+    diagnosticStage = 'STAGING';
     stage = stageSource(root, source); remaining();
+    diagnosticStage = 'CREDENTIAL';
     url = await readCredential(input, remaining);
+    diagnosticStage = 'RECHECK';
     const checked = inspectSource(root, expected, remaining);
     if (checked.fingerprint !== source.fingerprint) fail('SOURCE_CHANGED');
     verifyStage(root, stage); remaining();
     env = pilotTrialChildEnvironment(url);
     const clientUrl = pathToFileURL(checked.clientPath).href;
     const script = `import {PrismaClient} from ${JSON.stringify(clientUrl)};const p=new PrismaClient({log:[]});try{const value=await p.$transaction(async tx=>{await tx.$executeRawUnsafe('SET TRANSACTION READ ONLY');await tx.$executeRawUnsafe("SET LOCAL statement_timeout='15s'");await tx.$executeRawUnsafe("SET LOCAL lock_timeout='2s'");const rows=await tx.$queryRawUnsafe(${JSON.stringify(PILOT_TRIAL_HISTORY_SQL)});if(rows.length!==1||typeof rows[0].snapshot!=='string')throw Error();return rows[0].snapshot;},{maxWait:2000,timeout:20000});if(Buffer.byteLength(value)>131072)throw Error();process.stdout.write(value);}catch{process.exitCode=2;}finally{await p.$disconnect().catch(()=>{process.exitCode=2;});}`;
+    diagnosticStage = 'CHILD';
     const child = spawnSync(process.execPath, ['--input-type=module', '-e', script], { cwd: stage.directory, env, shell: false,
       stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8', windowsHide: true, timeout: Math.min(30000, remaining()), maxBuffer: 131072 });
     childExit = Number.isInteger(child.status) ? child.status : null; remaining();
-    if (child.error || child.signal || child.status !== 0 || typeof child.stdout !== 'string' || Buffer.byteLength(child.stdout) > 131072) fail('PREFLIGHT_REFUSED');
-    const history = inspectPilotTrialHistory(JSON.parse(child.stdout), source.catalog, 70); remaining();
+    if (child.error || child.signal || child.status !== 0) fail('PREFLIGHT_REFUSED', 'CHILD_PROCESS_FAILURE');
+    if (typeof child.stdout !== 'string') fail('PREFLIGHT_REFUSED', 'CHILD_OUTPUT_TYPE');
+    if (Buffer.byteLength(child.stdout) > 131072) fail('PREFLIGHT_REFUSED', 'CHILD_OUTPUT_BOUND');
+    diagnosticStage = 'HISTORY';
+    let snapshot; try { snapshot = JSON.parse(child.stdout); } catch { fail('PREFLIGHT_REFUSED', 'SNAPSHOT_JSON_INVALID'); }
+    const history = inspectPilotTrialHistory(snapshot, source.catalog, 70); remaining();
+    diagnosticStage = 'VERIFY';
     verifyStage(root, stage); remaining();
     const receipt = frozen({ version: 'pilot-trial-prisma-receipt-v1', mode, status: 'READ_ONLY_PREFLIGHT_70_MATCH',
       sourceHead: expected.expectedHead, catalogSha256: expected.expectedCatalogSha256, sourceFingerprint: source.fingerprint,
-      target: PILOT_TRIAL_TARGET, history, childExit, automaticRetry: false, migrationInvoked: false,
+      target: PILOT_TRIAL_TARGET, history,
+      // Source-bound strict Prisma URL policy, not observed negotiated TLS details.
+      clientTransportPolicy: 'PRISMA_REQUIRE_TLS_STRICT_CERT',
+      childExit, automaticRetry: false, migrationInvoked: false,
       executionAuthorized: false, backupVerified: false, dataPreservationVerified: false, elapsedMs: 60000 - remaining() });
+    diagnosticStage = 'WRITE';
     writeFileSync(path.join(stage.directory, 'receipt.json'), JSON.stringify(receipt), { flag: 'wx', mode: 0o600 });
     return receipt;
-  } catch {
+  } catch (error) {
+    const diagnostic = Object.freeze({ version: 'pilot-trial-preflight-diagnostic-v1', stage: diagnosticStage,
+      reason: failureReasons.get(error) ?? 'LOCAL_VALIDATION_REFUSED' });
     if (stage) {
       try { verifyStage(root, stage); writeFileSync(path.join(stage.directory, 'receipt.json'), JSON.stringify({ version: 'pilot-trial-prisma-receipt-v1', mode,
         status: 'PREFLIGHT_REFUSED', childExit, automaticRetry: false, migrationInvoked: false, executionAuthorized: false,
-        dataPreservationVerified: false }), { flag: 'wx', mode: 0o600 }); } catch { /* No raw filesystem or child error disclosure. */ }
+        dataPreservationVerified: false, diagnostic }), { flag: 'wx', mode: 0o600 }); } catch { /* No raw filesystem or child error disclosure. */ }
     }
-    fail('PREFLIGHT_REFUSED');
+    const refusal = classifiedError('PREFLIGHT_REFUSED');
+    Object.defineProperty(refusal, 'diagnostic', { value: diagnostic, enumerable: true });
+    refusalDiagnostics.set(refusal, diagnostic); throw refusal;
   } finally { if (env) { delete env.DATABASE_URL; delete env.DIRECT_URL; } url = undefined; }
 }
 
@@ -300,5 +339,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const receipt = await runPilotTrialPrisma(args[1], { expectedHead: args[3], expectedCatalogSha256: args[5] });
     // No path, URL, raw query rows, Prisma output or caller error is logged.
     process.stdout.write(JSON.stringify(receipt) + '\n');
-  } catch { process.stderr.write('PILOT_TRIAL_RUN_REFUSED_NO_AUTOMATIC_RETRY\n'); process.exitCode = 1; }
+  } catch (error) {
+    process.stderr.write('PILOT_TRIAL_RUN_REFUSED_NO_AUTOMATIC_RETRY\n');
+    const diagnostic = refusalDiagnostics.get(error);
+    if (diagnostic) process.stderr.write(JSON.stringify(diagnostic) + '\n');
+    process.exitCode = 1;
+  }
 }

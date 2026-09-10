@@ -26,7 +26,8 @@ const wire = () => Buffer.concat([frame(), Buffer.from([4])]);
 const receipt = () => ({ version: 'pilot-trial-prisma-receipt-v1', mode: 'PREFLIGHT_70', status: 'READ_ONLY_PREFLIGHT_70_MATCH',
   sourceHead: pins.expectedHead, catalogSha256: pins.expectedCatalogSha256, sourceFingerprint: 'c'.repeat(64), target: { ...target },
   history: { count: 70, versionNum: 180006, historySha256: 'd'.repeat(64), prior70Sha256: 'd'.repeat(64),
-    targetProviderProvenanceVerified: false, dataPreservationVerified: false }, childExit: 0, automaticRetry: false,
+    targetProviderProvenanceVerified: false, dataPreservationVerified: false, backendConnectionSslObserved: false },
+  clientTransportPolicy: 'PRISMA_REQUIRE_TLS_STRICT_CERT', childExit: 0, automaticRetry: false,
   migrationInvoked: false, executionAuthorized: false, backupVerified: false, dataPreservationVerified: false, elapsedMs: 1000 });
 const encode = (value = receipt()) => Buffer.from(JSON.stringify(value) + '\n');
 const REFUSED = 'PILOT_TRIAL_BRIDGE_REFUSED_NO_AUTOMATIC_RETRY';
@@ -59,6 +60,24 @@ beforeEach(() => {
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe('strict pure frame and CLI — never real credentials', () => {
+  it('keeps backend SSL false separate from required strict client policy', () => {
+    const value = receipt();
+    expect(() => validatePilotTrialBridgeReceipt(encode(value), pins)).not.toThrow();
+    expect(value.history.backendConnectionSslObserved).toBe(false);
+    value.history.backendConnectionSslObserved = true;
+    expect(() => validatePilotTrialBridgeReceipt(encode(value), pins)).not.toThrow();
+  });
+  it.each(['missing-policy', 'weak-policy', 'forged-client-proof', 'string-backend', 'null-backend', 'missing-backend'])(
+    'refuses transport receipt %s without accepting caller TLS authority', kind => {
+      const value = JSON.parse(JSON.stringify(receipt()));
+      if (kind === 'missing-policy') delete value.clientTransportPolicy;
+      if (kind === 'weak-policy') value.clientTransportPolicy = 'ACCEPT_INVALID_CERTS';
+      if (kind === 'forged-client-proof') value.tlsVerified = true;
+      if (kind === 'string-backend') value.history.backendConnectionSslObserved = 'true';
+      if (kind === 'null-backend') value.history.backendConnectionSslObserved = null;
+      if (kind === 'missing-backend') delete value.history.backendConnectionSslObserved;
+      expect(() => validatePilotTrialBridgeReceipt(encode(value), pins)).toThrow(REFUSED);
+    });
   it('accepts exact canonical synthetic frame without returning its value', () => {
     expect(validatePilotTrialBridgeFrame(frame())).toBeUndefined(); expect(mock.spawn).not.toHaveBeenCalled();
   });

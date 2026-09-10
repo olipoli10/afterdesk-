@@ -131,18 +131,20 @@ export function validatePilotTrialBridgeReceipt(bytes, rawExpected) {
   const pins = expected(rawExpected);
   if (!Buffer.isBuffer(bytes) || bytes.length < 1 || bytes.length > 8192) fail();
   const text = bytes.toString('utf8'); if (!Buffer.from(text).equals(bytes)) fail();
-  let r; try { r = fields(JSON.parse(text), ['version', 'mode', 'status', 'sourceHead', 'catalogSha256', 'sourceFingerprint', 'target', 'history', 'childExit', 'automaticRetry', 'migrationInvoked', 'executionAuthorized', 'backupVerified', 'dataPreservationVerified', 'elapsedMs']); } catch { fail(); }
+  let r; try { r = fields(JSON.parse(text), ['version', 'mode', 'status', 'sourceHead', 'catalogSha256', 'sourceFingerprint', 'target', 'history', 'clientTransportPolicy', 'childExit', 'automaticRetry', 'migrationInvoked', 'executionAuthorized', 'backupVerified', 'dataPreservationVerified', 'elapsedMs']); } catch { fail(); }
   if (JSON.stringify(r) + '\n' !== text || r.version !== 'pilot-trial-prisma-receipt-v1' || r.mode !== 'PREFLIGHT_70'
     || r.status !== 'READ_ONLY_PREFLIGHT_70_MATCH' || r.sourceHead !== pins.expectedHead || r.catalogSha256 !== pins.expectedCatalogSha256
     || typeof r.sourceFingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(r.sourceFingerprint) || r.childExit !== 0
+    || r.clientTransportPolicy !== 'PRISMA_REQUIRE_TLS_STRICT_CERT'
     || !Number.isInteger(r.elapsedMs) || r.elapsedMs < 0 || r.elapsedMs >= 60000) fail();
   for (const key of ['automaticRetry', 'migrationInvoked', 'executionAuthorized', 'backupVerified', 'dataPreservationVerified']) if (r[key] !== false) fail();
   const target = fields(r.target, Object.keys(TARGET));
   if (Object.keys(TARGET).some(key => target[key] !== TARGET[key])) fail();
-  const h = fields(r.history, ['count', 'versionNum', 'historySha256', 'prior70Sha256', 'targetProviderProvenanceVerified', 'dataPreservationVerified']);
+  const h = fields(r.history, ['count', 'versionNum', 'historySha256', 'prior70Sha256', 'targetProviderProvenanceVerified', 'dataPreservationVerified', 'backendConnectionSslObserved']);
   if (h.count !== 70 || !Number.isInteger(h.versionNum) || h.versionNum < 180000 || h.versionNum >= 190000
     || typeof h.historySha256 !== 'string' || !/^[a-f0-9]{64}$/.test(h.historySha256) || h.historySha256 !== h.prior70Sha256
-    || h.targetProviderProvenanceVerified !== false || h.dataPreservationVerified !== false) fail();
+    || h.targetProviderProvenanceVerified !== false || h.dataPreservationVerified !== false
+    || typeof h.backendConnectionSslObserved !== 'boolean') fail();
 }
 function runChild(frame, pins) {
   return new Promise((resolve, reject) => {

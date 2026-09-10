@@ -27,7 +27,8 @@ const frame = () => Buffer.from(JSON.stringify({ version: 'pilot-trial-credentia
 const encoded = () => Buffer.from(JSON.stringify({ version: 'pilot-trial-prisma-receipt-v1', mode: 'PREFLIGHT_70',
   status: 'READ_ONLY_PREFLIGHT_70_MATCH', sourceHead: pins.expectedHead, catalogSha256: pins.expectedCatalogSha256,
   sourceFingerprint: 'c'.repeat(64), target, history: { count: 70, versionNum: 180006,
-    historySha256: 'd'.repeat(64), prior70Sha256: 'd'.repeat(64), targetProviderProvenanceVerified: false, dataPreservationVerified: false },
+    historySha256: 'd'.repeat(64), prior70Sha256: 'd'.repeat(64), targetProviderProvenanceVerified: false,
+    dataPreservationVerified: false, backendConnectionSslObserved: false }, clientTransportPolicy: 'PRISMA_REQUIRE_TLS_STRICT_CERT',
   childExit: 0, automaticRetry: false, migrationInvoked: false, executionAuthorized: false, backupVerified: false,
   dataPreservationVerified: false, elapsedMs: 1000 }) + '\n');
 const REFUSED = 'PILOT_TRIAL_BRIDGE_REFUSED_NO_AUTOMATIC_RETRY';
