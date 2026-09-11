@@ -31,5 +31,5 @@
 - [x] DCB011 Add unit and native PostgreSQL isolation/replay/uncertain tests.
 - [x] DCB012 Run scoped tests, mobile typecheck/lint, root typecheck and provider
   boundary validation.
-- [ ] DCB013 Record evidence, commit locally, build one new internal Android APK
+- [x] DCB013 Record evidence, commit locally, build one new internal Android APK
   and update the canonical Brain without inflating live metrics.

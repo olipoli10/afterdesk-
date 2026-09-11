@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-09-11T05:25:00Z",
+  "recordedAt": "2026-09-11T05:59:20.189Z",
   "scope": "ENDVERA_SMS_TO_ANDROID_DEVICE_CALENDAR_BRIDGE",
   "status": "LOCAL_IMPLEMENTATION_VALIDATED",
   "architecture": {
@@ -38,12 +38,39 @@
     "customerOrEmployeeDataUsed": false,
     "secretValuesRecorded": false
   },
+  "androidApkBuild": {
+    "status": "FINISHED",
+    "distribution": "INTERNAL",
+    "buildId": "10e8a210-4633-4397-9ab8-253731d101bd",
+    "buildPage": "https://expo.dev/accounts/endveras-team/projects/endvera/builds/10e8a210-4633-4397-9ab8-253731d101bd",
+    "artifact": "https://expo.dev/artifacts/eas/ZlSXTWX9Xjn9toGPvLirUGanHXlTTmR1epqHpnI4owg.apk",
+    "sourceCommit": "2c3302eca3743d9869724542fefd97797d0cf7be",
+    "appVersion": "0.2.0",
+    "androidVersionCode": 6,
+    "completedAt": "2026-09-11T05:59:20.189Z",
+    "fingerprint": "b1b81e1bdbf98c004f4cbfe266e53bbbdb8ae132",
+    "storeSubmissionPerformed": false,
+    "deviceInstallationObserved": false
+  },
+  "buildCorrection": {
+    "failedBuildId": "0e3c70f7-a945-4627-8909-7f8edfbbd77b",
+    "failure": "NPM_CI_LOCK_MISSING_EXPLICIT_REACT_NATIVE_WORKLETS",
+    "resultRewritten": false,
+    "correction": "PINNED_EXPO_COMPATIBLE_REANIMATED_AND_WORKLETS_IN_PACKAGE_AND_LOCK"
+  },
   "limits": {
     "deviceObserved": false,
     "twilioWebhookDeployedWithThisCommit": false,
-    "androidApkBuiltFromThisCommit": false,
+    "androidApkBuilt": true,
     "iosNativeCalendarExecutionImplemented": false,
     "publicOrStoreReleaseAuthorized": false,
     "providerCustomerTestDecision": "NO-GO"
+  },
+  "productCommits": {
+    "deviceBridge": "fe9b1294158a06cf82d7a05ba3c84a5ddb06568c",
+    "androidBuildSix": "edb78a25273c3a3d2cad492d238e0e6585d4ea6c",
+    "expoDependencyLock": "2c3302eca3743d9869724542fefd97797d0cf7be",
+    "windowsEasLauncher": "453ade3dac3f116b445da5f552196e54d480b5fd",
+    "releaseChecks": "658ae328cfe1a1b011d42863a9949b2253a1943e"
   }
 }
