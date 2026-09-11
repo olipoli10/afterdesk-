@@ -1,0 +1,2 @@
+# Preserve the exact bytes whose SHA-256 digests are recorded in this receipt.
+* -text whitespace=cr-at-eol

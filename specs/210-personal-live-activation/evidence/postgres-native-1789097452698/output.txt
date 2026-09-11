@@ -1,0 +1,150 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"personal-model-operator-ingress.postgres.test.ts","database":"endvera_personal_210_5595b040a5e844d4868aeb7d19b0ede8","template":"endvera_personal_210_4e2de618ae8d41939e5698af68a154d2","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-11T03:31:18.2515594Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts (24 tests | 5 failed) 6228ms
+     ✓ persists complete claim + exact core/applied tuple in UTC 282ms
+     ✓ persists complete claim + exact core/applied tuple in America/New_York 117ms
+     ✓ persists complete claim + exact core/applied tuple in Asia/Tokyo 113ms
+     ✓ local acknowledgement fault AFTER real TX1 commit is never retried 67ms
+     ✓ local acknowledgement fault AFTER real TX2 commit is never retried 195ms
+     ✓ rollback after real credential write preserves claim but none of TX2 113ms
+     ✓ rollback after real account write preserves claim but none of TX2 82ms
+     ✓ rollback after real route write preserves claim but none of TX2 76ms
+     ✓ rollback after real policy write preserves claim but none of TX2 85ms
+     ✓ rollback after real applied write preserves claim but none of TX2 101ms
+     ✓ refuses no-consent before the durable claim 30ms
+     ✓ refuses unverified-owner before the durable claim 39ms
+     ✓ refuses admin-member before the durable claim 32ms
+     ✓ abort after real claim commit consumes attempt and never starts TX2 66ms
+     ✓ persisted owner revocation after TX1 refuses TX2 and consumes the claim 92ms
+     ✓ persisted consent revocation after TX1 refuses TX2 and consumes the claim 85ms
+     ✓ config byte change after real claim commit never starts TX2 55ms
+     ✓ two simultaneous real claim transactions contend by PK; only the inserter continues 262ms
+     ✓ real expiry then disconnect still permits read-only history, never current authority  4176ms
+     × OFF refuses before the session seam 4ms
+     × real current owner and genuine synthetic grant yield minimal INPUT_AVAILABLE without writes 30ms
+     × an actual consumed B2 claim yields HISTORY_ONLY with no credential or second attempt 49ms
+     × persisted owner-membership loss refuses despite the owner-shaped session 38ms
+     × real DB expiry changes INPUT_AVAILABLE to HISTORY_ONLY, no new consent or key 35ms
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 19 passed (24)
+   Start at  23:31:10
+   Duration  7.26s (transform 595ms, setup 0ms, import 847ms, tests 6.23s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts > B4 selector real native SQL; session and fixed-profile env are synthetic > OFF refuses before the session seam
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ localIdentity specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:303:54
+    301|     "SELECT current_database() AS database,inet_server_addr()::text AS…
+    302|   expect(row.database).toBe(localConnection.database); expect(row.port…
+    303|   expect(["127.0.0.1", "::1"].includes(row.address)).toBe(true);
+       |                                                      ^
+    304| }
+    305| async function selectorEnvironment<T>(f: Fixture, work: () => Promise<…
+ ❯ specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:322:42
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts > B4 selector real native SQL; session and fixed-profile env are synthetic > real current owner and genuine synthetic grant yield minimal INPUT_AVAILABLE without writes
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ localIdentity specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:303:54
+    301|     "SELECT current_database() AS database,inet_server_addr()::text AS…
+    302|   expect(row.database).toBe(localConnection.database); expect(row.port…
+    303|   expect(["127.0.0.1", "::1"].includes(row.address)).toBe(true);
+       |                                                      ^
+    304| }
+    305| async function selectorEnvironment<T>(f: Fixture, work: () => Promise<…
+ ❯ selectorEnvironment specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:306:40
+ ❯ specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:329:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts > B4 selector real native SQL; session and fixed-profile env are synthetic > an actual consumed B2 claim yields HISTORY_ONLY with no credential or second attempt
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ localIdentity specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:303:54
+    301|     "SELECT current_database() AS database,inet_server_addr()::text AS…
+    302|   expect(row.database).toBe(localConnection.database); expect(row.port…
+    303|   expect(["127.0.0.1", "::1"].includes(row.address)).toBe(true);
+       |                                                      ^
+    304| }
+    305| async function selectorEnvironment<T>(f: Fixture, work: () => Promise<…
+ ❯ selectorEnvironment specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:306:40
+ ❯ specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:342:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts > B4 selector real native SQL; session and fixed-profile env are synthetic > persisted owner-membership loss refuses despite the owner-shaped session
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ localIdentity specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:303:54
+    301|     "SELECT current_database() AS database,inet_server_addr()::text AS…
+    302|   expect(row.database).toBe(localConnection.database); expect(row.port…
+    303|   expect(["127.0.0.1", "::1"].includes(row.address)).toBe(true);
+       |                                                      ^
+    304| }
+    305| async function selectorEnvironment<T>(f: Fixture, work: () => Promise<…
+ ❯ selectorEnvironment specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:306:40
+ ❯ specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:349:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts > B4 selector real native SQL; session and fixed-profile env are synthetic > real DB expiry changes INPUT_AVAILABLE to HISTORY_ONLY, no new consent or key
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ localIdentity specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:303:54
+    301|     "SELECT current_database() AS database,inet_server_addr()::text AS…
+    302|   expect(row.database).toBe(localConnection.database); expect(row.port…
+    303|   expect(["127.0.0.1", "::1"].includes(row.address)).toBe(true);
+       |                                                      ^
+    304| }
+    305| async function selectorEnvironment<T>(f: Fixture, work: () => Promise<…
+ ❯ selectorEnvironment specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:306:40
+ ❯ specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts:354:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-d7aba0f09c0945318f87a3b731e1291c

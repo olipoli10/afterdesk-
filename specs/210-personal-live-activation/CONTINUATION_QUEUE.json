@@ -21,7 +21,7 @@
       "evidence": "PILOT_BACKEND_APK_UPGRADE_PLAN.md",
       "completed": ["Historical remote70/local79 mismatch identified; bootstrap68-to70 and APK builder are not sufficient upgrade gates", "Read-only exactcatalog79 and peerreview62 PASS; controller fresh managedNeon metadata70 matches47exact/23LF, old dedicatedVercel06e26ce7 READY confirmed without writes/secrets", "Reviewed real native17.11 populated70-to79 rehearsal PASS21:30:11Z:14 old rows/70 history retained, new proof ledgers empty, private databases retained/server stopped", "Regression native372/20 clones PASS21:35:25Z; full root6268 PASS/3 historical skips21:37:17Z; controller103 focused PASS; current EAS read stillold code4"],
       "checkpoint": "Actual original pilot70to79 succeeded49964ms at8d462bd1, old183tables/2624columns preserved and8035catalogobjects matchT79; no backuprestore claim. Dedicated backend dpl_Cm6AFJxkXrsJWeFq4Z8kY3yKtPfa READY and anonymousHTTPS9PASS. Inherited cron discovered despite localconfig: scheduler explicitly disabled, definition retained/prior execution unknown. Android5 EAS cb38a5da finished01:25:22Z at68b29611; downloaded hashbf034e6b, manifest/package/code/origin statically verified.",
-      "remaining": ["Cryptographic APK signature and certificate continuity not independently verified; actual Samsung install/login unobserved", "Google-only publication bd8e76f7 is READY with HTTP10 and rendered login isolation observed; owner-controlled consent and phone pairing remain; scheduler verified disabled before/after publication", "Real SMS/calendar/voice and gateway observations remain distinct; do not rerun completed migrations or EAS build"],
+      "remaining": ["APK5 and previous local APK now cryptographically verified by official apksigner03:22:56Z, same certificate; actual Samsung install/login unobserved", "Google-only publication bd8e76f7 is READY with HTTP10 and rendered login isolation observed; owner-controlled consent and phone pairing remain; scheduler verified disabled before/after publication", "Real SMS/calendar/voice and gateway observations remain distinct; do not rerun completed migrations or EAS build"],
       "liveObserved": false
     },
     {
@@ -480,12 +480,12 @@
     },
     {
       "id": "PERSONAL_MODEL_OPERATOR_INGRESS",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": ["PERSONAL_MODEL_OPERATOR_SETUP_CORE"],
-      "evidence": "PERSONAL_MODEL_OPERATOR_INGRESS_PLAN.md",
+      "evidence": "audits/PERSONAL_MODEL_OPERATOR_FORM_CONTROLLER.md",
       "completed": ["Controller reviewed Stage B design: unique server configuration, existing owner session, durable claim/archive then atomic applied receipt; no secret export or generic admin route"],
-      "checkpoint": "B1author65/B2author39 PASS, native19PASS02:53:53Z/exactserverSTOPPED; B3author38+peer15 and reader32 PASS after preserved seam REDs. Maintypes/lint PASS, B1/B2peer and build remain active. Minimal form design in progress; not deployed.",
-      "remaining": ["Finish B1/B2 peer review and global validation; implement and review minimal owner-only form after server proofs", "No live enabling until authentic reviews, owner consent, fixed deployment receipt and secret delivery/logging checks exist"],
+      "checkpoint": "B1/B2/B3 committed0f63e52c and reviewed; B4 owner selector/form reviewed after retained ID/React lint and exact fetch allowlist corrections. Root7463 PASS/3historicalskips03:22:45Z, build1789096833943 PASS, actual OFF page/RSC3+API7 PASS/servers stopped. Native B2+B4 24PASS03:33:52Z/serverSTOPPED03:33:54Z; initial19/5 sentinel failure retained, actual /32 address formatting confirmed. No live enabling or deployment.",
+      "remaining": ["No live enabling until authentic reviews, owner consent, fixed deployment receipt and secret delivery/logging checks exist"],
       "liveObserved": false
     },
     {

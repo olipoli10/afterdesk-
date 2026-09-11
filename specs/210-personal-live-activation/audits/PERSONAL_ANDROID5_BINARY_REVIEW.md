@@ -1,5 +1,28 @@
 # Android 5 APK — independent local binary inspection
 
+## Later controller verification — 2026-09-11 03:22:56Z
+
+The historical structural review below is unchanged. A subsequent authorized,
+isolated verification with official Android Build-Tools36/apksigner0.9 and
+Temurin17.0.20.1+1 now establishes valid v2 signatures for both this APK5 and the
+previous locally retained APK (SHA f33de2e1076d6bffeaf644371197b04153c371649d2d2dd82495758caeb1907e).
+Both commands exit0, one signer each, no warning or verification stderr;
+certificate SHA256 matches ccdd90c46c734e3f97a8d1bc4344b8f10ea0537788f13d1d890c812bc8a5bc1b.
+APK hashes before/after are unchanged. v1/v3/v3.1/v4/SourceStamp are not claimed.
+
+Full exact receipt, helper and command output copies are retained under
+evidence/apk-signature-20260911T032256Z; receipt SHA256
+d64ff706a834be3197587e5234df20022c64b5b21a993a4676e91b7c3ed3a5ab.
+Controller read the complete helper/receipt/audit and recomputed their hashes.
+The tools/archives/licenses remain in the one .scratch directory, no global
+installation/PATH change and no APK execution, build, deployment or signing.
+Google supplier SHA1 and Temurin supplier SHA256 were checked before extraction;
+Google local SHA256 is not misrepresented as a supplier-published SHA256.
+
+Cryptographic signatures and certificate continuity are now verified for these
+two local files. Actual Samsung install/upgrade/login, source reproducibility
+and provider/customer Verified-E2E remain unobserved. No dashboard rubric crossed.
+
 ## Verdict
 
 **Static manifest identity verified; cryptographic APK signature NOT verified.** Fresh inspection at 2026-09-11T01:37:37.346Z. No network, EAS, SDK installation, dependency installation, credential access, device operation, deployment or commit occurred in this review.

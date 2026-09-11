@@ -1,0 +1,126 @@
+{
+  "version": "local-apk-signature-verification-v1",
+  "startedAt": "2026-09-11T03:22:40.3550904Z",
+  "helperSha256": "8b0b05141c4a337128bb57bd05b1aa2ed5fa4ba7f119bab7620e39abaa1317a9",
+  "downloads": [
+    {
+      "supplierDigest": "f16ccffd34de8790dede813a6c7d8e2c11a27b50",
+      "name": "android-build-tools-36.0.0.zip",
+      "sha256": "aa1095cb14d83e483818a748a2c06faaeb8e601561b06a356a119a1b2ca280d3",
+      "source": "https://dl.google.com/android/repository/build-tools_r36_windows.zip",
+      "bytes": 58699878,
+      "supplierAlgorithm": "SHA1"
+    },
+    {
+      "supplierDigest": "bc21a93923103cdaac93ee337b0ae4365e739fde36df823dd456bc67c8a9d352",
+      "name": "temurin-jre-17.0.20.1+1.zip",
+      "sha256": "bc21a93923103cdaac93ee337b0ae4365e739fde36df823dd456bc67c8a9d352",
+      "source": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jre_x64_windows_hotspot_17.0.20.1_1.zip",
+      "bytes": 43780109,
+      "supplierAlgorithm": "SHA256"
+    }
+  ],
+  "extraction": [
+    {
+      "entries": 197,
+      "destination": "C:\\dev\\endvera-astra-r03\\.scratch\\apk-signature-verification-20260911T031954Z\\android",
+      "expandedBytes": 143241305
+    },
+    {
+      "entries": 380,
+      "destination": "C:\\dev\\endvera-astra-r03\\.scratch\\apk-signature-verification-20260911T031954Z\\java",
+      "expandedBytes": 130895997
+    }
+  ],
+  "inputs": [
+    {
+      "signerCertificateSha256": [
+        "ccdd90c46c734e3f97a8d1bc4344b8f10ea0537788f13d1d890c812bc8a5bc1b"
+      ],
+      "path": "C:\\dev\\endvera-astra-r03\\.scratch\\endvera-android-5-cb38a5da.apk",
+      "name": "android5",
+      "beforeSha256": "bf034e6b8ce0b28ebe49228524714a9ba7e9120c7155d9e3ce0747fd9f788e9e",
+      "afterSha256": "bf034e6b8ce0b28ebe49228524714a9ba7e9120c7155d9e3ce0747fd9f788e9e"
+    },
+    {
+      "signerCertificateSha256": [
+        "ccdd90c46c734e3f97a8d1bc4344b8f10ea0537788f13d1d890c812bc8a5bc1b"
+      ],
+      "path": "C:\\Users\\oliro\\Downloads\\application-fccebc0b-b48f-4a99-99e2-5eda00d37711.apk",
+      "name": "android4",
+      "beforeSha256": "f33de2e1076d6bffeaf644371197b04153c371649d2d2dd82495758caeb1907e",
+      "afterSha256": "f33de2e1076d6bffeaf644371197b04153c371649d2d2dd82495758caeb1907e"
+    }
+  ],
+  "commands": [
+    {
+      "arguments": [
+        "-version"
+      ],
+      "name": "java-version",
+      "stdout": "",
+      "exitCode": 0,
+      "elapsedMs": 227,
+      "stderr": "openjdk version \"17.0.20.1\" 2026-08-18\r\nOpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)\r\nOpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)\r\n"
+    },
+    {
+      "arguments": [
+        "-jar",
+        "C:\\dev\\endvera-astra-r03\\.scratch\\apk-signature-verification-20260911T031954Z\\android\\android-16\\lib\\apksigner.jar",
+        "version"
+      ],
+      "name": "apksigner-version",
+      "stdout": "0.9\r\n",
+      "exitCode": 0,
+      "elapsedMs": 162,
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "-jar",
+        "C:\\dev\\endvera-astra-r03\\.scratch\\apk-signature-verification-20260911T031954Z\\android\\android-16\\lib\\apksigner.jar",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "C:\\dev\\endvera-astra-r03\\.scratch\\endvera-android-5-cb38a5da.apk"
+      ],
+      "name": "android5-verify",
+      "stdout": "Verifies\r\nVerified using v1 scheme (JAR signing): false\r\nVerified using v2 scheme (APK Signature Scheme v2): true\r\nVerified using v3 scheme (APK Signature Scheme v3): false\r\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\r\nVerified using v4 scheme (APK Signature Scheme v4): false\r\nVerified for SourceStamp: false\r\nNumber of signers: 1\r\nSigner #1 certificate DN: CN=, OU=, O=, L=, ST=, C=\r\nSigner #1 certificate SHA-256 digest: ccdd90c46c734e3f97a8d1bc4344b8f10ea0537788f13d1d890c812bc8a5bc1b\r\nSigner #1 certificate SHA-1 digest: 865ac142097b4244a629aec8b5ae5f33eeddccf6\r\nSigner #1 certificate MD5 digest: 53b0446903285a1499741f8357b16b63\r\nSigner #1 key algorithm: RSA\r\nSigner #1 key size (bits): 2048\r\nSigner #1 public key SHA-256 digest: 54c11b37ea30593313770085bbd0d3f0fb357d6441df979202649f780acb1e2e\r\nSigner #1 public key SHA-1 digest: 948c8d449415d89395f20d69f8c22ae1653f02eb\r\nSigner #1 public key MD5 digest: d9e1de84c618031712782010d8967f51\r\n",
+      "exitCode": 0,
+      "elapsedMs": 423,
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "-jar",
+        "C:\\dev\\endvera-astra-r03\\.scratch\\apk-signature-verification-20260911T031954Z\\android\\android-16\\lib\\apksigner.jar",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "C:\\Users\\oliro\\Downloads\\application-fccebc0b-b48f-4a99-99e2-5eda00d37711.apk"
+      ],
+      "name": "android4-verify",
+      "stdout": "Verifies\r\nVerified using v1 scheme (JAR signing): false\r\nVerified using v2 scheme (APK Signature Scheme v2): true\r\nVerified using v3 scheme (APK Signature Scheme v3): false\r\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\r\nVerified using v4 scheme (APK Signature Scheme v4): false\r\nVerified for SourceStamp: false\r\nNumber of signers: 1\r\nSigner #1 certificate DN: CN=, OU=, O=, L=, ST=, C=\r\nSigner #1 certificate SHA-256 digest: ccdd90c46c734e3f97a8d1bc4344b8f10ea0537788f13d1d890c812bc8a5bc1b\r\nSigner #1 certificate SHA-1 digest: 865ac142097b4244a629aec8b5ae5f33eeddccf6\r\nSigner #1 certificate MD5 digest: 53b0446903285a1499741f8357b16b63\r\nSigner #1 key algorithm: RSA\r\nSigner #1 key size (bits): 2048\r\nSigner #1 public key SHA-256 digest: 54c11b37ea30593313770085bbd0d3f0fb357d6441df979202649f780acb1e2e\r\nSigner #1 public key SHA-1 digest: 948c8d449415d89395f20d69f8c22ae1653f02eb\r\nSigner #1 public key MD5 digest: d9e1de84c618031712782010d8967f51\r\n",
+      "exitCode": 0,
+      "elapsedMs": 367,
+      "stderr": ""
+    }
+  ],
+  "cryptographicSignatureVerified": true,
+  "certificateContinuityVerified": true,
+  "apkExecuted": false,
+  "installed": false,
+  "errorCode": null,
+  "tools": {
+    "apksigner": {
+      "path": "C:\\dev\\endvera-astra-r03\\.scratch\\apk-signature-verification-20260911T031954Z\\android\\android-16\\lib\\apksigner.jar",
+      "sha256": "3716d9311e55d2b0918a2fd9d54ba9e406c5f6abeea700b287f11259bc163dec"
+    },
+    "java": {
+      "path": "C:\\dev\\endvera-astra-r03\\.scratch\\apk-signature-verification-20260911T031954Z\\java\\jdk-17.0.20.1+1-jre\\bin\\java.exe",
+      "sha256": "1977f302375adbb920d41dac65c7e22eb9c2ed8e1e8d6258964154ff16f14406"
+    }
+  },
+  "inputsUnchanged": true,
+  "finishedAt": "2026-09-11T03:22:56.5318224Z"
+}

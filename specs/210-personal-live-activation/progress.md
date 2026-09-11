@@ -1,5 +1,30 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 03:34Z — Owner setup form verified locally; APK signatures verified
+
+B4 minimal owner page, closed browser contract and one-attempt component reviewed.
+ID grammar and React refs findings corrected; exact first-party fetch allowlist
+entry independently reviewed. Root7463 PASS/3 historical skips03:22:45Z,
+build1789096833943 PASS03:25:22Z, actual OFF page/RSC3 and API7 PASS03:25:55Z
+with both exact servers stopped/ports closed. Native existingB2+newB4 24 PASS
+03:33:52Z, exact server stopped03:33:54Z; first19/5 failure retained and diagnostic
+proved inet text /32 formatting rather than a product defect. See form controller
+audit for exact receipts, test-fixture connection pins and proof limitations.
+
+Official portable apksigner now verifies both local old/new APK signatures and
+same certificate ccdd90c4...8a5bc1b; unchanged file hashes, no installation or APK
+execution. Exact small raw proofs retained in evidence/apk-signature-20260911T032256Z.
+Earlier structural-only audit preserved. No new APK build or deployment needed.
+
+Current real gates are access/consent/provider qualification, not another routine
+GO: Twilio browser still at password login; dedicated ENDVERA browser at FR login.
+Owner phone binding, Google/AI consent and personal inference remain unobserved.
+Model privacy/rates/account and deployed secret-body exclusion evidence still
+required. Existing dedicated Google-only backend and APK5 unchanged. ACTIVE3min
+heartbeat retained, campaign/project incomplete, dashboard22/46.75/C2 18of18/
+real-testNO-GO/VerifiedE2E0 unchanged. No third-party message, provider inference,
+production data migration, push or new purchase in this block.
+
 ## 2026-09-11 02:55Z — Operator ingress local proof, form work continues
 
 Stage A committed cfdfac6a64885095289836f51e81ea8531c0cc43, Brain checkpoint

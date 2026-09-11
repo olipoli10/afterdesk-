@@ -1,0 +1,24 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"personal-model-operator-ingress.postgres.test.ts","database":"endvera_personal_210_9cd6c0f2321045e4915cd8fe4bcd9568","template":"endvera_personal_210_d667cf4b089740a18c9f309d2081241d","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-11T03:33:52.0160731Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+stdout | specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts > B4 selector real native SQL; session and fixed-profile env are synthetic > OFF refuses before the session seam
+{"address":"127.0.0.1","rawAddress":"127.0.0.1/32"}
+
+ ✓ specs/210-personal-live-activation/personal-model-operator-ingress.postgres.test.ts (24 tests) 8188ms
+     ✓ real expiry then disconnect still permits read-only history, never current authority  4125ms
+     ✓ real DB expiry changes INPUT_AVAILABLE to HISTORY_ONLY, no new consent or key  2550ms
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  23:33:42
+   Duration  9.17s (transform 560ms, setup 0ms, import 818ms, tests 8.19s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-c467ad6b4b074e669a09f1cfd8bfdf1f

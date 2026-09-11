@@ -1,0 +1,56 @@
+{
+  "kind": "PERSONAL_MODEL_OPERATOR_FORM_OFF_HTTP",
+  "buildReceipt": "build-1789096833943",
+  "buildDirectory": ".next-personal-210-build-1789096833943",
+  "buildId": "clU2gPxqKWswbazZctmVs",
+  "finishedAt": "2026-09-11T03:25:52.991Z",
+  "localOnly": true,
+  "ownerPid": 34360,
+  "childExitCode": null,
+  "serverStopped": true,
+  "portClosed": true,
+  "portCheck": "TCP_ECONNREFUSED_REQUIRED",
+  "providerCallsAuthorized": false,
+  "databaseConfigured": false,
+  "authenticatedReadObserved": false,
+  "observations": [
+    {
+      "method": "GET",
+      "query": "",
+      "status": 200,
+      "cacheControl": "private, no-store",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding",
+      "allow": null,
+      "bodyBytes": 15919,
+      "bodySha256": "757812c3ec93556f5d40c6dd0c99d811ca73718b1075e9a168775e43cdc9029f",
+      "referrerPolicy": "no-referrer",
+      "robotsTag": "noindex, nofollow, noarchive"
+    },
+    {
+      "method": "HEAD",
+      "query": "",
+      "status": 200,
+      "cacheControl": "private, no-store",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding",
+      "allow": null,
+      "bodyBytes": 0,
+      "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "referrerPolicy": "no-referrer",
+      "robotsTag": "noindex, nofollow, noarchive"
+    },
+    {
+      "method": "GET",
+      "query": "?_rsc=synthetic",
+      "status": 200,
+      "cacheControl": "private, no-store",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding",
+      "allow": null,
+      "bodyBytes": 9824,
+      "bodySha256": "7d9c32f42e974571a8e4d206cb763e30dd8257cc8a3ca426eaa649004de3de86",
+      "referrerPolicy": "no-referrer",
+      "robotsTag": "noindex, nofollow, noarchive"
+    }
+  ],
+  "exitCode": 0,
+  "errorCode": null
+}

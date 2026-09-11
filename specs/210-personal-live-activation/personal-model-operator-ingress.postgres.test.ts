@@ -11,9 +11,31 @@ import { inspectPersonalModelIngressConfiguration, inspectPersonalModelSetupClai
   PERSONAL_MODEL_INGRESS_TARGET } from "@/server/model-gateway/personal-intent/operator-ingress-contract";
 import { openConnectorSecret, requireConnectorKey } from "@/server/personal-assistant/credential-cipher";
 import { requirePersonalDisposableDatabase } from "./personal-model.fixture";
+import { readPersonalModelOperatorFormView as readForm } from "@/server/model-gateway/personal-intent/operator-form";
+
+// This test-only module injection exports an ACTUAL PrismaClient, with its
+// datasource explicitly pinned before any synthetic profile env is installed.
+// Duplicate the tiny disposable guard here because importing personal-model.fixture
+// inside this hoisted factory would cycle through that fixture's @/lib/db import.
+const localConnection = vi.hoisted(() => {
+  const datasourceUrl = process.env.DATABASE_URL;
+  const url = new URL(datasourceUrl ?? "http://invalid");
+  const database = process.env.ENDVERA_210_DATABASE_NAME ?? "";
+  if (!["postgresql:", "postgres:"].includes(url.protocol) || !["localhost", "127.0.0.1"].includes(url.hostname)
+    || !/^endvera_personal_210_[a-f0-9]{32}$/.test(database) || url.pathname !== `/${database}`
+    || process.env.DIRECT_URL !== datasourceUrl || !url.port || !url.username || !url.password) {
+    throw new Error("DISPOSABLE_PERSONAL_DATABASE_REQUIRED");
+  }
+  return { datasourceUrl: datasourceUrl!, database, port: Number(url.port), session: vi.fn() };
+});
+vi.mock("@/lib/db", async () => {
+  const { PrismaClient } = await import("@prisma-client");
+  return { prisma: new PrismaClient({ datasourceUrl: localConnection.datasourceUrl }) };
+});
+vi.mock("@/lib/authz", () => ({ getSessionUser: localConnection.session }));
 
 requirePersonalDisposableDatabase();
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); localConnection.session.mockReset(); });
 afterAll(() => prisma.$disconnect());
 type Tx = Prisma.TransactionClient;
 const native = prisma.$transaction.bind(prisma);
@@ -26,10 +48,12 @@ async function now() {
 }
 function context() { return { deadlineAt: Date.now() + 15000, monotoneDeadlineAt: performance.now() + 15000 }; }
 
-// Actual Prisma reads DATABASE_URL from the harness' guarded LOOPBACK environment.
+// Actual Prisma is explicitly pinned to the harness' guarded LOOPBACK datasource.
 // The supplied env below contains ONLY synthetic fixed-profile URL strings for
-// the B2 shape validator. It is never installed in process.env or used to connect.
-// Thus this file proves local SQL/orchestration, NOT remote endpoint/TLS binding.
+// the B2 shape validator. B2 passes it separately; it never selects a connection.
+// Thus B2 proves local SQL/orchestration, NOT remote endpoint/TLS binding.
+// B4 cases below temporarily install only synthetic profile fields; the explicit
+// datasourceUrl above, never those fields, selects the actual local connection.
 async function fixture(options: { consent?: boolean; windowMs?: number } = {}) {
   requirePersonalDisposableDatabase();
   const user = await prisma.user.create({ data: { name: "Synthetic ingress owner", role: "CLIENT", emailVerified: true,
@@ -270,4 +294,79 @@ describe("B2 real local PostgreSQL transactions; synthetic configuration/reviews
     await prisma.user.update({ where: { id: f.owner.userId }, data: { emailVerified: false } });
     await expect(f.read()).rejects.toThrow("PERSONAL_MODEL_OPERATOR_INGRESS_REFUSED");
   }, 12000);
+});
+
+let localIdentityAddressObserved = false;
+async function localIdentity() {
+  const [row] = await prisma.$queryRawUnsafe<Array<{ database: string; address: string; rawAddress: string; port: number }>>(
+    'SELECT current_database() AS database,host(inet_server_addr()) AS address,inet_server_addr()::text AS "rawAddress",inet_server_port() AS port');
+  if (!localIdentityAddressObserved) {
+    localIdentityAddressObserved = true;
+    // One bounded local address-only diagnostic. No URL, database credential,
+    // environment dump or inferred cause before the controller's actual run.
+    if (typeof row.address !== "string" || row.address.length > 64 || !/^[a-fA-F0-9:.]+$/.test(row.address)
+      || typeof row.rawAddress !== "string" || row.rawAddress.length > 68 || !/^[a-fA-F0-9:./]+$/.test(row.rawAddress)) {
+      throw new Error("LOCAL_NATIVE_ADDRESS_SHAPE_REFUSED");
+    }
+    console.log(JSON.stringify({ address: row.address, rawAddress: row.rawAddress }));
+  }
+  expect(row.database).toBe(localConnection.database); expect(row.port).toBe(localConnection.port);
+  expect(["127.0.0.1", "::1"].includes(row.address)).toBe(true);
+}
+async function selectorEnvironment<T>(f: Fixture, work: () => Promise<T>) {
+  requirePersonalDisposableDatabase(); await localIdentity();
+  for (const name of ["ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION", "DATABASE_URL", "DIRECT_URL", "ENDVERA_EXTERNAL_AUTHORITY_REF",
+    "ENDVERA_PERSONAL_PILOT_EXPIRES_AT", "ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED", "ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED"]) {
+    vi.stubEnv(name, f.env[name]);
+  }
+  // Only the session seam is a business-logic mock. All selector SQL/delegates,
+  // transactions and snapshots execute against the pinned real native client.
+  localConnection.session.mockResolvedValue({ id: f.owner.userId, role: "CLIENT", emailVerified: true });
+  try { return await work(); }
+  finally {
+    try { await localIdentity(); }
+    finally { vi.unstubAllEnvs(); requirePersonalDisposableDatabase(); }
+  }
+}
+describe("B4 selector real native SQL; session and fixed-profile env are synthetic", () => {
+  it("OFF refuses before the session seam", async () => {
+    requirePersonalDisposableDatabase(); await localIdentity();
+    vi.stubEnv("ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION", undefined);
+    try { expect(await readForm()).toEqual({ status: "UNAVAILABLE" }); expect(localConnection.session).not.toHaveBeenCalled(); }
+    finally { vi.unstubAllEnvs(); requirePersonalDisposableDatabase(); await localIdentity(); }
+  });
+  it("real current owner and genuine synthetic grant yield minimal INPUT_AVAILABLE without writes", async () => {
+    const f = await fixture(), before = await rows(f);
+    const result = await selectorEnvironment(f, () => readForm());
+    expect(result).toEqual({ status: "AVAILABLE", view: { version: "personal-model-operator-form-v1", setupRef: f.input.setupRef,
+      provider: "openrouter", model: "synthetic/not-a-model", providerEndpoint: "synthetic/not-a-provider",
+      purpose: "personal_intent_candidate_v1", expiresAt: f.configuration.expiresAt, state: "INPUT_AVAILABLE",
+      executionAuthorized: false, providerVerified: false } });
+    expect(await rows(f)).toEqual(before); expect(localConnection.session).toHaveBeenCalledTimes(1);
+  });
+  it("an actual consumed B2 claim yields HISTORY_ONLY with no credential or second attempt", async () => {
+    const f = await fixture(), abort = new AbortController();
+    const calls = transactions({ afterCommit: call => { if (call === 1) abort.abort(); } });
+    await expect(apply(f.input, f.env, { ...context(), signal: abort.signal })).rejects.toThrow("PERSONAL_MODEL_OPERATOR_INGRESS_UNKNOWN");
+    expect(calls.calls).toBe(1); expect(calls.commits).toBe(1); vi.restoreAllMocks();
+    const before = await rows(f); expect(before.events).toHaveLength(1); expect(before.credentials).toHaveLength(0);
+    expect(await selectorEnvironment(f, () => readForm())).toMatchObject({ status: "AVAILABLE", view: { state: "HISTORY_ONLY" } });
+    expect(await rows(f)).toEqual(before);
+  });
+  it("persisted owner-membership loss refuses despite the owner-shaped session", async () => {
+    const f = await fixture();
+    await prisma.constructionWorkspaceMember.update({ where: { workspaceId_userId: f.owner }, data: { role: "admin" } });
+    const before = await rows(f);
+    expect(await selectorEnvironment(f, () => readForm())).toEqual({ status: "UNAVAILABLE" });
+    expect(await rows(f)).toEqual(before);
+  });
+  it("real DB expiry changes INPUT_AVAILABLE to HISTORY_ONLY, no new consent or key", async () => {
+    const f = await fixture({ windowMs: 2500 }), before = await rows(f);
+    expect(await selectorEnvironment(f, () => readForm())).toMatchObject({ status: "AVAILABLE", view: { state: "INPUT_AVAILABLE" } });
+    const expiry = Date.parse(f.configuration.expiresAt);
+    for (let n = 0; n < 40 && (await now()).getTime() < expiry; n++) await prisma.$queryRawUnsafe("SELECT pg_sleep(0.1)::text");
+    expect((await now()).getTime()).toBeGreaterThanOrEqual(expiry);
+    expect(await selectorEnvironment(f, () => readForm())).toMatchObject({ status: "AVAILABLE", view: { state: "HISTORY_ONLY" } });
+    expect(await rows(f)).toEqual(before);
+  }, 10000);
 });

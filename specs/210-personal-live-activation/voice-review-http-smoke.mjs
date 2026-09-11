@@ -13,6 +13,7 @@ const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const receipt = process.argv[2];
 const target = process.argv[3] ?? 'voice-review';
 const targets = {
+  'personal-model-operator-form': { path: '/personal/model/operator-setup', query: '', kind: 'PERSONAL_MODEL_OPERATOR_FORM_OFF_HTTP', prefix: 'personal-model-operator-form', page: true },
   'personal-model-operator-setup': { path: '/api/endvera/v1/personal/model/operator-setup', query: '', kind: 'PERSONAL_MODEL_OPERATOR_SETUP_OFF_HTTP', prefix: 'personal-model-operator-setup', both: true },
   'voice-review': { path: '/api/endvera/v1/mobile/project-brain-intake/voice-review', query: '&sessionId=synthetic', kind: 'VOICE_REVIEW_OFF_HTTP', prefix: 'voice-review' },
   'correlated-calendar-reviews': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews', query: '', kind: 'CORRELATED_CALENDAR_REVIEW_OFF_HTTP', prefix: 'correlated-calendar-review' },
@@ -55,7 +56,7 @@ try {
   if (!ready || closed || startError) throw new Error('OWNED_SERVER_NOT_READY');
   const path = selected.path;
   const sessionQuery = selected.query;
-  const cases = selected.both ? [
+  const cases = selected.page ? [['GET', '', 200], ['HEAD', '', 200], ['GET', '?_rsc=synthetic', 200]] : selected.both ? [
     ['GET', '', 404], ['GET', '?setupRef=synthetic', 404], ['POST', '', 404], ['POST', '?setupRef=synthetic', 404],
     ['HEAD', '', 404], ['OPTIONS', '', 204], ['DELETE', '', 405],
   ] : selected.post ? [
@@ -67,13 +68,25 @@ try {
     ['HEAD', '', 404], ['OPTIONS', '', 204], ['POST', '', 405], ['DELETE', '', 405],
   ];
   for (const [method, query, expectedStatus] of cases) {
-    const response = await fetch(`${origin}${path}${query}`, { method, redirect: 'manual', signal: AbortSignal.timeout(10_000) });
+    const response = await fetch(`${origin}${path}${query}`, { method, redirect: 'manual',
+      headers: selected.page && query ? { RSC: '1' } : undefined, signal: AbortSignal.timeout(10_000) });
     const body = await response.text();
     const observation = { method, query, status: response.status, cacheControl: response.headers.get('cache-control'),
       vary: response.headers.get('vary'), allow: response.headers.get('allow'), bodyBytes: Buffer.byteLength(body),
       bodySha256: createHash('sha256').update(body).digest('hex') };
     observations.push(observation);
     if (response.status !== expectedStatus) throw new Error('HTTP_STATUS_MISMATCH');
+    if (selected.page) {
+      observation.referrerPolicy = response.headers.get('referrer-policy');
+      observation.robotsTag = response.headers.get('x-robots-tag');
+      if (!/private/.test(observation.cacheControl ?? '') || !/no-store/.test(observation.cacheControl ?? '')
+        || observation.referrerPolicy !== 'no-referrer' || observation.robotsTag !== 'noindex, nofollow, noarchive'
+        || response.headers.get('x-frame-options') !== 'DENY') throw new Error('PRIVATE_PAGE_HEADERS_REQUIRED');
+      if (method === 'HEAD' ? body !== '' : !body.includes('Connexion pas encore disponible')) throw new Error('OFF_PAGE_REQUIRED');
+      if (method !== 'HEAD' && /manifestUtf8|ENDVERA_CONNECTOR_ENCRYPTION_KEY|"type"\s*:\s*"password"|<input\b/.test(body)) throw new Error('OFF_PAGE_METADATA_ONLY_REQUIRED');
+      if (query && !response.headers.get('content-type')?.includes('text/x-component')) throw new Error('ACTUAL_RSC_RESPONSE_REQUIRED');
+      continue;
+    }
     const ownedResponse = selected.both ? ['GET', 'HEAD', 'POST'].includes(method) : selected.post ? method === 'POST' : method === 'GET' || method === 'HEAD';
     if (ownedResponse) {
       if (!/private/.test(observation.cacheControl ?? '') || !/no-store/.test(observation.cacheControl ?? '')

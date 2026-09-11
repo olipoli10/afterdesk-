@@ -1,0 +1,714 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ test/personal-pilot-trial-prisma-runner.test.ts (89 tests) 24454ms
+     ✓ records only fixed tlsNull classification and never the mismatched value  425ms
+     ✓ records only fixed tlsType classification and never the mismatched value  489ms
+     ✓ records only fixed database classification and never the mismatched value  373ms
+     ✓ records only fixed role classification and never the mismatched value  374ms
+     ✓ records only fixed sessionRole classification and never the mismatched value  468ms
+     ✓ records only fixed versionType classification and never the mismatched value  373ms
+     ✓ records only fixed versionRange classification and never the mismatched value  757ms
+     ✓ records only fixed readOnly classification and never the mismatched value  739ms
+     ✓ records only fixed countType classification and never the mismatched value  821ms
+     ✓ records only fixed count classification and never the mismatched value  670ms
+     ✓ records only fixed shape classification and never the mismatched value  673ms
+     ✓ records only fixed rows classification and never the mismatched value  682ms
+     ✓ records only fixed order classification and never the mismatched value  573ms
+     ✓ records only fixed checksum classification and never the mismatched value  655ms
+     ✓ records only fixed state classification and never the mismatched value  673ms
+     ✓ records only fixed json classification and never the mismatched value  626ms
+     ✓ records only fixed outputType classification and never the mismatched value  728ms
+     ✓ records only fixed outputBound classification and never the mismatched value  658ms
+     ✓ records only fixed deadline classification and never the mismatched value  563ms
+     ✓ guarded runner emits its fixed client policy with a false backend observation  656ms
+     ✓ checks source before reading, copies unchanged staged70/79, rechecks then invokes exactly one read-only probe  3760ms
+     ✓ refuses engineDrift and suppresses all raw errors  694ms
+     ✓ suppresses throw child output and never retries  732ms
+     ✓ suppresses exit child output and never retries  726ms
+     ✓ suppresses timeout child output and never retries  617ms
+     ✓ suppresses overflow child output and never retries  630ms
+     ✓ suppresses invalidJSON child output and never retries  651ms
+     ✓ suppresses wrongIdentity child output and never retries  587ms
+     ✓ refuses interactive, oversize and too many stdin chunks before query  1317ms
+     ✓ bounds a hung private input without a child or a second read attempt  379ms
+     ✓ rejects staged schema changes after stdin before any remote probe  472ms
+     ✓ rejects staged migration changes after stdin before any remote probe  442ms
+     ✓ rejects staged config changes after stdin before any remote probe  569ms
+     ✓ rejects staged unexpected changes after stdin before any remote probe  609ms
+ ✓ test/personal-founder-android-build-source-binding.test.ts (8 tests) 24741ms
+     ✓ accepts the actual clean source binding without changing HEAD, index bytes or public input bytes  3311ms
+     ✓ refuses changed source between two real preflight calls  3263ms
+     ✓ refuses a real untracked file after a successful clean check  2971ms
+     ✓ refuses hidden tracked non-input mutation under --assume-unchanged  5221ms
+     ✓ refuses hidden tracked non-input mutation under --skip-worktree  5112ms
+     ✓ accepts the actual Git-classified PS1 CRLF checkout without changing its source commit  3115ms
+     ✓ refuses an ignored dynamic app config despite real clean Git status  774ms
+     ✓ refuses a different actual committed HEAD rather than adopting it automatically  969ms
+ ✓ test/personal-pilot-upgrade-rehearsal-review.test.ts (24 tests) 33510ms
+     ✓ accepts exact private copies and does not modify the source migration bytes  1837ms
+     ✓ refuses an additional executable migration in staged70 before execution  1497ms
+     ✓ refuses an additional executable migration in staged79 before execution  2221ms
+     ✓ refuses extra SQL beside an expected staged migration  1836ms
+     ✓ refuses changed staged executable input schema.prisma  1596ms
+     ✓ refuses changed staged executable input seed-70.sql  1740ms
+     ✓ refuses changed staged executable input snapshot-70.sql  1492ms
+     ✓ refuses changed staged executable input snapshot-79.sql  1749ms
+     ✓ refuses changed staged executable input prisma-70.config.ts  1699ms
+     ✓ refuses changed staged executable input prisma-79.config.ts  2050ms
+     ✓ refuses changed staged executable input 70/migrations/migration_lock.toml  1635ms
+     ✓ refuses changed staged executable input 79/migrations/migration_lock.toml  1701ms
+     ✓ refuses source schema.prisma changed after staging  1531ms
+     ✓ refuses source seed-70.sql changed after staging  1611ms
+     ✓ refuses source SQL changed after stage even if staged SQL remains exact  1849ms
+     ✓ never overwrites a previous rehearsal stage on replay  1823ms
+     ✓ rejects a stage migration ancestor junction  1786ms
+     ✓ rejects arbitrary and traversal cluster paths before staging  1414ms
+     ✓ requires the actual installed Prisma version before reusing staged inputs  1198ms
+     ✓ still refuses arbitrary dependency junctions in an otherwise valid fixture  1235ms
+ ✓ test/personal-pilot-current-migration.test.ts (32 tests) 9027ms
+     ✓ uses only its current host/marker/version/baseline, preserving the retained trial marker  656ms
+     ✓ retains the public trial behavior and distinct target after private helper extraction  723ms
+     ✓ refuses role credential alteration without a query  308ms
+     ✓ refuses main credential alteration without a query  414ms
+     ✓ refuses extraProof credential alteration without a query  402ms
+     ✓ runner refuses the other profile credential: current=true  477ms
+     ✓ runner refuses the other profile credential: current=false  419ms
+     ✓ unknown current result retains only its own no-reentry marker  1114ms
+     ✓ preserves personal late history and a separately named uncertain outcome without retry  1179ms
+     ✓ executes the actual module CLI selector for personal under synthetic I/O only  1101ms
+     ✓ executes the actual module CLI selector for trial under synthetic I/O only  1045ms
+ ✓ test/personal-correlated-calendar-projection.test.ts (59 tests) 5298ms
+ ✓ test/personal-pilot-trial-migration.test.ts (48 tests) 16735ms
+     ✓ persists fixed wx marker before exactly one CLI, then checks actual79-shaped history  672ms
+     ✓ refuses prehistory before migration and never creates a success receipt  395ms
+     ✓ refuses staging before migration and never creates a success receipt  589ms
+     ✓ replay refuses before reading input even when a fresh staging UUID would be available  1082ms
+     ✓ refuses race at the last pre-spawn boundary  949ms
+     ✓ refuses readback at the last pre-spawn boundary  984ms
+     ✓ refuses baselineAfterQuery at the last pre-spawn boundary  899ms
+     ✓ retains marker and uncertain outcome after throw; never retries  877ms
+     ✓ retains marker and uncertain outcome after exit; never retries  888ms
+     ✓ retains marker and uncertain outcome after signal; never retries  887ms
+     ✓ retains marker and uncertain outcome after overflow; never retries  836ms
+     ✓ retains marker and uncertain outcome after post70; never retries  837ms
+     ✓ retains marker and uncertain outcome after postPartial; never retries  908ms
+     ✓ retains marker and uncertain outcome after changed70; never retries  734ms
+     ✓ retains marker and uncertain outcome after wrong79; never retries  792ms
+     ✓ retains marker and uncertain outcome after lostAck; never retries  771ms
+     ✓ retains marker and uncertain outcome after postSource; never retries  820ms
+     ✓ reserves full120s plus20s before spawn rather than resetting total budget  683ms
+     ✓ elapsed180s after child is uncertain even when exit0 is returned  563ms
+     ✓ retains history receipt plus separate final failure if writing crosses the original deadline  969ms
+ ✓ test/correlated-calendar-approval-gate.test.ts (76 tests) 7364ms
+     ✓ loads the real gate and both reader graphs without module preloader mocks; OFF performs no query  928ms
+ ✓ test/unit/release-source-r2-review.test.ts (11 tests) 2914ms
+     ✓ validate-endvera-native-preflight.mjs rejects an actual input junction before parsing external synthetic JSON  332ms
+     ✓ keeps input-only evidence distinct from the whole tracked checkout authority gate  2247ms
+ ✓ test/unit/release-tracked-flags.test.ts (24 tests) 45685ms
+     ✓ rejects hidden non-input edit under --assume-unchanged  1793ms
+     ✓ rejects hidden non-input edit under --skip-worktree  1805ms
+     ✓ accepts unchanged bytes with --assume-unchanged  1545ms
+     ✓ accepts unchanged bytes with --skip-worktree  1259ms
+     ✓ rejects tracked/index addition drift  1078ms
+     ✓ rejects tracked/index deletion drift  1091ms
+     ✓ rejects tracked/index index bytes drift  1230ms
+     ✓ rejects tracked/index index mode drift  1129ms
+     ✓ excludes only the exact derived manifest  1898ms
+     ✓ permits the exact projection in source only  1348ms
+     ✓ permits the exact projection in index only  1731ms
+     ✓ rejects a missing skipped tracked file  1530ms
+     ✓ compares raw binary blobs correctly across batch boundaries  3673ms
+     ✓ permits exact LF-to-CRLF checkout but not mixed or CRCRLF  1931ms
+     ✓ preserves normal Git-text CRLF checkout for check.ps1  2397ms
+     ✓ preserves normal Git-text CRLF checkout for migration.sql  2505ms
+     ✓ preserves normal Git-text CRLF checkout for schema.prisma  2432ms
+     ✓ preserves normal Git-text CRLF checkout for config.toml  2386ms
+     ✓ preserves normal Git-text CRLF checkout for .gitignore  2367ms
+     ✓ preserves normal Git-text CRLF checkout for LICENSE  2411ms
+     ✓ does not normalize a path declared binary by Git attributes  1518ms
+     ✓ accepts clean CRLF fixtures of actual committed PowerShell, SQL, Prisma and TOML sources  3040ms
+     ✓ never CRLF-normalizes binary or invalid UTF8 bytes {"type":"Buffer","data":[0,97,10]}  1927ms
+     ✓ never CRLF-normalizes binary or invalid UTF8 bytes {"type":"Buffer","data":[255,97,10]}  1654ms
+ ✓ test/personal-pilot-trial-transport-review.test.ts (11 tests) 4293ms
+     ✓ actual runner path derives the fixed policy and its exact serialized receipt passes the real bridge parser  479ms
+     ✓ a failed child with plausible history cannot mint policy or success  416ms
+     ✓ a forged external diagnostic never executes getters or acquires a trusted reason  371ms
+     ✓ bridge refuses a forged claim receipt despite the correct policy literal  446ms
+     ✓ bridge refuses a forged history-policy receipt despite the correct policy literal  545ms
+     ✓ bridge refuses a forged failed receipt despite the correct policy literal  637ms
+     ✓ bridge refuses a forged foreign receipt despite the correct policy literal  664ms
+ ✓ test/personal-pilot-trial-migration-review.test.ts (9 tests) 3989ms
+     ✓ real producer receipt, including canonical order, is accepted by the real migration bridge parser  760ms
+     ✓ does not publish a successful return when synchronous receipt persistence exhausts the original budget  720ms
+     ✓ refuses a postflight patch-version change instead of producing a receipt its bridge rejects  626ms
+     ✓ retains the same marker after a lost acknowledgement and rejects a fresh invocation before private input  815ms
+     ✓ observes the exact private child environment at invocation, not only the scrubbed object afterward  1058ms
+ ✓ test/construction-operating-assistant-r37m-provider-computed-import.test.ts (4 tests) 3347ms
+     ✓ keeps the actual public source graph free of unresolved dynamic loads  3330ms
+ ✓ test/personal-correlated-calendar-review-list.test.ts (38 tests) 3289ms
+ ✓ test/construction-operating-assistant-r37l-provider-transitive-reachability.test.ts (4 tests) 3092ms
+     ✓ keeps the actual public source graph detached from R37 execution modules  3077ms
+ ✓ test/construction-operating-assistant-r37n-provider-dynamic-code.test.ts (7 tests) 3622ms
+     ✓ keeps the actual public source graph free of dynamic code execution  3603ms
+ ✓ test/personal-pilot-current-migration-review.test.ts (6 tests) 1865ms
+     ✓ real current producer passes its real bridge parser while the existing T marker remains byte-identical  613ms
+     ✓ same database/role/password cannot cross either closed credential host  336ms
+     ✓ current uncertain attempt cannot retry or overwrite either marker  743ms
+ ✓ test/unit/release-source-binding-review.test.ts (7 tests) 2388ms
+     ✓ binds an actual unchanged committed input without normalizing its manifest hash  394ms
+     ✓ allows only explicit text checkout CRLF equivalence while keeping raw bytes hashed  315ms
+     ✓ rejects a real content edit even when its raw manifest hash is recomputed  621ms
+     ✓ rejects binary input changes with a recomputed raw hash  445ms
+     ✓ refuses writing a manifest for a fictional commit before any write  352ms
+ ✓ test/correlated-calendar-approval-offer-route.test.ts (54 tests) 2566ms
+ ✓ test/correlated-calendar-approval-offer.test.ts (49 tests) 2316ms
+ ✓ test/provider-budget.test.ts (30 tests) 1273ms
+     ✓ a held lock refuses rather than proceeding without knowing the total  1029ms
+ ✓ test/personal-correlated-calendar-review-boundary.test.ts (18 tests) 1492ms
+ ✓ test/mobile-correlated-calendar-approval-parity-review.test.ts (27 tests) 1472ms
+ ✓ test/construction-operating-assistant-r37l-next-entrypoints.test.ts (38 tests) 2195ms
+     ✓ the CLI inventories root Next entries and their non-src facade instead of reporting false green  2141ms
+ ✓ test/personal-correlated-calendar-proof.test.ts (20 tests) 1164ms
+ ✓ test/personal-pilot-migration-catalog.test.ts (42 tests) 1142ms
+     ✓ local CLI emits only the catalog and refuses unknown command arguments  387ms
+ ✓ test/personal-correlated-receipt-subject.test.ts (33 tests) 1156ms
+ ✓ test/personal-correlated-receipt-proof.test.ts (24 tests) 1056ms
+ ✓ test/personal-correlated-calendar-projection-review.test.ts (12 tests) 984ms
+ ✓ test/personal-pilot-current-migration-bridge.test.ts (31 tests) 934ms
+     ✓ actual producer under mocks serializes a personal receipt accepted only by personal bridge  784ms
+ ✓ test/personal-correlated-calendar-reviews-route-review.test.ts (14 tests) 967ms
+ ✓ test/correlated-calendar-approval-gate-review.test.ts (11 tests) 897ms
+ ✓ test/personal-pilot-trial-migration-bridge.test.ts (40 tests) 947ms
+     ✓ real runner return serialization crosses actual bridge validator and pipe unchanged  810ms
+ ✓ test/workflow-compile.test.ts (37 tests) 821ms
+     ✓ no id can be planned that cannot run, and none can run that cannot be planned  804ms
+ ✓ test/personal-correlated-calendar-review-list-review.test.ts (11 tests) 513ms
+ ✓ test/construction-operating-assistant-r35-release-package.test.ts (9 tests) 870ms
+     ✓ builds the same strict manifest twice with exact assets and no release effect  446ms
+ ✓ test/correlated-calendar-approval-result-review.test.ts (10 tests) 492ms
+ ✓ test/capability-contract.test.ts (17 tests) 427ms
+     ✓ THE closing pin: the plan system prompt embeds the generated contract verbatim  411ms
+ ✓ test/correlated-calendar-approval-executor-review.test.ts (8 tests) 574ms
+ ✓ test/personal-correlated-calendar-proof-review.test.ts (12 tests) 571ms
+ ✓ test/calendar-draft-contract-leaf.test.ts (31 tests) 396ms
+ ✓ test/capability-substrate.test.ts (81 tests) 347ms
+ ✓ test/correlated-calendar-approval-offer-review.test.ts (8 tests) 412ms
+ ✓ test/personal-correlated-receipt-review.test.ts (8 tests) 483ms
+ ✓ test/unit/personal-intent-temporal.test.ts (31 tests) 398ms
+ ✓ test/personal-pilot-migration-catalog-review.test.ts (20 tests) 518ms
+ ✓ test/voice-action-actor-review.test.ts (13 tests) 350ms
+     ✓ the real runtime remains OFF and returns no transcript for the synthetic extra actor  344ms
+ ✓ test/personal-model-operator-ingress.test.ts (39 tests) 768ms
+ ✓ test/local-whole-product-readiness-gate.test.ts (9 tests) 346ms
+ ✓ test/personal-correlated-temporal-resolution.test.ts (15 tests) 282ms
+ ✓ test/correlated-calendar-approval-executor.test.ts (33 tests) 444ms
+ ✓ test/correlated-calendar-approval-offer-route-review.test.ts (7 tests) 480ms
+ ✓ test/personal-pilot-data-preservation-review.test.ts (37 tests) 313ms
+ ✓ test/unit/release-source-security-review.test.ts (19 tests) 359ms
+ ✓ test/personal-assistant-sms-temporal-clarification.test.ts (58 tests) 395ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-api.test.ts (15 tests) 353ms
+ ✓ test/personal-pilot-trial-private-bridge.test.ts (68 tests) 295ms
+ ✓ test/personal-model-operator-setup.test.ts (50 tests) 183ms
+ ✓ test/personal-pilot-data-preservation.test.ts (39 tests) 258ms
+ ✓ test/construction-operating-assistant-r37bc-controller-contract-alignment.test.ts (5 tests) 277ms
+ ✓ test/personal-founder-android-build-inputs.test.ts (44 tests) 344ms
+ ✓ test/personal-pilot-schema-drift-review.test.ts (54 tests) 120ms
+ ✓ test/personal-model-operator-ingress-contract.test.ts (65 tests) 387ms
+ ✓ test/public-site-home-v55.test.ts (16 tests) 454ms
+     ✓ A2_REST is byte-exact against the frozen FAMILY.A2 skeleton  387ms
+ ✓ test/personal-assistant-calendar-sms-confirmation-contract.test.ts (43 tests) 79ms
+ ✓ test/unit/personal-intent-temporal-source-boundaries.test.ts (20 tests) 134ms
+ ✓ test/synthetic-provider.test.ts (39 tests) 236ms
+ ✓ test/personal-correlated-temporal-evidence.test.ts (31 tests) 181ms
+ ✓ test/personal-founder-android-build-inputs-review.test.ts (13 tests) 173ms
+ ✓ test/sms-temporal-clarification-review.test.ts (15 tests) 113ms
+ ✓ test/sms-temporal-registry-review.test.ts (17 tests) 165ms
+ ✓ test/personal-correlated-temporal-evidence-review.test.ts (13 tests) 102ms
+ ✓ test/personal-pilot-trial-aggregate-transaction.test.ts (31 tests) 182ms
+ ❯ test/url-safety.test.ts (48 tests | 1 failed) 175ms
+     ✓ only http and https, only 80 and 443 2ms
+     ✓ refuses file:///etc/passwd 0ms
+     ✓ refuses ftp://example.com/x 0ms
+     ✓ refuses gopher://example.com 0ms
+     ✓ refuses data:text/html,<script>a 0ms
+     ✓ refuses javascript:alert(1) 0ms
+     ✓ refuses ws://example.com 0ms
+     ✓ refuses jar:http://example.com!/ 0ms
+     ✓ refuses a scheme-less string rather than completing it 0ms
+     ✓ refuses ports outside the allowlist, including the ones in this deployment 0ms
+     ✓ refuses a userinfo section 0ms
+     ✓ refuses a password too 0ms
+     ✓ blocks 127.0.0.1 1ms
+     ✓ blocks 127.9.9.9 0ms
+     ✓ blocks 0.0.0.0 0ms
+     ✓ blocks 10.1.2.3 0ms
+     ✓ blocks 172.16.0.1 0ms
+     ✓ blocks 172.31.255.255 0ms
+     ✓ blocks 192.168.1.1 0ms
+     ✓ blocks 169.254.169.254 0ms
+     ✓ blocks 169.254.1.1 0ms
+     ✓ blocks 100.64.0.1 0ms
+     ✓ blocks 198.18.0.1 0ms
+     ✓ blocks 224.0.0.1 0ms
+     ✓ blocks 255.255.255.255 0ms
+     ✓ blocks the Azure WireServer, which no private range covers 0ms
+     ✓ blocks the other cloud metadata singletons 0ms
+     ✓ allows ordinary public addresses 0ms
+     ✓ blocks IPv6 loopback, unique-local, link-local and multicast 0ms
+     ✓ unwraps IPv4-mapped IPv6 BEFORE testing, in every spelling 0ms
+     ✓ refuses anything it cannot positively classify as a public address 0ms
+     ✓ FAILS CLOSED on colon-bearing strings it cannot parse as IPv6 0ms
+     ✓ blocks a loopback literal 0ms
+     ✓ blocks the metadata endpoint spelled as a decimal integer 1ms
+     ✓ blocks an IPv4-mapped IPv6 literal in brackets 1ms
+     ✓ blocks metadata by NAME as well as by address 0ms
+     ✓ strips EVERY trailing dot, not just one 0ms
+     ✓ drops javascript:alert(1) rather than passing it through 1ms
+     ✓ drops JavaScript:alert(1) rather than passing it through 0ms
+     ✓ drops data:text/html;base6 rather than passing it through 0ms
+     ✓ drops file:///etc/passwd rather than passing it through 0ms
+     ✓ drops vbscript:msgbox(1) rather than passing it through 0ms
+     ✓ drops ftp://example.com/x rather than passing it through 0ms
+     ✓ still normalises ordinary input 1ms
+     ✓ drops a string that parses to no host 0ms
+     ✓ finds no fetch(, axios or undici call in any engine file 11ms
+     × no file outside the allowlist contains fetch(, axios or undici 149ms
+     ✓ is not vacuous: the allowlisted files exist and really do call out, in CODE 2ms
+ ✓ test/personal-backend-config-inspection.test.ts (38 tests) 66ms
+ ✓ test/correlated-calendar-approval-claim.test.ts (62 tests) 139ms
+ ✓ test/personal-model-operator-form-client-review.test.ts (11 tests) 196ms
+ ✓ test/correlated-calendar-approve-route.test.ts (99 tests) 135ms
+ ✓ test/personal-model-operator-ingress-review.test.ts (5 tests) 165ms
+ ✓ test/unit/personal-intent-openrouter-transport.test.ts (14 tests) 53ms
+ ✓ test/personal-model-operator-form-selector.test.ts (51 tests) 176ms
+ ✓ test/correlated-calendar-approval-result.test.ts (71 tests) 111ms
+ ✓ test/codecs.test.ts (63 tests) 119ms
+ ✓ test/sms-temporal-registry-store.test.ts (23 tests) 129ms
+ ✓ test/personal-pilot-trial-private-bridge-review.test.ts (8 tests) 109ms
+ ✓ test/unsigned-native-release-preflight.test.ts (2 tests) 133ms
+ ✓ test/standing-capacity-unpublished.test.ts (16 tests) 129ms
+ ✓ test/construction-operating-assistant-r37bb-zdr-compatibility.test.ts (5 tests) 102ms
+ ✓ test/construction-public-copy-boundaries.test.ts (19 tests) 100ms
+ ✓ test/project-brain-voice-source-review.test.ts (22 tests) 34ms
+ ✓ test/personal-assistant-sms-worker-fencing.test.ts (45 tests) 48ms
+ ✓ test/personal-correlated-temporal-resolution-review.test.ts (12 tests) 160ms
+ ✓ test/correlated-calendar-approval-wrapper.test.ts (21 tests) 111ms
+ ✓ test/correlated-calendar-approval-contract.test.ts (89 tests) 96ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-contracts.test.ts (12 tests) 131ms
+ ✓ test/unit/guarded-intent.test.ts (37 tests) 82ms
+ ✓ test/project-brain-voice-dispatch.test.ts (27 tests) 113ms
+ ✓ test/public-site-endvera-v7.test.ts (23 tests) 105ms
+ ✓ test/construction-operating-assistant-r37-openrouter-sandbox.test.ts (11 tests) 88ms
+ ✓ test/unit/personal-intent-review-consumer.test.ts (33 tests) 113ms
+ ✓ test/project-brain-voice-session-read.test.ts (37 tests) 95ms
+ ✓ test/data-isolation.test.ts (7 tests) 83ms
+ ✓ test/unit/r37f-before-after-lease.test.ts (2 tests) 79ms
+ ✓ test/sms-temporal-reply-worker.test.ts (39 tests) 135ms
+ ✓ test/sms-temporal-question-preparation.test.ts (26 tests) 171ms
+ ✓ test/file-data-foundation.test.ts (45 tests) 79ms
+ ✓ test/construction-operating-assistant-r36v-local-storage-scan.test.ts (1 test) 82ms
+ ✓ test/unit/personal-intent-dispatch.test.ts (29 tests) 88ms
+ ✓ test/project-brain-voice-transcript-review.test.ts (58 tests) 80ms
+ ✓ test/public-site-endvera-brand.test.ts (5 tests) 68ms
+ ✓ test/construction-operating-assistant-r37k-provider-route-absence.test.ts (5 tests) 63ms
+ ✓ test/personal-model-operator-form.test.ts (34 tests) 83ms
+ ✓ test/personal-correlated-calendar-isolation.test.ts (36 tests) 75ms
+ ✓ test/project-brain-voice-transcript-review-deadline.test.ts (40 tests) 71ms
+ ✓ test/ai-work-engine.test.ts (52 tests) 21ms
+ ✓ test/voice-pcm-segments.test.ts (12 tests) 70ms
+ ✓ test/project-brain-voice-review-route-deadline-review.test.ts (8 tests) 72ms
+ ✓ test/personal-pilot-schema-drift.test.ts (42 tests) 64ms
+ ✓ test/personal-assistant-twilio-outbound.test.ts (37 tests) 114ms
+ ✓ test/personal-api-auth-cache.test.ts (7 tests) 26ms
+ ✓ test/unit/gateway-dispatch-claim-revalidation.test.ts (13 tests) 14ms
+ ✓ test/unit/readiness-review-r2.test.ts (19 tests) 172ms
+ ✓ test/construction-operating-assistant-r37z-provider-parenthesized-loader-factory.test.ts (2 tests) 15ms
+ ✓ test/construction-operating-assistant-r37v-provider-module-element-access-loader.test.ts (2 tests) 24ms
+ ✓ test/personal-assistant-calendar-write-fencing.test.ts (17 tests) 137ms
+ ✓ test/unit/r37cf-current-authority.test.ts (21 tests) 148ms
+ ✓ test/sms-correlated-calendar-preparation-hook.test.ts (63 tests) 51ms
+ ✓ test/construction-operating-assistant-r33-web-mobile-parity.test.ts (8 tests) 53ms
+ ✓ test/personal-assistant-calendar-confirmation-bridge.test.ts (17 tests) 57ms
+ ✓ test/personal-model-operator-http.test.ts (27 tests) 52ms
+ ✓ test/correlated-calendar-approval-claim-review.test.ts (8 tests) 58ms
+ ✓ test/project-brain-voice-segments.test.ts (27 tests) 51ms
+ ✓ test/public-site-preview-storage.test.ts (19 tests) 40ms
+ ✓ test/personal-model-operator-route.test.ts (38 tests) 47ms
+ ✓ test/construction-operating-assistant-r37an-provider-reflect-namespace-assignment.test.ts (3 tests) 18ms
+ ✓ test/correlated-calendar-approval-result-route.test.ts (72 tests) 50ms
+ ✓ test/personal-assistant-confirmation-outbox.test.ts (25 tests) 43ms
+ ✓ test/personal-assistant-model-review-message.test.ts (7 tests) 38ms
+ ✓ test/project-brain-voice-sessions.test.ts (27 tests) 42ms
+ ✓ test/unit/personal-intent-openrouter-transport-boundaries.test.ts (8 tests) 44ms
+ ✓ test/construction-operating-assistant-r37c-controlled-run.test.ts (3 tests) 30ms
+ ✓ test/personal-model-operator-route-review.test.ts (15 tests) 45ms
+ ✓ test/personal-model-operator-http-review.test.ts (5 tests) 39ms
+ ✓ test/personal-assistant-google-client.test.ts (10 tests) 36ms
+ ✓ test/unit/personal-model-routes.test.ts (17 tests) 41ms
+ ✓ test/sms-temporal-question-preparation-review.test.ts (7 tests) 38ms
+ ✓ test/project-brain-voice-transcript-review-boundary.test.ts (11 tests) 43ms
+ ✓ test/personal-assistant-google-reply-disclosure.test.ts (7 tests) 33ms
+ ✓ test/personal-backend-config-inspection-review.test.ts (4 tests) 34ms
+ ✓ test/academy-publication.test.ts (6 tests) 18ms
+ ✓ test/project-brain-voice-admission.test.ts (24 tests) 46ms
+ ✓ test/construction-operating-assistant-r7-shared-api.test.ts (4 tests) 38ms
+ ✓ test/construction-operating-assistant-r38-founder-full-loop.test.ts (3 tests) 20ms
+ ✓ test/unit/personal-intent-global-revocation.test.ts (7 tests) 40ms
+ ✓ test/pdf-identity-attacks.test.ts (10 tests) 42ms
+ ✓ test/project-brain-voice-review-route.test.ts (54 tests) 35ms
+ ✓ test/personal-assistant-sms-wakeup-route.test.ts (8 tests) 44ms
+ ✓ test/unit/personal-ai-operations.test.ts (12 tests) 12ms
+ ✓ test/project-brain-voice-recovery.test.ts (51 tests) 37ms
+ ✓ test/project-brain-transcript-review-deadline-review.test.ts (6 tests) 38ms
+ ✓ test/file-security.test.ts (20 tests) 41ms
+ ✓ test/personal-correlated-calendar-reviews-route.test.ts (50 tests) 34ms
+ ✓ test/correlated-calendar-approve-route-review.test.ts (7 tests) 39ms
+ ✓ test/google-sign-in-isolation.test.ts (22 tests) 37ms
+ ✓ test/dataset-identity.test.ts (31 tests) 36ms
+ ✓ test/sms-temporal-outbox-hook-review.test.ts (8 tests) 31ms
+ ✓ test/web-fetch.test.ts (24 tests) 30ms
+ ✓ test/personal-api-auth-cache-review.test.ts (10 tests) 30ms
+ ✓ test/project-brain-voice-persistence-review.test.ts (11 tests) 33ms
+ ✓ test/native-audio-probe-review.test.ts (13 tests) 31ms
+ ✓ test/correlated-calendar-approval-contract-review.test.ts (14 tests) 36ms
+ ✓ test/unit/personal-intent-draft-preparers.test.ts (6 tests) 30ms
+ ✓ test/project-brain-voice-subject.test.ts (33 tests) 45ms
+ ✓ test/personal-correlated-calendar-isolation-review.test.ts (6 tests) 32ms
+ ✓ test/personal-pilot-upgrade-rehearsal-oracle-review.test.ts (37 tests) 40ms
+ ✓ test/project-brain-voice-dispatch-review.test.ts (4 tests) 31ms
+ ✓ test/construction-operating-assistant-r37t-provider-module-namespace-loader.test.ts (3 tests) 26ms
+ ✓ test/voice-transcript-integrity.test.ts (3 tests) 6ms
+ ✓ test/personal-assistant-worker-tick.test.ts (13 tests) 29ms
+ ✓ test/personal-assistant-google-client-cancellation.test.ts (5 tests) 32ms
+ ✓ test/construction-operating-assistant-r36a-ai-routing-brain.test.ts (19 tests) 72ms
+ ✓ test/construction-operating-assistant-r36b-provider-sandbox-preflight.test.ts (17 tests) 80ms
+ ✓ test/personal-assistant-twilio-handler.test.ts (13 tests) 39ms
+ ✓ test/project-brain-voice-review-route-deadline.test.ts (30 tests) 39ms
+ ✓ test/google-sign-in-isolation-review.test.ts (3 tests) 39ms
+ ✓ test/model-gateway-openrouter-stt-candidate.test.ts (32 tests) 25ms
+ ✓ test/unit/personal-intent-openrouter-adapter.test.ts (23 tests) 44ms
+ ✓ test/construction-operating-assistant-r3-calendar-connector.test.ts (6 tests) 25ms
+ ✓ test/project-brain-voice-gateway-binding.test.ts (41 tests) 30ms
+ ✓ test/construction-operating-assistant-r37s-provider-loader-alias-propagation.test.ts (4 tests) 32ms
+ ✓ test/golden-fixture.test.ts (22 tests) 33ms
+ ✓ test/sms-correlated-calendar-preparation-hook-review.test.ts (7 tests) 24ms
+ ✓ test/provider-error.test.ts (15 tests) 28ms
+ ✓ test/construction-operating-assistant-r0-policy.test.ts (10 tests) 25ms
+ ✓ test/construction-operating-assistant-r37-corrected-retest.test.ts (2 tests) 33ms
+ ✓ test/sms-temporal-worker-question.test.ts (15 tests) 22ms
+ ✓ test/unit/personal-intent-review-route.test.ts (9 tests) 28ms
+ ✓ test/construction-operating-assistant-r32-onboarding-import.test.ts (5 tests) 29ms
+ ✓ test/unit/personal-intent-review-projection.test.ts (19 tests) 21ms
+ ✓ test/construction-operating-assistant-r37a-sealed-executor.test.ts (10 tests) 28ms
+ ✓ test/unit/personal-model-operator-preparation.test.ts (30 tests) 29ms
+ ✓ test/personal-pilot-upgrade-rehearsal.test.ts (31 tests) 34ms
+ ✓ test/correlated-calendar-approval-migration.test.ts (17 tests) 25ms
+ ✓ test/sms-correlated-calendar-preparation-wiring.test.ts (22 tests) 22ms
+ ✓ test/demotion-pricing.test.ts (26 tests) 35ms
+ ✓ test/whole-product-closure-audit.test.ts (7 tests) 34ms
+ ✓ test/construction-operating-assistant-r37w-provider-module-factory-alias.test.ts (3 tests) 29ms
+ ✓ test/construction-operating-assistant-r37q-provider-loader-alias.test.ts (4 tests) 20ms
+ ✓ test/unit/r37a-runtime-clock.test.ts (5 tests) 62ms
+ ✓ test/transforms.test.ts (62 tests) 32ms
+ ✓ test/sms-correlated-completion-baseline-review.test.ts (4 tests) 29ms
+ ✓ test/row-lineage.test.ts (13 tests) 26ms
+ ✓ test/sms-temporal-reply-wiring.test.ts (18 tests) 27ms
+ ✓ test/correlated-calendar-approval-legacy-isolation.test.ts (4 tests) 26ms
+ ✓ test/personal-pilot-trial-prisma-runner-review.test.ts (18 tests) 25ms
+ ✓ test/construction-operating-assistant-r23-calendar-connectors.test.ts (5 tests) 25ms
+ ✓ test/model-gateway-voice-conformance.test.ts (7 tests) 22ms
+ ✓ test/unit/personal-model-operator-runtime-compatibility.test.ts (9 tests) 27ms
+ ✓ test/project-brain-voice-recovery-review.test.ts (6 tests) 28ms
+ ✓ test/correlated-calendar-approval-result-route-review.test.ts (14 tests) 21ms
+ ✓ test/construction-operating-assistant-r30-tenant-privacy.test.ts (5 tests) 20ms
+ ✓ test/human-unit-admission.test.ts (41 tests) 22ms
+ ✓ test/construction-operating-assistant-r37d-provider-delivery-contracts.test.ts (6 tests) 22ms
+ ✓ test/construction-operating-assistant-r37u-provider-module-namespace-alias.test.ts (3 tests) 26ms
+ ✓ test/construction-operating-assistant-r15-timeline.test.ts (4 tests) 21ms
+ ✓ test/sms-temporal-registry-authority.test.ts (31 tests) 19ms
+ ✓ test/public-site-release-correction.test.ts (11 tests) 20ms
+ ✓ test/sms-temporal-maintenance.test.ts (37 tests) 22ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-query.test.ts (45 tests) 21ms
+ ✓ test/personal-assistant-confirmation-worker.test.ts (17 tests) 17ms
+ ✓ test/construction-operating-assistant-r37ao-provider-reflect-destructuring-assignment.test.ts (3 tests) 18ms
+ ✓ test/human-unit-result-schema.test.ts (43 tests) 25ms
+ ✓ test/unit/r37b-reservation-candidate.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r31-observability-recovery.test.ts (6 tests) 20ms
+ ✓ test/construction-operating-assistant-r18-unified-intent.test.ts (4 tests) 74ms
+ ✓ test/construction-operating-assistant-r37o-provider-boundary-release-gate.test.ts (3 tests) 55ms
+ ✓ test/construction-operating-assistant-r28-authority-policies.test.ts (6 tests) 16ms
+ ✓ test/construction-operating-assistant-r10-prepared-action-inspection.test.ts (4 tests) 24ms
+ ✓ test/construction-operating-assistant-r37ak-provider-reflect-apply-transparent-assignment.test.ts (3 tests) 20ms
+ ✓ test/construction-operating-assistant-r38-founder-contract.test.ts (5 tests) 26ms
+ ✓ test/construction-operating-assistant-r37ax-provider-transparent-require-destructuring-assignment.test.ts (3 tests) 20ms
+ ✓ test/construction-operating-assistant-r37ac-provider-indirect-loader-call.test.ts (3 tests) 23ms
+ ✓ test/construction-operating-assistant-r36y-assistant-memory-contracts.test.ts (3 tests) 21ms
+ ✓ test/public-site-preview-write-gate.test.ts (14 tests) 22ms
+ ✓ test/construction-operating-assistant-r37as-provider-module-namespace-destructuring-assignment.test.ts (3 tests) 21ms
+ ✓ test/construction-operating-assistant-r19-job-scheduling.test.ts (6 tests) 19ms
+ ✓ test/construction-operating-assistant-r36k-market-readiness.test.ts (8 tests) 28ms
+ ✓ test/construction-operating-assistant-r37aj-provider-reflect-apply-transparent-alias.test.ts (3 tests) 23ms
+ ✓ test/project-brain-voice-internal-reader.test.ts (6 tests) 20ms
+ ✓ test/personal-assistant-outbound-queue.test.ts (16 tests) 23ms
+ ✓ test/construction-operating-assistant-r36c-unified-routing.test.ts (11 tests) 17ms
+ ✓ test/unit/personal-intent-review-projection-jsonb.test.ts (12 tests) 19ms
+ ✓ test/model-gateway-voice-adapter-contract.test.ts (3 tests) 27ms
+ ✓ test/construction-operating-assistant-r37av-provider-transparent-require-namespace.test.ts (3 tests) 24ms
+ ✓ test/construction-operating-assistant-r37al-provider-reflect-apply-destructuring.test.ts (3 tests) 15ms
+ ✓ test/construction-operating-assistant-r25-voice-calls.test.ts (5 tests) 17ms
+ ✓ test/construction-operating-assistant-r29-provenance-ux.test.ts (4 tests) 18ms
+ ✓ test/construction-operating-assistant-r37ab-provider-transparent-expression.test.ts (4 tests) 17ms
+ ✓ test/sms-temporal-worker-question-review.test.ts (6 tests) 17ms
+ ✓ test/unit/gateway-voice-claim-revalidation.test.ts (24 tests) 19ms
+ ✓ test/construction-operating-assistant-r37az-provider-aliased-require-namespace.test.ts (3 tests) 21ms
+ ✓ test/personal-assistant-calendar-sms-confirmation-store.test.ts (10 tests) 35ms
+ ✓ test/construction-operating-assistant-r37ai-provider-reflect-apply-assignment-propagation.test.ts (3 tests) 17ms
+ ✓ test/construction-operating-assistant-r37aq-provider-computed-create-require-destructuring.test.ts (3 tests) 23ms
+ ✓ test/sms-correlated-calendar-worker-hook-review.test.ts (6 tests) 17ms
+ ✓ test/construction-operating-assistant-r27-accounting.test.ts (5 tests) 12ms
+ ✓ test/account-spend-ceiling.test.ts (39 tests) 17ms
+ ✓ test/public-site-truth.test.ts (35 tests) 15ms
+ ✓ test/personal-pilot-trial-added-state.test.ts (57 tests) 19ms
+ ✓ test/construction-operating-assistant-r37r-provider-loader-reassignment.test.ts (2 tests) 14ms
+ ✓ test/construction-operating-assistant-r36x-understanding-contracts.test.ts (3 tests) 16ms
+ ✓ test/construction-operating-assistant-r36w-fact-candidates-contracts.test.ts (3 tests) 20ms
+ ✓ test/unit/r37c-admission-clock.test.ts (3 tests) 17ms
+ ✓ test/construction-operating-assistant-r37ah-provider-reflect-apply-alias-propagation.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r37au-provider-import-equals-namespace.test.ts (3 tests) 14ms
+ ✓ test/personal-assistant-sms-inbound-recovery.test.ts (30 tests) 14ms
+ ✓ test/human-unit-release-candidate.test.ts (9 tests) 15ms
+ ✓ test/unit/personal-intent-admission.test.ts (26 tests) 19ms
+ ✓ test/construction-operating-assistant-r37ad-provider-reflect-apply-loader.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r37ba-provider-transparent-loader-alias.test.ts (3 tests) 31ms
+ ✓ test/construction-operating-assistant-r37ar-provider-create-require-destructuring-assignment.test.ts (3 tests) 17ms
+ ✓ test/construction-operating-assistant-r37x-provider-module-factory-assignment.test.ts (2 tests) 15ms
+ ✓ test/construction-operating-assistant-r37ay-provider-transparent-require-namespace-assignment.test.ts (3 tests) 16ms
+ ✓ test/construction-operating-assistant-r37y-provider-loader-factory-assignment.test.ts (2 tests) 18ms
+ ✓ test/construction-operating-assistant-r34-commercial-account.test.ts (9 tests) 17ms
+ ✓ test/personal-assistant-calendar-confirmation-maintenance.test.ts (24 tests) 18ms
+ ✓ test/construction-operating-assistant-r37af-provider-reflect-apply-alias.test.ts (3 tests) 18ms
+ ✓ test/sms-temporal-reply-worker-review.test.ts (7 tests) 16ms
+ ✓ test/construction-operating-assistant-r37aw-provider-transparent-require-destructuring.test.ts (3 tests) 16ms
+ ✓ test/unit/personal-model-connection.test.ts (8 tests) 16ms
+ ✓ test/construction-operating-assistant-r37aa-provider-parenthesized-loader-call.test.ts (2 tests) 13ms
+ ✓ test/construction-operating-assistant-r37at-provider-module-namespace-destructuring-declaration.test.ts (3 tests) 18ms
+ ✓ test/personal-model-operator-page.test.ts (6 tests) 16ms
+ ✓ test/unit/personal-gateway-subject.test.ts (30 tests) 17ms
+ ✓ test/sms-temporal-outbound-selection.test.ts (15 tests) 14ms
+ ✓ test/construction-operating-assistant-r37ap-provider-reflect-computed-destructuring.test.ts (3 tests) 17ms
+ ✓ test/construction-operating-assistant-r37ae-provider-reflect-element-access-loader.test.ts (2 tests) 16ms
+ ✓ test/sms-temporal-reply-wiring-review.test.ts (11 tests) 16ms
+ ✓ test/construction-operating-assistant-r36-internal-e2e.test.ts (4 tests) 13ms
+ ✓ test/construction-operating-assistant-r37am-provider-reflect-namespace-alias.test.ts (3 tests) 19ms
+ ✓ test/construction-operating-assistant-r37ag-provider-reflect-apply-assignment.test.ts (3 tests) 14ms
+ ✓ test/construction-assistant-v1-security.test.ts (4 tests) 15ms
+ ✓ test/personal-assistant-confirmation-preparation.test.ts (13 tests) 13ms
+ ✓ test/construction-operating-assistant-r24-sms-mms.test.ts (6 tests) 17ms
+ ✓ test/construction-operating-assistant-r36x-understanding-api.test.ts (3 tests) 15ms
+ ✓ test/project-brain-voice-review-route-review.test.ts (14 tests) 17ms
+ ✓ test/construction-operating-assistant-r36w-fact-candidates-api.test.ts (3 tests) 18ms
+ ✓ test/human-unit-state.test.ts (78 tests) 11ms
+ ✓ test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts (7 tests) 15ms
+ ✓ test/construction-assistant-v1-r2-observed-control.test.ts (2 tests) 12ms
+ ✓ test/personal-assistant-google-read-authority.test.ts (10 tests) 50ms
+ ✓ test/correlated-calendar-claim-recovery-review.test.ts (7 tests) 13ms
+ ✓ test/unit/parent-patch-dst-review.test.ts (7 tests) 14ms
+ ✓ test/construction-operating-assistant-r2-core.test.ts (7 tests) 11ms
+ ✓ test/personal-assistant-calendar-confirmation-worker-review.test.ts (9 tests) 12ms
+ ✓ test/personal-pilot-schema-capture-review.test.ts (14 tests) 11ms
+ ✓ test/unit/personal-intent-candidate.test.ts (16 tests) 13ms
+ ✓ test/construction-operating-assistant-r37p-provider-javascript-inventory.test.ts (11 tests) 17ms
+ ✓ test/construction-operating-assistant-r37l-provider-reachability-traversal.test.ts (4 tests) 17ms
+ ✓ test/delivery-metrics.test.ts (30 tests) 18ms
+ ✓ test/unit/personal-model-worker.test.ts (10 tests) 15ms
+ ✓ test/construction-operating-assistant-r37b-provider-activation.test.ts (4 tests) 14ms
+ ✓ test/sms-temporal-outbound-selection-review.test.ts (4 tests) 11ms
+ ✓ test/construction-operating-assistant-r38b.test.ts (6 tests) 12ms
+ ✓ test/endvera-portal-experience.test.ts (12 tests) 14ms
+ ✓ test/construction-assistant-v1-r2-observed-mutations.test.ts (7 tests) 16ms
+ ✓ test/construction-assistant-v1-contract.test.ts (6 tests) 12ms
+ ✓ test/personal-assistant-claim-recovery.test.ts (27 tests) 16ms
+ ✓ test/sms-temporal-time-literal-review.test.ts (2 tests) 14ms
+ ✓ test/personal-assistant-confirmation-utc-sql.test.ts (10 tests) 11ms
+ ✓ test/construction-operating-assistant-r36h-web-production-readiness.test.ts (6 tests) 18ms
+ ✓ test/construction-assistant-v1-r2-observed-defects.test.ts (3 tests) 17ms
+ ✓ test/personal-model-operator-setup-review.test.ts (5 tests) 22ms
+ ✓ test/construction-operating-assistant-r0-schema.test.ts (3 tests) 8ms
+ ✓ test/construction-operating-assistant-r38e-broadcast-contracts.test.ts (5 tests) 11ms
+ ✓ test/construction-operating-assistant-r36y-assistant-memory-api.test.ts (2 tests) 16ms
+ ✓ test/sms-temporal-outbound-authority.test.ts (16 tests) 31ms
+ ✓ test/construction-operating-assistant-r22-human-escalation.test.ts (4 tests) 13ms
+ ✓ test/settings.test.ts (21 tests) 15ms
+ ✓ test/human-unit-definition.test.ts (17 tests) 11ms
+ ✓ test/construction-operating-assistant-r38d-command-parity.test.ts (2 tests) 13ms
+ ✓ test/construction-operating-assistant-r6-receivables.test.ts (3 tests) 9ms
+ ✓ test/voice-transcript-integrity-review.test.ts (13 tests) 12ms
+ ✓ test/construction-operating-assistant-r20-follow-up-engine.test.ts (6 tests) 11ms
+ ✓ test/unit/personal-model-budget-policy.test.ts (17 tests) 11ms
+ ✓ test/public-site-motion.test.ts (16 tests) 12ms
+ ✓ test/construction-operating-assistant-r37g-provider-security-hardening.test.ts (1 test) 11ms
+ ✓ test/construction-operating-assistant-r16-permission-center.test.ts (3 tests) 9ms
+ ✓ test/automation-cost-policy.test.ts (52 tests) 14ms
+ ✓ test/project-brain-voice-claim.test.ts (13 tests) 9ms
+ ✓ test/construction-assistant-v1-r2-observed-contract.test.ts (5 tests) 8ms
+ ✓ test/client-timeline.test.ts (31 tests) 53ms
+ ✓ test/construction-operating-assistant-r36e-context-routing-gate.test.ts (5 tests) 8ms
+ ✓ test/price-wall.test.ts (41 tests) 13ms
+ ✓ test/personal-pilot-schema-drift-sql-review.test.ts (24 tests) 12ms
+ ✓ test/construction-operating-assistant-r26-email-inbox.test.ts (5 tests) 11ms
+ ✓ test/endvera-portal-voice-experience.test.ts (7 tests) 12ms
+ ✓ test/construction-operating-assistant-r21-receivables-invoice.test.ts (5 tests) 12ms
+ ✓ test/operational-vocabulary.test.ts (22 tests) 11ms
+ ✓ test/construction-operating-assistant-r0-bridge.test.ts (4 tests) 12ms
+ ✓ test/construction-assistant-v1-r3-founder-retest-contract.test.ts (6 tests) 14ms
+ ✓ test/intake-framing.test.ts (14 tests) 11ms
+ ✓ test/pdf-identity.test.ts (8 tests) 12ms
+ ✓ test/model-gateway-openrouter-stt-review.test.ts (30 tests) 10ms
+ ✓ test/project-brain-voice-legacy-runner-exclusion.test.ts (10 tests) 9ms
+ ✓ test/personal-model-operator-setup-controller.test.ts (16 tests) 8ms
+ ✓ test/personal-assistant-twilio-envelope.test.ts (17 tests) 10ms
+ ✓ test/unit/readiness-review-hardening.test.ts (5 tests) 15ms
+ ✓ test/attachments.test.ts (13 tests) 11ms
+ ✓ test/unit/broadcast-preparation-replay.test.ts (6 tests) 11ms
+ ✓ test/sms-temporal-maintenance-review.test.ts (5 tests) 11ms
+ ✓ test/workflow-runner.test.ts (24 tests) 10ms
+ ✓ test/project-brain-voice-recovery-fixture-contract.test.ts (3 tests) 12ms
+ ✓ test/unit/personal-model-configuration.test.ts (11 tests) 10ms
+ ✓ test/personal-assistant-sms-worker.test.ts (4 tests) 8ms
+ ✓ test/construction-operating-assistant-r38a.test.ts (5 tests) 13ms
+ ✓ test/construction-operating-assistant-r36f-legacy-routing-closure.test.ts (4 tests) 6ms
+ ✓ test/project-brain-voice-synthetic-budget.test.ts (12 tests) 13ms
+ ✓ test/client-server-boundary.test.ts (2 tests) 9ms
+ ✓ test/voice-transcript-purge-utc.test.ts (9 tests) 9ms
+ ✓ test/correlated-calendar-approval-migration-review.test.ts (7 tests) 10ms
+ ✓ test/unit/calendar-dst-revalidation.test.ts (2 tests) 10ms
+ ✓ test/personal-assistant-sms-inbox.test.ts (11 tests) 9ms
+ ✓ test/unit/personal-intent-recovery.test.ts (10 tests) 9ms
+ ✓ test/personal-model-operator-form-selector-review.test.ts (5 tests) 11ms
+ ✓ test/personal-correlated-calendar-id.test.ts (14 tests) 9ms
+ ✓ test/construction-operating-assistant-r4-sms-voice.test.ts (4 tests) 31ms
+ ✓ test/exam-shuffle.test.ts (10 tests) 9ms
+ ✓ test/public-site-claims.test.ts (24 tests) 9ms
+ ✓ test/personal-pilot-schema-capture.test.ts (5 tests) 8ms
+ ✓ test/public-site-console-render.test.ts (8 tests) 8ms
+ ✓ test/public-site-header-consolidation.test.ts (7 tests) 9ms
+ ✓ test/workflow-primitives-pure.test.ts (22 tests) 8ms
+ ✓ test/human-unit-economics.test.ts (31 tests) 10ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-server-hardening.test.ts (2 tests) 8ms
+ ✓ test/construction-operating-assistant-r9-mobile-assistant.test.ts (2 tests) 13ms
+ ✓ test/voice-client-session-enum.test.ts (7 tests) 8ms
+ ✓ test/unit/account-spend-transaction.test.ts (8 tests) 9ms
+ ✓ test/construction-operating-assistant-r11-prepared-action-decisions.test.ts (3 tests) 10ms
+ ✓ test/web-fetch-drift.test.ts (3 tests) 8ms
+ ✓ test/construction-operating-assistant-r39a-preflight.test.ts (3 tests) 9ms
+ ✓ test/construction-operating-assistant-r36d-channel-routing-parity.test.ts (4 tests) 10ms
+ ✓ test/calibration-statistics.test.ts (29 tests) 13ms
+ ✓ test/project-brain-voice-admission-review.test.ts (3 tests) 9ms
+ ✓ test/worker-eligibility.test.ts (34 tests) 6ms
+ ✓ test/worker-after-claim.test.ts (8 tests) 10ms
+ ✓ test/construction-operating-assistant-r38f-broadcast-approval-contracts.test.ts (2 tests) 8ms
+ ✓ test/personal-pilot-trial-added-state-review.test.ts (6 tests) 12ms
+ ✓ test/product-experience-completion.test.ts (5 tests) 11ms
+ ✓ test/construction-operating-assistant-r8-mobile-foundation.test.ts (4 tests) 9ms
+ ✓ test/model-gateway-voice-session.test.ts (3 tests) 5ms
+ ✓ test/acceptance-snapshot.test.ts (13 tests) 5ms
+ ✓ test/personal-assistant-sms-wakeup.test.ts (11 tests) 11ms
+ ✓ test/personal-correlated-calendar-migration.test.ts (8 tests) 23ms
+ ✓ test/construction-operating-assistant-r36j-release-operations.test.ts (6 tests) 6ms
+ ✓ test/construction-conversion-surface.test.ts (5 tests) 7ms
+ ✓ test/endvera-portal-voice-runtime-boundary.test.ts (6 tests) 6ms
+ ✓ test/construction-operating-assistant-r36i-store-compliance.test.ts (7 tests) 7ms
+ ✓ test/construction-operating-assistant-r5-human-escalation.test.ts (3 tests) 9ms
+ ✓ test/model-gateway-voice-assembly.test.ts (2 tests) 6ms
+ ✓ test/textassist-public-offer-completion.test.ts (3 tests) 5ms
+ ✓ test/workflow-residual.test.ts (29 tests) 7ms
+ ✓ test/integration-guard.test.ts (14 tests) 7ms
+ ✓ test/exception-cause.test.ts (14 tests) 7ms
+ ✓ test/personal-assistant-calendar-provenance.test.ts (1 test) 6ms
+ ✓ test/unit/personal-gateway-utc-sql-contract.test.ts (10 tests) 8ms
+ ✓ test/personal-live-preflight.test.ts (7 tests) 7ms
+ ✓ test/sms-temporal-time-literal.test.ts (38 tests) 7ms
+ ✓ test/human-unit-rollout-surface.test.ts (7 tests) 8ms
+ ✓ test/compile-preview.test.ts (15 tests) 8ms
+ ✓ test/construction-operating-assistant-r36v-project-brain-file-ownership.test.ts (3 tests) 9ms
+ ✓ test/state.test.ts (10 tests) 5ms
+ ✓ test/personal-assistant-phone-disconnect.test.ts (2 tests) 6ms
+ ✓ test/money.test.ts (8 tests) 20ms
+ ✓ test/backend-activation-gate.test.ts (7 tests) 6ms
+ ✓ test/voice-projection-byte-ownership.test.ts (9 tests) 6ms
+ ✓ test/human-time-integrity.test.ts (7 tests) 6ms
+ ✓ test/construction-operating-assistant-r36w-fact-candidates-server.test.ts (1 test) 5ms
+ ✓ test/model-gateway-voice-audit.test.ts (6 tests) 7ms
+ ✓ test/personal-native-database-isolation.test.ts (6 tests) 9ms
+ ✓ test/pii-patterns.test.ts (20 tests) 6ms
+ ✓ test/personal-assistant-native-build-contract.test.ts (7 tests) 5ms
+ ✓ test/workflow-key.test.ts (12 tests) 6ms
+ ✓ test/project-brain-voice-persistence-contract.test.ts (5 tests) 5ms
+ ✓ test/personal-assistant-native-publication-contract.test.ts (7 tests) 4ms
+ ✓ test/personal-assistant-calendar-confirmation-routing.test.ts (14 tests) 32ms
+ ✓ test/construction-operating-assistant-r36x-understanding-mutation-guards.test.ts (3 tests) 4ms
+ ✓ test/construction-operating-assistant-r36y-assistant-memory-server.test.ts (1 test) 4ms
+ ✓ test/workflow-human-package.test.ts (10 tests) 5ms
+ ✓ test/workflow-topology.test.ts (14 tests) 6ms
+ ✓ test/domain-policy.test.ts (9 tests) 7ms
+ ✓ test/construction-operating-assistant-r37f-provider-delivery.test.ts (2 tests) 8ms
+ ✓ test/construction-operating-assistant-r25-voice-note-security.test.ts (2 tests) 4ms
+ ✓ test/model-gateway-voice-subject.test.ts (3 tests) 5ms
+ ✓ test/human-unit-surfaces.test.ts (3 tests) 5ms
+ ✓ test/model-gateway-voice-projection.test.ts (2 tests) 6ms
+ ✓ test/model-gateway-voice-schema.test.ts (4 tests) 4ms
+ ✓ test/model-gateway-voice-policy.test.ts (5 tests) 4ms
+ ✓ test/additive-public-brand-metadata.test.ts (3 tests) 4ms
+ ✓ test/model-gateway-voice-types.test.ts (4 tests) 4ms
+ ✓ test/model-gateway-voice-cancellation.test.ts (5 tests) 4ms
+ ✓ test/voice-intake-contract.test.ts (15 tests) 5ms
+ ✓ test/construction-operating-assistant-r36x-understanding-server.test.ts (1 test) 6ms
+ ✓ test/money-intent-lease.test.ts (7 tests) 5ms
+ ✓ test/calibration-eligibility.test.ts (13 tests) 5ms
+ ✓ test/model-gateway-voice-replay.test.ts (2 tests) 3ms
+ ✓ test/construction-operating-assistant-r36g-mobile-build-readiness.test.ts (2 tests) 5ms
+ ✓ test/sms-temporal-trigger-forward-fix.test.ts (3 tests) 4ms
+ ✓ test/voice-intake-state.test.ts (7 tests) 25ms
+ ✓ test/construction-operating-assistant-r36w-fact-candidates-mutation-guards.test.ts (3 tests) 4ms
+ ✓ test/personal-assistant-native-postgres-harness.test.ts (5 tests) 4ms
+ ✓ test/construction-assistant-v1-r2-observed-harness.test.ts (3 tests) 4ms
+ ✓ test/model-gateway-voice-limits.test.ts (4 tests) 4ms
+ ✓ test/construction-operating-assistant-r36y-assistant-memory-mutation-guards.test.ts (3 tests) 4ms
+ ✓ test/pricing-ai.test.ts (3 tests) 2ms
+ ✓ test/model-gateway-voice-rollout.test.ts (2 tests) 3ms
+ ✓ test/model-gateway-voice-spend.test.ts (3 tests) 3ms
+ ↓ test/construction-assistant-v1-r2-corrected-postgres.test.ts (1 test | 1 skipped)
+ ↓ test/construction-assistant-v1-r3-founder-retest-postgres.test.ts (1 test | 1 skipped)
+ ↓ test/construction-operating-assistant-r38-founder-postgres.test.ts (1 test | 1 skipped)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/url-safety.test.ts > direct outbound HTTP anywhere in src/ is an allowlist > no file outside the allowlist contains fetch(, axios or undici
+AssertionError: Direct outbound HTTP appeared outside the reviewed allowlist. If this is the future direct-fetch layer, it must consume url-safety.ts AND domain-policy.ts and prove per-redirect revalidation before joining the list; if it is anything else, it probably belongs behind an existing client.
+src\app\personal\model\operator-setup\operator-form.tsx: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "src\\app\\personal\\model\\operator-setup\\operator-form.tsx",
++ ]
+
+ ❯ test/url-safety.test.ts:329:7
+    327|         "existing client.\n" +
+    328|         offenders.join("\n")
+    329|     ).toEqual([]);
+       |       ^
+    330|   });
+    331|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 475 passed | 3 skipped (479)
+      Tests  1 failed | 7457 passed | 3 skipped (7461)
+   Start at  23:15:11
+   Duration  121.11s (transform 18.69s, setup 0ms, import 129.26s, tests 242.77s, environment 43ms)
+
