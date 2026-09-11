@@ -30,6 +30,15 @@ function Resolve-NativeLeaf([string]$Root, [string]$Relative) {
   if (-not $path.StartsWith($Root.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'PERSONAL_NATIVE_RUNTIME_INVALID' }
   return $path
 }
+function ConvertTo-NativeArgument([string]$Value) {
+  if ($Value.Length -eq 0) { return '""' }
+  if ($Value -notmatch '[\s"]') { return $Value }
+  # Windows CreateProcess quoting: double backslashes before a quote and at
+  # the closing quote. No shell evaluates this command line.
+  $escaped = [regex]::Replace($Value, '(\\*)"', '$1$1\"')
+  $escaped = [regex]::Replace($escaped, '(\\+)$', '$1$1')
+  return '"' + $escaped + '"'
+}
 function Start-NativeChild([string]$Executable, [string[]]$Arguments) {
   $info = [Diagnostics.ProcessStartInfo]::new()
   $info.FileName = $Executable
@@ -40,7 +49,9 @@ function Start-NativeChild([string]$Executable, [string[]]$Arguments) {
   $info.RedirectStandardError = $true
   $info.Environment.Clear()
   foreach ($entry in $taskChildEnvironment.GetEnumerator()) { $info.Environment[$entry.Key] = [string]$entry.Value }
-  foreach ($argument in $Arguments) { $info.ArgumentList.Add($argument) }
+  # ProcessStartInfo.ArgumentList is unavailable on some Windows PowerShell
+  # 5.1/.NET Framework hosts. Build one safely quoted CreateProcess string.
+  $info.Arguments = (($Arguments | ForEach-Object { ConvertTo-NativeArgument ([string]$_) }) -join ' ')
   $process = [Diagnostics.Process]::new()
   $process.StartInfo = $info
   if (-not $process.Start()) { throw 'PERSONAL_NATIVE_CHILD_START_FAILED' }
@@ -50,7 +61,8 @@ function Finish-NativeChild($Child, [string]$Label, [int]$TimeoutMs = 30000) {
   if (-not $Child.Process.WaitForExit($TimeoutMs)) {
     # Test/CLI workers belong to this exact child tree. pg_ctl's detached server is stopped only by exact data path.
     try {
-      $Child.Process.Kill([bool]$Child.OwnsProcessTree)
+      try { $Child.Process.Kill([bool]$Child.OwnsProcessTree) }
+      catch [Management.Automation.MethodException] { $Child.Process.Kill() }
       if (-not $Child.Process.WaitForExit(5000)) { throw 'PERSONAL_NATIVE_CHILD_CLEANUP_UNCERTAIN' }
     } finally { $Child.Process.Dispose() }
     [IO.File]::WriteAllText((Join-Path $taskCluster ($Label + '.log')), 'PERSONAL_NATIVE_CHILD_TIMEOUT', [Text.UTF8Encoding]::new($false))
@@ -87,7 +99,9 @@ function Get-NativeCampaignRemainingMs([Diagnostics.Stopwatch]$Clock, [int]$Maxi
 try {
   if ($MigrationRehearsal -and $TestFile) { throw 'PERSONAL_NATIVE_REHEARSAL_FILTER_CONFLICT' }
   if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { throw 'PERSONAL_NATIVE_WINDOWS_REQUIRED' }
-  if (-not [IO.Path]::IsPathFullyQualified($RuntimeRoot) -or $RuntimeRoot.StartsWith('\\')) { throw 'PERSONAL_NATIVE_RUNTIME_INVALID' }
+  # Windows PowerShell 5.1 can run on a framework without
+  # Path.IsPathFullyQualified. Require an explicit local drive path instead.
+  if (-not [IO.Path]::IsPathRooted($RuntimeRoot) -or $RuntimeRoot -notmatch '^[A-Za-z]:\\' -or $RuntimeRoot.StartsWith('\\')) { throw 'PERSONAL_NATIVE_RUNTIME_INVALID' }
   $taskRuntimeItem = Get-Item -LiteralPath $RuntimeRoot
   if (-not $taskRuntimeItem.PSIsContainer -or ($taskRuntimeItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'PERSONAL_NATIVE_RUNTIME_INVALID' }
   $taskRuntime = [IO.Path]::GetFullPath($taskRuntimeItem.FullName)
@@ -114,7 +128,7 @@ try {
     $binaryPath = Resolve-NativeLeaf $taskRuntime ('bin\' + $binary.Key)
     if ((Get-FileHash -LiteralPath $binaryPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $binary.Value) { throw 'PERSONAL_NATIVE_RUNTIME_HASH_MISMATCH' }
   }
-  if (-not [IO.Path]::IsPathFullyQualified($NodePath) -or $NodePath.StartsWith('\\') -or -not (Test-Path -LiteralPath $NodePath -PathType Leaf)) { throw 'PERSONAL_NATIVE_NODE_INVALID' }
+  if (-not [IO.Path]::IsPathRooted($NodePath) -or $NodePath -notmatch '^[A-Za-z]:\\' -or $NodePath.StartsWith('\\') -or -not (Test-Path -LiteralPath $NodePath -PathType Leaf)) { throw 'PERSONAL_NATIVE_NODE_INVALID' }
   $taskNode = (Resolve-Path -LiteralPath $NodePath).Path
   Assert-NoReparseAncestors $taskNode
   if ([IO.Path]::GetFileName($taskNode) -ne 'node.exe') { throw 'PERSONAL_NATIVE_NODE_INVALID' }
@@ -167,7 +181,8 @@ try {
   if ($ignored.ExitCode -ne 0) { throw 'PERSONAL_NATIVE_SCRATCH_NOT_IGNORED' }
   $taskRandom = [byte[]]::new(32)
   $taskStage = 'EPHEMERAL_CREDENTIAL'
-  [Security.Cryptography.RandomNumberGenerator]::Fill($taskRandom)
+  $taskRng = [Security.Cryptography.RandomNumberGenerator]::Create()
+  try { $taskRng.GetBytes($taskRandom) } finally { $taskRng.Dispose() }
   $taskPassword = -join ($taskRandom | ForEach-Object { $_.ToString('x2') })
   $taskPasswordFile = Join-Path $taskCluster 'ephemeral-password.txt'
   [IO.File]::WriteAllText($taskPasswordFile, $taskPassword + "`n", [Text.UTF8Encoding]::new($false))

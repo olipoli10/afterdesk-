@@ -5,6 +5,7 @@ const actionSchema = z.object({ actionId: id, kind: z.enum(["READ_CALENDAR", "PR
   recordedStatus: z.enum(["CLARIFY", "READ_REVIEW_ONLY", "PREPARED_UNSENT"]),
   currentStatus: z.enum(["CLARIFY", "NOT_READ", "UNAVAILABLE_OR_CHANGED", "pending", "approved", "processing", "completed", "uncertain", "refused"]),
   nextDecision: z.enum(["CLARIFY_REQUEST", "REVIEW_CALENDAR_READ", "MANUAL_REVIEW", "REVIEW_EXACT_DRAFT", "WAIT_FOR_RESULT", "CHECK_RECORDED_RESULT"]),
+  executionRoute: z.enum(["ANDROID_DEVICE", "GOOGLE_CALENDAR"]).optional(),
   question: z.string().max(1000).optional(), draft: draft.optional(), operationId: id.optional(), requestHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
 }).strict().refine(value => {
   if (value.currentStatus === "CLARIFY") return value.recordedStatus === "CLARIFY" && value.nextDecision === "CLARIFY_REQUEST";
@@ -49,7 +50,7 @@ export function personalModelActionStatus(action: PersonalModelReviewAction) {
 export function personalModelNextDecision(action: PersonalModelReviewAction) {
   if (action.nextDecision === "REVIEW_EXACT_DRAFT") {
     return action.kind === "PREPARE_CALENDAR_EVENT"
-      ? "Compare l’événement complet à ton SMS original, puis approuve explicitement cet ajout à Google Agenda si tout est exact."
+      ? `Compare l’événement complet à ton SMS original, puis approuve explicitement cet ajout ${action.executionRoute === "ANDROID_DEVICE" ? "au calendrier de ce téléphone" : "à Google Agenda"} si tout est exact.`
       : "Compare le texte et le numéro à ton SMS original, puis utilise le suivi des SMS et appels plus bas pour approuver le brouillon exact.";
   }
   const decisions = { CLARIFY_REQUEST: "Clarifie ta demande avant de continuer.", REVIEW_CALENDAR_READ: "Vérifie la période demandée avant de consulter le calendrier.",

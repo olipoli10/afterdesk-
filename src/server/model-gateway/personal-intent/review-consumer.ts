@@ -55,8 +55,13 @@ export async function prepareStoredPersonalIntentReview(tx: Prisma.TransactionCl
       const temporal = resolvePersonalCalendarTemporal(source.input, proposalRaw, action.id, { receivedAt: source.receivedAt, timezone: source.timezone });
       if (temporal.status === "CLARIFY") { ask(temporal.question); continue; }
       const capability = action.kind === "READ_CALENDAR" ? "calendar_read" : "calendar_write";
-      const account = await actionAccount(tx, input.userId, input.workspaceId, "google_calendar", capability);
-      if (!account) { ask("Active l’accès Google Agenda correspondant dans ENDVERA avant de préparer cette action."); continue; }
+      const device = action.kind === "PREPARE_CALENDAR_EVENT"
+        ? await actionAccount(tx, input.userId, input.workspaceId, "endvera_android_device", capability)
+        : null;
+      const account = device ?? await actionAccount(tx, input.userId, input.workspaceId, "google_calendar", capability);
+      if (!account) { ask(action.kind === "PREPARE_CALENDAR_EVENT"
+        ? "Associe le calendrier de ton téléphone ou Google Agenda dans ENDVERA avant de préparer cette action."
+        : "Active l’accès Google Agenda correspondant dans ENDVERA avant de préparer cette lecture."); continue; }
       if (action.kind === "READ_CALENDAR") {
         if (!account.grantedScopes.some(scope => scope === GOOGLE_CALENDAR_READ_SCOPE || scope === GOOGLE_CALENDAR_WRITE_SCOPE)) {
           ask("L’autorisation de lecture Google Agenda doit être accordée dans l’app."); continue;

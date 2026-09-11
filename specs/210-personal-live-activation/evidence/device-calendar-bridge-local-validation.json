@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-11T05:25:00Z",
+  "scope": "ENDVERA_SMS_TO_ANDROID_DEVICE_CALENDAR_BRIDGE",
+  "status": "LOCAL_IMPLEMENTATION_VALIDATED",
+  "architecture": {
+    "ingress": "SIGNED_TWILIO_WEBHOOK_TO_GUARDED_PERSONAL_ASSISTANT",
+    "proposalAuthority": "UNTRUSTED_MODEL_CANDIDATE_ONLY",
+    "actionAuthority": "DETERMINISTIC_BACKEND_PLUS_EXACT_OWNER_APPROVAL",
+    "deviceExecution": "ONE_ATTEMPT_ANDROID_CALENDAR_PROVIDER_WRITE",
+    "recovery": "DURABLE_LOCAL_RECEIPT_JOURNAL_WITHOUT_NATIVE_WRITE_REPLAY",
+    "pushPayload": "GENERIC_WAKE_ONLY",
+    "googleCalendarFallback": "OPTIONAL_AND_SEPARATE"
+  },
+  "validation": {
+    "rootTestFilesPassed": 478,
+    "rootTestsPassed": 7470,
+    "rootTestFilesSkipped": 3,
+    "rootTestsSkipped": 3,
+    "mobileTestFilesPassed": 73,
+    "mobileTestsPassed": 772,
+    "rootTypecheck": "PASS",
+    "mobileTypecheck": "PASS",
+    "mobileLint": "PASS",
+    "expoDoctor": "21_OF_21_PASS",
+    "expoExport": "ANDROID_IOS_WEB_PASS",
+    "providerBoundary": "PASS_MODULES_14616_VIOLATIONS_0",
+    "nativePostgresConfirmationWorker": "7_OF_7_PASS",
+    "nativePostgresDeviceBridge": "4_OF_4_PASS",
+    "migrationCount": 80
+  },
+  "safety": {
+    "providerCallsAuthorizedDuringValidation": false,
+    "externalTransportPerformedDuringValidation": false,
+    "automaticNativeWriteRetry": false,
+    "smsInboxPermissionRequested": false,
+    "callLogPermissionRequested": false,
+    "customerOrEmployeeDataUsed": false,
+    "secretValuesRecorded": false
+  },
+  "limits": {
+    "deviceObserved": false,
+    "twilioWebhookDeployedWithThisCommit": false,
+    "androidApkBuiltFromThisCommit": false,
+    "iosNativeCalendarExecutionImplemented": false,
+    "publicOrStoreReleaseAuthorized": false,
+    "providerCustomerTestDecision": "NO-GO"
+  }
+}

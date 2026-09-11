@@ -26,11 +26,12 @@ afterEach(() => { vi.restoreAllMocks(); for (const root of temporary.splice(0)) 
 } });
 
 describe("pilot migration catalog — local bytes and supplied synthetic rows only", () => {
-  it("inventories exact current79 in order with historical70 and pending9, never a live claim", () => {
-    expect(local.totalCount).toBe(79); expect(local.historicalBaselineCount).toBe(70); expect(local.pendingCount).toBe(9);
+  it("inventories exact current80 in order with historical70 and pending10, never a live claim", () => {
+    expect(local.totalCount).toBe(80); expect(local.historicalBaselineCount).toBe(70); expect(local.pendingCount).toBe(10);
     expect(local.entries[69].migrationName).toBe("20260910002000_personal_outbound_budget");
     expect(local.entries[78].migrationName).toBe("20260910180000_sms_correlated_calendar_approval");
-    expect(local.entries.map((e: { ordinal: number }) => e.ordinal)).toEqual(Array.from({ length: 79 }, (_, i) => i + 1));
+    expect(local.entries[79].migrationName).toBe("20260911043000_android_device_calendar_bridge");
+    expect(local.entries.map((e: { ordinal: number }) => e.ordinal)).toEqual(Array.from({ length: 80 }, (_, i) => i + 1));
     for (const entry of local.entries) { const bytes = readFileSync(entry.relativePath); expect(entry.sha256).toBe(hash(bytes)); expect(entry.byteSize).toBe(bytes.length); }
     expect(local).toMatchObject({ readOnly: true, remoteObserved: false, executionAuthorized: false, backupVerified: false, driftVerified: false });
     expect(Object.isFrozen(local.entries[0])).toBe(true); expect(buildPilotMigrationCatalog().catalogSha256).toBe(local.catalogSha256);
@@ -38,7 +39,7 @@ describe("pilot migration catalog — local bytes and supplied synthetic rows on
   it("compares supplied successful historical rows independently of input order", () => {
     const result = compareSuppliedPilotMigrationRows(local, rows().reverse());
     expect(result.status).toBe("SUPPLIED_ROWS_MATCH_HISTORICAL_70_ONLY"); expect(result.matchedCount).toBe(70);
-    expect(result.pending).toHaveLength(9); expect(result.matches.every((m: { checksumMatch: string }) => m.checksumMatch === "EXACT_BYTES")).toBe(true);
+    expect(result.pending).toHaveLength(10); expect(result.matches.every((m: { checksumMatch: string }) => m.checksumMatch === "EXACT_BYTES")).toBe(true);
     expect(result.matches.map((m: { ordinal: number }) => m.ordinal)).toEqual(Array.from({ length: 70 }, (_, i) => i + 1));
     expect(result).toMatchObject({ catalogProvenanceVerified: false, remoteObserved: false, executionAuthorized: false, backupVerified: false, driftVerified: false });
   });

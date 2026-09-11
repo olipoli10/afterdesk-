@@ -19,7 +19,7 @@ const reviewSchema = z.object({ status: z.literal("REVIEW_PREPARED_NOT_AUTHORIZE
   source: z.object({ operationId: id, text: z.string().min(1).max(10_000), receivedAt: z.string().datetime({ offset: true }), timezone: z.string().min(1).max(100) }).strict(),
   modelChildOperationId: id, actions: z.array(actionSchema).min(1).max(10) }).strict();
 type SourceRow = { id: string; request: unknown; requestHash: string; result: unknown; createdAt: Date; modelChildOperationId: string };
-type DraftRow = { id: string; kind: string; status: string; request: unknown; requestHash: string };
+type DraftRow = { id: string; kind: string; status: string; request: unknown; requestHash: string; provider: string };
 type Action = z.infer<typeof actionSchema>;
 const hash = (text: string) => createHash("sha256").update(text).digest("hex");
 const object = (value: unknown): Record<string, unknown> | null => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
@@ -54,6 +54,7 @@ function currentAction(action: Action, current: Map<string, DraftRow>) {
   const allowed = ["pending", "approved", "processing", "completed", "uncertain", "refused"];
   if (!exact || !allowed.includes(row.status)) return { ...base, currentStatus: "UNAVAILABLE_OR_CHANGED", nextDecision: "MANUAL_REVIEW" };
   return { ...base, operationId: row.id, requestHash: row.requestHash, currentStatus: row.status,
+    ...(row.kind === "calendar_write" ? { executionRoute: row.provider === "endvera_android_device" ? "ANDROID_DEVICE" : "GOOGLE_CALENDAR" } : {}),
     nextDecision: row.status === "pending" ? "REVIEW_EXACT_DRAFT" : row.status === "processing" || row.status === "approved" ? "WAIT_FOR_RESULT"
       : row.status === "completed" ? "CHECK_RECORDED_RESULT" : "MANUAL_REVIEW" };
 }
@@ -97,8 +98,14 @@ export async function personalModelReviewsForOwner(userId: string, workspaceId: 
     const genericIds = draftIds.filter(id => !excluded.has(id));
     const drafts = genericIds.length ? await tx.personalAssistantOperation.findMany({ where: { id: { in: genericIds }, workspaceId, createdByUserId: userId,
       OR: [{ kind: "calendar_write", correlatedTemporalReceiptId: null },
-        { kind: { in: ["sms_outbound", "voice_outbound"] } }] }, select: { id: true, kind: true, status: true, request: true, requestHash: true } }) : [];
-    const current = new Map(drafts.map(row => [row.id, row]));
+        { kind: { in: ["sms_outbound", "voice_outbound"] } }] }, select: {
+          id: true, kind: true, status: true, request: true, requestHash: true,
+          account: { select: { provider: true } },
+        } }) : [];
+    // Legacy test fixtures predate the selected relation and represent the
+    // established Google route. Live Prisma rows always include account.
+    const draftRows: DraftRow[] = drafts.map(row => ({ ...row, provider: row.account?.provider ?? "google_calendar" }));
+    const current = new Map(draftRows.map(row => [row.id, row]));
     return freeze({ schemaVersion: 1 as const, readOnly: true as const, executionAuthorized: false as const, semanticInterpretationVerified: false as const,
       unavailableCount, limit: 20, reviews: validated.map(({ row, review }) => ({ sourceOperationId: row.id, modelChildOperationId: review.modelChildOperationId,
         source: { text: review.source.text, receivedAt: review.source.receivedAt, timezone: review.source.timezone },

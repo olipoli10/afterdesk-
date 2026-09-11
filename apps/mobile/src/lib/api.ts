@@ -9,6 +9,14 @@ import { personalOutboxSchema, personalPairingSchema, personalPhoneSchema } from
 import { personalModelCommand, personalModelStatusSchema, personalModelPreparedSchema, personalModelConsentSchema, personalModelDisconnectedSchema } from "@/lib/personal-model";
 import { personalModelReviewsSchema } from "@/lib/personal-model-reviews";
 import { parsePersonalCorrelatedCalendarList } from "@/lib/personal-correlated-calendar-list";
+import {
+  personalDeviceClaimResultSchema,
+  personalDeviceReceiptResultSchema,
+  personalDeviceRegistrationSchema,
+  personalDeviceStatusSchema,
+  type PersonalDeviceReceipt,
+  type PersonalDeviceRegistration,
+} from "@/lib/personal-device-bridge";
 import { correlatedApprovalId, snapshotCorrelatedApprovalJson, personalCorrelatedCalendarApprovalCommandSchema,
   parsePersonalCorrelatedCalendarApprovalOffer, parsePersonalCorrelatedCalendarApprovalResult, parsePersonalCorrelatedCalendarApprovalResponse,
   type PersonalCorrelatedCalendarApprovalCommand } from "@/lib/personal-correlated-calendar-approval";
@@ -236,6 +244,46 @@ export class MobileApi {
 
   async personalGoogleEvents(workspaceId: string, start: string, end: string) {
     return personalGoogleEventsSchema.parse(await this.request(`/api/endvera/v1/personal/google/events?${new URLSearchParams({ workspaceId, start, end })}`, { method: "GET" }));
+  }
+
+  async registerPersonalDevice(command: PersonalDeviceRegistration) {
+    const parsed = personalDeviceRegistrationSchema.parse(command);
+    return personalDeviceStatusSchema.parse(await this.request("/api/endvera/v1/mobile/device-bridge", {
+      method: "POST", body: JSON.stringify(parsed),
+    }));
+  }
+
+  async personalDeviceStatus(workspaceId: string, deviceId: string, deviceSecret: string) {
+    return personalDeviceStatusSchema.parse(await this.request(
+      `/api/endvera/v1/mobile/device-bridge?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET", headers: { "X-Endvera-Device-Id": deviceId, "X-Endvera-Device-Secret": deviceSecret } },
+    ));
+  }
+
+  async claimPersonalDeviceDirective(workspaceId: string, deviceId: string, deviceSecret: string, directiveId: string, expectedRequestHash: string) {
+    return personalDeviceClaimResultSchema.parse(await this.request("/api/endvera/v1/mobile/device-bridge", {
+      method: "POST", headers: { "X-Endvera-Device-Id": deviceId, "X-Endvera-Device-Secret": deviceSecret },
+      body: JSON.stringify({ schemaVersion: 1, action: "CLAIM", workspaceId, directiveId, expectedRequestHash }),
+    }));
+  }
+
+  async recordPersonalDeviceReceipt(deviceId: string, deviceSecret: string, receipt: PersonalDeviceReceipt) {
+    return personalDeviceReceiptResultSchema.parse(await this.request("/api/endvera/v1/mobile/device-bridge", {
+      method: "POST", headers: { "X-Endvera-Device-Id": deviceId, "X-Endvera-Device-Secret": deviceSecret },
+      body: JSON.stringify(receipt),
+    }));
+  }
+
+  async revokePersonalDevice(workspaceId: string, deviceId: string) {
+    return this.request("/api/endvera/v1/mobile/device-bridge", {
+      method: "POST", body: JSON.stringify({ schemaVersion: 1, action: "REVOKE", workspaceId, deviceId }),
+    });
+  }
+
+  async approvePersonalDeviceCalendar(workspaceId: string, operationId: string, expectedRequestHash: string) {
+    return this.request("/api/endvera/v1/personal/device-calendar/actions", {
+      method: "POST", body: JSON.stringify({ schemaVersion: 1, action: "APPROVE_EXACT_DEVICE_CALENDAR_WRITE", workspaceId, operationId, expectedRequestHash }),
+    });
   }
 
   constructor(

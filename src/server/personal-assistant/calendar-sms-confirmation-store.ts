@@ -8,6 +8,7 @@ import { claimPersonalCalendarWriteInTransaction, type PersonalCalendarExecution
 import { inspectSmsCalendarConfirmation, prepareSmsCalendarConfirmation } from "./calendar-sms-confirmation-contract";
 import type { ConnectorEnvironment } from "./google-client";
 import type { PersonalSmsSourceClaim } from "./sms-worker";
+import { authorizeDeviceCalendarOperationInTransaction } from "./device-bridge";
 
 import { confirmationDatabaseClock as clock, checkedCalendarConfirmationSource as checkedSource,
   lockCalendarConfirmation as lockChallenge, loadCalendarConfirmationBinding as binding } from "./calendar-confirmation-authority";
@@ -97,21 +98,27 @@ export async function consumeCalendarSmsConfirmationInTransaction(tx: DB, input:
     if (refused !== 1) throw new Error("CONFIRMATION_SOURCE_CLAIM_LOST");
     return Object.freeze({ status: "REFUSED" as const, executionAuthorized: false as const });
   }
-  const calendarClaim = await claimPersonalCalendarWriteInTransaction(tx, { ...actor, operationId: matched.operationId, expectedRequestHash: matched.expectedRequestHash }, env,
-    { ...context, deadlineAt: Math.min(context.deadlineAt ?? Infinity, Date.parse(sourceClaim.leaseUntil), challenge.expiresAt.getTime()) });
+  const executionRoute = loaded.calendarProvider === "endvera_android_device" ? "ANDROID_DEVICE" as const : "GOOGLE_CALENDAR" as const;
+  const calendarClaim = executionRoute === "ANDROID_DEVICE"
+    ? await authorizeDeviceCalendarOperationInTransaction(tx, { ...actor, operationId: matched.operationId, expectedRequestHash: matched.expectedRequestHash })
+    : await claimPersonalCalendarWriteInTransaction(tx, { ...actor, operationId: matched.operationId, expectedRequestHash: matched.expectedRequestHash }, env,
+      { ...context, deadlineAt: Math.min(context.deadlineAt ?? Infinity, Date.parse(sourceClaim.leaseUntil), challenge.expiresAt.getTime()) });
   const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalCalendarSmsConfirmation" SET phase='CONSUMED',"confirmationSourceOperationId"=$2,
     "confirmationSourceRequestHash"=$3,"confirmationProviderSid"=$4,"confirmationSourceClaim"=$5::jsonb,"calendarClaim"=$6::jsonb,"consumedAt"=(clock_timestamp() AT TIME ZONE 'UTC'),"updatedAt"=(clock_timestamp() AT TIME ZONE 'UTC')
     WHERE id=$1 AND phase='WAITING' AND "expiresAt">(clock_timestamp() AT TIME ZONE 'UTC')`, challenge.id, sourceClaim.operationId, rows[0].requestHash, source.messageSid,
   JSON.stringify(sourceClaim), JSON.stringify(calendarClaim));
   if (changed !== 1) throw new Error("CONFIRMATION_ALREADY_CONSUMED");
-  const receipt = { source: "CALENDAR_CONFIRMATION", reply: "Confirmation exacte reçue. L’ajout à Google Agenda n’est pas encore confirmé.", challengeId: challenge.id,
+  const receipt = { source: "CALENDAR_CONFIRMATION", reply: executionRoute === "ANDROID_DEVICE"
+    ? "Confirmation exacte reçue. Le téléphone doit encore appliquer le rendez-vous et retourner son reçu."
+    : "Confirmation exacte reçue. L’ajout à Google Agenda n’est pas encore confirmé.", challengeId: challenge.id,
     calendarOperationId: matched.operationId, calendarWriteConfirmed: false, executionAuthorized: false, automaticRetry: false };
   const completed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"leaseUntil"=NULL,result=$6::jsonb,"updatedAt"=(clock_timestamp() AT TIME ZONE 'UTC')
     WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "requestHash"=$4 AND kind='personal_sms_inbound'
       AND status='processing' AND attempts=1 AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC') AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')`, sourceClaim.operationId, actor.workspaceId, actor.userId,
   rows[0].requestHash, new Date(sourceClaim.leaseUntil), JSON.stringify(receipt));
   if (completed !== 1) throw new Error("CONFIRMATION_SOURCE_CLAIM_LOST");
-  return Object.freeze({ status: "CONSUMED_NOT_EXECUTED" as const, executionAuthorized: false as const, calendarWriteConfirmed: false as const, calendarClaim, receipt });
+  return Object.freeze({ status: "CONSUMED_NOT_EXECUTED" as const, executionAuthorized: false as const, calendarWriteConfirmed: false as const,
+    executionRoute, calendarClaim, receipt });
 }
 
 /** Only mirrors an already durable calendar terminal state; never retries or

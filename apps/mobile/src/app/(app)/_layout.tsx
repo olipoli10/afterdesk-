@@ -5,6 +5,7 @@ import { colors } from "@/components/ui";
 import { preparedActionInspections } from "@/lib/prepared-actions";
 import { mobileProductCopy } from "@/lib/product-experience";
 import { useMobileSession } from "@/state/mobile-session";
+import { DeviceCalendarBridgeRunner } from "@/components/device-calendar-bridge-runner";
 
 function TabIcon({
   name,
@@ -49,6 +50,8 @@ export default function AppLayout() {
   ).length;
 
   return (
+    <>
+    <DeviceCalendarBridgeRunner workspaceId={activeWorkspace?.id} />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -93,6 +96,7 @@ export default function AppLayout() {
       <Tabs.Screen name="project-brain-intake" options={{ href: null }} />
       <Tabs.Screen name="project-brain-understanding-review" options={{ href: null }} />
     </Tabs>
+    </>
   );
 }
 

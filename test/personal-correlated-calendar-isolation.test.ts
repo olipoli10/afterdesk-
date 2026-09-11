@@ -201,7 +201,8 @@ describe("future correlated calendar generic isolation — synthetic local only"
     await personalModelReviewsForOwner("owner", "workspace");
     expect(m.many).toHaveBeenCalledWith({ where: { id: { in: ["calendar"] }, workspaceId: "workspace", createdByUserId: "owner",
       OR: [{ kind: "calendar_write", correlatedTemporalReceiptId: null }, { kind: { in: ["sms_outbound", "voice_outbound"] } }] },
-    select: { id: true, kind: true, status: true, request: true, requestHash: true } });
+    select: { id: true, kind: true, status: true, request: true, requestHash: true,
+      account: { select: { provider: true } } } });
   });
   it("puts global refusal in the shared SMS binding before summary, bridge or consumption can proceed", async () => {
     m.query.mockImplementation(async sql => { expectGlobalSqlRefusal(sql, "d"); return []; });

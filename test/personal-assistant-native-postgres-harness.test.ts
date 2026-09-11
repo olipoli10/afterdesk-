@@ -17,7 +17,9 @@ describe("native PostgreSQL harness static contract (does not start a process)",
   it("restricts the new ignored cluster and generates only ephemeral SCRAM material", () => {
     expect(source).toContain("$taskAcl.SetAccessRuleProtection($true, $false)");
     expect(source).toContain("PERSONAL_NATIVE_SCRATCH_NOT_IGNORED");
-    expect(source).toContain("[Security.Cryptography.RandomNumberGenerator]::Fill($taskRandom)");
+    expect(source).toContain("[Security.Cryptography.RandomNumberGenerator]::Create()");
+    expect(source).toContain("$taskRng.GetBytes($taskRandom)");
+    expect(source).toContain("$taskRng.Dispose()");
     expect(source).toContain("'--auth-host=scram-sha-256'");
     expect(source).toContain("$output.Replace($taskPassword, '[REDACTED_EPHEMERAL_PASSWORD]')");
   });

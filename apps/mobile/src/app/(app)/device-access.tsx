@@ -20,6 +20,17 @@ import {
   type NativePermissionLike,
 } from "@/lib/device-access";
 import { useMobileSession } from "@/state/mobile-session";
+import {
+  listWritableDeviceCalendars,
+  loadSelectedDeviceCalendar,
+  localDeviceBridgeSnapshot,
+  registerThisAndroidDevice,
+  revokeThisAndroidDevice,
+  runDeviceCalendarBridge,
+  selectWritableDeviceCalendar,
+  type DeviceBridgeOutcome,
+  type WritableDeviceCalendar,
+} from "@/lib/device-calendar-bridge";
 
 const statusCopy: Record<DeviceAccessState["status"], string> = {
   UNDETERMINED: "Pas encore demandé",
@@ -81,6 +92,10 @@ export default function DeviceAccessScreen() {
   const [busy, setBusy] = useState<DeviceResource | "ALL" | "REFRESH" | null>("REFRESH");
   const [error, setError] = useState<string | null>(null);
   const [biometricsReady, setBiometricsReady] = useState<boolean | null>(null);
+  const [writableCalendars, setWritableCalendars] = useState<WritableDeviceCalendar[]>([]);
+  const [selectedCalendar, setSelectedCalendar] = useState<WritableDeviceCalendar | null>(null);
+  const [deviceLinked, setDeviceLinked] = useState(false);
+  const [bridgeOutcome, setBridgeOutcome] = useState<DeviceBridgeOutcome | null>(null);
   const mounted = useRef(false);
   // Native permission dialogs can foreground the app while a request is in flight.
   // Do not start a competing refresh or allow a second tap before React renders.
@@ -94,6 +109,15 @@ export default function DeviceAccessScreen() {
       const next = await Promise.all(DEVICE_RESOURCES.map(readNativePermission));
       if (!mounted.current) return;
       setStates(next);
+      const [calendars, selected, bridge] = await Promise.all([
+        listWritableDeviceCalendars(),
+        loadSelectedDeviceCalendar(),
+        localDeviceBridgeSnapshot(),
+      ]);
+      if (!mounted.current) return;
+      setWritableCalendars(calendars);
+      setSelectedCalendar(selected);
+      setDeviceLinked(Boolean(bridge.identity && bridge.identity.workspaceId === activeWorkspace?.id));
       const ready = await readBiometricsAvailable();
       if (mounted.current) setBiometricsReady(ready);
     } catch {
@@ -102,7 +126,7 @@ export default function DeviceAccessScreen() {
       pending.current = false;
       if (mounted.current) setBusy(null);
     }
-  }, []);
+  }, [activeWorkspace]);
 
   useEffect(() => {
     let active = true;
@@ -111,10 +135,16 @@ export default function DeviceAccessScreen() {
     void Promise.all([
       Promise.all(DEVICE_RESOURCES.map(readNativePermission)),
       readBiometricsAvailable(),
-    ]).then(([next, ready]) => {
+      listWritableDeviceCalendars(),
+      loadSelectedDeviceCalendar(),
+      localDeviceBridgeSnapshot(),
+    ]).then(([next, ready, calendars, selected, bridge]) => {
       if (!active) return;
       setStates(next);
       setBiometricsReady(ready);
+      setWritableCalendars(calendars);
+      setSelectedCalendar(selected);
+      setDeviceLinked(Boolean(bridge.identity && bridge.identity.workspaceId === activeWorkspace?.id));
       pending.current = false;
       setBusy(null);
     });
@@ -122,7 +152,7 @@ export default function DeviceAccessScreen() {
       if (state === "active") void refresh();
     });
     return () => { active = false; mounted.current = false; subscription.remove(); };
-  }, [refresh]);
+  }, [activeWorkspace, refresh]);
 
   const request = async (resource: DeviceResource) => {
     if (pending.current) return;
@@ -135,6 +165,9 @@ export default function DeviceAccessScreen() {
       const permission = devicePermissionAction(current) === "REQUEST" ? await askNativePermission(resource) : current;
       if (!mounted.current) return;
       setStates((states) => states.map((state) => state.resource === resource ? permission : state));
+      if (resource === "CALENDAR" && permission.status === "GRANTED") {
+        setWritableCalendars(await listWritableDeviceCalendars());
+      }
       if (permission.status === "UNAVAILABLE") setError(`${DEVICE_ACCESS_COPY[resource].title} n’est pas disponible sur ce téléphone.`);
     } finally {
       pending.current = false;
@@ -174,6 +207,53 @@ export default function DeviceAccessScreen() {
     }
   };
 
+  const chooseCalendar = async (calendar: WritableDeviceCalendar) => {
+    setError(null);
+    try {
+      await selectWritableDeviceCalendar(calendar);
+      if (mounted.current) setSelectedCalendar(calendar);
+    } catch {
+      if (mounted.current) setError("Impossible d’enregistrer ce calendrier sur le téléphone.");
+    }
+  };
+
+  const linkDevice = async () => {
+    if (!activeWorkspace || !selectedCalendar || pending.current) return;
+    pending.current = true;
+    setBusy("REFRESH");
+    setError(null);
+    try {
+      await registerThisAndroidDevice(activeWorkspace.id);
+      if (!mounted.current) return;
+      setDeviceLinked(true);
+      setBridgeOutcome(await runDeviceCalendarBridge(activeWorkspace.id));
+    } catch {
+      if (mounted.current) setError("Association refusée. Vérifie la connexion, la session et les permissions, puis réessaie.");
+    } finally {
+      pending.current = false;
+      if (mounted.current) setBusy(null);
+    }
+  };
+
+  const unlinkDevice = async () => {
+    if (!activeWorkspace || pending.current) return;
+    pending.current = true;
+    setBusy("REFRESH");
+    setError(null);
+    try {
+      await revokeThisAndroidDevice(activeWorkspace.id);
+      if (!mounted.current) return;
+      setDeviceLinked(false);
+      setSelectedCalendar(null);
+      setBridgeOutcome(null);
+    } catch {
+      if (mounted.current) setError("La révocation n’a pas été confirmée. Aucun état local n’a été effacé.");
+    } finally {
+      pending.current = false;
+      if (mounted.current) setBusy(null);
+    }
+  };
+
   return (
     <Screen>
       <BrandHeader workspace={activeWorkspace?.name} />
@@ -210,6 +290,26 @@ export default function DeviceAccessScreen() {
       <Card>
         <Text style={sharedStyles.name}>Ton numéro ENDVERA et le calendrier de ce téléphone</Text>
         <Text style={sharedStyles.muted}>Tu écris au numéro ENDVERA depuis Messages. Le serveur prépare une action, ton appareil associé la vérifie, puis le pont calendrier du téléphone l’applique et renvoie un reçu. Google Agenda pourra être ajouté plus tard comme synchronisation entre appareils; ce n’est pas requis pour le calendrier de ce téléphone.</Text>
+        <Text style={sharedStyles.value}>1. Choisis le calendrier Android à modifier</Text>
+        {writableCalendars.length === 0 ? (
+          <Notice>Aucun calendrier modifiable détecté. Autorise Calendrier, puis actualise.</Notice>
+        ) : writableCalendars.map((calendar) => (
+          <Button
+            key={calendar.id}
+            disabled={busy !== null}
+            tone={selectedCalendar?.id === calendar.id ? "primary" : "secondary"}
+            onPress={() => void chooseCalendar(calendar)}
+          >
+            {selectedCalendar?.id === calendar.id ? "✓ " : ""}{calendar.title}{calendar.ownerAccount ? ` — ${calendar.ownerAccount}` : ""}
+          </Button>
+        ))}
+        <Text style={sharedStyles.value}>2. Associe ce téléphone à ton espace ENDVERA</Text>
+        <Text style={deviceLinked ? sharedStyles.success : sharedStyles.muted}>{deviceLinked ? "Téléphone associé" : "Pas encore associé"}</Text>
+        <Button disabled={busy !== null || !selectedCalendar || !activeWorkspace} onPress={() => void linkDevice()}>
+          {deviceLinked ? "Actualiser l’association" : "Associer ce téléphone"}
+        </Button>
+        {deviceLinked ? <Button disabled={busy !== null} tone="secondary" onPress={() => void unlinkDevice()}>Retirer ce téléphone</Button> : null}
+        {bridgeOutcome ? <Notice>{bridgeOutcome.detail}</Notice> : null}
         <Button tone="secondary" onPress={() => router.push("/personal-service")}>Configurer mon numéro ENDVERA</Button>
       </Card>
 

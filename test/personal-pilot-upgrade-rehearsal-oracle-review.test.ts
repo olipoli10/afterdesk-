@@ -27,7 +27,7 @@ const indexes = ["sms_conversation_one_active_pair", "voice_pb_one_session_per_s
 // Explicit synthetic snapshot objects exercise comparison oracles, NOT SQL
 // validity, PostgreSQL execution, remote state or a successfully restored backup.
 function fixture() {
-  const history = catalog.entries.map((e: { migrationName: string; sha256: string }, i: number) => ({ id: `synthetic-${i}`,
+  const history = catalog.entries.slice(0, 79).map((e: { migrationName: string; sha256: string }, i: number) => ({ id: `synthetic-${i}`,
     migration_name: e.migrationName, checksum: e.sha256, started_at: "2026-09-10T00:00:00Z", finished_at: "2026-09-10T00:00:01Z",
     rolled_back_at: null, applied_steps_count: 1, logs: null }));
   const tables: Record<string, Array<Record<string, unknown>>> = Object.fromEntries(Object.entries(legacyCounts).map(([table, count]) =>

@@ -17,6 +17,8 @@ import { correlatedCalendarApprovalClaimSchema, correlatedCalendarApprovalStateS
 export { personalCalendarDraftSchema } from "./calendar-draft-contract";
 
 const storedSchema = personalCalendarDraftSchema.extend({ accountVersion: z.number().int(), requestId: z.string().uuid() }).strict();
+const DEVICE_PROVIDER = "endvera_android_device";
+const DEVICE_CALENDAR_WRITE_SCOPE = "device:calendar:write";
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 async function requireCalendarOwner(userId: string, workspaceId: string, db: Prisma.TransactionClient | typeof prisma = prisma) {
   if (!await db.constructionWorkspaceMember.findFirst({ where: { workspaceId, userId, status: "active", role: { in: ["owner", "admin"] }, workspace: { status: "active" } } })) throw new Error("CALENDAR_OWNER_REQUIRED");
@@ -41,10 +43,29 @@ export async function preparePersonalCalendarInTransaction(db: Prisma.Transactio
   await requireCalendarOwner(input.userId, input.workspaceId, db);
   const draft = personalCalendarDraftSchema.parse(input.draft);
   const requestId = z.string().uuid().parse(input.requestId);
-  const account = await db.constructionConnectorAccount.findUniqueOrThrow({ where: { workspaceId_provider: { workspaceId: input.workspaceId, provider: "google_calendar" } } });
+  // Some isolated legacy tests inject the pre-device Prisma surface. Optional
+  // invocation keeps their Google-only contract intact while production Prisma
+  // always exposes findFirst.
+  const deviceAccount = origin ? null : await db.constructionConnectorAccount.findFirst?.({
+    where: {
+      workspaceId: input.workspaceId, provider: DEVICE_PROVIDER, createdByUserId: input.userId,
+      status: "connected", revokedAt: null, credentialRef: { not: null }, grantedScopes: { has: DEVICE_CALENDAR_WRITE_SCOPE },
+      grants: { some: { capability: "calendar_write", status: "active", revokedAt: null, grantedScopes: { has: DEVICE_CALENDAR_WRITE_SCOPE } } },
+    },
+  });
+  const account = deviceAccount ?? await db.constructionConnectorAccount.findUniqueOrThrow({
+    where: { workspaceId_provider: { workspaceId: input.workspaceId, provider: "google_calendar" } },
+  });
   const request = { ...draft, accountVersion: account.stateVersion, requestId };
   const key = `personal-calendar:${input.workspaceId}:${requestId}`;
-  prepareGoogleCalendarInsert({ ...draft, authority: { accountStatus: account.status as "connected", revokedAt: account.revokedAt as null, grantedScopes: account.grantedScopes }, workspaceId: input.workspaceId, calendarItemId: requestId, idempotencyKey: requestId });
+  // Provider is always present on live Prisma rows. Undefined is accepted only
+  // for older isolated Google-only test doubles that predate device routing.
+  if (!account.provider || account.provider === "google_calendar") {
+    prepareGoogleCalendarInsert({ ...draft, authority: { accountStatus: account.status as "connected", revokedAt: account.revokedAt as null, grantedScopes: account.grantedScopes }, workspaceId: input.workspaceId, calendarItemId: requestId, idempotencyKey: requestId });
+  } else if (account.provider !== DEVICE_PROVIDER || account.status !== "connected" || account.revokedAt
+    || !account.grantedScopes.includes(DEVICE_CALENDAR_WRITE_SCOPE)) {
+    throw new Error("DEVICE_CALENDAR_WRITE_NOT_AUTHORIZED");
+  }
   const existing = await db.personalAssistantOperation.findUnique({ where: { idempotencyKey: key } });
   const requestHash = hash(JSON.stringify(request));
   if (existing) {

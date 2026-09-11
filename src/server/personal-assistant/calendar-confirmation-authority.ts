@@ -30,7 +30,8 @@ type BindingRow = { sourceRequest: unknown; sourceRequestHash: string; sourceRes
   identityId: string; identityRevision: Date; smsAccountId: string; smsAccountVersion: number;
   smsInboundGrantId: string; smsInboundGrantVersion: number;
   memberId: string; memberRevision: Date; workspaceRevision: Date; calendarRequest: unknown; calendarRequestHash: string;
-  accountId: string; accountVersion: number; credentialId: string; writeGrantId: string; writeGrantVersion: number };
+  accountId: string; accountVersion: number; credentialId: string; writeGrantId: string; writeGrantVersion: number;
+  calendarProvider: "google_calendar" | "endvera_android_device" };
 
 async function clock(tx: DB) {
   const [row] = await tx.$queryRawUnsafe<Array<{ now: Date }>>('SELECT clock_timestamp() AS now');
@@ -56,7 +57,7 @@ async function binding(tx: DB, actor: Actor, input: { sourceOperationId: string;
     i.id "identityId",i."updatedAt" "identityRevision",a.id "smsAccountId",a."stateVersion" "smsAccountVersion",
     sg.id "smsInboundGrantId",sg."stateVersion" "smsInboundGrantVersion",
     m.id "memberId",m."updatedAt" "memberRevision",w."updatedAt" "workspaceRevision",
-    d.request "calendarRequest",d."requestHash" "calendarRequestHash",g.id "accountId",g."stateVersion" "accountVersion",
+    d.request "calendarRequest",d."requestHash" "calendarRequestHash",g.id "accountId",g."stateVersion" "accountVersion",g.provider "calendarProvider",
     c.id "credentialId",r.id "writeGrantId",r."stateVersion" "writeGrantVersion"
     FROM "PersonalAssistantOperation" s
     JOIN "PersonalAssistantOperation" child ON child.id=$4 AND child."sourcePersonalOperationId"=s.id
@@ -83,11 +84,13 @@ async function binding(tx: DB, actor: Actor, input: { sourceOperationId: string;
         AND other.verified=true AND other."normalizedAddress"=i."normalizedAddress" AND other.id<>i.id)
       AND a.provider='endvera_sms' AND a.status='connected' AND a."revokedAt" IS NULL AND a."externalAccountKeyHash"=$7
       AND sg.capability='sms_inbound' AND sg.status='active' AND sg."revokedAt" IS NULL
-      AND g.provider='google_calendar' AND g.status='connected' AND g."revokedAt" IS NULL AND c."revokedAt" IS NULL
+      AND g.provider IN ('google_calendar','endvera_android_device') AND g.status='connected' AND g."revokedAt" IS NULL AND c."revokedAt" IS NULL
       AND r.capability='calendar_write' AND r.status='active' AND r."revokedAt" IS NULL
-      AND $8=ANY(g."grantedScopes") AND $8=ANY(r."grantedScopes")
+      AND ((g.provider='google_calendar' AND $8=ANY(g."grantedScopes") AND $8=ANY(r."grantedScopes"))
+        OR (g.provider='endvera_android_device' AND $9=ANY(g."grantedScopes") AND $9=ANY(r."grantedScopes")))
     FOR SHARE OF s,child,d,w,m,i,a,sg,g,c,r`, input.sourceOperationId, actor.workspaceId, actor.userId,
-  input.modelChildOperationId, input.calendarOperationId, sourceClaim ? new Date(sourceClaim.leaseUntil) : null, sha(env.TWILIO_ACCOUNT_SID ?? ""), GOOGLE_CALENDAR_WRITE_SCOPE);
+  input.modelChildOperationId, input.calendarOperationId, sourceClaim ? new Date(sourceClaim.leaseUntil) : null, sha(env.TWILIO_ACCOUNT_SID ?? ""),
+  GOOGLE_CALENDAR_WRITE_SCOPE, "device:calendar:write");
   if (rows.length !== 1) throw new Error("CONFIRMATION_CURRENT_BINDING_REQUIRED");
   const row = rows[0], source = checkedSource(row.sourceRequest, row.sourceRequestHash), draft = storedDraftSchema.parse(row.calendarRequest);
   if (source.accountSid !== env.TWILIO_ACCOUNT_SID || source.to !== env.TWILIO_PHONE_NUMBER || draft.accountVersion !== row.accountVersion) throw new Error("CONFIRMATION_CURRENT_BINDING_REQUIRED");
@@ -102,7 +105,7 @@ async function binding(tx: DB, actor: Actor, input: { sourceOperationId: string;
       accountId: row.accountId, accountVersion: row.accountVersion, credentialId: row.credentialId, writeGrantId: row.writeGrantId, writeGrantVersion: row.writeGrantVersion },
     draft: { title: draft.title, startsAt: draft.startsAt, endsAt: draft.endsAt, timezone: draft.timezone }, policyVersion: SMS_CALENDAR_CONFIRMATION_VERSION,
   };
-  return { current, row, source };
+  return { current, row, source, calendarProvider: row.calendarProvider };
 }
 
 /** Pending bridge preparation is not acceptance. The actual outbox must first

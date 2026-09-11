@@ -29,11 +29,17 @@ export function PersonalModelReviewList({ workspaceId }: { workspaceId: string }
     const epoch = lifecycle.current; const current = () => mounted.current && epoch === lifecycle.current;
     busyRef.current = true; setBusy(true); setApprovalMessage("Approbation transmise — attends la confirmation, sans répéter.");
     try {
-      const receipt = await api.approvePersonalCalendar(workspaceId, approval.operationId, approval.expectedRequestHash);
+      const receipt = action.executionRoute === "ANDROID_DEVICE"
+        ? await api.approvePersonalDeviceCalendar(workspaceId, approval.operationId, approval.expectedRequestHash)
+        : await api.approvePersonalCalendar(workspaceId, approval.operationId, approval.expectedRequestHash);
       if (!current()) return;
-      personalCalendarApprovalReceiptSchema.parse(receipt);
-      setApprovalMessage("Le serveur a reçu la confirmation de Google pour cet ajout. L’état est actualisé ci-dessous.");
-    } catch { if (current()) setApprovalMessage("Ajout Google non confirmé. Aucune relance automatique : vérifie l’état et ton agenda avant toute autre demande."); }
+      if (action.executionRoute === "ANDROID_DEVICE") {
+        setApprovalMessage("Action autorisée. Le téléphone va la réclamer une seule fois et retourner un reçu.");
+      } else {
+        personalCalendarApprovalReceiptSchema.parse(receipt);
+        setApprovalMessage("Le serveur a reçu la confirmation de Google pour cet ajout. L’état est actualisé ci-dessous.");
+      }
+    } catch { if (current()) setApprovalMessage("Ajout non confirmé. Aucune relance automatique : vérifie l’état et ton agenda avant toute autre demande."); }
     finally { if (current()) await reload(); if (current()) { busyRef.current = false; setBusy(false); } }
   }
   return <>
@@ -61,7 +67,9 @@ export function PersonalModelReviewList({ workspaceId }: { workspaceId: string }
         <Text style={sharedStyles.muted}>{personalModelNextDecision(action)}</Text>
         {personalModelCalendarApproval(action) ? <>
           {fence.attempted(action.operationId!) ? <Notice>Une approbation a déjà été tentée dans cet écran. Ne la répète pas si le résultat est encore inconnu.</Notice> : null}
-          <Button disabled={busy || loading || fence.attempted(action.operationId!)} onPress={() => void approveCalendar(action)}>Approuver cet événement exact et l’ajouter à Google Agenda</Button>
+          <Button disabled={busy || loading || fence.attempted(action.operationId!)} onPress={() => void approveCalendar(action)}>
+            {action.executionRoute === "ANDROID_DEVICE" ? "Approuver et ajouter au calendrier de ce téléphone" : "Approuver cet événement exact et l’ajouter à Google Agenda"}
+          </Button>
         </> : null}
       </View>)}
     </Card>) : null}

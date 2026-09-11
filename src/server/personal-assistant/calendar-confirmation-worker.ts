@@ -4,9 +4,10 @@ import { prisma } from "@/lib/db";
 import { checkedCalendarConfirmationSource } from "./calendar-confirmation-authority";
 import { isReservedCalendarConfirmationMessage } from "./calendar-confirmation-routing";
 import { consumeCalendarSmsConfirmationInTransaction, reconcileCalendarSmsConfirmationInTransaction } from "./calendar-sms-confirmation-store";
-import { executeClaimedPersonalCalendarWrite } from "./calendar-actions";
+import { executeClaimedPersonalCalendarWrite, type PersonalCalendarWriteClaim } from "./calendar-actions";
 import type { ConnectorEnvironment } from "./google-client";
 import type { PersonalSmsExecutionContext } from "./sms-worker";
+import { wakePersonalAndroidDevice } from "./device-push";
 
 export function calendarConfirmationWorkerEnabled(env: ConnectorEnvironment) {
   return env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true"
@@ -65,11 +66,21 @@ export async function processCalendarConfirmationSms(context: PersonalSmsExecuti
   // After commit no error may return this source to model interpretation or
   // consumption. Recovery handles a process death before/after dispatch.
   let executionReturned = false;
-  try {
-    live();
-    await executeClaimedPersonalCalendarWrite(consumed.calendarClaim, env, undefined, context);
-    executionReturned = true;
-  } catch { /* Existing executor/recovery retains uncertainty; never retry. */ }
+  let deviceWake: string | null = null;
+  if (consumed.executionRoute === "ANDROID_DEVICE") {
+    try {
+      live();
+      const wake = await wakePersonalAndroidDevice(actor, env as NodeJS.ProcessEnv);
+      deviceWake = wake.status;
+      executionReturned = true;
+    } catch { deviceWake = "UNCONFIRMED"; }
+  } else {
+    try {
+      live();
+      await executeClaimedPersonalCalendarWrite(consumed.calendarClaim as PersonalCalendarWriteClaim, env, undefined, context);
+      executionReturned = true;
+    } catch { /* Existing executor/recovery retains uncertainty; never retry. */ }
+  }
   let observedCalendarState: string | null = null;
   try {
     live();
@@ -81,5 +92,5 @@ export async function processCalendarConfirmationSms(context: PersonalSmsExecuti
     if ("observedCalendarState" in reconciled) observedCalendarState = reconciled.observedCalendarState;
   } catch { /* A later bookkeeping pass can inspect the durable result, not execute. */ }
   return { status: "CONFIRMATION_HANDLED" as const, acknowledgementPrepared: true, executionReturned,
-    observedCalendarState, automaticRetry: false as const };
+    observedCalendarState, deviceWake, automaticRetry: false as const };
 }

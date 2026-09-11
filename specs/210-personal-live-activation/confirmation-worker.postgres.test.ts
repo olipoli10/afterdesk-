@@ -27,6 +27,12 @@ import { executeClaimedPersonalCalendarWrite, type PersonalCalendarWriteClaim } 
 import { enqueuePersonalSms } from "@/server/personal-assistant/sms-inbox";
 import { sealConnectorSecret } from "@/server/personal-assistant/credential-cipher";
 import { isReservedCalendarConfirmationMessage } from "@/server/personal-assistant/calendar-confirmation-routing";
+import { reconcileCalendarSmsConfirmationInTransaction } from "@/server/personal-assistant/calendar-sms-confirmation-store";
+import {
+  claimDeviceCalendarDirective,
+  recordDeviceCalendarReceipt,
+  registerPersonalAndroidDevice,
+} from "@/server/personal-assistant/device-bridge";
 import { personalModelFixture, requirePersonalDisposableDatabase } from "./personal-model.fixture";
 
 requirePersonalDisposableDatabase();
@@ -37,7 +43,7 @@ const span = (body: string, quote: string) => ({ start: body.indexOf(quote), end
 /** No live configuration/credential reader is used. The actual source worker,
  * admission, deterministic consumer and durable bridge run against disposable
  * SQL; only model wire and outbound HTTP are replaced with explicit fakes. */
-async function fixture() {
+async function fixture(route: "google" | "device" = "google") {
   requirePersonalDisposableDatabase();
   const f = await personalModelFixture("Ajoute Visite Laval le 2026-09-12 à 14:00 jusqu’à 15:00.");
   const env: NodeJS.ProcessEnv = {
@@ -71,6 +77,18 @@ async function fixture() {
     requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } });
   await prisma.constructionConnectorGrant.create({ data: { connectorAccountId: f.smsAccountId, capability: "personal_sms_send", status: "active", grantedAt: f.now,
     requestedScopes: ["personal_sms_send"], grantedScopes: ["personal_sms_send"] } });
+  const device = route === "device" ? {
+    schemaVersion: 1 as const,
+    action: "REGISTER" as const,
+    workspaceId: f.workspaceId,
+    deviceId: randomUUID(),
+    deviceSecret: `${randomBytes(32).toString("base64url")}.${randomBytes(32).toString("base64url")}`,
+    platform: "android" as const,
+    pushToken: null,
+    appVersion: "0.3.0-test",
+    permissions: { calendar: "GRANTED" as const, notifications: "DENIED" as const, selectedWritableCalendar: true },
+  } : null;
+  if (device) await registerPersonalAndroidDevice(f.userId, device, env);
   const envelope = { authorityId: PERSONAL_MODEL_AUTHORITY, reviewRef: "SYNTHETIC_TEST_ONLY", reviewedAt: f.now.toISOString(), nonModelExposureCeilingCadMicros: 80000000, totalCeilingCadMicros: 100000000 };
   let wireCalls = 0, finalizations = 0;
   function model(tamperReview = false) {
@@ -98,11 +116,11 @@ async function fixture() {
       } };
     });
   }
-  return { ...f, google, env, model, counts: () => ({ wireCalls, finalizations }) };
+  return { ...f, google, device, env, model, counts: () => ({ wireCalls, finalizations }) };
 }
 
-async function waitingFixture() {
-  const f = await fixture(), model = f.model();
+async function waitingFixture(route: "google" | "device" = "google") {
+  const f = await fixture(route), model = f.model();
   expect(await processPersonalSms(f.sourceOperationId, f.env, { model })).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
   const challenge = await prisma.personalCalendarSmsConfirmation.findFirstOrThrow({ where: { workspaceId: f.workspaceId } });
   const bridge = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { idempotencyKey: `calendar-confirmation:${challenge.id}` } });
@@ -203,6 +221,38 @@ describe("actual SMS source finalization and reserved confirmation bridge on dis
     expect(transport).toHaveBeenCalledOnce(); expect(noModel).not.toHaveBeenCalled();
     const ack = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { idempotencyKey: `reply:${source.id}` } });
     expect(ack.status).toBe("pending"); expect(isReservedCalendarConfirmationMessage((ack.request as { text: string }).text)).toBe(false);
+  });
+  it("routes exact SMS confirmation to one Android directive and finalizes only after the native receipt", async () => {
+    const f = await waitingFixture("device");
+    if (!f.device) throw new Error("SYNTHETIC_DEVICE_REQUIRED");
+    const noModel = vi.fn().mockRejectedValue(new Error("CONFIRMATION_MUST_NOT_CALL_MODEL"));
+    expect(await processPersonalSms(f.confirmation.operationId, f.env, { model: noModel })).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(noModel).not.toHaveBeenCalled();
+    expect(fakeGoogle.claims).toHaveLength(0);
+    const calendar = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: f.challenge.calendarOperationId } });
+    expect(calendar).toMatchObject({ status: "processing", attempts: 1, externalTransportPerformed: false });
+    const directive = await prisma.personalAssistantOperation.findFirstOrThrow({
+      where: { sourcePersonalOperationId: calendar.id, kind: "device_calendar_write_v1" },
+    });
+    expect(directive).toMatchObject({ status: "pending", attempts: 0, externalTransportPerformed: false });
+    expect(await prisma.personalCalendarSmsConfirmation.findUniqueOrThrow({ where: { id: f.challenge.id } }))
+      .toMatchObject({ phase: "CONSUMED", confirmationSourceOperationId: f.confirmation.operationId });
+    const claim = await claimDeviceCalendarDirective({
+      userId: f.userId, workspaceId: f.workspaceId, deviceId: f.device.deviceId, deviceSecret: f.device.deviceSecret,
+    }, { directiveId: directive.id, expectedRequestHash: directive.requestHash }, f.env);
+    await expect(recordDeviceCalendarReceipt({
+      userId: f.userId, workspaceId: f.workspaceId, deviceId: f.device.deviceId, deviceSecret: f.device.deviceSecret,
+    }, {
+      schemaVersion: 1, action: "RECEIPT", workspaceId: f.workspaceId,
+      directiveId: directive.id, expectedRequestHash: directive.requestHash, receiptToken: claim.receiptToken,
+      outcome: "COMPLETED", nativeEventId: "synthetic-android-event",
+    }, f.env)).resolves.toMatchObject({ status: "COMPLETED", replayed: false });
+    await expect(prisma.$transaction(tx => reconcileCalendarSmsConfirmationInTransaction(tx, {
+      actor: { userId: f.userId, workspaceId: f.workspaceId }, challengeId: f.challenge.id,
+    }, f.env), { isolationLevel: "Serializable" })).resolves.toMatchObject({ status: "COMPLETED", observedCalendarState: "completed" });
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: calendar.id } }))
+      .toMatchObject({ status: "completed", attempts: 1, externalTransportPerformed: false });
+    expect(await processPersonalSms(f.confirmation.operationId, f.env, { model: noModel })).toEqual({ status: "NOT_PENDING" });
   });
   it("refuses a received exact confirmation after Google write consent is revoked without any Google HTTP or model fallback", async () => {
     const f = await waitingFixture(), transport = vi.fn<typeof fetch>(); fakeGoogle.transports.set(f.workspaceId, transport);

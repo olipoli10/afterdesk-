@@ -104,6 +104,13 @@ describe("stored personal candidate review consumer (local, mocked persistence)"
       title: "visite", startsAt: "2026-09-11T18:00:00.000Z", endsAt: "2026-09-11T19:00:00.000Z", timezone: "America/Toronto" } }] });
     expect(shared.calendar).toHaveBeenCalledWith(f.tx, expect.objectContaining({ userId: "owner", workspaceId: "workspace" }));
   });
+  it("checks the bound Android calendar-write account before the optional Google fallback", async () => {
+    const f = fixture("Ajoute visite demain à 14h à 15h", "calendar");
+    await prepareStoredPersonalIntentReview(f.tx, f.input, env);
+    const accountCalls = f.query.mock.calls.filter(call => String(call[0]).includes("ConstructionConnectorAccount"));
+    expect(accountCalls).toHaveLength(1);
+    expect(accountCalls[0].slice(-2)).toEqual(["endvera_android_device", "calendar_write"]);
+  });
   it("returns only a read review; no Google client/token operation", async () => {
     const f = fixture("Mon agenda demain", "read");
     expect(await prepareStoredPersonalIntentReview(f.tx, f.input, env)).toMatchObject({ actions: [{ status: "READ_REVIEW_ONLY" }] });

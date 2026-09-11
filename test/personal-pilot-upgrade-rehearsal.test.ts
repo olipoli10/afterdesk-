@@ -20,7 +20,7 @@ function fixture() {
   // Comparator fixtures only. These objects are NOT rows inserted into PostgreSQL.
   const rows = Object.fromEntries(Object.entries(legacyCounts).map(([table, count]) => [table,
     Array.from({ length: count }, (_, i) => ({ id: `${table}-${i}`, result: { prior: 'é 🏗️' }, createdAt: '2026-03-08T02:30:00' } as Record<string, unknown>))]));
-  const history = catalog.entries.map((entry: { migrationName: string; sha256: string }, i: number) => ({ id: `actual-history-placeholder-${i}`, migration_name: entry.migrationName,
+  const history = catalog.entries.slice(0, 79).map((entry: { migrationName: string; sha256: string }, i: number) => ({ id: `actual-history-placeholder-${i}`, migration_name: entry.migrationName,
     checksum: entry.sha256, started_at: '2026-09-10T20:00:00Z', finished_at: '2026-09-10T20:00:01Z', rolled_back_at: null, logs: null, applied_steps_count: 1 }));
   const defaults: Record<string, string> = {};
   const sql74 = readFileSync(resolve(root, catalog.entries[73].relativePath), 'utf8');
@@ -119,11 +119,11 @@ describe('populated upgrade rehearsal — pure/static, no database or provider',
     expect(branch).not.toContain('vitest');
     expect(harness).not.toMatch(/DROP DATABASE|migrate.{0,10}reset|pg_terminate_backend/);
   });
-  it('preserves the twenty existing native suites plus both reviewed operator setup suites', () => {
+  it('preserves the existing native suites and adds the reviewed device bridge suite', () => {
     // Spec210 adds two separately reviewed synthetic suites. Keep exact identities,
     // not just a count that could hide removal/replacement of an older suite.
     const expected = [
-      'confirmation-maintenance', 'confirmation-worker', 'confirmation', 'correlated-calendar-serialization',
+      'confirmation-maintenance', 'confirmation-worker', 'confirmation', 'correlated-calendar-serialization', 'device-calendar-bridge',
       'google', 'inbox', 'outbox', 'personal-model-connection', 'personal-model-operator-setup', 'personal-model-operator-ingress', 'personal-model',
       'personal-subject', 'project-brain-voice-gateway', 'project-brain-voice-recovery',
       'project-brain-voice-transcript-review', 'project-brain-voice', 'recovery', 'sms-calendar-read',

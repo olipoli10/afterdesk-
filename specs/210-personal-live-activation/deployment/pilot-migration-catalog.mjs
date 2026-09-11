@@ -5,9 +5,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { assertReleaseRegularFile } from '../../../scripts/endvera-release-source-binding.mjs';
 
 const VERSION = 'personal-pilot-migration-catalog-v1';
-const NAMES_SHA256 = '84ebabbc759dd8aeca8ebaae742dbddf1228629b4f5c81d1b62aba6066ba4f79';
+const NAMES_SHA256 = '88fc394fdb36fa5c90441f9f51d4bd5598dea6785efa7c7711a3acb3eb9c1bca';
 const BASELINE_LAST = '20260910002000_personal_outbound_budget';
-const LAST = '20260910180000_sms_correlated_calendar_approval';
+const LAST = '20260911043000_android_device_calendar_bridge';
 const MAX_BYTES = 262144;
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const fail = code => { throw new Error(`PILOT_MIGRATION_${code}`); };
@@ -38,9 +38,9 @@ function array(value, length) {
   });
 }
 function requireNames(names) {
-  if (names.length !== 79 || names.some(name => !nameValid(name)) || new Set(names).size !== 79
+  if (names.length !== 80 || names.some(name => !nameValid(name)) || new Set(names).size !== 80
     || names.some((name, i) => i > 0 && names[i - 1] >= name)
-    || names[69] !== BASELINE_LAST || names[78] !== LAST || hash(JSON.stringify(names)) !== NAMES_SHA256) fail('ORDERED_NAMES_REFUSED');
+    || names[69] !== BASELINE_LAST || names[79] !== LAST || hash(JSON.stringify(names)) !== NAMES_SHA256) fail('ORDERED_NAMES_REFUSED');
 }
 
 /** Exact byte inspection, not SQL parsing or normalization. At most one LF/CRLF
@@ -61,7 +61,7 @@ const entryKeys = ['ordinal', 'migrationName', 'relativePath', 'byteSize', 'sha2
 const coreKeys = ['version', 'mode', 'totalCount', 'historicalBaselineCount', 'pendingCount', 'orderedNamesSha256', 'entries',
   'readOnly', 'remoteObserved', 'executionAuthorized', 'backupVerified', 'driftVerified'];
 function catalogCore(entries) {
-  return { version: VERSION, mode: 'LOCAL_BYTES_ONLY', totalCount: 79, historicalBaselineCount: 70, pendingCount: 9,
+  return { version: VERSION, mode: 'LOCAL_BYTES_ONLY', totalCount: 80, historicalBaselineCount: 70, pendingCount: 10,
     orderedNamesSha256: NAMES_SHA256, entries, readOnly: true, remoteObserved: false, executionAuthorized: false, backupVerified: false, driftVerified: false };
 }
 
@@ -80,7 +80,7 @@ export function buildPilotMigrationCatalog(repositoryRoot = fileURLToPath(new UR
   assertReleaseRegularFile(root, 'prisma/migrations/migration_lock.toml');
   const dir = path.join(root, 'prisma/migrations');
   const children = readdirSync(dir, { withFileTypes: true });
-  if (children.length !== 80 || children.some(item => item.name !== 'migration_lock.toml' && (!item.isDirectory() || item.isSymbolicLink()))) fail('DIRECTORY_CONTENT_REFUSED');
+  if (children.length !== 81 || children.some(item => item.name !== 'migration_lock.toml' && (!item.isDirectory() || item.isSymbolicLink()))) fail('DIRECTORY_CONTENT_REFUSED');
   const names = children.filter(item => item.name !== 'migration_lock.toml').map(item => item.name).sort();
   requireNames(names);
   const entries = names.map((name, index) => {
@@ -97,7 +97,7 @@ export function buildPilotMigrationCatalog(repositoryRoot = fileURLToPath(new UR
 
 function inspectCatalog(raw) {
   const value = record(raw, [...coreKeys, 'catalogSha256']);
-  const entries = array(value.entries, 79).map((rawEntry, i) => {
+  const entries = array(value.entries, 80).map((rawEntry, i) => {
     const entry = record(rawEntry, entryKeys);
     if (entry.ordinal !== i + 1 || !nameValid(entry.migrationName) || entry.relativePath !== `prisma/migrations/${entry.migrationName}/migration.sql`
       || !Number.isSafeInteger(entry.byteSize) || entry.byteSize < 1 || entry.byteSize > MAX_BYTES
