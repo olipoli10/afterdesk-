@@ -76,6 +76,9 @@ function begin(raw: unknown, env: NodeJS.ProcessEnv, context: PersonalModelOpera
       || env.ENDVERA_EXTERNAL_AUTHORITY_REF !== pins.authority || pins.authority !== config.manifest.authorityId
       || env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT !== pins.expiry || pins.expiry !== config.manifest.pilotExpiresAt
       || env.ENDVERA_CONNECTOR_ENCRYPTION_KEY !== pins.key)) refused();
+    if (write && config.manifest.artifact.answerSetup
+      && (env.ENDVERA_PERSONAL_ANSWER_ENGINE_ENABLED !== "false"
+        || env.ENDVERA_PERSONAL_ANSWER_EXTERNAL_TRANSPORT_ENABLED !== "false")) refused();
     return { wall, mono };
   }
   const remaining = () => { const t = live(); return Math.floor(Math.min(deadlineAt - t.wall, monotoneDeadlineAt - t.mono, dbDeadline - t.mono)); };
