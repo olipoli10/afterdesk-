@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AppIcon } from "@/components/app-icon";
@@ -18,6 +19,7 @@ import {
   sharedStyles,
 } from "@/components/ui";
 import { shouldRouteToOnboarding } from "@/lib/first-login";
+import { markPersonalActivationPresented, shouldPresentPersonalActivation } from "@/lib/personal-activation-prompt";
 import { mobileGoldenWorkflowCopy, type MobileGoldenWorkflowRoute } from "@/lib/golden-workflow";
 import { mobileProductCopy } from "@/lib/product-experience";
 import { useMobileSession } from "@/state/mobile-session";
@@ -40,6 +42,7 @@ function openRoute(route: MobileGoldenWorkflowRoute) {
 
 export default function TodayScreen() {
   const [showPlan, setShowPlan] = useState(false);
+  const activationCheck = useRef<string | null>(null);
   const { activeWorkspace, bootstrap, cockpit, goldenWorkflow, goldenWorkflowLoadState, loadState, publicError, loadGoldenWorkflow } = useMobileSession();
   const fallbackLocale = activeWorkspace?.defaultLocale === "en-CA" ? "en-CA" : "fr-CA";
   const copy = mobileProductCopy(goldenWorkflow?.workspace.locale ?? fallbackLocale);
@@ -52,6 +55,22 @@ export default function TodayScreen() {
   useEffect(() => {
     if (onboardingRequired) router.replace("/onboarding");
   }, [onboardingRequired]);
+
+  useEffect(() => {
+    const workspaceId = activeWorkspace?.id;
+    if (!workspaceId || activeWorkspace.role !== "OWNER" || onboardingRequired || activationCheck.current === workspaceId) return;
+    activationCheck.current = workspaceId;
+    let current = true;
+    void shouldPresentPersonalActivation(workspaceId, SecureStore).then(async (present) => {
+      if (!current || !present) return;
+      await markPersonalActivationPresented(workspaceId, SecureStore);
+      if (current) router.replace("/device-access");
+    }).catch(() => {
+      // A storage failure must not trap the owner in a redirect loop. The
+      // persistent activation card below remains available.
+    });
+    return () => { current = false; };
+  }, [activeWorkspace?.id, activeWorkspace?.role, onboardingRequired]);
 
   useEffect(() => {
     if (activeWorkspace) void loadGoldenWorkflow();
@@ -71,6 +90,13 @@ export default function TodayScreen() {
         <BrandHeader workspace={activeWorkspace?.name} onMore={() => router.push("/more")} moreLabel={copy.tabs.more} />
         <Heading eyebrow={copy.home.eyebrow} title={copy.home.title} body={copy.home.body} />
         {publicError ? <Notice danger>{publicError}</Notice> : null}
+        {activeWorkspace?.role === "OWNER" ? (
+          <Card tone="warm">
+            <Text style={sharedStyles.name}>Active ton téléphone et ton numéro ENDVERA</Text>
+            <Text style={sharedStyles.muted}>Autorise les accès utiles, choisis le calendrier de ce Samsung et associe ton numéro automatiquement avec un SMS prérempli.</Text>
+            <Button icon="arrow" onPress={() => router.push("/device-access")}>Commencer l’activation</Button>
+          </Card>
+        ) : null}
         <Card><Empty>{mobileGoldenWorkflowCopy(fallbackLocale, "cockpit.empty")}</Empty></Card>
         <Button icon="sync" accessibilityRole="button" accessibilityLabel={mobileGoldenWorkflowCopy(fallbackLocale, "action.SYNC")} accessibilityState={{ busy: goldenWorkflowLoadState === "LOADING" }} onPress={() => void loadGoldenWorkflow()}>
           {mobileGoldenWorkflowCopy(fallbackLocale, "action.SYNC")}
@@ -90,6 +116,14 @@ export default function TodayScreen() {
       <BrandHeader workspace={goldenWorkflow.workspace.name} onMore={() => router.push("/more")} moreLabel={copy.tabs.more} />
       <Heading eyebrow={copy.home.eyebrow} title={copy.home.title} body={copy.home.body} />
       {publicError ? <Notice danger>{publicError}</Notice> : null}
+
+      {activeWorkspace?.role === "OWNER" ? (
+        <Card tone="warm">
+          <Text style={sharedStyles.name}>Active ton téléphone et ton numéro ENDVERA</Text>
+          <Text style={sharedStyles.muted}>Autorise les accès utiles, choisis le calendrier de ce Samsung et associe ton numéro automatiquement avec un SMS prérempli.</Text>
+          <Button icon="arrow" onPress={() => router.push("/device-access")}>Commencer l’activation</Button>
+        </Card>
+      ) : null}
 
       <Card tone="warm" style={styles.askCard}>
         <Pressable

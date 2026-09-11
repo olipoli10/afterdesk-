@@ -3,7 +3,7 @@ export const MOBILE_RELEASE_INFO = {
   productName: "ENDVERA",
   semanticVersion: "0.2.0",
   ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1" },
-  android: { package: "ai.endvera.mobile", versionCode: 6 },
+  android: { package: "ai.endvera.mobile", versionCode: 7 },
   publicPaths: {
     privacy: "/privacy",
     security: "/security",

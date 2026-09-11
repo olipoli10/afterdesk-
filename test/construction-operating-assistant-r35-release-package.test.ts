@@ -34,7 +34,7 @@ describe("R35 deterministic local release packaging", () => {
     expect(releaseDefinition).toMatchObject({ releaseKey: "ENDVERA_CONSTRUCTION_V1", targets: ["WEB", "IOS", "ANDROID"], readinessCeiling: "LOCAL_PACKAGE_READY" });
     expect(RELEASE_BOUNDARY).toEqual({ signed: false, uploaded: false, published: false, deployed: false, providerObserved: false, externalEffectCount: 0 });
     const app = JSON.parse(readFileSync("apps/mobile/app.json", "utf8")).expo;
-    expect(app).toMatchObject({ name: "ENDVERA", slug: "endvera", version: "0.2.0", scheme: "endvera", ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1" }, android: { package: "ai.endvera.mobile", versionCode: 6 } });
+    expect(app).toMatchObject({ name: "ENDVERA", slug: "endvera", version: "0.2.0", scheme: "endvera", ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1" }, android: { package: "ai.endvera.mobile", versionCode: 7 } });
   });
 
   it("validates local environment presence without accepting or returning values", () => {

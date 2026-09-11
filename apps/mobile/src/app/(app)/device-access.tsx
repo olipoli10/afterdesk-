@@ -10,6 +10,7 @@ import * as Notifications from "expo-notifications";
 import { AppState, Linking, Text, View } from "react-native";
 import { router } from "expo-router";
 import { BrandHeader, Button, Card, Heading, Notice, Screen, sharedStyles } from "@/components/ui";
+import { PersonalPhoneActivationCard } from "@/components/personal-phone-activation-card";
 import {
   DEVICE_ACCESS_COPY,
   DEVICE_RESOURCES,
@@ -258,6 +259,8 @@ export default function DeviceAccessScreen() {
     <Screen>
       <BrandHeader workspace={activeWorkspace?.name} />
       <Heading eyebrow="ACCÈS DU TÉLÉPHONE" title="Donne à ENDVERA les accès utiles" body="Chaque permission est séparée, visible et révocable. ENDVERA l’utilise seulement quand tu demandes l’action correspondante." />
+
+      {activeWorkspace?.role === "OWNER" ? <PersonalPhoneActivationCard workspaceId={activeWorkspace.id} /> : null}
 
       <Card>
         <Text style={sharedStyles.name}>Choisis tes accès</Text>

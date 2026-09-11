@@ -18,7 +18,7 @@ const HEAD = 'a'.repeat(40), ORIGIN = 'https://endvera-core-sandbox-afterdesk.ve
 const json = (file: string) => JSON.parse(readFileSync(file, 'utf8'));
 const actual = { app: json('apps/mobile/app.json'), eas: json('apps/mobile/eas.json'), packageJson: json('apps/mobile/package.json'),
   definition: json('release/endvera-construction-v1/release-definition-v3.json'), readiness: json('release/endvera-construction-v1/mobile-build-readiness.json') };
-const expected = { expectedHead: HEAD, expectedApiOrigin: ORIGIN, expectedVersionCode: 6 };
+const expected = { expectedHead: HEAD, expectedApiOrigin: ORIGIN, expectedVersionCode: 7 };
 function fixture() {
   const value = { ...structuredClone(actual), ...expected, head: HEAD, gitStatus: '' };
   // Source inputs are real; HEAD/clean state remain synthetic observations.
@@ -37,7 +37,7 @@ describe('founder Android guard — pure supplied fixtures only', () => {
   it('validates a coherent synthetic control without declaring backend, EAS, budget or build authority', () => {
     const result = validateFounderAndroidBuildInputs(fixture());
     expect(result).toMatchObject({ status: 'FOUNDER_ANDROID_INPUTS_VALIDATED_LOCAL_ONLY', sourceHead: HEAD, apiOrigin: ORIGIN,
-      versionCode: 6, semanticVersion: actual.app.expo.version, profile: 'founder-device', executionAuthorized: false,
+      versionCode: 7, semanticVersion: actual.app.expo.version, profile: 'founder-device', executionAuthorized: false,
       backendCompatibilityVerified: false, remoteEasConfigurationVerified: false, budgetVerified: false, buildInvoked: false });
     expect(Object.isFrozen(result)).toBe(true);
     expect(spies.git).not.toHaveBeenCalled(); expect(spies.binding).not.toHaveBeenCalled();
@@ -45,7 +45,7 @@ describe('founder Android guard — pure supplied fixtures only', () => {
 
   it('pins the current source origin without granting remote or build authority', () => {
     expect(actual.eas.build['founder-device'].env).toEqual({ EXPO_PUBLIC_ENDVERA_API_URL: ORIGIN });
-    expect(validateFounderAndroidBuildInputs({ ...structuredClone(actual), ...expected, head: HEAD, gitStatus: '' })).toMatchObject({ versionCode: 6, buildInvoked: false, backendCompatibilityVerified: false });
+    expect(validateFounderAndroidBuildInputs({ ...structuredClone(actual), ...expected, head: HEAD, gitStatus: '' })).toMatchObject({ versionCode: 7, buildInvoked: false, backendCompatibilityVerified: false });
   });
 
   it.each(['', 'http://endvera-core-sandbox-afterdesk.vercel.app', ORIGIN + '/', ORIGIN + '/api', ORIGIN + '?secret=x', ORIGIN + '#x',
@@ -75,11 +75,11 @@ describe('founder Android guard — pure supplied fixtures only', () => {
       if (kind === 'project') value.app.expo.extra.eas.projectId = '00000000-0000-4000-8000-000000000000';
       if (kind === 'owner') value.app.expo.owner = 'someone-else';
       if (kind === 'package') value.app.expo.android.package = 'ai.other.mobile';
-      if (kind === 'code') value.app.expo.android.versionCode = 7;
+      if (kind === 'code') value.app.expo.android.versionCode = 8;
       if (kind === 'semantic') value.app.expo.version = '0.3.0';
       if (kind === 'packageVersion') value.packageJson.version = '0.3.0';
-      if (kind === 'release') value.definition.identities.find((x: {target: string}) => x.target === 'ANDROID').versionCode = 7;
-      if (kind === 'readiness') value.readiness.android.versionCode = 7;
+      if (kind === 'release') value.definition.identities.find((x: {target: string}) => x.target === 'ANDROID').versionCode = 8;
+      if (kind === 'readiness') value.readiness.android.versionCode = 8;
       if (kind === 'profile') delete value.eas.build['founder-device'];
       if (kind === 'store') value.eas.build['founder-device'].distribution = 'store';
       if (kind === 'autoincrement') value.eas.build['founder-device'].autoIncrement = true;

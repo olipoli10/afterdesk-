@@ -20,7 +20,7 @@
     },
     "android": {
       "package": "ai.endvera.mobile",
-      "versionCode": 6,
+      "versionCode": 7,
       "blockedPermissions": [
         "android.permission.READ_SMS",
         "android.permission.WRITE_SMS",

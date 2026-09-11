@@ -19,7 +19,7 @@ describe("R36G credential-free mobile build preparation", () => {
       status: "READY_FOR_SIGNING_AUTHORITY",
       appName: "ENDVERA",
       ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1", artifact: "IPA" },
-      android: { package: "ai.endvera.mobile", versionCode: 6, artifact: "AAB" },
+      android: { package: "ai.endvera.mobile", versionCode: 7, artifact: "AAB" },
       signed: false,
       uploaded: false,
       submitted: false,
