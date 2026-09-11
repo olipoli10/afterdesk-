@@ -38,7 +38,7 @@ describe("founder device access", () => {
     expect(screenSource).toContain('AppState.addEventListener("change"');
     expect(screenSource).toContain('state === "active"');
     expect(screenSource).toContain("Modifier ou retirer cet accès");
-    expect(screenSource).toContain("Google Agenda doit être connecté séparément");
+    expect(screenSource).toContain("calendrier de ce téléphone");
     expect(screenSource).not.toContain("Autoriser tous les accès utiles");
     expect(screenSource).toContain("await Linking.openSettings()");
   });
@@ -46,6 +46,7 @@ describe("founder device access", () => {
   it("covers every useful permission without SMS or call-log surveillance", () => {
     expect(DEVICE_RESOURCES).toEqual(["CONTACTS", "CALENDAR", "MICROPHONE", "CAMERA", "PHOTOS", "NOTIFICATIONS", "LOCATION"]);
     expect(screenSource).toContain("Tu écris au numéro ENDVERA depuis l’application Messages normale");
+    expect(screenSource).toContain("Le serveur prépare une action");
     expect(screenSource).not.toContain("READ_SMS");
     expect(screenSource).not.toContain("READ_CALL_LOG");
   });

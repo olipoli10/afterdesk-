@@ -208,9 +208,9 @@ export default function DeviceAccessScreen() {
       </Card>
 
       <Card>
-        <Text style={sharedStyles.name}>Tes textos et Google Agenda</Text>
-        <Text style={sharedStyles.muted}>Google Agenda doit être connecté séparément pour répondre à tes textos et modifier ton agenda depuis le serveur. Les permissions de ce téléphone ne donnent pas un contrôle général à distance et ne connectent pas automatiquement tes comptes.</Text>
-        <Button tone="secondary" onPress={() => router.push("/personal-service")}>Configurer mon numéro ENDVERA et Google Agenda</Button>
+        <Text style={sharedStyles.name}>Ton numéro ENDVERA et le calendrier de ce téléphone</Text>
+        <Text style={sharedStyles.muted}>Tu écris au numéro ENDVERA depuis Messages. Le serveur prépare une action, ton appareil associé la vérifie, puis le pont calendrier du téléphone l’applique et renvoie un reçu. Google Agenda pourra être ajouté plus tard comme synchronisation entre appareils; ce n’est pas requis pour le calendrier de ce téléphone.</Text>
+        <Button tone="secondary" onPress={() => router.push("/personal-service")}>Configurer mon numéro ENDVERA</Button>
       </Card>
 
       {error ? <Notice danger>{error}</Notice> : null}

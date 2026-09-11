@@ -42,7 +42,7 @@ export const DEVICE_ACCESS_COPY = {
   },
   CALENDAR: {
     title: "Calendriers du téléphone",
-    detail: "Autorisation native préparée. Les calendriers du téléphone ne sont pas encore lus ou modifiés par cette intégration. Google Agenda se connecte séparément au service SMS.",
+    detail: "Autorisation native du téléphone. ENDVERA utilisera ce pont pour ajouter ou modifier les rendez-vous demandés depuis ton numéro ENDVERA, après validation du serveur et de ton appareil associé. Cette permission seule n’active aucun envoi ni modification.",
   },
   MICROPHONE: {
     title: "Microphone",

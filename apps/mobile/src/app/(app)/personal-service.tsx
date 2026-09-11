@@ -77,7 +77,7 @@ function PersonalService({ workspaceId }: { workspaceId: string }) {
       })}>Ouvrir Messages pour associer mon numéro</Button>
       {phone?.boundPhone ? <Button disabled={busy || loading} tone="secondary" onPress={() => void run(() => api.disconnectPersonalPhone(workspaceId))}>Retirer l’accès à mon téléphone</Button> : null}
     </Card>
-    <Button tone="secondary" onPress={() => router.push("/calendar-connections")}>2 · Connecter mon Google Agenda</Button>
+    <Button tone="secondary" onPress={() => router.push("/device-access")}>2 · Autoriser le calendrier de ce téléphone</Button>
     <PersonalModelConnection key={workspaceId} workspaceId={workspaceId} />
     <PersonalModelReviewList key={`reviews:${workspaceId}`} workspaceId={workspaceId} />
     <PersonalCorrelatedCalendarApproval key={`correlated:${workspaceId}`} workspaceId={workspaceId} />

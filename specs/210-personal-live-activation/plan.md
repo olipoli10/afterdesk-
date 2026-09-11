@@ -5,10 +5,10 @@ and resume this task every three minutes until its actual completion.
 
 ## Outcome
 
-Olivier uses his Samsung Messages app to contact an ENDVERA number, asks about
-his connected calendar, adds an event, and approves an exact SMS or voice call.
-The installed app handles account connection, selected device permissions,
-approval and history. No personal-SIM SMS access is required.
+Olivier uses Samsung Messages to contact an ENDVERA number, asks about the
+calendar on his linked phone, adds an event, and approves an exact SMS or voice
+call. The installed app handles the selected native device permissions, device
+binding, approval and receipt history. No personal-SIM SMS access is required.
 
 ## Reconciled starting point
 
@@ -28,14 +28,21 @@ approval and history. No personal-SIM SMS access is required.
 
 1. Implement bounded, signed Twilio ingress with account/number matching,
    verified identity binding and durable duplicate protection.
-2. Complete Google OAuth with server token encryption, state binding, refresh
-   and revoke; reuse existing calendar request builders and workspace checks.
-3. Connect SMS to the existing guarded assistant, durable jobs and exact
+2. Make the Android Calendar Provider the primary calendar path: after the
+   owner grants Calendar permission and links a device, a server-validated,
+   one-time action is delivered to that device, applied locally, then recorded
+   with a receipt. A wake-up notification must never contain authority or a
+   writable event payload by itself.
+3. Keep Google OAuth as an optional server-side, cross-device connector, not a
+   prerequisite for the linked phone's own calendar. Its token encryption,
+   state binding, refresh and revoke remain required if enabled.
+4. Connect SMS to the existing guarded assistant, durable jobs and exact
    approvals; implement bounded outgoing Twilio transport and delivery receipts.
-4. Configure a reachable HTTPS backend, database/storage and the Android build.
-5. Connect Olivier's accounts and provision/verify the number after the concrete
+5. Configure a reachable HTTPS backend, database/storage, device wake-up path
+   and the Android build.
+6. Connect Olivier's accounts and provision/verify the number after the concrete
    account, spend ceiling and approved recipients are available.
-6. Observe inbound SMS, real calendar query/write/sync, approved self-recipient
+7. Observe inbound SMS, real calendar query/write/sync, approved self-recipient
    SMS and voice, duplicate refusal and app login. Preserve failures.
 
 ## Authority and completion
