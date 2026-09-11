@@ -73,7 +73,7 @@ describe("pure closed operator ingress configuration", () => {
     const f = fixture(), a = inspect(f.utf8), b = inspect(` ${f.utf8}\r\n`);
     expect(a.manifestHash).toBe(b.manifestHash); expect(a.configurationSha256).not.toBe(b.configurationSha256);
   });
-  it("accepts exactly 16 KiB and refuses one additional byte", () => {
+  it("accepts exactly the bounded configuration limit and refuses one additional byte", () => {
     const f = fixture(), remaining = PERSONAL_MODEL_INGRESS_LIMITS.configurationUtf8 - Buffer.byteLength(f.utf8);
     expect(remaining).toBeGreaterThan(0);
     const exact = f.utf8 + " ".repeat(remaining);

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { sha256Canonical } from "@/lib/construction-assistant-v1/canonical";
 import { inspectPersonalModelSetupManifest } from "./operator-setup";
 
-export const PERSONAL_MODEL_INGRESS_LIMITS = Object.freeze({ configurationUtf8: 16384, manifestUtf8: 262144,
+export const PERSONAL_MODEL_INGRESS_LIMITS = Object.freeze({ configurationUtf8: 32768, manifestUtf8: 262144,
   archiveUtf8: 524288, receiptUtf8: 16384, windowMs: 900000 });
 export const PERSONAL_MODEL_INGRESS_TARGET = Object.freeze({ profile: "PERSONAL_PILOT" as const,
   origin: "https://endvera-core-sandbox-afterdesk.vercel.app", vercelProjectId: "prj_cEvjMH8iJ2C9khbZ0vsQlGKQ4Y75",
