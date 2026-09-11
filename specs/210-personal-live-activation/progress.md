@@ -1,5 +1,16 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 03:43Z — Account access gate observed; no new provider attempt
+
+Chrome navigation to the official OpenRouter workspace keys page redirected to
+Sign In. This browser session cannot currently verify account balance, privacy,
+logging settings or provision the guarded configuration. No credential was read,
+submitted, created or rotated. Existing Twilio tab remains at password login;
+dedicated ENDVERA tab remains at owner login. These are access/consent gates, not
+a request for another routine GO. B4 and APK proofs above remain valid local
+evidence, not live SMS/model completion. Existing three-minute heartbeat verified
+ACTIVE; no duplicate created, campaign incomplete and metrics unchanged.
+
 ## 2026-09-11 03:34Z — Owner setup form verified locally; APK signatures verified
 
 B4 minimal owner page, closed browser contract and one-attempt component reviewed.
