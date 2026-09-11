@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-11T21:14:11.645Z",
+  "release": "ENDVERA_ANDROID_INTERNAL_9",
+  "source": {
+    "branch": "codex/endvera-astra-r03",
+    "head": "70e3dfe5e490d6acd04f796cfa617ae0a9f2f4b9"
+  },
+  "change": {
+    "purpose": "Owner-authenticated initial OpenRouter credential provisioning from the native app",
+    "credentialTransport": "MASKED_TRANSIENT_INPUT_TO_HTTPS_BACKEND",
+    "credentialStorage": "SERVER_ENCRYPTED_ONLY",
+    "automaticProviderCallOnSave": false,
+    "androidVersionCode": 9
+  },
+  "validation": {
+    "mobileTestFilesPassed": 77,
+    "mobileTestsPassed": 782,
+    "backendTargetedTestFilesPassed": 2,
+    "backendTargetedTestsPassed": 33,
+    "releaseControlTestFilesPassed": 5,
+    "releaseControlTestsPassed": 80,
+    "scopedLint": "PASS",
+    "diffCheck": "PASS",
+    "independentStaticReview": "NO_BLOCKING_FINDING"
+  },
+  "backendDeployment": {
+    "vercelProject": "endvera-core-sandbox",
+    "deploymentId": "dpl_Bd9ApznRuX4pRrVybfYjq9BXyXsd",
+    "status": "READY",
+    "target": "production",
+    "deployedRoute": "/api/endvera/v1/personal/model/credential",
+    "anonymousRouteStatus": 401,
+    "configuredMobileOriginAnonymousRouteStatus": 401
+  },
+  "eas": {
+    "projectId": "a7b2c087-f8e1-48e4-8798-f6fabefb69fe",
+    "buildId": "a921a984-b3fe-4292-8ca8-6b86be515085",
+    "status": "FINISHED",
+    "distribution": "INTERNAL",
+    "profile": "founder-device",
+    "applicationId": "ai.endvera.mobile",
+    "appVersion": "0.2.0",
+    "appBuildVersion": "9",
+    "fingerprint": "3a3ad61f2e32f443ddc61bf642f4f340bf869af1",
+    "artifactUrl": "https://expo.dev/artifacts/eas/1yS1XIqBcm4TmIf_F2FJNhREi55CYb1cLoe7oBe726M.apk",
+    "artifactExpiresAt": "2026-09-25T21:00:50.694Z",
+    "artifactHeadStatus": 200,
+    "artifactContentType": "application/octet-stream",
+    "artifactByteSize": 127362724
+  },
+  "claims": {
+    "signedInternalApkProduced": true,
+    "backendRouteObserved": true,
+    "installedOnSamsungObserved": false,
+    "credentialProvisioningObservedFromDevice": false,
+    "openRouterObservedFromSms": false,
+    "generalAnswerGatewayPublished": false,
+    "publicResearchGatewayPublished": false,
+    "storePublished": false,
+    "productionReady": false
+  }
+}
