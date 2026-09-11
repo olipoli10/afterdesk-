@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-11T15:39:56.068Z",
+  "scope": "ENDVERA personal SMS reply transport recovery",
+  "observation": {
+    "inboundCarrierReceiptObserved": true,
+    "twilioInboundStatus": "RECEIVED",
+    "webhookHttpStatus": 200,
+    "pairedOwnerIdentityActive": true,
+    "initialReplyDeliveryObserved": false
+  },
+  "rootCause": {
+    "code": "TWILIO_OUTBOUND_CREDENTIAL_MISMATCH",
+    "evidence": [
+      "The protected worker first returned TWILIO_CONFIGURATION_REQUIRED before any provider attempt.",
+      "After correcting the API key SID, the provider refused the request before creating an outbound message.",
+      "The existing restricted key had the required Messages/Create and Calls/Create permissions, leaving its stored secret binding as the reproducible mismatch."
+    ]
+  },
+  "remediation": {
+    "newRestrictedKeyCreatedWithUserConfirmation": true,
+    "grants": [
+      "Messaging/Messages/Create",
+      "Voice/Calls/Create"
+    ],
+    "vercelSecretsUpdated": [
+      "TWILIO_API_KEY_SID",
+      "TWILIO_API_KEY_SECRET"
+    ],
+    "secretValuesRecorded": false,
+    "finalDeploymentId": "dpl_8wtsaqSccssRpstvb3bjGvXGpADw",
+    "finalDeploymentTarget": "production",
+    "workerResult": {
+      "disabled": false,
+      "processed": 0,
+      "outboundFailures": [],
+      "deadlineReached": false
+    }
+  },
+  "providerObservation": {
+    "outboundMessagesCreated": 2,
+    "deliveredMessages": 2,
+    "statuses": [
+      "DELIVERED",
+      "DELIVERED"
+    ],
+    "segmentsPerMessage": [
+      4,
+      4
+    ]
+  },
+  "postgresObservation": {
+    "pendingOutbound": 0,
+    "completedOutbound": 2,
+    "completedAttemptsEach": 1,
+    "completedExternalTransportPerformed": true,
+    "completedReceiptSequences": [
+      [
+        "sent",
+        "delivered"
+      ],
+      [
+        "sent",
+        "delivered"
+      ]
+    ],
+    "retainedUncertainPreFixAttempt": 1,
+    "retainedUncertainProviderSidPresent": false,
+    "retainedUncertainDeliveryReceipts": 0,
+    "retainedUncertainAutomaticRetry": false
+  },
+  "validation": {
+    "focusedVitestFiles": 3,
+    "focusedVitestTestsPassed": 58,
+    "typescriptNoEmitPassed": true,
+    "scopedEslintPassed": true,
+    "duplicateOrAutomaticReplayPerformed": false
+  },
+  "verdict": "PERSONAL_SMS_REPLY_TRANSPORT_OBSERVED_PASS_WITH_ONE_RETAINED_UNCERTAIN_PRE_FIX_ATTEMPT",
+  "limits": [
+    "This does not prove a calendar write on the Android device.",
+    "This does not prove an outbound voice call.",
+    "This does not prove general AI intent quality or the complete product release."
+  ],
+  "code": {
+    "headBeforeEvidenceCommit": "44f6589b45f2a14204c1a7313631d8c40231bbe0",
+    "treeBeforeEvidenceCommit": "f9c0375d60e36c4126a602d33c3094d095d28bfa"
+  }
+}
