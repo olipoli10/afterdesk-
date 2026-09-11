@@ -518,7 +518,17 @@
       "dependencies": [
         "GOOGLE_OAUTH"
       ],
-      "authorization": "authorization.json"
+      "authorization": "authorization.json",
+      "completed": [
+        "Guarded Android device-calendar backend release dpl_GsTXN86pLa6bRLfFaqXxpNZgYTWf READY at b820376b; production build applied migration80 and both production aliases serve the authenticated device bridge",
+        "Current build kept crons empty; anonymous health200 and device-bridge401 checks passed on exact deployment and both aliases"
+      ],
+      "remaining": [
+        "Twilio server credentials and verified owner-number binding are still absent from deployed configuration",
+        "OpenRouter credential setup/consent and Google owner consent remain unobserved",
+        "Build6 Samsung installation, native permission grant, device binding and calendar write/readback remain unobserved"
+      ],
+      "liveObserved": false
     },
     {
       "id": "LIVE_OBSERVATION",
@@ -535,7 +545,7 @@
     "pilotExpiresAt": "2026-10-10T01:18:26Z",
     "twilioAccountAndNumber": "20260911_CHROME_PASSWORD_LOGIN_REQUIRED_HANDOFF_READY; PRIOR_NUMBER_14503676562_BALANCE_18_85USD_NOT_REFRESHED; SERVER_KEYS_ABSENT",
     "googleOAuthConnection": "20260911: DEDICATED_PROJECT_endvera-personal-20260910_EXTERNAL_TESTING_ONE_OWNER; CALENDAR_API_ENABLED_WEBCLIENT_CREATED; ID_SECRET_SAVED_PERSONAL_VERCEL_PRODUCTION; OWNER_CONSENT_NOT_OBSERVED",
-    "deploymentAccountAndOrigin": "20260911: DEDICATED_VERCEL_READY_bd8e76f7_dpl_8xvCAkanXMWGrDUiDjRc2Zm7jSPi; PILOT_NEON79_OBSERVED; HTTPS10_AND_RENDERED_LOGIN_PASS; INHERITED_MAINTENANCE_SCHEDULER_DISABLED_BEFORE_AFTER_DEFINITION_RETAINED; GLOBAL_AND_GOOGLE_TRANSPORT_ENABLED_OTHER_PROVIDER_SWITCHES_OFF; GOOGLE_KEYS_PRESENT_TWILIO_ABSENT; ANDROID5_FINISHED_cb38a5da_STATIC_VERIFIED_DEVICE_UNOBSERVED",
+    "deploymentAccountAndOrigin": "20260911: DEDICATED_VERCEL_READY_b820376b_dpl_GsTXN86pLa6bRLfFaqXxpNZgYTWf; PILOT_NEON80_APPLIED_IN_PRODUCTION_BUILD; BOTH_PRODUCTION_ALIASES_HEALTH200_AND_DEVICE_BRIDGE401; CRONS_EMPTY; GOOGLE_KEYS_PRESENT_TWILIO_OPENROUTER_ABSENT; ANDROID6_FINISHED_10e8a210_DEVICE_UNOBSERVED",
     "approvedPilotRecipient": "NOT_BOUND"
   },
   "resumeRule": "Recheck changed owner configuration and Git. Continue eligible work without GO. No repeated paid attempts, old R37 budget, fabricated observation or routine unchanged notification. Keep timer active; projectComplete remains false."

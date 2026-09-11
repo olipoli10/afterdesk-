@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-11T06:23:23.4359859Z",
+  "scope": "ENDVERA_PERSONAL_BACKEND_DEVICE_CALENDAR_BRIDGE_RELEASE",
+  "authorization": "ENDVERA-PERSONAL-20260910-100CAD",
+  "source": {
+    "repositoryHead": "b820376b53db3127a3ef45bd0030a4bac4ce693f",
+    "repositoryTree": "8f93e0736e506d9f7845d71b9426ec38f4df3ad7",
+    "uploadSource": "CLEAN_DETACHED_LOCAL_WORKTREE",
+    "vercelSourceAttestationObserved": false
+  },
+  "deployment": {
+    "provider": "VERCEL",
+    "project": "endvera-core-sandbox",
+    "id": "dpl_GsTXN86pLa6bRLfFaqXxpNZgYTWf",
+    "status": "READY",
+    "target": "production",
+    "immutableUrl": "https://endvera-core-sandbox-i9cwoyv3d-afterdesk.vercel.app",
+    "aliases": [
+      "https://endvera-core-sandbox.vercel.app",
+      "https://endvera-core-sandbox-afterdesk.vercel.app"
+    ],
+    "cronsConfiguredByRelease": 0
+  },
+  "database": {
+    "provider": "NEON_POSTGRESQL",
+    "migrationCountFound": 80,
+    "migrationApplied": "20260911043000_android_device_calendar_bridge",
+    "result": "ALL_MIGRATIONS_SUCCESSFULLY_APPLIED",
+    "databaseContentsInspected": false
+  },
+  "http": {
+    "health": {
+      "exactDeployment": 200,
+      "primaryAlias": 200,
+      "apkAlias": 200
+    },
+    "anonymousDeviceBridge": {
+      "exactDeployment": 401,
+      "primaryAlias": 401,
+      "apkAlias": 401,
+      "cacheControl": "private, no-store"
+    }
+  },
+  "safety": {
+    "providerGenerationCallPerformed": false,
+    "smsOrVoiceTransportPerformed": false,
+    "customerOrEmployeeDataUsed": false,
+    "secretValueRecorded": false,
+    "storeSubmissionPerformed": false,
+    "deviceCalendarWriteObserved": false
+  },
+  "limits": {
+    "backendReachabilityObserved": true,
+    "authenticatedDeviceBindingObserved": false,
+    "samsungInstallationObserved": false,
+    "nativePermissionObserved": false,
+    "calendarWriteReadbackObserved": false,
+    "providerCustomerTestDecision": "NO-GO",
+    "verifiedE2EObservedCoveragePercent": 0
+  }
+}

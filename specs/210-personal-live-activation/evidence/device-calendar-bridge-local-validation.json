@@ -60,7 +60,7 @@
   },
   "limits": {
     "deviceObserved": false,
-    "twilioWebhookDeployedWithThisCommit": false,
+    "twilioWebhookDeployedWithThisCommit": true,
     "androidApkBuilt": true,
     "iosNativeCalendarExecutionImplemented": false,
     "publicOrStoreReleaseAuthorized": false,
