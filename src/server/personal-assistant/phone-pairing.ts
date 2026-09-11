@@ -7,12 +7,24 @@ import { enqueuePersonalSms } from "./sms-inbox";
 import { TwilioIngressRefused, type TwilioSmsEnvelope } from "./twilio-envelope";
 import type { ConnectorEnvironment } from "./google-client";
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
+export class PersonalPhoneAccessDenied extends Error {
+  constructor() { super("SMS_PAIRING_ACCESS_REFUSED"); this.name = "PersonalPhoneAccessDenied"; }
+}
+export class PersonalPhoneStatusUnavailable extends Error {
+  constructor(readonly stage: "owner_lookup" | "identity_lookup" | "account_lookup") {
+    super("SMS_PAIRING_STATUS_UNAVAILABLE"); this.name = "PersonalPhoneStatusUnavailable";
+  }
+}
+async function phoneStatusQuery<T>(stage: PersonalPhoneStatusUnavailable["stage"], query: () => Promise<T>) {
+  try { return await query(); }
+  catch { throw new PersonalPhoneStatusUnavailable(stage); }
+}
 export async function personalPhoneStatus(userId: string, workspaceId: string, env: ConnectorEnvironment = process.env) {
-  const owner = await prisma.constructionWorkspaceMember.findFirst({ where: { userId, workspaceId, status: "active", role: { in: ["owner", "admin"] }, workspace: { status: "active" } } });
-  if (!owner) throw new Error("SMS_PAIRING_ACCESS_REFUSED");
+  const owner = await phoneStatusQuery("owner_lookup", () => prisma.constructionWorkspaceMember.findFirst({ where: { userId, workspaceId, status: "active", role: { in: ["owner", "admin"] }, workspace: { status: "active" } } }));
+  if (!owner) throw new PersonalPhoneAccessDenied();
   let configured = true; try { requirePairingConfig(env); } catch { configured = false; }
-  const identities = await prisma.constructionCommunicationIdentity.findMany({ where: { userId, workspaceId, channel: "sms", normalizedAddress: { startsWith: "+" }, verified: true, status: "active", permissions: { has: "COMMAND" } }, select: { normalizedAddress: true }, take: 2 });
-  const account = await prisma.constructionConnectorAccount.findUnique({ where: { workspaceId_provider: { workspaceId, provider: "endvera_sms" } } });
+  const identities = await phoneStatusQuery("identity_lookup", () => prisma.constructionCommunicationIdentity.findMany({ where: { userId, workspaceId, channel: "sms", normalizedAddress: { startsWith: "+" }, verified: true, status: "active", permissions: { has: "COMMAND" } }, select: { normalizedAddress: true }, take: 2 }));
+  const account = await phoneStatusQuery("account_lookup", () => prisma.constructionConnectorAccount.findUnique({ where: { workspaceId_provider: { workspaceId, provider: "endvera_sms" } } }));
   return { configured, number: configured ? env.TWILIO_PHONE_NUMBER! : null, boundPhone: identities.length === 1 && account?.status === "connected" && account.externalAccountKeyHash === hash(env.TWILIO_ACCOUNT_SID ?? "") ? identities[0].normalizedAddress : null };
 }
 export async function disconnectPersonalPhone(userId: string, workspaceId: string) {

@@ -1,9 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "@/app/api/endvera/v1/personal/phone/route";
 
-const fake = vi.hoisted(() => ({ session: vi.fn(), rate: vi.fn(), status: vi.fn(), pair: vi.fn(), disconnect: vi.fn() }));
+const fake = vi.hoisted(() => ({
+  session: vi.fn(), rate: vi.fn(), status: vi.fn(), pair: vi.fn(), disconnect: vi.fn(),
+  AccessDenied: class PersonalPhoneAccessDenied extends Error {},
+  Unavailable: class PersonalPhoneStatusUnavailable extends Error { constructor(readonly stage: "owner_lookup" | "identity_lookup" | "account_lookup") { super(); } },
+}));
 vi.mock("@/lib/authz", () => ({ getSessionUser: fake.session, consumeRateLimit: fake.rate }));
-vi.mock("@/server/personal-assistant/phone-pairing", () => ({ personalPhoneStatus: fake.status, startPhonePairing: fake.pair, disconnectPersonalPhone: fake.disconnect }));
+vi.mock("@/server/personal-assistant/phone-pairing", () => ({
+  personalPhoneStatus: fake.status, startPhonePairing: fake.pair, disconnectPersonalPhone: fake.disconnect,
+  PersonalPhoneAccessDenied: fake.AccessDenied, PersonalPhoneStatusUnavailable: fake.Unavailable,
+}));
 // The phone route and personalApiUser are real modules. Only authz and phone effects are mocked.
 const owner = { id: "peer-synthetic-owner", role: "CLIENT", emailVerified: true };
 function request(method = "GET", origin?: string) {
@@ -52,14 +59,42 @@ describe("actual personal phone route -> actual auth helper cache header boundar
   });
   it("preserves authenticated GET status projection and existing no-store header", async () => {
     const response = await GET(request());
-    expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(await response.json()).toEqual({ synthetic: true, paired: false });
     expect(fake.status).toHaveBeenCalledExactlyOnceWith(owner.id, "peer-workspace");
     expect(fake.pair).not.toHaveBeenCalled(); expect(fake.disconnect).not.toHaveBeenCalled();
   });
+  it("distinguishes access refusal from a temporary database-stage failure without leaking an exception", async () => {
+    fake.status.mockRejectedValueOnce(new fake.AccessDenied());
+    const refused = await GET(request());
+    expect(refused.status).toBe(403); expect(refused.headers.get("cache-control")).toBe("private, no-store");
+    expect(await refused.json()).toEqual({ error: "Accès refusé." });
+
+    const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    fake.status.mockRejectedValueOnce(new fake.Unavailable("identity_lookup"));
+    const unavailable = await GET(request());
+    expect(unavailable.status).toBe(503); expect(unavailable.headers.get("cache-control")).toBe("private, no-store");
+    expect(await unavailable.json()).toEqual({ error: "État du numéro temporairement indisponible." });
+    expect(logged).toHaveBeenCalledExactlyOnceWith("ENDVERA_PERSONAL_PHONE_STATUS_UNAVAILABLE", { stage: "identity_lookup" });
+  });
+  it("maps an unknown exception to a generic 503 and never logs its contents", async () => {
+    const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    fake.status.mockRejectedValueOnce(new Error("secret=must-not-leak phone=+15005550001"));
+    const response = await GET(request());
+    expect(response.status).toBe(503); expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(await response.json()).toEqual({ error: "État du numéro temporairement indisponible." });
+    expect(logged).toHaveBeenCalledExactlyOnceWith("ENDVERA_PERSONAL_PHONE_STATUS_UNAVAILABLE", { stage: "unknown" });
+    expect(JSON.stringify(logged.mock.calls)).not.toContain("must-not-leak");
+  });
+  it("keeps a pairing failure private and non-cacheable", async () => {
+    fake.pair.mockRejectedValueOnce(new Error("provider detail"));
+    const response = await POST(request("POST", "endvera://"));
+    expect(response.status).toBe(503); expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(await response.json()).toEqual({ error: "Le numéro ENDVERA n’est pas encore prêt à être associé. Aucun texto n’a été envoyé." });
+  });
   it.each(["https://pilot.example.invalid", "endvera://"])("preserves accepted origin %s and identity for mocked pairing", async origin => {
     const response = await POST(request("POST", origin));
-    expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(await response.json()).toEqual({ synthetic: true, sent: false });
     expect(fake.pair).toHaveBeenCalledExactlyOnceWith({ action: "PAIR", workspaceId: "peer-workspace", allowSelfSms: false, allowSelfVoice: false, userId: owner.id });
     expect(fake.disconnect).not.toHaveBeenCalled(); expect(fake.status).not.toHaveBeenCalled();
