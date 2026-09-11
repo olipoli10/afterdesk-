@@ -154,7 +154,9 @@ describe('closed CLI and launcher — never invoke EAS in tests', () => {
     expect(result.stderr).not.toContain(marker);
   });
   it('uses the gate before both fixed EAS calls and has no init/login/git mutation/store submission', () => {
-    expect(launch).toContain('Assert-FounderBuildInputs\n  $cliOutput = @(& npx');
+    expect(launch).toContain('Assert-FounderBuildInputs\n  # Windows PowerShell 5.1');
+    expect(launch).toContain('$cliOutput = @(& npx');
+    expect(launch).toContain('$cliExitCode = $LASTEXITCODE');
     expect(launch).toContain('Invoke-FounderEas whoami');
     expect(launch).toContain('Invoke-FounderEas build --platform android --profile founder-device --non-interactive --wait');
     expect(launch).not.toMatch(/project:init|Invoke-Eas login|git\s+(?:add|commit|push)|--auto-submit|--profile store/);

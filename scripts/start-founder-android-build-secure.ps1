@@ -28,8 +28,20 @@ function Invoke-FounderEas {
   # Recheck before every external CLI invocation, including immediately before
   # the build after authentication latency. This launcher never configures login.
   Assert-FounderBuildInputs
-  $cliOutput = @(& npx --yes "eas-cli@$easCliVersion" @Arguments 2>&1)
-  if ($LASTEXITCODE -ne 0) {
+  # Windows PowerShell 5.1 can promote a native program's informational stderr
+  # into a terminating ErrorRecord when the script uses Stop, even when that
+  # program exits zero. Capture both streams while deciding only from the native
+  # exit code, then restore the fail-fast policy before interpreting the result.
+  $previousErrorActionPreference = $ErrorActionPreference
+  $cliExitCode = -1
+  try {
+    $ErrorActionPreference = 'Continue'
+    $cliOutput = @(& npx --yes "eas-cli@$easCliVersion" @Arguments 2>&1)
+    $cliExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+  if ($cliExitCode -ne 0) {
     throw 'FOUNDER_ANDROID_EAS_COMMAND_FAILED'
   }
   # No arbitrary EAS output or authenticated account name is echoed.
