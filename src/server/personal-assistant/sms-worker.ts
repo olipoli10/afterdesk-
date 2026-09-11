@@ -21,6 +21,8 @@ import { temporalLockSourceNamespace, temporalRegistryTransaction } from "./sms-
 import { inspectSmsTemporalQuestionPreparationInTransaction, attachSmsTemporalQuestionInTransaction } from "./sms-temporal-question-preparation";
 import { processSmsTemporalReply } from "./sms-temporal-reply-worker";
 import { prepareCorrelatedCalendarAfterCommittedSms } from "./sms-correlated-calendar-preparation-hook";
+import { routeSmsAssistant, localGreetingReply } from "@/lib/sms-assistant/routing";
+import { processPersonalAnswerSms, type PersonalAnswerSmsResult } from "./answer-worker";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -39,7 +41,7 @@ export const PERSONAL_SMS_BATCH_BUDGET_MS = 50_000;
 const CLEANUP_BUDGET_MS = 2_000;
 export type PersonalSmsSourceClaim = Readonly<{ operationId: string; workspaceId: string; userId: string; attempt: 1; leaseUntil: string }>;
 export type PersonalSmsExecutionContext = Readonly<{ claim: PersonalSmsSourceClaim; signal: AbortSignal; deadlineAt: number }>;
-type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; calendar?: typeof readGoogleCalendarWithAuthority; deadlineAt?: number };
+type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; answer?: typeof processPersonalAnswerSms; calendar?: typeof readGoogleCalendarWithAuthority; deadlineAt?: number };
 
 const SAFE_OUTBOUND_FAILURE_CODES = new Set([
   "PERSONAL_OUTBOUND_DISABLED", "TWILIO_CONFIGURATION_REQUIRED", "CURRENT_TWILIO_RATE_REVIEW_REQUIRED",
@@ -126,6 +128,11 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
     const workspace = await prisma.constructionWorkspace.findUniqueOrThrow({ where: { id: row.workspaceId }, select: { defaultTimezone: true } });
     requireLive();
     const day = smsCalendarDay(received.body);
+    // Classification follows persisted identity/grant admission. A greeting is
+    // answered locally; temporal and confirmation contexts retain precedence.
+    const assistantRoute = routeSmsAssistant({ requestId: row.id, workspaceId: row.workspaceId,
+      body: received.body, senderVerified: true, workspaceBound: true });
+    const greetingReply = localGreetingReply(assistantRoute);
     const reservedCalendar = isReservedCalendarConfirmationMessage(received.body);
     let temporalFixedReply: string | undefined;
     if (!reservedCalendar && !day) {
@@ -154,8 +161,9 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       }
       else if (temporal.status !== "NOT_TEMPORAL_CONTEXT" || temporal.sourceCompleted !== false) throw new Error("SMS_TEMPORAL_ROUTING_CHANGED");
     }
-    let reply: string; let source: "GOOGLE_CALENDAR" | "ENDVERA_LOCAL" | "CLARIFICATION" | "MODEL_REVIEW_ONLY";
+    let reply: string; let source: "GOOGLE_CALENDAR" | "ENDVERA_LOCAL" | "CLARIFICATION" | "MODEL_REVIEW_ONLY" | "ENDVERA_GREETING" | "ENDVERA_ANSWER";
     let finalizeReview: PersonalModelSmsResult["finalizeReview"];
+    let finalizeAnswer: PersonalAnswerSmsResult["finalizeAnswer"];
     let googleReadAuthority: GoogleReadAuthority | undefined;
     let googleReadRange: { start: string; end: string } | undefined;
     // Only the closed whole-message day grammar bypasses interpretation. No
@@ -192,6 +200,23 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       source = "GOOGLE_CALENDAR";
     } else if (temporalFixedReply !== undefined) {
       reply = temporalFixedReply; source = "CLARIFICATION";
+    } else if (greetingReply !== null) {
+      reply = greetingReply; source = "ENDVERA_GREETING";
+    } else if (assistantRoute.disposition === "REFUSE") {
+      reply = "Cette demande contient des renseignements sensibles que je ne peux pas transmettre à la recherche ou au modèle. Reformule-la sans mot de passe ni coordonnées privées.";
+      source = "CLARIFICATION";
+    } else if (assistantRoute.disposition === "CLARIFY") {
+      reply = assistantRoute.lane === "PAID_OR_SENSITIVE"
+        ? "La consultation de ce document nécessite une source et un coût précis. Aucun achat n’a été effectué."
+        : "Ta demande combine une recherche et une action. Précise d’abord la recherche à faire; nous pourrons ensuite préparer le message ou l’appel avec son destinataire exact.";
+      source = "CLARIFICATION";
+    } else if (assistantRoute.lane === "PROPERTY_RESEARCH") {
+      reply = "La recherche de lots et de propriétaires n’est pas encore reliée aux sources municipales dans ce service. Je ne peux donc pas confirmer ces renseignements par texto pour le moment.";
+      source = "CLARIFICATION";
+    } else if (env.ENDVERA_PERSONAL_ANSWER_ENGINE_ENABLED === "true" && assistantRoute.disposition === "ROUTE"
+      && (assistantRoute.lane === "GENERAL_ANSWER" || assistantRoute.lane === "PUBLIC_RESEARCH")) {
+      const result = await (deps.answer ?? processPersonalAnswerSms)(Object.freeze({ claim, signal: controller.signal, deadlineAt }), assistantRoute.lane === "PUBLIC_RESEARCH", env as NodeJS.ProcessEnv);
+      requireLive(); reply = result.reply; finalizeAnswer = result.finalizeAnswer; source = "ENDVERA_ANSWER";
     } else if (env.ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED === "true") {
       const result = await (deps.model ?? processPersonalModelSms)(Object.freeze({ claim, signal: controller.signal, deadlineAt }), env);
       requireLive();
@@ -220,6 +245,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       requireLive();
       const active = await tx.constructionCommunicationIdentity.findFirst({ where: { id: received.identityId, userId: row.createdByUserId, workspaceId: row.workspaceId, verified: true, status: "active", permissions: { has: "COMMAND" } } });
       if (!active) throw new Error("SMS_IDENTITY_REVOKED");
+      if (finalizeAnswer) await finalizeAnswer(tx);
       requireLive();
       if (source === "GOOGLE_CALENDAR") await requireGoogleReadAuthority(tx, row.createdByUserId, row.workspaceId, googleReadAuthority, env);
       requireLive();

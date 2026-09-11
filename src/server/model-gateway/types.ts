@@ -4,6 +4,8 @@ export const GATEWAY_OPERATION_TYPES = [
   "classification",
   "intake_voice_transcription",
   "personal_intent_candidate_v1",
+  "personal_answer_candidate_v1",
+  "personal_public_research_v1",
 ] as const;
 export type GatewayOperationType = (typeof GATEWAY_OPERATION_TYPES)[number];
 
@@ -68,7 +70,8 @@ export type CertifiedAdapterKey =
   | "gateway-candidate"
   | "voice-synthetic-direct"
   | "openrouter-stt-candidate"
-  | "openrouter-personal-intent-candidate";
+  | "openrouter-personal-intent-candidate"
+  | "openrouter-personal-answer-candidate";
 export type BillingProviderKey = string;
 export type GatewayIntermediaryKey = string;
 
@@ -80,7 +83,9 @@ export type ProtectedContentRef = {
     | "voice_intake_input"
     | "voice_intake_output"
     | "personal_intent_input"
-    | "personal_intent_output";
+    | "personal_intent_output"
+    | "personal_answer_input"
+    | "personal_answer_output";
   id: string;
   fingerprint: `sha256:${string}`;
 };
@@ -148,7 +153,13 @@ export type VoiceGatewayOperationRequest = GatewayOperationRequestBase & Readonl
 export type GatewayOperationRequest =
   | ClassificationGatewayOperationRequest
   | VoiceGatewayOperationRequest
-  | PersonalGatewayOperationRequest;
+  | PersonalGatewayOperationRequest
+  | PersonalAnswerGatewayOperationRequest;
+
+export type PersonalAnswerGatewayOperationRequest = GatewayOperationRequestBase & Readonly<{
+  operationType: "personal_answer_candidate_v1" | "personal_public_research_v1";
+  subject: PersonalGatewayOperationSubject;
+}>;
 
 export type PersonalGatewayOperationRequest = GatewayOperationRequestBase & Readonly<{
   operationType: "personal_intent_candidate_v1";

@@ -47,6 +47,22 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 
 describe("personal SMS source deadline and exact ownership", () => {
+  it.each(["Trouve son téléphone privé", "Trouve le propriétaire puis appelle-le", "Qui est le proprio du lot vacant?"])("does not send the reserved request to the legacy action interpreter: %s", async body => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body } });
+    expect(await processPersonalSms(row.id, env)).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(mocks.engine).not.toHaveBeenCalled(); expect(mocks.calendar).not.toHaveBeenCalled();
+    expect(committedReplies).toHaveLength(1);
+  });
+  it("answers Allô through the existing transactional outbox without invoking an interpreter", async () => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "Allô" } });
+    expect(await processPersonalSms(row.id, env)).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(mocks.engine).not.toHaveBeenCalled();
+    expect(mocks.calendar).not.toHaveBeenCalled();
+    expect(committedReplies).toHaveLength(1);
+    expect(JSON.stringify(committedReplies)).toContain("C’est ENDVERA");
+    expect(JSON.stringify(committedReplies)).not.toContain("soutien humain");
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
   it("replaces unbounded inbound cleanup with bounded proof-preserving recovery under the original deadline", async () => {
     mocks.list.mockResolvedValue([]);
     const deadlineAt = Date.now() + 4000;

@@ -8,6 +8,8 @@ const OPERATIONS = {
     outputContractKey: "voice-transcript-v1",
   },
   personal_intent_candidate_v1: { key: "personal_intent_candidate_v1", outputContractKey: "personal-intent-quoted-source-v1" },
+  personal_answer_candidate_v1: { key: "personal_answer_candidate_v1", outputContractKey: "personal-answer-v1" },
+  personal_public_research_v1: { key: "personal_public_research_v1", outputContractKey: "personal-answer-v1" },
 } as const satisfies Record<GatewayOperationType, { key: GatewayOperationType; outputContractKey: string }>;
 
 const ADAPTERS = {
@@ -17,12 +19,15 @@ const ADAPTERS = {
   "voice-synthetic-direct": { key: "voice-synthetic-direct", external: false },
   "openrouter-stt-candidate": { key: "openrouter-stt-candidate", external: true },
   "openrouter-personal-intent-candidate": { key: "openrouter-personal-intent-candidate", external: true },
+  "openrouter-personal-answer-candidate": { key: "openrouter-personal-answer-candidate", external: true },
 } as const satisfies Record<CertifiedAdapterKey, { key: CertifiedAdapterKey; external: boolean }>;
 
 export const GATEWAY_POLICY_KEYS = [
   "classification-v1",
   "intake-voice-transcription-v1",
   "personal-intent-v1",
+  "personal-answer-v1",
+  "personal-public-research-v1",
 ] as const;
 export const GATEWAY_ROUTE_KEYS = [
   "classification-synthetic-v1",
@@ -31,6 +36,8 @@ export const GATEWAY_ROUTE_KEYS = [
   "intake-voice-synthetic-direct-v1",
   "intake-voice-openrouter-candidate-v1",
   "personal-intent-openrouter-candidate-v1",
+  "personal-answer-openrouter-v1",
+  "personal-public-research-openrouter-v1",
 ] as const;
 
 export function requireOperationDefinition(key: string) {

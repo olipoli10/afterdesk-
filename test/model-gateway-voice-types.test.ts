@@ -15,11 +15,13 @@ import {
 } from "@/server/model-gateway/voice/types";
 
 describe("voice intake closed-world types", () => {
-  it("registers voice separately without opening other gateway operations", () => {
+  it("keeps the explicit operation registry closed and voice separate from personal answers", () => {
     expect(GATEWAY_OPERATION_TYPES).toEqual([
       "classification",
       "intake_voice_transcription",
       "personal_intent_candidate_v1",
+      "personal_answer_candidate_v1",
+      "personal_public_research_v1",
     ]);
     expect(isGatewayOperationType("intake_voice_transcription")).toBe(true);
     expect(isGatewayOperationType("planning")).toBe(false);

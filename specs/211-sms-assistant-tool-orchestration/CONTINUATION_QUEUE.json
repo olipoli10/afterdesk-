@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "campaign": "211-sms-assistant-tool-orchestration",
+  "terminalState": "INCOMPLETE",
+  "timerRequested": false,
+  "goalRuntime": "EXISTING_UNFINISHED_GOAL_PREVENTS_REPLACEMENT",
+  "items": [
+    {"id":"A","title":"Contracts and deterministic routing","status":"IN_PROGRESS","dependsOn":[]},
+    {"id":"B","title":"Separate guarded conversational candidate","status":"PENDING","dependsOn":["A"]},
+    {"id":"C","title":"Cited public research","status":"PENDING","dependsOn":["B"]},
+    {"id":"D","title":"Property toolchain and source evidence","status":"PENDING","dependsOn":["A"]},
+    {"id":"E","title":"Canonical reads and prepared-action bridge","status":"PENDING","dependsOn":["A"]},
+    {"id":"F","title":"Durable queue, reports and SMS integration","status":"PENDING","dependsOn":["B","C","D","E"]},
+    {"id":"G","title":"Bounded founder live activation","status":"PENDING","dependsOn":["F"]}
+  ]
+}

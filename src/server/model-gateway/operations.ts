@@ -144,7 +144,11 @@ export async function bindGatewayOperation(
     tenant?.purpose === "personal_intent_candidate_v1" && typeof tenant.personalAssistantOperationId === "string" &&
     tenant.taskId === null && tenant.voiceIntakeSegmentId === null && tenant.personalKind === "personal_sms_inbound" &&
     typeof tenant.personalWorkspaceId === "string" && input.tenantId === `construction-workspace:${tenant.personalWorkspaceId}`;
-  if (!tenant || !(personalBinding || (tenant.personalAssistantOperationId == null && (classificationBinding || voiceBinding)))) {
+  const answerBinding = ["personal_answer_candidate_v1", "personal_public_research_v1"].includes(input.operationType)
+    && tenant?.purpose === input.operationType && typeof tenant.personalAssistantOperationId === "string"
+    && tenant.taskId === null && tenant.voiceIntakeSegmentId === null && tenant.personalKind === "personal_sms_inbound"
+    && typeof tenant.personalWorkspaceId === "string" && input.tenantId === `construction-workspace:${tenant.personalWorkspaceId}`;
+  if (!tenant || !(personalBinding || answerBinding || (tenant.personalAssistantOperationId == null && (classificationBinding || voiceBinding)))) {
     throw new Error("GATEWAY_OPERATION_TENANT_TASK_BINDING_MISMATCH");
   }
   await tx.$executeRawUnsafe(
@@ -308,8 +312,8 @@ export async function createGatewayAttempt(
       ? binding.tenantId !== binding.taskClientId
       : binding.operationType === "intake_voice_transcription"
         ? !voiceBindingMatches
-        : binding.operationType === "personal_intent_candidate_v1"
-          ? binding.aiPurpose !== "personal_intent_candidate_v1" || binding.personalKind !== "personal_sms_inbound" ||
+        : ["personal_intent_candidate_v1", "personal_answer_candidate_v1", "personal_public_research_v1"].includes(binding.operationType)
+          ? binding.aiPurpose !== binding.operationType || binding.personalKind !== "personal_sms_inbound" ||
             typeof binding.personalWorkspaceId !== "string" || binding.tenantId !== `construction-workspace:${binding.personalWorkspaceId}`
         : true)
   ) {
