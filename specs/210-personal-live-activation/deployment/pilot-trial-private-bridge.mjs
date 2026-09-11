@@ -19,7 +19,11 @@ const SOURCES = [SELF, RUNNER, 'scripts/endvera-release-source-binding.mjs',
 const TARGET = Object.freeze({ projectId: 'withered-mud-08129552', branchId: 'br-holy-brook-ax7k68oh',
   endpointId: 'ep-crimson-violet-axmmwtjw', hostname: 'ep-crimson-violet-axmmwtjw.c-4.us-east-2.aws.neon.tech', database: 'neondb', role: 'neondb_owner' });
 const EXPECTED = ['expectedHead', 'expectedCatalogSha256', 'expectedRunnerSha256', 'expectedNodeSha256', 'expectedPrismaCliSha256'];
+const BASELINE70 = '3137a7b4e7fd3bd18487a1a139cf155a757e1e73c590b01f9e4962450339140a';
+const HISTORY70 = '47e1af336b1dee8ac0ed63b01e5833a926ccb0e359652688bebb9425c7564343';
 const REFUSED = 'PILOT_TRIAL_BRIDGE_REFUSED_NO_AUTOMATIC_RETRY';
+const MIGRATION_REFUSED = 'PILOT_TRIAL_MIGRATION_BRIDGE_REFUSED_BEFORE_CHILD_NO_AUTOMATIC_RETRY';
+const MIGRATION_UNCERTAIN = 'PILOT_TRIAL_MIGRATION_BRIDGE_OUTCOME_UNCERTAIN_NO_AUTOMATIC_RETRY';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const fail = () => { throw new Error(REFUSED); };
 function fields(value, keys) {
@@ -39,6 +43,20 @@ export function parsePilotTrialBridgeArgs(args) {
   const flags = ['--expected-head', '--expected-catalog-sha256', '--expected-runner-sha256', '--expected-node-sha256', '--expected-prisma-cli-sha256'];
   if (!Array.isArray(args) || args.length !== 10 || flags.some((f, i) => args[i * 2] !== f)) fail();
   return expected(Object.fromEntries(EXPECTED.map((key, i) => [key, args[i * 2 + 1]])));
+}
+function migrationExpected(raw) {
+  const value = fields(raw, [...EXPECTED, 'expectedBaselineSha256', 'expectedHistory70Sha256']);
+  expected(Object.fromEntries(EXPECTED.map(key => [key, value[key]])));
+  if (value.expectedBaselineSha256 !== BASELINE70 || value.expectedHistory70Sha256 !== HISTORY70) fail();
+  return Object.freeze(value);
+}
+function sourceExpected(pins) { return Object.fromEntries(EXPECTED.map(key => [key, pins[key]])); }
+/** Separate closed grammar. The old five-pin preflight grammar is unchanged. */
+export function parsePilotTrialMigrationBridgeArgs(args) {
+  if (!Array.isArray(args) || args.length !== 15 || args[0] !== '--migration'
+    || args[11] !== '--expected-baseline-sha256' || args[13] !== '--expected-history70-sha256') fail();
+  const pins = parsePilotTrialBridgeArgs(args.slice(1, 11));
+  return migrationExpected({ ...pins, expectedBaselineSha256: args[12], expectedHistory70Sha256: args[14] });
 }
 function regular(file, max = 8388608) {
   for (let current = path.resolve(file);; current = path.dirname(current)) {
@@ -146,9 +164,43 @@ export function validatePilotTrialBridgeReceipt(bytes, rawExpected) {
     || h.targetProviderProvenanceVerified !== false || h.dataPreservationVerified !== false
     || typeof h.backendConnectionSslObserved !== 'boolean') fail();
 }
-function runChild(frame, pins) {
+/** Receipt parsing only, not evidence of an invoked migration or permission. */
+export function validatePilotTrialMigrationBridgeReceipt(bytes, rawExpected) {
+  const pins = migrationExpected(rawExpected);
+  if (!Buffer.isBuffer(bytes) || bytes.length < 1 || bytes.length > 8192) fail();
+  const text = bytes.toString('utf8'); if (!Buffer.from(text).equals(bytes)) fail();
+  let r;
+  try { r = fields(JSON.parse(text), ['version', 'mode', 'status', 'sourceHead', 'catalogSha256', 'sourceFingerprint',
+    'baselineSha256', 'history70Sha256', 'target', 'preflightHistory', 'history', 'clientTransportPolicy', 'childExit',
+    'automaticRetry', 'migrationInvoked', 'executionAuthorized', 'backupVerified', 'dataPreservationVerified',
+    'schemaPreservationVerified', 'totalBudgetMs', 'childBudgetMs', 'postflightReserveMs', 'elapsedMs']); } catch { fail(); }
+  if (JSON.stringify(r) + '\n' !== text || r.version !== 'pilot-trial-migration-receipt-v1' || r.mode !== 'MIGRATE_70_TO_79'
+    || r.status !== 'MIGRATION_HISTORY_79_VERIFIED' || r.sourceHead !== pins.expectedHead || r.catalogSha256 !== pins.expectedCatalogSha256
+    || r.baselineSha256 !== BASELINE70 || r.history70Sha256 !== HISTORY70
+    || typeof r.sourceFingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(r.sourceFingerprint)
+    || r.childExit !== 0 || r.migrationInvoked !== true || r.clientTransportPolicy !== 'PRISMA_REQUIRE_TLS_STRICT_CERT'
+    || r.totalBudgetMs !== 180000 || r.childBudgetMs !== 120000 || r.postflightReserveMs !== 20000
+    || !Number.isInteger(r.elapsedMs) || r.elapsedMs < 0 || r.elapsedMs >= 180000) fail();
+  for (const key of ['automaticRetry', 'executionAuthorized', 'backupVerified', 'dataPreservationVerified', 'schemaPreservationVerified']) if (r[key] !== false) fail();
+  const target = fields(r.target, Object.keys(TARGET));
+  if (Object.keys(TARGET).some(key => target[key] !== TARGET[key])) fail();
+  const inspectHistory = (raw, count) => {
+    const h = fields(raw, ['count', 'versionNum', 'historySha256', 'prior70Sha256', 'targetProviderProvenanceVerified', 'dataPreservationVerified', 'backendConnectionSslObserved']);
+    if (h.count !== count || !Number.isInteger(h.versionNum) || h.versionNum < 180000 || h.versionNum >= 190000
+      || typeof h.historySha256 !== 'string' || !/^[a-f0-9]{64}$/.test(h.historySha256) || h.prior70Sha256 !== HISTORY70
+      || (count === 70 && h.historySha256 !== HISTORY70) || h.targetProviderProvenanceVerified !== false
+      || h.dataPreservationVerified !== false || typeof h.backendConnectionSslObserved !== 'boolean') fail();
+    return h;
+  };
+  const before = inspectHistory(r.preflightHistory, 70), after = inspectHistory(r.history, 79);
+  if (before.versionNum !== after.versionNum) fail();
+}
+// Only the two private callers choose a closed phase. No caller-selected command,
+// executable or receipt validator is accepted through the public APIs.
+function runChild(frame, pins, migration = false) {
   return new Promise((resolve, reject) => {
-    let child, timer, cleanup, failed = false, settled = false, size = 0, count = 0; const chunks = [], until = performance.now() + 65000;
+    const childBudget = migration ? 185000 : 65000;
+    let child, timer, cleanup, failed = false, settled = false, size = 0, count = 0; const chunks = [], until = performance.now() + childBudget;
     const finish = ok => {
       if (settled) return; settled = true; clearTimeout(timer); clearTimeout(cleanup);
       frame.fill(0); chunks.forEach(x => x.fill(0));
@@ -162,9 +214,11 @@ function runChild(frame, pins) {
       try { child?.stdin.destroy(); child?.kill(); } catch { /* Never expose child errors. */ }
     };
     try {
-      child = spawn(process.execPath, [path.join(ROOT, RUNNER), '--mode', 'PREFLIGHT_70', '--expected-head', pins.expectedHead,
-        '--expected-catalog-sha256', pins.expectedCatalogSha256], { cwd: ROOT, env: environment(), shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
-      timer = setTimeout(abort, 65000);
+      const args = [path.join(ROOT, RUNNER), '--mode', migration ? 'MIGRATE_70_TO_79' : 'PREFLIGHT_70', '--expected-head', pins.expectedHead,
+        '--expected-catalog-sha256', pins.expectedCatalogSha256];
+      if (migration) args.push('--expected-baseline-sha256', pins.expectedBaselineSha256, '--expected-history70-sha256', pins.expectedHistory70Sha256);
+      child = spawn(process.execPath, args, { cwd: ROOT, env: environment(), shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+      timer = setTimeout(abort, childBudget);
       child.on('error', abort); child.stdin.on('error', abort); child.stdout.on('error', abort); child.stderr.on('error', abort);
       child.stdout.on('data', value => {
         if (failed || settled) return;
@@ -174,7 +228,11 @@ function runChild(frame, pins) {
       child.stderr.on('data', abort);
       child.on('close', (code, signal) => {
         let ok = false, bytes;
-        try { if (!failed && code === 0 && signal === null && performance.now() < until) { bytes = Buffer.concat(chunks); validatePilotTrialBridgeReceipt(bytes, pins); ok = true; } } catch { /* Fixed refusal only. */ }
+        try { if (!failed && code === 0 && signal === null && performance.now() < until) {
+          bytes = Buffer.concat(chunks);
+          if (migration) validatePilotTrialMigrationBridgeReceipt(bytes, pins); else validatePilotTrialBridgeReceipt(bytes, pins);
+          ok = true;
+        } } catch { /* Fixed refusal only. */ }
         finally { bytes?.fill(0); finish(ok); }
       });
       child.stdin.end(frame, () => frame.fill(0));
@@ -202,7 +260,39 @@ export async function runPilotTrialPrivateBridge(rawExpected, input = process.st
   // restoration also completed. Never publish success before this boundary.
   try { output.write('PILOT_TRIAL_BRIDGE_PREFLIGHT_70_VERIFIED\n'); } catch { throw new Error(REFUSED); }
 }
+/** Closed one-shot migration transport, separate from preflight.
+ * After spawning the runner, a bridge error cannot establish DB rollback. */
+export async function runPilotTrialMigrationPrivateBridge(rawExpected, input = process.stdin, output = process.stdout) {
+  let frame, childMayHaveStarted = false, failure = false;
+  try {
+    if (input?.isTTY !== true || typeof input.setRawMode !== 'function') fail();
+    const pins = migrationExpected(rawExpected);
+    inspectPilotTrialBridgeSource(sourceExpected(pins));
+    frame = await readPilotTrialBridgeFrame(input, () => output.write('PILOT_TRIAL_MIGRATION_BRIDGE_READY\n'));
+    inspectPilotTrialBridgeSource(sourceExpected(pins));
+    childMayHaveStarted = true;
+    await runChild(frame, pins, true);
+  } catch { failure = true; }
+  finally {
+    frame?.fill(0);
+    try {
+      if (input?.isTTY === true) { input.setRawMode(false); if (input.isRaw !== false) fail(); }
+      input?.pause();
+    } catch { failure = true; }
+  }
+  if (failure) throw new Error(childMayHaveStarted ? MIGRATION_UNCERTAIN : MIGRATION_REFUSED);
+  try { output.write('PILOT_TRIAL_MIGRATION_BRIDGE_HISTORY_79_VERIFIED\n'); }
+  catch { throw new Error(MIGRATION_UNCERTAIN); }
+}
+/** Controller-reviewed exact CLI seam. No environment or arbitrary-mode gate. */
+export async function runPilotTrialMigrationBridgeCli(args) {
+  return runPilotTrialMigrationPrivateBridge(parsePilotTrialMigrationBridgeArgs(args));
+}
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try { await runPilotTrialPrivateBridge(parsePilotTrialBridgeArgs(process.argv.slice(2))); }
+  try {
+    const args = process.argv.slice(2);
+    if (args[0] === '--migration') await runPilotTrialMigrationBridgeCli(args);
+    else await runPilotTrialPrivateBridge(parsePilotTrialBridgeArgs(args));
+  }
   catch { process.stderr.write(REFUSED + '\n'); process.exitCode = 1; }
 }

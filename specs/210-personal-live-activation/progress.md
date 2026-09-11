@@ -1,5 +1,18 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 00:14Z — single trial migration reviewed, before state unchanged
+
+T-only beforewrite captures reconfirmed183tables/2624oldcolumns aggregateMATCH
+and7474catalogobjectsMATCH against original baseline, no rebaseline. Initial
+catalog search_path-context difference retained and resolved by original query
+context, not comparator relaxation. T suspended00:05:30Z/idle. Runner/bridge
+oneattempt CLI reviewed97targetedPASS; peer2RED fixed with original failures
+retained. MaintypesPASS; root initial6949/1timeout retained, unchanged isolated
+rerun6950PASS/3historicalskips at00:13:45Z. See migration controller/peer audits.
+Next: commit exact inputs, advance owned clean checkout, one T70to79 attempt,
+then separate actual data/added-state/catalog checks. No pilot/main/deploy/APK
+or provider write yet. GoalIN_PROGRESS, heartbeatACTIVE, dashboards unchanged.
+
 ## 2026-09-10 23:49Z — corrected actual Prisma preflight accepted
 
 Source1981817c, actual clean checkout and private T-only invocation exit0:
