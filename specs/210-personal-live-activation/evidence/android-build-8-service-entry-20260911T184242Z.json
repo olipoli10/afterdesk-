@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-11T18:42:42.261Z",
+  "release": "ENDVERA_ANDROID_INTERNAL_8",
+  "reason": "The owner personal-service route existed in Android 7 but was hidden from the tab bar and had no direct entry from the visible Assistant screen.",
+  "source": {
+    "worktree": "C:/dev/endvera-apk8-service-entry",
+    "branch": "codex/endvera-apk8-service-entry",
+    "head": "ebd9db776044f98b94deb3047679330144605aa0",
+    "tree": "a510a681a0493542786e495fd683017ff8b5176d"
+  },
+  "change": {
+    "visibleFrom": "Assistant tab",
+    "ownerOnly": true,
+    "titleFr": "ENDVERA dans tes textos",
+    "actionFr": "Activer ENDVERA par texto",
+    "route": "/personal-service",
+    "androidVersionCode": 8
+  },
+  "validation": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "mobileTestFiles": 75,
+    "mobileTestsPassed": 778,
+    "expoDoctor": {
+      "passedChecks": 20,
+      "totalChecks": 21,
+      "status": "PATCH_VERSION_WARNING_RETAINED",
+      "detail": "The Android 7 source already pinned Expo SDK 57 packages one patch below the current Expo recommendation. No dependency or lockfile upgrade was included in this bounded navigation hotfix."
+    },
+    "founderBuildGuard": "FOUNDER_ANDROID_INPUTS_VALIDATED_LOCAL_ONLY",
+    "trackedSourceBindingVerified": true
+  },
+  "eas": {
+    "projectId": "a7b2c087-f8e1-48e4-8798-f6fabefb69fe",
+    "buildId": "31266f0c-840f-4d17-b01e-0af881fcda41",
+    "status": "FINISHED",
+    "platform": "ANDROID",
+    "distribution": "INTERNAL",
+    "profile": "founder-device",
+    "applicationId": "ai.endvera.mobile",
+    "appVersion": "0.2.0",
+    "appBuildVersion": "8",
+    "artifactUrl": "https://expo.dev/artifacts/eas/ipP26wqfAleQcwMByEzqVE484obohk6Peim5LOXvIpw.apk",
+    "artifactExpiresAt": "2026-09-25T18:05:11.161Z"
+  },
+  "artifact": {
+    "sha256": "a9e3606fabce948872d473e62fb1d75bcb1fa8d26f756957ac997fe444e038f9",
+    "byteSize": 127357304,
+    "apksignerVerified": true,
+    "signerCertificateSha256": "ccdd90c46c734e3f97a8d1bc4344b8f10ea0537788f13d1d890c812bc8a5bc1b",
+    "aaptPackage": "ai.endvera.mobile",
+    "aaptVersionCode": 8,
+    "aaptVersionName": "0.2.0"
+  },
+  "claims": {
+    "signedInternalApkProduced": true,
+    "ownerServiceEntryPresentInSource": true,
+    "installedOnSamsungObserved": false,
+    "ownerServiceEntryRenderedOnSamsungObserved": false,
+    "smsAssistantEndToEndObserved": false,
+    "openRouterObservedFromSms": false,
+    "storePublished": false,
+    "productionReady": false
+  }
+}
