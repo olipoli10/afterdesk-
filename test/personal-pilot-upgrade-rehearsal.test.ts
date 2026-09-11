@@ -119,8 +119,17 @@ describe('populated upgrade rehearsal — pure/static, no database or provider',
     expect(branch).not.toContain('vitest');
     expect(harness).not.toMatch(/DROP DATABASE|migrate.{0,10}reset|pg_terminate_backend/);
   });
-  it('keeps default twenty-suite inventory and refuses a rehearsal test filter', () => {
-    expect(readdirSync(resolve(root, 'specs/210-personal-live-activation')).filter(name => name.endsWith('.postgres.test.ts'))).toHaveLength(20);
+  it('preserves the twenty existing native suites plus the reviewed operator setup suite', () => {
+    // Spec210 adds one separately reviewed synthetic suite. Keep exact identities,
+    // not just a count that could hide removal/replacement of an older suite.
+    const expected = [
+      'confirmation-maintenance', 'confirmation-worker', 'confirmation', 'correlated-calendar-serialization',
+      'google', 'inbox', 'outbox', 'personal-model-connection', 'personal-model-operator-setup', 'personal-model',
+      'personal-subject', 'project-brain-voice-gateway', 'project-brain-voice-recovery',
+      'project-brain-voice-transcript-review', 'project-brain-voice', 'recovery', 'sms-calendar-read',
+      'sms-inbound-recovery', 'temporal-registry', 'utc-datetime', 'voice-transcript-purge-utc',
+    ].map(name => `${name}.postgres.test.ts`).sort();
+    expect(readdirSync(resolve(root, 'specs/210-personal-live-activation')).filter(name => name.endsWith('.postgres.test.ts')).sort()).toEqual(expected);
     expect(harness).toContain('if ($MigrationRehearsal -and $TestFile)');
     expect(runner).toContain("process.argv[5] === '--migration-rehearsal'");
     expect(runner).toContain('migrationRehearsal && process.argv.length !== 6');

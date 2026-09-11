@@ -1,0 +1,11 @@
+{
+  "kind": "postgres-native",
+  "databaseRuntime": "NATIVE_POSTGRESQL",
+  "postgresTestFile": "personal-model-operator-setup.postgres.test.ts",
+  "exitCode": 0,
+  "finishedAt": "2026-09-11T02:25:46.154Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\postgres-native-1789093516639",
+  "buildDirectory": null
+}

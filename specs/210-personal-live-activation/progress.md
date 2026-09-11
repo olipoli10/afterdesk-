@@ -1,5 +1,34 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 02:32Z — Stage A reviewed locally; Stage B is active work
+
+See audits/PERSONAL_MODEL_OPERATOR_SETUP_CONTROLLER_REVIEW.md. Corrected core
+native26PASS02:25:43Z with exactserverSTOPPED,79affectedPASS, globalTSC PASS,
+root7157PASS/3historicalskips02:29:18Z. Peer clocks/proxy REDs and intermediate
+root7146/1 inventory failure retained; exact21suite identity assertion corrected.
+No live setup or provider activation. Stage B plan controller-reviewed: B1 pure
+config/archive, B2 durable claim/core orchestration, main boundedHTTP reader.
+HTTP reader author27+peer5PASS after retained mutated-error-message RED; no route
+yet and no owner authority implied by parsing. Separate B1/B2 proofs pending.
+Do not complete campaign/goal or pause heartbeat. No metrics transition.
+
+## 2026-09-11 02:13Z — Operator setup core continues; legacy native regression passes
+
+Stage A implements only a local transaction core, with no production caller,
+provider transport, real credential input or activation. Full-manifest identity
+pinning and credential/account/consent readback are under controller review.
+Stage B design uses the existing server encryption context; the unusable proposal
+to copy that sensitive key into a local CLI is explicitly withdrawn.
+Controller native legacy credential suite: 12/12 PASS at02:12:30Z, immutable79
+fingerprint retained, two simultaneous native backends verified and the exact
+disposable server stopped. Receipt: evidence/postgres-native-1789092720800.
+This is compatibility proof for the existing wrapper, not new setup coverage.
+New atomicity/concurrency tests are being authored independently before execution.
+Queue has41uniqueentries and no missing dependency IDs; Google backend READY
+checkpoint now distinguishes enabled global/Google switches from OFF model/SMS.
+Existing3minuteheartbeat verified ACTIVE, no duplicate or pause. Metrics unchanged;
+owner login/consent/phone pairing, Twilio access and authentic model reviews remain.
+
 ## 2026-09-11 01:54Z — Calendar-only backend READY, actual browser verified
 
 ONE publication dpl_8xvCAkanXMWGrDUiDjRc2Zm7jSPi READY atbd8e76f7; dedicatedalias

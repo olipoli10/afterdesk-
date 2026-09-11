@@ -1,0 +1,20 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"personal-model-operator-setup.postgres.test.ts","database":"endvera_personal_210_e99eb604ad2f419ab417976b5be5249b","template":"endvera_personal_210_3569f7adaabd48f3a6fdc94bd4ac97cd","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-11T02:25:43.1306040Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model-operator-setup.postgres.test.ts (26 tests) 9467ms
+     ✓ history uses publication time after real privacy expiry and disconnect, without key or fresh authority  8184ms
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  22:25:32
+   Duration  10.31s (transform 461ms, setup 0ms, import 692ms, tests 9.47s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-d35fd2bd2278425eb2f40db79eeb9d0d

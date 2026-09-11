@@ -1,0 +1,19 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"personal-model-connection.postgres.test.ts","database":"endvera_personal_210_bd59cd866705480b91428d120c8f7fcc","template":"endvera_personal_210_76dd2627216b49829ee6308f36094ced","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-11T02:12:30.3678566Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests) 485ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  22:12:29
+   Duration  1.26s (transform 417ms, setup 0ms, import 625ms, tests 485ms, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-57bab776ec7b488986ac0a81da3b0088

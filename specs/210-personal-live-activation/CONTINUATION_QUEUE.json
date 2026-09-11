@@ -21,7 +21,7 @@
       "evidence": "PILOT_BACKEND_APK_UPGRADE_PLAN.md",
       "completed": ["Historical remote70/local79 mismatch identified; bootstrap68-to70 and APK builder are not sufficient upgrade gates", "Read-only exactcatalog79 and peerreview62 PASS; controller fresh managedNeon metadata70 matches47exact/23LF, old dedicatedVercel06e26ce7 READY confirmed without writes/secrets", "Reviewed real native17.11 populated70-to79 rehearsal PASS21:30:11Z:14 old rows/70 history retained, new proof ledgers empty, private databases retained/server stopped", "Regression native372/20 clones PASS21:35:25Z; full root6268 PASS/3 historical skips21:37:17Z; controller103 focused PASS; current EAS read stillold code4"],
       "checkpoint": "Actual original pilot70to79 succeeded49964ms at8d462bd1, old183tables/2624columns preserved and8035catalogobjects matchT79; no backuprestore claim. Dedicated backend dpl_Cm6AFJxkXrsJWeFq4Z8kY3yKtPfa READY and anonymousHTTPS9PASS. Inherited cron discovered despite localconfig: scheduler explicitly disabled, definition retained/prior execution unknown. Android5 EAS cb38a5da finished01:25:22Z at68b29611; downloaded hashbf034e6b, manifest/package/code/origin statically verified.",
-      "remaining": ["Cryptographic APK signature and certificate continuity not independently verified; actual Samsung install/login unobserved", "Complete reviewed Google-only configuration publication, owner-controlled consent and phone pairing; recheck scheduler disabled before/after any publication", "Real SMS/calendar/voice and gateway observations remain distinct; do not rerun completed migrations or EAS build"],
+      "remaining": ["Cryptographic APK signature and certificate continuity not independently verified; actual Samsung install/login unobserved", "Google-only publication bd8e76f7 is READY with HTTP10 and rendered login isolation observed; owner-controlled consent and phone pairing remain; scheduler verified disabled before/after publication", "Real SMS/calendar/voice and gateway observations remain distinct; do not rerun completed migrations or EAS build"],
       "liveObserved": false
     },
     {
@@ -469,11 +469,32 @@
       "liveObserved": false
     },
     {
+      "id": "PERSONAL_MODEL_OPERATOR_SETUP_CORE",
+      "status": "DONE_LOCAL",
+      "dependencies": ["PERSONAL_MODEL_ENGINE_LOCAL"],
+      "evidence": "audits/PERSONAL_MODEL_OPERATOR_SETUP_CONTROLLER_REVIEW.md",
+      "completed": ["Controller and peer narrowed Stage A to pure manifest inspection and transaction-scoped initial-only publication/credential storage; no production caller", "Rejected CLI design requiring inaccessible server encryption key; existing sensitive server secret must not be copied or rotated"],
+      "checkpoint": "Final corrected Stage A:79 focused PASS, native26PASS02:25:43Z/serverSTOPPED, global TSC PASS, root7157PASS02:29:18Z/3historicalskips. Peer clocks/proxy REDs and intermediate inventory20/21 failure retained. No production caller or activation.",
+      "remaining": ["Stage B secure server-context ingress, actual owner consent and authentic endpoint reviews remain separate; no real APPLY or provider activation in Stage A"],
+      "liveObserved": false
+    },
+    {
+      "id": "PERSONAL_MODEL_OPERATOR_INGRESS",
+      "status": "IN_PROGRESS",
+      "dependencies": ["PERSONAL_MODEL_OPERATOR_SETUP_CORE"],
+      "evidence": "PERSONAL_MODEL_OPERATOR_INGRESS_PLAN.md",
+      "completed": ["Controller reviewed Stage B design: unique server configuration, existing owner session, durable claim/archive then atomic applied receipt; no secret export or generic admin route"],
+      "remaining": ["Local B1 pure contract, B2 transaction orchestrator and bounded HTTP reader/route with independent review and native proofs", "No live enabling until authentic reviews, owner consent, fixed deployment receipt and secret delivery/logging checks exist"],
+      "liveObserved": false
+    },
+    {
       "id": "OPENROUTER_PERSONAL_ENGINE",
       "status": "PENDING",
       "dependencies": [
         "PERSONAL_EXTERNAL_SETUP",
-        "PERSONAL_MODEL_ENGINE_LOCAL"
+        "PERSONAL_MODEL_ENGINE_LOCAL",
+        "PERSONAL_MODEL_OPERATOR_SETUP_CORE",
+        "PERSONAL_MODEL_OPERATOR_INGRESS"
       ],
       "remaining": [
         "Current credential access and provider pricing/privacy verification inside fresh 20 CAD envelope",
@@ -513,7 +534,7 @@
     "pilotExpiresAt": "2026-10-10T01:18:26Z",
     "twilioAccountAndNumber": "20260911_CHROME_PASSWORD_LOGIN_REQUIRED_HANDOFF_READY; PRIOR_NUMBER_14503676562_BALANCE_18_85USD_NOT_REFRESHED; SERVER_KEYS_ABSENT",
     "googleOAuthConnection": "20260911: DEDICATED_PROJECT_endvera-personal-20260910_EXTERNAL_TESTING_ONE_OWNER; CALENDAR_API_ENABLED_WEBCLIENT_CREATED; ID_SECRET_SAVED_PERSONAL_VERCEL_PRODUCTION; OWNER_CONSENT_NOT_OBSERVED",
-    "deploymentAccountAndOrigin": "20260911: DEDICATED_VERCEL_READY_8d462bd1; PILOT_NEON79_OBSERVED; HTTPS9_PASS; INHERITED_MAINTENANCE_SCHEDULER_DISABLED_DEFINITION_RETAINED; PROVIDER_FLAGS_OFF_GOOGLE_KEYS_PRESENT_TWILIO_ABSENT; ANDROID5_FINISHED_cb38a5da_STATIC_VERIFIED_DEVICE_UNOBSERVED",
+    "deploymentAccountAndOrigin": "20260911: DEDICATED_VERCEL_READY_bd8e76f7_dpl_8xvCAkanXMWGrDUiDjRc2Zm7jSPi; PILOT_NEON79_OBSERVED; HTTPS10_AND_RENDERED_LOGIN_PASS; INHERITED_MAINTENANCE_SCHEDULER_DISABLED_BEFORE_AFTER_DEFINITION_RETAINED; GLOBAL_AND_GOOGLE_TRANSPORT_ENABLED_OTHER_PROVIDER_SWITCHES_OFF; GOOGLE_KEYS_PRESENT_TWILIO_ABSENT; ANDROID5_FINISHED_cb38a5da_STATIC_VERIFIED_DEVICE_UNOBSERVED",
     "approvedPilotRecipient": "NOT_BOUND"
   },
   "resumeRule": "Recheck changed owner configuration and Git. Continue eligible work without GO. No repeated paid attempts, old R37 budget, fabricated observation or routine unchanged notification. Keep timer active; projectComplete remains false."
