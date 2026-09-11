@@ -29,7 +29,7 @@ async function dbNow() {
 
 // Private fixture: NO personalModelFixture(), no published routes, active keys,
 // SMS source, or inferred human consent. All review facts/keys are synthetic.
-async function fixture(options: { consent?: boolean; privacyLifetimeMs?: number } = {}) {
+async function fixture(options: { consent?: boolean; privacyLifetimeMs?: number; answer?: boolean } = {}) {
   requirePersonalDisposableDatabase();
   const user = await prisma.user.create({ data: { name: "SYNTHETIC setup owner",
     email: `operator-setup-${randomUUID()}@example.invalid`, role: "CLIENT", emailVerified: true } });
@@ -59,6 +59,17 @@ async function fixture(options: { consent?: boolean; privacyLifetimeMs?: number 
       privacyPosture: "zero_retention", residency: ["synthetic-region"], tenancyMode: "route_isolated" },
     route: { id: `setup-route-${randomUUID()}`, version, residency: ["synthetic-region"], maxInputTokens: 32768 },
     policy: { id: `setup-policy-${randomUUID()}`, version },
+    ...(options.answer ? { answer: {
+      operatorReview: { reviewerRef: "SYNTHETIC_ANSWER_REVIEWER", reviewedAt: now.toISOString(),
+        compatibility: review, privacy: review, promptAndOutputContract: review },
+      privacyEvidence: { adapterKey: "openrouter-personal-answer-candidate", allowedDataClasses: ["personal_data"], billingProvider: "openrouter",
+        certificationOwner: "SYNTHETIC_NOT_PROVIDER_CERTIFICATION", effectiveAt: now.toISOString(),
+        expiresAt: new Date(now.getTime() + (options.privacyLifetimeMs ?? 600000)).toISOString(), endpointKey: rate.providerEndpoint,
+        intermediary: "openrouter", modelKey: "openrouter/auto", operationTypes: ["personal_answer_candidate_v1"], pathKind: "gateway_mediated",
+        privacyPosture: "zero_retention", residency: ["synthetic-region"], tenancyMode: "route_isolated" },
+      route: { id: `setup-answer-route-${randomUUID()}`, version, residency: ["synthetic-region"], maxInputTokens: 32768 },
+      policy: { id: `setup-answer-policy-${randomUUID()}`, version },
+    } } : {}),
   };
   const artifact = preparePersonalModelOperatorArtifact({ enabled: true, configuration }, now);
   if (artifact.status !== "PREPARED_NOT_PUBLISHED") throw new Error("SYNTHETIC_SETUP_FIXTURE_INVALID");
@@ -88,9 +99,13 @@ const historical = (f: Fixture) => {
   const original = context(f); return transaction(tx => reconcile(tx, f.manifest, { NODE_ENV: "test" }, original));
 };
 async function rows(f: Fixture) {
+  const answer = f.manifest.artifact.status === "PREPARED_NOT_PUBLISHED" && "answerSetup" in f.manifest.artifact
+    ? f.manifest.artifact.answerSetup as undefined | { draftRoute: { id: string }; draftPolicy: { id: string } } : undefined;
   return {
     route: await prisma.modelGatewayRouteProfile.findUnique({ where: { id: f.manifest.artifact.draftRoute.id } }),
     policy: await prisma.modelGatewayPolicyVersion.findUnique({ where: { id: f.manifest.artifact.draftPolicy.id } }),
+    answerRoute: answer ? await prisma.modelGatewayRouteProfile.findUnique({ where: { id: answer.draftRoute.id } }) : null,
+    answerPolicy: answer ? await prisma.modelGatewayPolicyVersion.findUnique({ where: { id: answer.draftPolicy.id } }) : null,
     account: await prisma.constructionConnectorAccount.findUniqueOrThrow({ where: { id: f.accountId } }),
     credentials: await prisma.constructionConnectorCredential.findMany({ where: { connectorAccountId: f.accountId }, orderBy: { id: "asc" } }),
     grants: await prisma.constructionConnectorGrant.findMany({ where: { connectorAccountId: f.accountId }, orderBy: { id: "asc" } }),
@@ -161,6 +176,23 @@ describe("Stage A operator setup — real disposable PostgreSQL, synthetic revie
     expect(JSON.stringify(result).includes(f.apiKey)).toBe(false);
     expect(await historical(f)).toMatchObject({ status: "STORED_SETUP_MATCH_NOT_ACTIVATED", currentEligibilityVerified: false });
     expect(await rows(f)).toEqual(after);
+  });
+
+  it("publishes the separately reviewed answer route and policy in the same transaction", async () => {
+    const f = await fixture({ answer: true }), before = await rows(f);
+    expect(before.answerRoute).toBeNull(); expect(before.answerPolicy).toBeNull();
+    await publish(f);
+    const after = await rows(f), setup = f.manifest.artifact.answerSetup as undefined | {
+      draftRoute: { canonicalHash: string }; draftPolicy: { canonicalHash: string } };
+    expect(setup).toBeDefined();
+    expect(after.answerRoute).toMatchObject({ routeKey: "personal-answer-openrouter-v1", adapterKey: "openrouter-personal-answer-candidate",
+      modelKey: "openrouter/auto", operationTypes: ["personal_answer_candidate_v1"], canonicalHash: setup!.draftRoute.canonicalHash, status: "published" });
+    expect(after.answerPolicy).toMatchObject({ policyKey: "personal-answer-v1", operationType: "personal_answer_candidate_v1",
+      canonicalHash: setup!.draftPolicy.canonicalHash, status: "published" });
+    expect(after.answerRoute).not.toHaveProperty("reviewedHashes"); expect(after.answerPolicy).not.toHaveProperty("routeHash");
+    expect(after.answerRoute?.publishedAt).toEqual(after.route?.publishedAt);
+    expect(after.answerPolicy?.publishedAt).toEqual(after.policy?.publishedAt);
+    expect(await historical(f)).toMatchObject({ status: "STORED_SETUP_MATCH_NOT_ACTIVATED" });
   });
 
   it.each([["constructionConnectorCredential", "create"], ["constructionConnectorAccount", "update"],

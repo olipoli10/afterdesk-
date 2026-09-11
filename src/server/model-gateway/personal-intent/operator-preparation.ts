@@ -7,6 +7,8 @@ import { inspectPersonalModelPilotEnvelope, PERSONAL_MODEL_OUTPUT_CONTRACT_HASH 
 import { inspectPersonalModelBudget, PERSONAL_MODEL_AUTHORITY } from "./budget-policy";
 import { PERSONAL_INTENT_ADAPTER_LIMITS } from "./openrouter-adapter";
 import { PERSONAL_INTENT_PROMPT_VERSION } from "./prompt";
+import { ANSWER_OPERATION, candidateAnswerSchema } from "../personal-answer/contract";
+import { PERSONAL_ANSWER_PROMPT_VERSION } from "../personal-answer/openrouter-adapter";
 
 const hash = z.string().regex(/^sha256:[a-f0-9]{64}$/);
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,191}$/);
@@ -22,9 +24,13 @@ const routeSchema = z.object({ id, version, residency: z.array(label).min(1).max
   .refine(values => new Set(values).size === values.length),
   maxInputTokens: z.number().int().positive().max(10_000_000) }).strict();
 const policySchema = z.object({ id, version }).strict();
+const answerReviewSchema = z.object({ reviewerRef: label, reviewedAt: z.string().datetime({ offset: true }),
+  compatibility: document, privacy: document, promptAndOutputContract: document }).strict();
+const answerSetupSchema = z.object({ operatorReview: answerReviewSchema, privacyEvidence: z.unknown(),
+  route: routeSchema, policy: policySchema }).strict();
 const outerSchema = z.object({ operatorReview: z.unknown(), pilotContext: z.unknown(),
   rateConfiguration: z.unknown(), pilotEnvelopeReview: z.unknown(), privacyEvidence: z.unknown(),
-  route: z.unknown(), policy: z.unknown() }).partial().strict();
+  route: z.unknown(), policy: z.unknown(), answer: z.unknown().optional() }).partial().strict();
 
 export const PERSONAL_MODEL_RUNTIME_PREREQUISITES = Object.freeze([
   "REVIEW_DOCUMENT_AUTHENTICITY_NOT_VERIFIED", "CURRENT_RATE_FX_FEES_AND_TOTAL_ENVELOPE_REVIEW",
@@ -121,6 +127,68 @@ export function preparePersonalModelOperatorArtifact(input: Readonly<{ enabled?:
     contentRef: { kind: "personal_intent_input", id: "operator-preparation-only", fingerprint: probeHash }, createdAt: now,
   } });
   if (resolution.disposition !== "route_authorized") return incomplete(`EXISTING_GATEWAY_${resolution.reasonClass.toUpperCase()}`);
+  let answerSetup: Readonly<Record<string, unknown>> | undefined;
+  if (raw.answer !== undefined) {
+    const parsed = answerSetupSchema.safeParse(raw.answer);
+    if (!parsed.success) return incomplete("EXACT_PERSONAL_ANSWER_REVIEW_AND_ROUTE_REQUIRED");
+    const answerReviewAt = Date.parse(parsed.data.operatorReview.reviewedAt);
+    if (answerReviewAt > now.getTime() || now.getTime() - answerReviewAt > 86_400_000)
+      return incomplete("CURRENT_PERSONAL_ANSWER_REVIEW_REQUIRED");
+    if (!parsed.data.privacyEvidence || typeof parsed.data.privacyEvidence !== "object" || Array.isArray(parsed.data.privacyEvidence))
+      return incomplete("EXACT_PERSONAL_ANSWER_PRIVACY_EVIDENCE_REQUIRED");
+    if (parsed.data.route.maxInputTokens > pinned.totalContextTokens || pinned.maxOutputTokens > 2048)
+      return incomplete("PERSONAL_ANSWER_TOKEN_LIMITS_REQUIRED");
+    const answerOperation = requireOperationDefinition(ANSWER_OPERATION);
+    const answerRouteKey = requireRouteKey("personal-answer-openrouter-v1");
+    const answerAdapter = requireAdapterDefinition("openrouter-personal-answer-candidate");
+    const answerPolicyKey = requirePolicyKey("personal-answer-v1");
+    const answerOutputContract = canonicalFingerprint(z.toJSONSchema(candidateAnswerSchema));
+    const answerReviewedHashes = {
+      operatorReview: canonicalFingerprint(parsed.data.operatorReview),
+      compatibilityReview: parsed.data.operatorReview.compatibility.contentHash,
+      privacyReview: parsed.data.operatorReview.privacy.contentHash,
+      promptAndOutputContractReview: parsed.data.operatorReview.promptAndOutputContract.contentHash,
+      rateConfiguration: pinned.reviewedRateFingerprint,
+      privacyEvidence: canonicalFingerprint(parsed.data.privacyEvidence),
+      pilotEnvelope: canonicalFingerprint(envelope), pilotContext: canonicalFingerprint(pilot.data),
+      outputContract: answerOutputContract, promptVersion: PERSONAL_ANSWER_PROMPT_VERSION,
+    };
+    const answerRouteContent = { ...parsed.data.route, routeKey: answerRouteKey, pathKind: "gateway_mediated",
+      adapterKey: answerAdapter.key, billingProvider: "openrouter", intermediary: "openrouter",
+      endpointKey: pinned.providerEndpoint, modelKey: "openrouter/auto", operationTypes: [answerOperation.key],
+      allowedDataClasses: ["personal_data"], privacyPosture: "zero_retention",
+      privacyEvidence: parsed.data.privacyEvidence as Record<string, unknown>,
+      pricingEvidence: { rateConfiguration: raw.rateConfiguration,
+        reviewDocuments: { rates: review.data.rates, fxAndFees: review.data.fxAndFees,
+          compatibility: parsed.data.operatorReview.compatibility },
+        reviewedRateFingerprint: pinned.reviewedRateFingerprint, authenticityVerified: false },
+      maxOutputTokens: pinned.maxOutputTokens, createdBy: parsed.data.operatorReview.reviewerRef,
+      reviewedHashes: answerReviewedHashes };
+    const answerRouteHash = canonicalFingerprint(answerRouteContent);
+    const answerPolicyContent = { ...parsed.data.policy, policyKey: answerPolicyKey, operationType: answerOperation.key,
+      routeOrder: [{ routeKey: answerRouteKey, version: parsed.data.route.version }], fallbackRules: [], maxAttempts: 1,
+      maxTotalCostMicros: pinned.reservationUsdMicros.toString(), requiredPrivacyPosture: "zero_retention",
+      createdBy: parsed.data.operatorReview.reviewerRef, reviewedHashes: answerReviewedHashes, routeHash: answerRouteHash };
+    const answerPolicyHash = canonicalFingerprint(answerPolicyContent);
+    const answerRoute: GatewayRouteSnapshot = { ...answerRouteContent, status: "published", canonicalHash: answerRouteHash };
+    const answerPolicy: GatewayPolicySnapshot = { ...answerPolicyContent, maxTotalCostMicros: pinned.reservationUsdMicros,
+      status: "published", canonicalHash: answerPolicyHash };
+    const answerProbe = canonicalFingerprint({ kind: "operator-answer-structural-probe-not-an-admission", reviewedHashes: answerReviewedHashes });
+    const answerResolution = resolveGatewayPolicy({ policy: answerPolicy, routes: [answerRoute], now, request: {
+      operationType: ANSWER_OPERATION, policyKey: answerPolicyKey, maxTotalCostMicros: pinned.reservationUsdMicros,
+      dataClass: "personal_data", privacyRequirement: "zero_retention", outputContractHash: answerOutputContract,
+      subject: { kind: "personal_assistant_operation", operationId: "not-an-operation", workspaceId: "not-a-workspace" },
+      tenantId: "not-a-tenant", logicalOperationKey: "operator-answer-preparation-only", requestFingerprint: answerProbe,
+      contentRef: { kind: "personal_answer_input", id: "operator-answer-preparation-only", fingerprint: answerProbe }, createdAt: now,
+    } });
+    if (answerResolution.disposition !== "route_authorized")
+      return incomplete(`EXISTING_ANSWER_GATEWAY_${answerResolution.reasonClass.toUpperCase()}`);
+    answerSetup = freeze({ reviewedHashes: answerReviewedHashes,
+      draftRoute: { ...answerRouteContent, canonicalHash: answerRouteHash, status: "draft" as const, publishedAt: null },
+      draftPolicy: { ...answerPolicyContent, canonicalHash: answerPolicyHash, status: "draft" as const, publishedAt: null },
+      runtimeConfiguration: { schemaVersion: 1 as const, policyVersionId: parsed.data.policy.id,
+        rateConfiguration: { candidateRates: [raw.rateConfiguration] }, pilotEnvelopeReview: envelope } });
+  }
   const body = {
     schemaVersion: 1 as const, status: "PREPARED_NOT_PUBLISHED" as const,
     executionAuthorized: false as const, publicationAuthorized: false as const, externalTransportPerformed: false as const,
@@ -131,6 +199,7 @@ export function preparePersonalModelOperatorArtifact(input: Readonly<{ enabled?:
     draftPolicy: { ...policyContent, canonicalHash: policyHash, status: "draft" as const, publishedAt: null },
     runtimeConfiguration: { schemaVersion: 1 as const, policyVersionId: policyPin.data.id,
       rateConfiguration: raw.rateConfiguration, pilotEnvelopeReview: envelope },
+    ...(answerSetup ? { answerSetup } : {}),
     disabledSwitches: { ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "false", ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED: "false",
       ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "DISABLED" },
     reservation: { usdMicros: pinned.reservationUsdMicros.toString(), cadMicros: pinned.reservationCadMicros.toString(),

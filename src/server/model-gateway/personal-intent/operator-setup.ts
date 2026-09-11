@@ -24,11 +24,25 @@ const policySchema = z.object({ ...common, policyKey: z.literal("personal-intent
     routeKey: z.literal("personal-intent-openrouter-candidate-v1"), version }).strict()).length(1),
   fallbackRules: z.array(z.never()).length(0), maxAttempts: z.literal(1),
   maxTotalCostMicros: z.string().regex(/^[1-9][0-9]{0,18}$/), requiredPrivacyPosture: z.literal("zero_retention"), routeHash: hash }).strict();
+const answerRouteSchema = z.object({ ...common, routeKey: z.literal("personal-answer-openrouter-v1"),
+  pathKind: z.literal("gateway_mediated"), adapterKey: z.literal("openrouter-personal-answer-candidate"),
+  billingProvider: z.literal("openrouter"), intermediary: z.literal("openrouter"), endpointKey: z.string().min(1).max(160),
+  modelKey: z.literal("openrouter/auto"), operationTypes: z.tuple([z.literal("personal_answer_candidate_v1")]),
+  allowedDataClasses: z.tuple([z.literal("personal_data")]), privacyPosture: z.literal("zero_retention"), residency: labels,
+  pricingEvidence: json, privacyEvidence: json, maxInputTokens: z.number().int().positive().max(10000000),
+  maxOutputTokens: z.number().int().positive().max(2048) }).strict();
+const answerPolicySchema = z.object({ ...common, policyKey: z.literal("personal-answer-v1"),
+  operationType: z.literal("personal_answer_candidate_v1"), routeOrder: z.array(z.object({
+    routeKey: z.literal("personal-answer-openrouter-v1"), version }).strict()).length(1),
+  fallbackRules: z.array(z.never()).length(0), maxAttempts: z.literal(1),
+  maxTotalCostMicros: z.string().regex(/^[1-9][0-9]{0,18}$/), requiredPrivacyPosture: z.literal("zero_retention"), routeHash: hash }).strict();
+const answerSetupSchema = z.object({ reviewedHashes: json, draftRoute: answerRouteSchema,
+  draftPolicy: answerPolicySchema, runtimeConfiguration: json }).strict();
 const artifactSchema = z.object({ schemaVersion: z.literal(1), status: z.literal("PREPARED_NOT_PUBLISHED"),
   executionAuthorized: z.literal(false), publicationAuthorized: z.literal(false), externalTransportPerformed: z.literal(false),
   reviewAuthenticityVerified: z.literal(false), providerCompatibilityObserved: z.literal(false),
   structuralValidation: z.literal("EXISTING_GATEWAY_RESOLVER_ONLY"), configuration: json, reviewedHashes: json,
-  draftRoute: routeSchema, draftPolicy: policySchema, runtimeConfiguration: json,
+  draftRoute: routeSchema, draftPolicy: policySchema, runtimeConfiguration: json, answerSetup: answerSetupSchema.optional(),
   disabledSwitches: z.object({ ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: z.literal("false"),
     ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED: z.literal("false"), ENDVERA_EXTERNAL_TRANSPORT_ENABLED: z.literal("DISABLED") }).strict(),
   reservation: z.object({ usdMicros: z.string(), cadMicros: z.string(), modelCeilingCadMicros: z.string(), accounting: z.literal("NOT_RESERVED") }).strict(),
@@ -78,6 +92,24 @@ function snapshot(value: unknown): unknown {
 }
 const fingerprint = (value: unknown) => `sha256:${createHash("sha256").update(JSON.stringify(snapshot(value)), "utf8").digest("hex")}`;
 function frozen<T>(v: T): T { if (v && typeof v === "object") { Object.values(v).forEach(frozen); Object.freeze(v); } return v; }
+function mapAnswerSetup(a: z.infer<typeof answerSetupSchema>) {
+  const { canonicalHash: routeHash, status: _rStatus, publishedAt: _rAt, ...routeContent } = a.draftRoute;
+  const { canonicalHash: policyHash, status: _pStatus, publishedAt: _pAt, ...policyContent } = a.draftPolicy;
+  void _rStatus; void _rAt; void _pStatus; void _pAt;
+  if (fingerprint(routeContent) !== routeHash || fingerprint(policyContent) !== policyHash
+    || policyContent.routeHash !== routeHash || policyContent.routeOrder[0].version !== routeContent.version
+    || fingerprint(a.reviewedHashes) !== fingerprint(routeContent.reviewedHashes)
+    || fingerprint(a.reviewedHashes) !== fingerprint(policyContent.reviewedHashes)) fail();
+  const { reviewedHashes: _rHashes, ...route } = routeContent;
+  const { reviewedHashes: _pHashes, routeHash: _routeHash, ...policy } = policyContent;
+  void _rHashes; void _pHashes; void _routeHash;
+  const runtime = z.object({ schemaVersion: z.literal(1), policyVersionId: id,
+    rateConfiguration: z.unknown(), pilotEnvelopeReview: z.unknown() }).strict().parse(a.runtimeConfiguration);
+  if (runtime.policyVersionId !== policy.id) fail();
+  return frozen({ route: { ...route, canonicalHash: routeHash },
+    policy: { ...policy, canonicalHash: policyHash, maxTotalCostMicros: BigInt(policy.maxTotalCostMicros) },
+    runtimeConfiguration: runtime });
+}
 
 /** Pure structural/integrity mapping, NOT fresh review validation or authority. */
 export function inspectPersonalModelSetupManifest(raw: unknown) {
@@ -95,9 +127,10 @@ export function inspectPersonalModelSetupManifest(raw: unknown) {
     const { reviewedHashes: _rHashes, ...route } = routeContent;
     const { reviewedHashes: _pHashes, routeHash: _routeHash, ...policy } = policyContent;
     void _rHashes; void _pHashes; void _routeHash;
+    const answer = artifact.answerSetup ? mapAnswerSetup(artifact.answerSetup) : undefined;
     return frozen({ status: "MAPPED_NOT_AUTHORIZED" as const, manifest, manifestHash: fingerprint(manifest),
       route: { ...route, canonicalHash: routeHash }, policy: { ...policy, canonicalHash: policyHash, maxTotalCostMicros: BigInt(policy.maxTotalCostMicros) },
-      executionAuthorized: false as const });
+      answer, executionAuthorized: false as const });
   } catch { return fail(); }
 }
 
@@ -105,6 +138,15 @@ export type PersonalModelSetupContext = Readonly<{ expectedHead: string; expecte
   deadlineAt: number; monotoneDeadlineAt: number; signal?: AbortSignal }>;
 type Tx = Prisma.TransactionClient;
 type Mapped = ReturnType<typeof inspectPersonalModelSetupManifest>;
+
+function answerSetup(mapped: Mapped) {
+  return mapped.answer ?? fail();
+}
+
+export function personalAnswerRuntimeFromOperatorConfiguration(raw: unknown) {
+  const mapped = inspectPersonalModelSetupManifest(raw), answer = answerSetup(mapped);
+  return frozen(answer.runtimeConfiguration);
+}
 
 function invocation(tx: Tx, mapped: Mapped, context: PersonalModelSetupContext, env: NodeJS.ProcessEnv, initial: boolean) {
   if (!tx || "$transaction" in tx || typeof tx.$queryRawUnsafe !== "function") fail();
@@ -165,6 +207,17 @@ async function stored(tx: Tx, mapped: Mapped, c: ReturnType<typeof invocation>) 
     || !(policy.publishedAt instanceof Date) || publishedAtMs !== policy.publishedAt.getTime()) fail();
   return new Date(publishedAtMs);
 }
+async function storedAnswer(tx: Tx, mapped: Mapped, c: ReturnType<typeof invocation>) {
+  const answer = answerSetup(mapped);
+  const route = await tx.modelGatewayRouteProfile.findUnique({ where: { id: answer.route.id } }); c.live();
+  if (!route || route.status !== "published" || route.retiredAt || !matches(route, answer.route)
+    || !(route.publishedAt instanceof Date) || !Number.isFinite(route.publishedAt.getTime())) return fail();
+  const publishedAtMs = route.publishedAt.getTime();
+  const policy = await tx.modelGatewayPolicyVersion.findUnique({ where: { id: answer.policy.id } }); c.live();
+  if (!policy || policy.status !== "published" || policy.retiredAt || !matches(policy, answer.policy)
+    || !(policy.publishedAt instanceof Date) || policy.publishedAt.getTime() !== publishedAtMs) fail();
+  return new Date(publishedAtMs);
+}
 
 /** No production caller. Caller owns commit/outcome handling; this result is
  * explicitly provisional. Reviews, rates and keys are never sourced from mobile.
@@ -173,23 +226,36 @@ export async function applyPersonalModelOperatorSetupInTransaction(tx: Tx, raw: 
   env: NodeJS.ProcessEnv, context: PersonalModelSetupContext) {
   try {
   const mapped = inspectPersonalModelSetupManifest(raw), c = invocation(tx, mapped, context, env, true);
+  const answer = mapped.answer;
   await transaction(tx, c);
   const keys = [`personal-model-setup:workspace:${mapped.manifest.workspaceId}`,
-    `personal-model-setup:route:${mapped.route.routeKey}:${mapped.route.version}`, `personal-model-setup:policy:${mapped.policy.policyKey}:${mapped.policy.version}`].sort();
+    `personal-model-setup:route:${mapped.route.routeKey}:${mapped.route.version}`,
+    `personal-model-setup:policy:${mapped.policy.policyKey}:${mapped.policy.version}`,
+    ...(answer ? [`personal-model-setup:route:${answer.route.routeKey}:${answer.route.version}`,
+      `personal-model-setup:policy:${answer.policy.policyKey}:${answer.policy.version}`] : [])].sort();
   for (const key of keys) { await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock(hashtextextended($1,0))::text AS acquired", key); c.live(); }
   const now = await clock(tx, c); await rebuilt(mapped, now); c.live();
   const routeCollision = await tx.modelGatewayRouteProfile.findFirst({ where: { OR: [{ id: mapped.route.id },
     { routeKey: mapped.route.routeKey, version: mapped.route.version }, { canonicalHash: mapped.route.canonicalHash }] }, select: { id: true } }); c.live();
   const policyCollision = await tx.modelGatewayPolicyVersion.findFirst({ where: { OR: [{ id: mapped.policy.id },
     { policyKey: mapped.policy.policyKey, version: mapped.policy.version }, { canonicalHash: mapped.policy.canonicalHash }] }, select: { id: true } }); c.live();
-  if (routeCollision || policyCollision) fail();
+  const answerRouteCollision = answer ? await tx.modelGatewayRouteProfile.findFirst({ where: { OR: [{ id: answer.route.id },
+    { routeKey: answer.route.routeKey, version: answer.route.version }, { canonicalHash: answer.route.canonicalHash }] }, select: { id: true } }) : null; c.live();
+  const answerPolicyCollision = answer ? await tx.modelGatewayPolicyVersion.findFirst({ where: { OR: [{ id: answer.policy.id },
+    { policyKey: answer.policy.policyKey, version: answer.policy.version }, { canonicalHash: answer.policy.canonicalHash }] }, select: { id: true } }) : null; c.live();
+  if (routeCollision || policyCollision || answerRouteCollision || answerPolicyCollision) fail();
   const { provisionInitialPersonalModelCredentialInTransaction } = await import("@/server/personal-assistant/model-connection"); c.live();
   await provisionInitialPersonalModelCredentialInTransaction(tx, { userId: mapped.manifest.ownerUserId,
     workspaceId: mapped.manifest.workspaceId, credentialId: mapped.manifest.setupId, apiKey }, env, c); c.live();
   await tx.modelGatewayRouteProfile.create({ data: { ...mapped.route, pricingEvidence: mapped.route.pricingEvidence as Prisma.InputJsonObject,
     privacyEvidence: mapped.route.privacyEvidence as Prisma.InputJsonObject, status: "published", publishedAt: now } }); c.live();
   await tx.modelGatewayPolicyVersion.create({ data: { ...mapped.policy, status: "published", publishedAt: now } }); c.live();
-  await stored(tx, mapped, c);
+  if (answer) {
+    await tx.modelGatewayRouteProfile.create({ data: { ...answer.route, pricingEvidence: answer.route.pricingEvidence as Prisma.InputJsonObject,
+      privacyEvidence: answer.route.privacyEvidence as Prisma.InputJsonObject, status: "published", publishedAt: now } }); c.live();
+    await tx.modelGatewayPolicyVersion.create({ data: { ...answer.policy, status: "published", publishedAt: now } }); c.live();
+  }
+  await stored(tx, mapped, c); if (answer) await storedAnswer(tx, mapped, c);
   const finalNow = await clock(tx, c); if (finalNow < now) fail();
   await rebuilt(mapped, finalNow); c.live();
   return frozen({ status: "SETUP_PREPARED_NOT_COMMITTED" as const, setupId: mapped.manifest.setupId,
@@ -215,8 +281,10 @@ export async function reconcilePersonalModelOperatorSetupInTransaction(tx: Tx, r
       AND u.role='CLIENT' AND u."emailVerified"=true AND a.provider='openrouter' AND a."createdByUserId"=$2 AND c.id=$3
     FOR SHARE OF w,m,u,a,c`, mapped.manifest.workspaceId, mapped.manifest.ownerUserId, mapped.manifest.setupId); c.live();
   if (rows.length !== 1) fail();
-  const publishedAt = await stored(tx, mapped, c), now = await clock(tx, c);
-  if (publishedAt > now) fail();
+  const publishedAt = await stored(tx, mapped, c);
+  const answerPublishedAt = mapped.answer ? await storedAnswer(tx, mapped, c) : null;
+  const now = await clock(tx, c);
+  if (publishedAt > now || answerPublishedAt && answerPublishedAt.getTime() !== publishedAt.getTime()) fail();
   await rebuilt(mapped, publishedAt); c.live();
   return frozen({ status: "STORED_SETUP_MATCH_NOT_ACTIVATED" as const, setupId: mapped.manifest.setupId,
     artifactHash: mapped.manifest.artifact.artifactHash, manifestHash: mapped.manifestHash, committed: false as const, executionAuthorized: false as const,

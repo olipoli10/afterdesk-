@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Prisma } from "@prisma-client";
 import { createHash } from "node:crypto";
 import { preparePersonalModelOperatorArtifact } from "../src/server/model-gateway/personal-intent/operator-preparation";
-import { applyPersonalModelOperatorSetupInTransaction, inspectPersonalModelSetupManifest, reconcilePersonalModelOperatorSetupInTransaction } from "../src/server/model-gateway/personal-intent/operator-setup";
+import { applyPersonalModelOperatorSetupInTransaction, inspectPersonalModelSetupManifest, personalAnswerRuntimeFromOperatorConfiguration,
+  reconcilePersonalModelOperatorSetupInTransaction } from "../src/server/model-gateway/personal-intent/operator-setup";
 import { provisionInitialPersonalModelCredentialInTransaction } from "../src/server/personal-assistant/model-connection";
 import { openConnectorSecret } from "../src/server/personal-assistant/credential-cipher";
 vi.mock("@/lib/db", () => ({ prisma: {} }));
@@ -25,6 +26,14 @@ function fixture() {
       endpointKey: rate.providerEndpoint, intermediary: "openrouter", modelKey: rate.model, operationTypes: ["personal_intent_candidate_v1"],
       pathKind: "gateway_mediated", privacyPosture: "zero_retention", residency: ["synthetic-region"], tenancyMode: "route_isolated" },
     route: { id: "synthetic-route", version: 1, residency: ["synthetic-region"], maxInputTokens: 32768 }, policy: { id: "synthetic-policy", version: 1 },
+    answer: { operatorReview: { reviewerRef: "synthetic-answer-reviewer", reviewedAt: now.toISOString(),
+      compatibility: doc, privacy: doc, promptAndOutputContract: doc },
+      privacyEvidence: { adapterKey: "openrouter-personal-answer-candidate", allowedDataClasses: ["personal_data"], billingProvider: "openrouter",
+        certificationOwner: "synthetic-not-certified", effectiveAt: now.toISOString(), expiresAt: "2026-09-13T01:00:00Z",
+        endpointKey: rate.providerEndpoint, intermediary: "openrouter", modelKey: "openrouter/auto", operationTypes: ["personal_answer_candidate_v1"],
+        pathKind: "gateway_mediated", privacyPosture: "zero_retention", residency: ["synthetic-region"], tenancyMode: "route_isolated" },
+      route: { id: "synthetic-answer-route", version: 1, residency: ["synthetic-region"], maxInputTokens: 32768 },
+      policy: { id: "synthetic-answer-policy", version: 1 } },
   } }, now);
   if (artifact.status !== "PREPARED_NOT_PUBLISHED") throw new Error("FIXTURE_INVALID");
   return { version: "personal-model-operator-setup-v1", setupId: "12345678-1234-4234-8234-123456789abc",
@@ -43,6 +52,9 @@ describe("pure initial personal model setup mapping", () => {
     expect(result.policy.canonicalHash).toBe(input.artifact.draftPolicy.canonicalHash);
     expect(result.policy.maxTotalCostMicros).toBe(BigInt(input.artifact.draftPolicy.maxTotalCostMicros));
     expect(result.executionAuthorized).toBe(false);
+    expect(result.answer?.route).toMatchObject({ routeKey: "personal-answer-openrouter-v1", modelKey: "openrouter/auto" });
+    expect(result.answer?.route).not.toHaveProperty("reviewedHashes");
+    expect(personalAnswerRuntimeFromOperatorConfiguration(input)).toMatchObject({ policyVersionId: "synthetic-answer-policy" });
   });
   it("binds the entire canonical manifest and preserves immutable copies", () => {
     const raw = fixture(), mapped = inspectPersonalModelSetupManifest(raw);
@@ -62,6 +74,12 @@ describe("pure initial personal model setup mapping", () => {
     if (key === "artifactHash") raw.artifact.artifactHash = `sha256:${"0".repeat(64)}`;
     else if (key === "canonicalHash") raw.artifact.draftRoute.canonicalHash = `sha256:${"0".repeat(64)}`;
     else raw.artifact.draftPolicy.canonicalHash = `sha256:${"0".repeat(64)}`;
+    expect(() => inspectPersonalModelSetupManifest(raw)).toThrow("PERSONAL_MODEL_SETUP_REFUSED");
+  });
+  it("rejects a substituted answer proof before SQL", () => {
+    const raw = structuredClone(fixture());
+    const answer = raw.artifact.answerSetup as { draftRoute: { privacyEvidence: Record<string, unknown> } };
+    answer.draftRoute.privacyEvidence.modelKey = "substituted/model";
     expect(() => inspectPersonalModelSetupManifest(raw)).toThrow("PERSONAL_MODEL_SETUP_REFUSED");
   });
   it("refuses accessors without invoking them", () => {
@@ -96,7 +114,8 @@ function database() {
   const context = { expectedHead: manifest.expectedHead, expectedSchemaCatalogSha256: manifest.expectedSchemaCatalogSha256,
     expectedArtifactHash: manifest.artifact.artifactHash, expectedManifestHash: mapped.manifestHash,
     deadlineAt: Date.now() + 15000, monotoneDeadlineAt: performance.now() + 15000 };
-  const state = { route: null as Row | null, policy: null as Row | null, credential: null as Row | null,
+  const state = { route: null as Row | null, answerRoute: null as Row | null,
+    policy: null as Row | null, answerPolicy: null as Row | null, credential: null as Row | null,
     account: {} as Row, owner: true, readback: true, prior: false, isolation: "serializable", dbNow: now,
     routeCollision: false, policyCollision: false, calls: [] as string[], hook: (_point: string) => { void _point; }, failAt: "" };
   function point(p: string) { state.calls.push(p); state.hook(p); if (state.failAt === p) throw new Error("SYNTHETIC_SECRET_MUST_NOT_ESCAPE"); }
@@ -121,14 +140,38 @@ function database() {
     constructionConnectorAccount: { update: vi.fn(async ({ data }: { data: Row }) => { point("account-update"); state.account = structuredClone(data); return state.account; }) },
     constructionConnectorGrant: { upsert: vi.fn(() => { throw new Error("NO_CONSENT_WRITE"); }) },
     modelGatewayRouteProfile: {
-      findFirst: vi.fn(async () => { point("route-collision"); return state.routeCollision || state.route ? { id: "existing" } : null; }),
-      create: vi.fn(async ({ data }: { data: Row }) => { point("route-create"); state.route = { ...structuredClone(data), retiredAt: null }; return state.route; }),
-      findUnique: vi.fn(async () => { point("route-readback"); return state.route; }),
+      findFirst: vi.fn(async ({ where }: { where: { OR: Array<{ id?: string }> } }) => {
+        point("route-collision");
+        const ids = where.OR.flatMap(candidate => candidate.id ? [candidate.id] : []);
+        return state.routeCollision || [state.route, state.answerRoute].some(row => row && ids.includes(row.id as string)) ? { id: "existing" } : null;
+      }),
+      create: vi.fn(async ({ data }: { data: Row }) => {
+        point("route-create");
+        const row = { ...structuredClone(data), retiredAt: null };
+        if (data.id === mapped.route.id) state.route = row; else state.answerRoute = row;
+        return row;
+      }),
+      findUnique: vi.fn(async ({ where }: { where: { id: string } }) => {
+        point("route-readback");
+        return [state.route, state.answerRoute].find(row => row?.id === where.id) ?? null;
+      }),
     },
     modelGatewayPolicyVersion: {
-      findFirst: vi.fn(async () => { point("policy-collision"); return state.policyCollision || state.policy ? { id: "existing" } : null; }),
-      create: vi.fn(async ({ data }: { data: Row }) => { point("policy-create"); state.policy = { ...structuredClone(data), retiredAt: null }; return state.policy; }),
-      findUnique: vi.fn(async () => { point("policy-readback"); return state.policy; }),
+      findFirst: vi.fn(async ({ where }: { where: { OR: Array<{ id?: string }> } }) => {
+        point("policy-collision");
+        const ids = where.OR.flatMap(candidate => candidate.id ? [candidate.id] : []);
+        return state.policyCollision || [state.policy, state.answerPolicy].some(row => row && ids.includes(row.id as string)) ? { id: "existing" } : null;
+      }),
+      create: vi.fn(async ({ data }: { data: Row }) => {
+        point("policy-create");
+        const row = { ...structuredClone(data), retiredAt: null };
+        if (data.id === mapped.policy.id) state.policy = row; else state.answerPolicy = row;
+        return row;
+      }),
+      findUnique: vi.fn(async ({ where }: { where: { id: string } }) => {
+        point("policy-readback");
+        return [state.policy, state.answerPolicy].find(row => row?.id === where.id) ?? null;
+      }),
     },
   };
   const transaction = tx as unknown as Prisma.TransactionClient;
@@ -141,6 +184,10 @@ describe("initial-only setup transaction (SQL simulated, actual artifact/cipher/
     const d = database(), result = await d.apply();
     expect(result).toMatchObject({ committed: false, executionAuthorized: false, providerVerified: false, consentCreated: false, runtimeActivated: false, budgetAvailabilityVerified: false });
     expect(d.state.route).toMatchObject(d.mapped.route); expect(d.state.policy).toMatchObject(d.mapped.policy);
+    expect(d.state.answerRoute).toMatchObject({ routeKey: "personal-answer-openrouter-v1", operationTypes: ["personal_answer_candidate_v1"] });
+    expect(d.state.answerPolicy).toMatchObject({ policyKey: "personal-answer-v1", operationType: "personal_answer_candidate_v1" });
+    expect(d.state.answerRoute).not.toHaveProperty("reviewedHashes"); expect(d.state.answerPolicy).not.toHaveProperty("reviewedHashes");
+    expect(d.state.answerPolicy).not.toHaveProperty("routeHash");
     expect(d.state.route).not.toHaveProperty("reviewedHashes"); expect(d.state.policy).not.toHaveProperty("routeHash");
     const aad = JSON.stringify([d.manifest.workspaceId, "account", `openrouter-api-key:${d.manifest.setupId}`]);
     expect(JSON.parse(openConnectorSecret(d.state.credential!.ciphertext as string, aad, Buffer.alloc(32, 7))).apiKey).toBe("synthetic_key_12345678901234567890");
@@ -206,7 +253,7 @@ describe("initial-only setup transaction (SQL simulated, actual artifact/cipher/
       else vi.mocked(performance.now).mockReturnValue(kind === "mono-nan" ? NaN : 999);
     } };
     await expect(d.apply()).rejects.toThrow("PERSONAL_MODEL_SETUP_REFUSED");
-    expect(clocks).toBe(4); expect(d.tx.modelGatewayPolicyVersion.create).toHaveBeenCalledTimes(1);
+    expect(clocks).toBe(4); expect(d.tx.modelGatewayPolicyVersion.create).toHaveBeenCalledTimes(2);
   });
   it("refuses substituted stored data but snapshots valid data before next await", async () => {
     const d = database(); d.state.hook = p => { if (p === "route-readback") d.state.route!.modelKey = "other"; };

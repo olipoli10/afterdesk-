@@ -10,6 +10,8 @@ import { personalModelCredentialForDispatch } from "./model-connection";
 import { assistantReportLink, formatAssistantAnswerSms } from "./answer-report";
 import type { PersonalSmsExecutionContext } from "./sms-worker";
 import type { Prisma } from "@prisma-client";
+import { inspectPersonalModelIngressConfiguration } from "@/server/model-gateway/personal-intent/operator-ingress-contract";
+import { personalAnswerRuntimeFromOperatorConfiguration } from "@/server/model-gateway/personal-intent/operator-setup";
 
 const configurationSchema = z.object({
   general: z.object({ policyVersionId: z.string().min(1).max(191), rateConfiguration: z.unknown(), pilotEnvelopeReview: z.unknown() }).strict(),
@@ -20,8 +22,16 @@ export type PersonalAnswerSmsResult = Readonly<{
 }>;
 export function loadAnswerConfiguration(env: NodeJS.ProcessEnv, research: boolean): AnswerAdmissionConfiguration | null {
   const raw = env.ENDVERA_PERSONAL_ANSWER_CONFIGURATION_JSON;
-  if (env.ENDVERA_PERSONAL_ANSWER_ENGINE_ENABLED !== "true" || !raw || raw.length > 50_000) return null;
-  try { const parsed = configurationSchema.parse(JSON.parse(raw)); return research ? parsed.research : parsed.general; } catch { return null; }
+  if (env.ENDVERA_PERSONAL_ANSWER_ENGINE_ENABLED !== "true") return null;
+  try {
+    if (raw) {
+      if (raw.length > 50_000) return null;
+      const parsed = configurationSchema.parse(JSON.parse(raw)); return research ? parsed.research : parsed.general;
+    }
+    if (research) return null;
+    const ingress = inspectPersonalModelIngressConfiguration(env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION);
+    return personalAnswerRuntimeFromOperatorConfiguration(JSON.parse(ingress.configuration.manifestUtf8));
+  } catch { return null; }
 }
 export async function processPersonalAnswerSms(context: PersonalSmsExecutionContext, research: boolean, env: NodeJS.ProcessEnv = process.env): Promise<PersonalAnswerSmsResult> {
   const configuration = loadAnswerConfiguration(env, research);

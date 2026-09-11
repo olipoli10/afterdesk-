@@ -9,6 +9,7 @@ const configSchema = z.object({
   providerEndpoints: z.array(z.string().regex(/^[a-zA-Z0-9._:/-]{1,160}$/u)).min(1).max(10),
   timeoutMs: z.number().int().min(1).max(25_000), maxOutputTokens: z.number().int().min(1).max(2048).default(1024),
 }).strict();
+export const PERSONAL_ANSWER_PROMPT_VERSION = "personal-answer-system-v1";
 export type AnswerAdapterConfig = z.input<typeof configSchema>;
 export type AnswerWireRequest = Readonly<{
   model: "openrouter/auto"; stream: false; max_completion_tokens: number;
