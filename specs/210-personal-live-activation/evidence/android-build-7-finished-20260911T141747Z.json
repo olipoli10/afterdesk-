@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-11T14:17:47.7351028+00:00",
+  "buildId": "c3c7c7b3-89ee-43cc-b51a-ec0ce1d982ce",
+  "status": "FINISHED",
+  "platform": "ANDROID",
+  "distribution": "INTERNAL",
+  "buildProfile": "founder-device",
+  "applicationId": "ai.endvera.mobile",
+  "appVersion": "0.2.0",
+  "versionCode": "7",
+  "sourceCommit": "9e5e3f9b4b6edcf7a52e678262919eb1a189205e",
+  "sourceCommitMessage": "feat(mobile): start owner phone activation on first use",
+  "artifactUrl": "https://expo.dev/artifacts/eas/1UU_lG8mcepnZHjUNhkrmkDyoS9tbBilS6CbjdbxCOk.apk",
+  "artifactHead": {
+    "status": 200,
+    "contentType": "application/octet-stream",
+    "contentLength": 127356436
+  },
+  "completedAt": "2026-09-11T13:59:36.498Z",
+  "expiresAt": "2026-09-25T13:23:11.816Z",
+  "observedClaims": [
+    "EAS reported the requested source commit and Android versionCode 7.",
+    "The exact artifact URL answered HTTP 200 with an APK-sized octet-stream body."
+  ],
+  "notObserved": [
+    "Samsung installation",
+    "Samsung login",
+    "owner phone pairing",
+    "real SMS receipt",
+    "real calendar mutation",
+    "real voice call"
+  ]
+}
