@@ -14,7 +14,7 @@
     },
     {
       "path": "apps/mobile/package.json",
-      "sha256": "addba35c3862ee5bcce8a1d31edcba64c70149b0f8430af4d7c907467ff2bb82"
+      "sha256": "c0775785182daec10a8cb71bcfd428584a9607c78ab5425767c94792093028c2"
     },
     {
       "path": "src/app/account-deletion/page.tsx",
