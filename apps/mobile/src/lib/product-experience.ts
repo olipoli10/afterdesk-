@@ -35,6 +35,7 @@ export type MobileProductCopy = {
   assistantClarification: string;
   assistantProviderUnavailable: string;
   assistantHumanSupport: string;
+  personalServiceEntry: { title: string; body: string; action: string };
   assistantMemory: {
     title: string; body: string; unavailable: string; confirmed: string; ask: string;
     summary: string; scope: string; people: string; dates: string; blockers: string; next: string; sources: string; contradictions: string;
@@ -128,6 +129,11 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     assistantClarification: "J’attends ta précision avant de modifier quoi que ce soit.",
     assistantProviderUnavailable: "La recherche externe n’est pas encore activée. Aucun résultat n’a été inventé.",
     assistantHumanSupport: "Un appui humain est disponible sur demande. Rien n’a été créé automatiquement.",
+    personalServiceEntry: {
+      title: "ENDVERA dans tes textos",
+      body: "Associe ton numéro, vérifie le numéro ENDVERA et active les connexions de ton assistant.",
+      action: "Activer ENDVERA par texto",
+    },
     assistantMemory: {
       title: "Mémoire confirmée du chantier", body: "Je réponds seulement avec la dernière compréhension que tu as confirmée.",
       unavailable: "Aucune compréhension confirmée n’est disponible.", confirmed: "Compréhension confirmée", ask: "Demander",
@@ -258,6 +264,11 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     assistantClarification: "I need your clarification before changing anything.",
     assistantProviderUnavailable: "External research is not enabled yet. No result was invented.",
     assistantHumanSupport: "Human support is available on request. Nothing was created automatically.",
+    personalServiceEntry: {
+      title: "ENDVERA in your texts",
+      body: "Pair your phone, verify the ENDVERA number, and activate your assistant connections.",
+      action: "Activate ENDVERA by text",
+    },
     assistantMemory: {
       title: "Confirmed project memory", body: "I answer only from the latest understanding you confirmed.",
       unavailable: "No confirmed understanding is available.", confirmed: "Confirmed understanding", ask: "Ask",

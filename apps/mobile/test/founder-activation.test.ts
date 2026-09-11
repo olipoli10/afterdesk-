@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import appConfig from "../app.json";
 import easConfig from "../eas.json";
 import enLocale from "../locales/en.json";
 import frLocale from "../locales/fr.json";
 import readiness from "../../../release/endvera-construction-v1/founder-self-activation-readiness.json";
 import { parseFounderActivationReadiness } from "../src/lib/founder-activation";
+
+const assistantSource = readFileSync("src/app/(app)/assistant.tsx", "utf8");
 
 describe("founder self live activation boundary", () => {
   it("declares physical builds and protected native resources without claiming a live pilot", () => {
@@ -31,6 +34,12 @@ describe("founder self live activation boundary", () => {
       "android.permission.READ_CALL_LOG",
       "android.permission.WRITE_CALL_LOG",
     ]));
+  });
+
+  it("exposes the owner text-service setup directly from the visible Assistant tab", () => {
+    expect(assistantSource).toContain('activeWorkspace?.role === "OWNER"');
+    expect(assistantSource).toContain('router.push("/personal-service")');
+    expect(assistantSource).toContain("copy.personalServiceEntry.action");
   });
 
   it("keeps iOS-only metadata out of Android locale resources", () => {

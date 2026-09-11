@@ -35,7 +35,7 @@
       "semanticVersion": "0.2.0",
       "scheme": "endvera",
       "package": "ai.endvera.mobile",
-      "versionCode": 7
+      "versionCode": 8
     }
   ],
   "publicPaths": {

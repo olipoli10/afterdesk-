@@ -129,6 +129,14 @@ export default function AssistantScreen() {
           <BrandHeader workspace={activeWorkspace?.name} onMore={() => router.push("/more")} moreLabel={copy.tabs.more} />
           <Heading eyebrow={copy.assistantEyebrow} title={copy.assistantTitle} body={copy.assistantBody} />
 
+          {activeWorkspace?.role === "OWNER" ? (
+            <Card style={styles.personalServiceCard}>
+              <Text style={styles.personalServiceTitle}>{copy.personalServiceEntry.title}</Text>
+              <Text style={styles.personalServiceBody}>{copy.personalServiceEntry.body}</Text>
+              <Button icon="assistant" onPress={() => router.push("/personal-service")}>{copy.personalServiceEntry.action}</Button>
+            </Card>
+          ) : null}
+
           {projectId ? (
             <Card style={styles.memoryCard}>
               <Text style={styles.memoryTitle}>{copy.assistantMemory.title}</Text>
@@ -288,4 +296,7 @@ const styles = StyleSheet.create({
   memoryResult: { gap: 7, padding: 12, borderRadius: 14, backgroundColor: colors.panelStrong, borderWidth: 1, borderColor: colors.border },
   memoryProof: { color: colors.muted, fontSize: 11, lineHeight: 16, fontWeight: "700" },
   preparedAction: { gap: 7, padding: 12, borderRadius: 14, backgroundColor: colors.panelWarm, borderWidth: 1, borderColor: colors.borderWarm },
+  personalServiceCard: { gap: 10, backgroundColor: colors.panelWarm, borderColor: colors.borderWarm },
+  personalServiceTitle: { color: colors.text, fontSize: 17, lineHeight: 22, fontWeight: "800" },
+  personalServiceBody: { color: colors.muted, fontSize: 13, lineHeight: 19 },
 });
