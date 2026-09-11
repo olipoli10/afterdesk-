@@ -6,11 +6,11 @@
   "currentInputs": [
     {
       "path": "release/endvera-construction-v1/release-definition-v3.json",
-      "sha256": "8de0104a4c06e37dc3602eb1318003908589ff046fa352d85fe90141c40218a2"
+      "sha256": "7b296a2ece405a5aa5ff725a9d15f850c8f5abdf44c09fbd1db14cce08093916"
     },
     {
       "path": "apps/mobile/app.json",
-      "sha256": "b26865bac19095885ea629f5b726c1cc4b03fc9752d25fc9531df7761340a53e"
+      "sha256": "2d601d24756e1b20574b2f7b3b1ebb942d17150c289d27a300c76d265b5a00d2"
     },
     {
       "path": "apps/mobile/package.json",
@@ -46,7 +46,7 @@
   "mobileConfiguration": {
     "semanticVersion": "0.2.0",
     "iosBuildNumber": "1",
-    "androidVersionCode": 5,
+    "androidVersionCode": 6,
     "accountDeletionPath": "/account-deletion"
   },
   "evidenceClass": "STATIC_SOURCE_CONFIGURATION_ONLY",
