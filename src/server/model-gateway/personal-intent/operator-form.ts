@@ -26,6 +26,7 @@ function databaseUrl(value: unknown, direct: boolean) {
 /** UI observation only, never POST authority. No setup/account/consent writes,
  * archive projection, credential decryption or encryption-key read. */
 export async function readPersonalModelOperatorFormView() {
+  let stage = "bootstrap";
   try {
     let wall = Date.now(), mono = performance.now();
     if (!Number.isFinite(wall) || !Number.isFinite(mono)) fail();
@@ -40,8 +41,11 @@ export async function readPersonalModelOperatorFormView() {
       wall = w; mono = m;
       return Math.floor(Math.min(wallDeadline - w, monoDeadline - m));
     }
+    stage = "configuration";
     const config = inspectPersonalModelIngressConfiguration(pins[0]);
+    stage = "database_urls";
     databaseUrl(pins[1], false); databaseUrl(pins[2], true); live();
+    stage = "session";
     const user = await getSessionUser(); live();
     if (!user || user.role !== "CLIENT" || user.emailVerified !== true) return authentication;
     const ownerId = user.id;
@@ -50,6 +54,7 @@ export async function readPersonalModelOperatorFormView() {
     const ids = [`personal-model-setup:v1:${setupRef}:claim`, `personal-model-setup:v1:${setupRef}:applied`];
     const left = live(); if (left < 3) fail();
     const maxWait = Math.min(1000, Math.floor(left / 3));
+    stage = "database_observation";
     const observation = await prisma.$transaction(async tx => {
       const isolation = await tx.$queryRawUnsafe<Array<{ transaction_isolation: string }>>("SHOW transaction_isolation"); live();
       if (isolation.length !== 1 || isolation[0].transaction_isolation !== "serializable") fail();
@@ -105,6 +110,7 @@ export async function readPersonalModelOperatorFormView() {
         && validatePersonalModelOperatorArtifact(config.manifest.artifact, new Date(db)).status === "PREPARED_NOT_PUBLISHED";
       return { eligible, monoExpiry: beforeQuery + expiry - db };
     }, { isolationLevel: "Serializable", maxWait, timeout: left - maxWait });
+    stage = "view";
     live();
     const view = Object.freeze({ version: "personal-model-operator-form-v1" as const, setupRef, provider: "openrouter" as const,
       model: config.manifest.artifact.draftRoute.modelKey, providerEndpoint: config.manifest.artifact.draftRoute.endpointKey,
@@ -112,5 +118,8 @@ export async function readPersonalModelOperatorFormView() {
       state: observation.eligible && mono < observation.monoExpiry ? "INPUT_AVAILABLE" as const : "HISTORY_ONLY" as const,
       executionAuthorized: false as const, providerVerified: false as const });
     return Object.freeze({ status: "AVAILABLE" as const, view });
-  } catch { return unavailable; }
+  } catch {
+    console.warn("PERSONAL_MODEL_OPERATOR_FORM_UNAVAILABLE", { stage });
+    return unavailable;
+  }
 }
