@@ -82,7 +82,7 @@ describe("owner-only personal model connection (synthetic ORM and cipher)", () =
     account.grants.push({ capability: "personal_model_inference", status: "active", revokedAt: null, grantedAt: now,
       grantedScopes: ["personal_data:inference", `authority:${PERSONAL_MODEL_AUTHORITY}`] });
     const commandId = "12345678-1234-4234-8234-123456789abc";
-    const request = { ...input, apiKey, commandId, confirmation: PERSONAL_MODEL_CREDENTIAL_CONFIRMATION as const };
+    const request = { ...input, apiKey, commandId, confirmation: PERSONAL_MODEL_CREDENTIAL_CONFIRMATION } as const;
     expect(await provisionPersonalModelCredentialFromOwnerSession(request, env)).toEqual({ commandId, credentialPrepared: true,
       providerVerified: false, executionAuthorized: false });
     expect(JSON.stringify(tx.constructionConnectorCredential.create.mock.calls)).not.toContain(apiKey);

@@ -20,10 +20,11 @@ export function createAnswerInput(raw: unknown) {
   const request = { requestId: source.requestId, workspaceId: source.workspaceId, body: source.body,
     senderVerified: source.senderVerified, workspaceBound: source.workspaceBound };
   const route = routeSmsAssistant(request);
-  if (route.disposition !== "ROUTE" || !["GENERAL_ANSWER", "PUBLIC_RESEARCH"].includes(route.lane ?? "")) {
+  if (route.disposition !== "ROUTE" || !["GENERAL_ANSWER", "PUBLIC_RESEARCH", "PROPERTY_RESEARCH"].includes(route.lane ?? "")) {
     throw new Error("ANSWER_LANE_REFUSED");
   }
-  const operation = route.lane === "PUBLIC_RESEARCH" ? RESEARCH_OPERATION : ANSWER_OPERATION;
+  const operation = route.lane === "PUBLIC_RESEARCH" || route.lane === "PROPERTY_RESEARCH"
+    ? RESEARCH_OPERATION : ANSWER_OPERATION;
   if (operation === RESEARCH_OPERATION && source.history?.length) throw new Error("RESEARCH_HISTORY_DISCLOSURE_REFUSED");
   return Object.freeze({ schemaVersion: 1 as const, operation,
     source: Object.freeze(source), requestFingerprint: canonicalFingerprint({ operation, source }) });

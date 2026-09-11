@@ -47,21 +47,33 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 
 describe("personal SMS source deadline and exact ownership", () => {
-  it.each(["Trouve son téléphone privé", "Trouve le propriétaire puis appelle-le", "Qui est le proprio du lot vacant?"])("does not send the reserved request to the legacy action interpreter: %s", async body => {
+  it.each(["Trouve son téléphone privé", "Trouve le propriétaire puis appelle-le"])("does not send a refused or mixed action request to either model path: %s", async body => {
     mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body } });
-    expect(await processPersonalSms(row.id, env)).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    const answer = vi.fn();
+    expect(await processPersonalSms(row.id, env, { answer })).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(answer).not.toHaveBeenCalled();
     expect(mocks.engine).not.toHaveBeenCalled(); expect(mocks.calendar).not.toHaveBeenCalled();
     expect(committedReplies).toHaveLength(1);
   });
-  it("answers Allô through the existing transactional outbox without invoking an interpreter", async () => {
+  it("does not impersonate an AI with a canned greeting when the answer engine is unavailable", async () => {
     mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "Allô" } });
     expect(await processPersonalSms(row.id, env)).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
     expect(mocks.engine).not.toHaveBeenCalled();
     expect(mocks.calendar).not.toHaveBeenCalled();
     expect(committedReplies).toHaveLength(1);
-    expect(JSON.stringify(committedReplies)).toContain("C’est ENDVERA");
+    expect(JSON.stringify(committedReplies)).toContain("connexion IA");
     expect(JSON.stringify(committedReplies)).not.toContain("soutien humain");
     expect(mocks.send).not.toHaveBeenCalled();
+  });
+  it.each(["Allô", "742 rue William Montréal", "Qui est le proprio du lot vacant au 742 rue William Montréal?"])
+  ("routes every open-ended SMS through the guarded AI answer path instead of canned copy: %s", async body => {
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body } });
+    const answer = vi.fn(async (_context, research: boolean) => ({ reply: research ? "Réponse IA recherchée." : "Réponse IA." }));
+    expect(await processPersonalSms(row.id, env, { answer })).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(answer).toHaveBeenCalledTimes(1);
+    expect(answer.mock.calls[0][1]).toBe(body.startsWith("Qui est"));
+    expect(mocks.engine).not.toHaveBeenCalled(); expect(mocks.calendar).not.toHaveBeenCalled();
+    expect(JSON.parse(finish.mock.calls[0][6])).toMatchObject({ source: "ENDVERA_ANSWER" });
   });
   it("replaces unbounded inbound cleanup with bounded proof-preserving recovery under the original deadline", async () => {
     mocks.list.mockResolvedValue([]);

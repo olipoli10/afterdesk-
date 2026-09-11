@@ -27,8 +27,9 @@ describe("answer-only OpenRouter candidate", () => {
     const result = await createOpenRouterAnswerAdapter(config, async () => response({ ...wire(), model: "unknown/model" })).dispatch(input, signal());
     expect(result).toMatchObject({ status: "UNCERTAIN", reason: "SERVED_MODEL_NOT_ALLOWED" });
   });
-  it("cannot interpret action, identity or property requests through answer-only dispatch", () => {
-    for (const body of ["Appelle Marc", "Trouve le propriétaire du lot 123", "mon horaire"]) expect(() => createAnswerInput(source(body))).toThrow("ANSWER_LANE_REFUSED");
+  it("cannot interpret action or identity requests through answer-only dispatch", () => {
+    for (const body of ["Appelle Marc", "mon horaire"]) expect(() => createAnswerInput(source(body))).toThrow("ANSWER_LANE_REFUSED");
+    expect(createAnswerInput(source("Trouve le propriétaire du lot 123")).operation).toBe("personal_public_research_v1");
     expect(() => createAnswerInput({ ...source(), senderVerified: false })).toThrow();
   });
   it("rejects changed inputs, function calls and unverified source claims", async () => {
@@ -53,6 +54,7 @@ describe("answer-only OpenRouter candidate", () => {
     expect(answerWireRequest(withHistory, config).messages[1].content).toContain("conversationHistoryUntrusted");
     expect(() => createAnswerInput({ ...source(), history: [...history, ...history, ...history, ...history] })).toThrow();
     expect(() => createAnswerInput({ ...source("Prix actuel du béton?"), history })).toThrow("RESEARCH_HISTORY_DISCLOSURE_REFUSED");
+    expect(() => createAnswerInput({ ...source("Trouve le propriétaire du lot 123"), history })).toThrow("RESEARCH_HISTORY_DISCLOSURE_REFUSED");
   });
   it("times out transports that ignore AbortSignal and retains unknown cost", async () => {
     vi.useFakeTimers();
