@@ -99,8 +99,8 @@ with zero process/input. These do not launch an OS child.
 
 Fresh final three-file run20:37:18: **69/69 PASS**,11.90s, exit0
 (32 runner author +31 bridge author +6 peer). Peer lint exit0. Final author
-TypeScript run was in progress at publication; the earlier shared check passed,
-but no newer typecheck is asserted until its result is received.
+TypeScript91602 subsequently finished exit0, with author lint also passing;
+runner05520 remained unchanged. No duplicate heavy check was launched here.
 
 **Final closed CLI delta GREEN.** No new concrete defect or RED in this lane.
 The prior T attempt remains retained, personal migration remains a separate

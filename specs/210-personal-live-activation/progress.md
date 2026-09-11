@@ -1,5 +1,21 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 00:56Z — actual personal pilot79 verified; backend publication building
+
+Actual one-shot pilot70to79 at8d462bd1 succeeded49964ms, receipt139e785a;
+first70unchanged/full79recorded7f704e6e. Actual old183tables/2624columns preserved,
+8035objectcatalogmatchesobservedT79,7proofempty/3legacyvacuous,18UTCdefaults and
+final77bodymatch. SeparatepeerpostreviewGREEN. Pilotidle00:51:24Z,main/A/Tintact.
+ConfigGET initialopaqueREFUSED thenPROJECT_GET403 retained; authorizedCLIproject
+GET succeeded, then same directinspector success. Authrefresh onlyinference.
+Fouroriginsmatch/sixkeys present/global+ingress+worker+outbound+autoreplyOFF;
+sensitiveDBURLvaluesnotrequested,optionalGoogle/Twilioabsent. Inspector42tests,
+types/lintPASS; peer1REDcustomscopefixedwithsameassertion. BuildlocalPASS00:47:43Z.
+Actualdedicated Vercel dpl_Cm6AFJxkXrsJWeFq4Z8kY3yKtPfa nowBUILDING atsource8d462bd1.
+Headlogs confirm personal no-migration buildcommand; notREADYyet. Dryarchive956
+files/11706067bytes excludesprivatefixtures/envs. No newAPK or providerflow yet.
+Continue publication verification then coherentAndroid; heartbeatACTIVE,noGO.
+
 ## 2026-09-11 00:39Z — original pilot upgrade path reviewed
 
 Closed current runner/bridge profile and exact CLI reviewed separately; peer69

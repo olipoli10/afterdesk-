@@ -1,0 +1,25 @@
+{
+  "version": "controller-personal-config-observation-v1",
+  "projectId": "prj_cEvjMH8iJ2C9khbZ0vsQlGKQ4Y75",
+  "teamId": "team_txoYNQAo21jmENCfI2EG4pdP",
+  "inspectorSha256": "013e75ce2a90483ccbfd417e245024f41e74146bf4bf4494c361105e7cdf07cc",
+  "observations": [
+    {"status":"REFUSED","elapsedSeconds":0.715,"stageKnown":false},
+    {"status":"REFUSED","stage":"PROJECT_GET","httpStatus":403},
+    {"status":"CLI_GET_PROJECT_MATCH","cliVersion":"59.15.1","exitCode":0,"projectMatches":true,"teamMatches":true},
+    {"status":"GET_ONLY_CONFIG_INSPECTED","elapsedSeconds":2.3903891,"exitCode":0}
+  ],
+  "exactOriginKeys": ["BETTER_AUTH_URL","APP_URL","NEXT_PUBLIC_SITE_URL","ENDVERA_PROVIDER_WEBHOOK_ORIGIN"],
+  "requiredKeysPresent": ["DATABASE_URL","DIRECT_URL","BETTER_AUTH_SECRET","BETTER_AUTH_URL","CRON_SECRET","ENDVERA_CONNECTOR_ENCRYPTION_KEY"],
+  "explicitlyOff": ["ENDVERA_EXTERNAL_TRANSPORT_ENABLED","ENDVERA_PERSONAL_SMS_INGRESS_ENABLED","ENDVERA_PERSONAL_SMS_WORKER_ENABLED","ENDVERA_PERSONAL_OUTBOUND_ENABLED","ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED"],
+  "databaseBindings": "SENSITIVE_VALUES_NOT_REQUESTED; PRESENT_NOT_FRESHLY_VERIFIED",
+  "optionalGoogleTwilioKeys": "ALL_SEVEN_INSPECTED_KEYS_ABSENT",
+  "unclassifiedEnableSwitchCount": 0,
+  "loginRefreshExplanation": "INFERENCE_ONLY_NOT_PROVEN",
+  "configurationChanged": false,
+  "deploymentEnvironmentVerified": false,
+  "databaseConnectionVerified": false,
+  "credentialsValidated": false,
+  "secretValuesIncluded": false,
+  "liveApplicationReady": false
+}
