@@ -14,6 +14,7 @@ export type PropertyTools = Readonly<{
 }>;
 export type PropertyToolReceipt = Readonly<{ tool: PropertyTool; inputHash: string; outputHash: string | null;
   status: "COMPLETED" | "UNAVAILABLE"; automaticRetry: false }>;
+export type PropertyProgress = Omit<PropertyToolReceipt, "status"> & { status: PropertyToolReceipt["status"] | "STARTED" };
 
 /** Read-only source workflow. No model-supplied function name or arbitrary URL
  * is executable. The tool registry owns transport, source rights and budgets.
@@ -21,6 +22,7 @@ export type PropertyToolReceipt = Readonly<{ tool: PropertyTool; inputHash: stri
 export async function researchProperty(raw: unknown, options: {
   tools: PropertyTools; sources: readonly RegisteredPropertySource[]; mode: "SYNTHETIC" | "PERMITTED_PUBLIC";
   now: Date; signal: AbortSignal; timeoutMs?: number;
+  onProgress?: (event: PropertyProgress) => Promise<void>;
 }) {
   const request = propertyRequestSchema.parse(raw);
   const now = options.now.getTime();
@@ -51,18 +53,24 @@ export async function researchProperty(raw: unknown, options: {
   async function run<T>(tool: RegisteredPropertySource["tool"], input: unknown, call: () => Promise<unknown>, inspect: (value: unknown) => T): Promise<T | null> {
     live();
     const inputHash = canonicalFingerprint(input);
+    if (options.onProgress) await Promise.race([options.onProgress({ tool, inputHash, outputHash: null, status: "STARTED", automaticRetry: false }), interrupted]);
+    let parsed: T;
     try {
       const result = await Promise.race([Promise.resolve().then(() => { live(); return call(); }), interrupted]);
       live();
-      const parsed = inspect(result);
-      receipts.push({ tool, inputHash, outputHash: canonicalFingerprint(parsed), status: "COMPLETED", automaticRetry: false });
-      return parsed;
+      parsed = inspect(result);
     } catch {
-      receipts.push({ tool, inputHash, outputHash: null, status: "UNAVAILABLE", automaticRetry: false });
+      const receipt = { tool, inputHash, outputHash: null, status: "UNAVAILABLE" as const, automaticRetry: false as const };
+      receipts.push(receipt);
+      if (options.onProgress) await Promise.race([options.onProgress(receipt), interrupted]);
       findings.push({ code: "SOURCE_UNAVAILABLE", subject: tool });
       live();
       return null;
     }
+    const receipt = { tool, inputHash, outputHash: canonicalFingerprint(parsed), status: "COMPLETED" as const, automaticRetry: false as const };
+    receipts.push(receipt);
+    if (options.onProgress) await Promise.race([options.onProgress(receipt), interrupted]);
+    live(); return parsed;
   }
   function report(data: Omit<PropertyReport, "schemaVersion" | "requestId" | "workspaceId" | "findings" | "registeredOwnerStatus" | "observedAt" | "fingerprint" | "actionAuthority" | "evidenceMode">) {
     const content = { schemaVersion: 1 as const, requestId: request.requestId, workspaceId: request.workspaceId,
@@ -113,6 +121,7 @@ export async function researchProperty(raw: unknown, options: {
       const parsed = propertyWebSchema.parse(value); parsed.items.forEach(i => inspectSource(i.source, "search_web_with_sources")); return parsed;
     });
     const businessNumbers = [...new Set(lots.flatMap(l => l.assessment.filter(r => r.ownerKind === "BUSINESS" && r.businessNumber).map(r => r.businessNumber!)))];
+    if (businessNumbers.length > 10) findings.push({ code: "SOURCE_UNAVAILABLE", subject: "BUSINESS_LOOKUP_LIMIT_REACHED" });
     const businesses: PropertyReport["businesses"][number][] = [];
     for (const businessNumber of businessNumbers.slice(0, 10)) {
       const business = await run("lookup_quebec_business", { businessNumber }, () => options.tools.lookup_quebec_business({ businessNumber }, controller.signal), value => {

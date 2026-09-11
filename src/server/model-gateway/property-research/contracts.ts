@@ -57,3 +57,15 @@ export type PropertyReport = Readonly<{
   evidenceMode: "SYNTHETIC" | "PUBLIC_SOURCE_RECORDS";
   observedAt: string; fingerprint: string; actionAuthority: false;
 }>;
+
+export const propertyReportSchema = z.object({
+  schemaVersion: z.literal(1), requestId: z.string().min(1).max(191), workspaceId: z.string().min(1).max(191),
+  address: addressSchema.nullable(), addressCandidates: z.array(addressSchema).max(10),
+  status: z.enum(["CLARIFICATION_REQUIRED", "PARTIAL", "SOURCES_COLLECTED"]),
+  lots: z.array(z.object({ lotId: z.string().regex(/^[0-9]{7}$/u), source: propertySourceSchema, assessment: assessmentSchema.shape.records }).strict()).max(10),
+  businesses: z.array(businessSchema).max(10), web: propertyWebSchema.shape.items,
+  findings: z.array(z.object({ code: z.enum(["SOURCE_STALE", "SOURCE_UNAVAILABLE", "ADDRESS_AMBIGUOUS", "NO_LOTS", "OWNER_CONTRADICTION", "COMPANY_NAME_MISMATCH", "MISSING_ASSESSMENT"]), subject: z.string().max(500) }).strict()).max(200),
+  registeredOwnerStatus: z.literal("NOT_VERIFIED"), nextDecision: z.string().min(1).max(1000),
+  evidenceMode: z.enum(["SYNTHETIC", "PUBLIC_SOURCE_RECORDS"]), observedAt: z.string().datetime({ offset: true }),
+  fingerprint: z.string().regex(/^sha256:[a-f0-9]{64}$/u), actionAuthority: z.literal(false),
+}).strict();

@@ -46,6 +46,14 @@ describe("answer-only OpenRouter candidate", () => {
     expect(await adapter.dispatch(input, signal())).toMatchObject({ reason: "ATTEMPT_ALREADY_USED", dispatched: false });
     expect(transport).toHaveBeenCalledTimes(1);
   });
+  it("binds limited untrusted conversation history and excludes it from public search", () => {
+    const history = [{ sourceId: "prior", question: "Une question", answer: "Une réponse", receivedAt: "2026-09-11T14:00:00Z", evidence: "MODEL_ANSWER_UNVERIFIED" }];
+    const withHistory = createAnswerInput({ ...source(), history });
+    expect(withHistory.requestFingerprint).not.toBe(input.requestFingerprint);
+    expect(answerWireRequest(withHistory, config).messages[1].content).toContain("conversationHistoryUntrusted");
+    expect(() => createAnswerInput({ ...source(), history: [...history, ...history, ...history, ...history] })).toThrow();
+    expect(() => createAnswerInput({ ...source("Prix actuel du béton?"), history })).toThrow("RESEARCH_HISTORY_DISCLOSURE_REFUSED");
+  });
   it("times out transports that ignore AbortSignal and retains unknown cost", async () => {
     vi.useFakeTimers();
     try {

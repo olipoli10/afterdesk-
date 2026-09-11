@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from "vitest";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { canonicalFingerprint } from "@/server/model-gateway/evidence";
 import { personalModelFixture, requirePersonalDisposableDatabase } from "./personal-model.fixture";
@@ -9,6 +9,9 @@ import { PERSONAL_MODEL_AUTHORITY } from "@/server/model-gateway/personal-intent
 import { processPersonalSms } from "@/server/personal-assistant/sms-worker";
 import { recoverExpiredPersonalAnswerAttempts } from "@/server/model-gateway/personal-answer/recovery";
 import { personalAnswerReportForOwner } from "@/server/personal-assistant/answer-report";
+import { PUBLIC_SEARCH_SCOPE } from "@/server/model-gateway/personal-answer/search-disclosure";
+import { enqueuePersonalSms } from "@/server/personal-assistant/sms-inbox";
+import { loadBoundedAnswerHistory } from "@/server/model-gateway/personal-answer/history";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -17,6 +20,10 @@ async function fixture(body = "Explique-moi le béton", claimSource = true) {
   const f = await personalModelFixture(body);
   const research = body.includes("actuel");
   const answerRate = { ...f.rate, totalContextTokens: research ? 65536 : f.rate.totalContextTokens, perCallCeilingCadMicros: 1_000_000 };
+  if (research) {
+    const scopes = ["personal_data:inference", `authority:${PERSONAL_MODEL_AUTHORITY}`, PUBLIC_SEARCH_SCOPE];
+    await prisma.constructionConnectorGrant.update({ where: { id: f.modelGrantId }, data: { requestedScopes: scopes, grantedScopes: scopes, stateVersion: { increment: 1 } } });
+  }
   const operation = research ? "personal_public_research_v1" : "personal_answer_candidate_v1";
   const routeKey = research ? "personal-public-research-openrouter-v1" : "personal-answer-openrouter-v1";
   const policyKey = research ? "personal-public-research-v1" : "personal-answer-v1";
@@ -38,7 +45,11 @@ async function fixture(body = "Explique-moi le béton", claimSource = true) {
   const input: AnswerAdmissionInput = { enabled: true, context: { claim: { operationId: f.sourceOperationId, workspaceId: f.workspaceId,
     userId: f.userId, attempt: 1, leaseUntil: new Date(deadlineAt).toISOString() }, signal: new AbortController().signal, deadlineAt },
     configuration: { policyVersionId: policy.id, rateConfiguration: { candidateRates: [answerRate], searchUsdMicrosPerRequest: 7000 },
-      pilotEnvelopeReview: { authorityId: PERSONAL_MODEL_AUTHORITY, reviewRef: "SYNTHETIC_ONLY", reviewedAt: f.now.toISOString(), nonModelExposureCeilingCadMicros: 80_000_000, totalCeilingCadMicros: 100_000_000 } } };
+      pilotEnvelopeReview: { authorityId: PERSONAL_MODEL_AUTHORITY, reviewRef: "SYNTHETIC_ONLY", reviewedAt: f.now.toISOString(), nonModelExposureCeilingCadMicros: 80_000_000, totalCeilingCadMicros: 100_000_000 },
+      ...(research ? { searchDisclosureReview: { authorityId: PERSONAL_MODEL_AUTHORITY, engine: "exa", reviewRef: "SYNTHETIC_ONLY", reviewedBy: "synthetic-reviewer",
+        reviewedAt: f.now.toISOString(), expiresAt: new Date(f.now.getTime() + 600000).toISOString(), privacySource: "https://source.example/privacy", termsSource: "https://source.example/terms",
+        queryDisclosure: "USER_QUERY_MAY_BE_SENT_TO_EXA", retentionReviewed: true, sourceTermsReviewed: true } } : {}),
+    } };
   const env: NodeJS.ProcessEnv = { NODE_ENV: "test", ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true", ENDVERA_PERSONAL_ANSWER_ENGINE_ENABLED: "true",
     ENDVERA_PERSONAL_PUBLIC_RESEARCH_ENABLED: "true", ENDVERA_EXTERNAL_AUTHORITY_REF: PERSONAL_MODEL_AUTHORITY,
     ENDVERA_PERSONAL_PILOT_EXPIRES_AT: "2026-10-10T01:18:26Z", ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS: "20000000" };
@@ -152,5 +163,24 @@ describe("assistant answer gateway on real disposable PostgreSQL, injected trans
     expect(report).not.toHaveProperty("servedModel");
     const other = await fixture();
     expect(await personalAnswerReportForOwner(other.f.userId, a.childId)).toBeNull();
+  });
+  it("refuses public search without its distinct current owner scope or operator review", async () => {
+    const { f, input, env } = await fixture("Quel est le prix actuel du béton?");
+    await expect(admitPersonalAnswer({ ...input, configuration: { ...input.configuration, searchDisclosureReview: undefined } }, env)).rejects.toThrow();
+    const scopes = ["personal_data:inference", `authority:${PERSONAL_MODEL_AUTHORITY}`];
+    await prisma.constructionConnectorGrant.update({ where: { id: f.modelGrantId }, data: { grantedScopes: scopes, stateVersion: { increment: 1 } } });
+    await expect(admitPersonalAnswer(input, env)).rejects.toThrow("PUBLIC_SEARCH_OWNER_SCOPE_REQUIRED");
+    expect(await prisma.aiOperation.count({ where: { personalAssistantOperationId: f.sourceOperationId } })).toBe(0);
+  });
+  it("loads only bounded earlier general-answer history for the same owner and SMS identity", async () => {
+    const { f, input, env } = await fixture(); const a = await admitPersonalAnswer(input, env);
+    expect(await dispatchPersonalAnswer({ admission: a, enabled: true, transportMode: "SYNTHETIC_LOCAL", transport: async () => wire(a) }, env)).toMatchObject({ status: "ANSWER_STORED" });
+    await prisma.personalAssistantOperation.update({ where: { id: f.sourceOperationId }, data: { status: "completed", leaseUntil: null, result: { reply: "Le béton contient du ciment." } } });
+    const message = { accountSid: f.accountSid, messageSid: `SM${randomUUID().replaceAll("-", "")}`, from: f.from, to: "+15005550006", body: "Explique-moi pourquoi" };
+    const next = await enqueuePersonalSms({ ...message, contentHash: createHash("sha256").update(JSON.stringify(message)).digest("hex") });
+    const history = await prisma.$transaction(tx => loadBoundedAnswerHistory(tx, { sourceId: next.operationId, workspaceId: f.workspaceId, userId: f.userId }));
+    expect(history).toMatchObject([{ question: "Explique-moi le béton", answer: "Le béton contient du ciment.", evidence: "MODEL_ANSWER_UNVERIFIED" }]);
+    const other = await fixture();
+    expect(await prisma.$transaction(tx => loadBoundedAnswerHistory(tx, { sourceId: next.operationId, workspaceId: other.f.workspaceId, userId: other.f.userId }))).toEqual([]);
   });
 });

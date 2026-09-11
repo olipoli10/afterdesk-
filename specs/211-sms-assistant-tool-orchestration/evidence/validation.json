@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-11T17:04:10Z",
+  "mode": "LOCAL_SYNTHETIC_AND_INJECTED_ONLY",
+  "overallVerdict": "INCOMPLETE_RELEASE_GATES_REMAIN",
+  "targeted": {
+    "command": "npx vitest run personal model-gateway sms-assistant sms-temporal sms-correlated --exclude 'test/personal-pilot-*.test.ts' --reporter=json --outputFile=specs/211-sms-assistant-tool-orchestration/evidence/targeted-tests.json",
+    "passedTests": 2543,
+    "failedTests": 0,
+    "files": 152,
+    "exclusionReason": "Separate historical deployment/pilot catalog tests are retained in the full failed root run, not waived or deleted."
+  },
+  "fullRoot": {
+    "artifact": "root-tests.json",
+    "passedTests": 6985,
+    "failedTests": 1,
+    "skippedTests": 3,
+    "files": 486,
+    "failedFiles": 18,
+    "failures": [
+      "17 historical pilot suites refuse migrations beyond the frozen80 catalog before tests collect.",
+      "Computed-import source graph test failed in the full concurrent run; isolated unchanged rerun passed all4 in3.02s. No reproducible graph violation established; full-run failure retained."
+    ],
+    "success": false
+  },
+  "nativePostgres": {
+    "version": "17.11",
+    "migrationFingerprint": "82:848b0178a518d08a2b71005e390da76b",
+    "answer": {"passed": 12, "finishedAt": "2026-09-11T16:55:04.0698505Z", "database": "endvera_personal_210_55a108a323124640a7b88e58533fbc9c", "serverStopped": true},
+    "property": {"passed": 4, "finishedAt": "2026-09-11T17:02:42.8429022Z", "database": "endvera_personal_210_d2007a764ed04d96b76c522314741fe0", "serverStopped": true},
+    "providerResponses": "INJECTED",
+    "sourceRecords": "SYNTHETIC"
+  },
+  "typecheck": "PASS",
+  "scopedLint": "PASS",
+  "prismaSchemaValidation": "PASS_WITH_SYNTHETIC_LOOPBACK_URL_NO_CONNECTION",
+  "build": "NOT_RUN",
+  "generatedClientRefresh": "NOT_RUN_SHARED_DEPENDENCY_WORKTREE_PRESERVED",
+  "realProviderCalls": 0,
+  "realSmsOrCalls": 0,
+  "deployments": 0,
+  "apkBuilds": 0,
+  "timerRestarted": false,
+  "rubricMetricsChanged": false,
+  "priorDashboardNotRemeasured": {"canonicalRoadmapPercent":22,"localBuildReadinessPercent":46.75,"c2Preparation":"18/18","realTestReadiness":"NO-GO","verifiedE2EObservedPercent":0}
+}

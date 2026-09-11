@@ -18,7 +18,7 @@ describe("fixed one-use answer HTTP capability, injected fetch only", () => {
   it("does not read a key or fetch while disabled or for a changed request", async () => {
     setup(); const key = vi.fn(async () => "synthetic-key-not-a-real-secret"), fetcher = vi.fn<typeof fetch>(); const r = request();
     await expect(createAnswerTransport({ expectedRequest: r, getApiKey: key }, environment(), fetcher)(r, sig())).rejects.toThrow("ANSWER_TRANSPORT_UNAVAILABLE");
-    await expect(createAnswerTransport({ enabled: true, expectedRequest: r, getApiKey: key }, environment(), fetcher)({ ...r, model: "changed" } as typeof r, sig())).rejects.toThrow();
+    await expect(createAnswerTransport({ enabled: true, expectedRequest: r, getApiKey: key }, environment(), fetcher)({ ...r, model: "changed" } as unknown as typeof r, sig())).rejects.toThrow();
     expect(key).not.toHaveBeenCalled(); expect(fetcher).not.toHaveBeenCalled();
   });
   it("uses the fixed endpoint once and never returns headers or credentials", async () => {

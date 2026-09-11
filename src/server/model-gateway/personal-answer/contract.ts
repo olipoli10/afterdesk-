@@ -5,8 +5,13 @@ import { assistantRequestSchema, routeSmsAssistant } from "@/lib/sms-assistant/r
 
 export const ANSWER_OPERATION = "personal_answer_candidate_v1" as const;
 export const RESEARCH_OPERATION = "personal_public_research_v1" as const;
+export const answerHistorySchema = z.array(z.object({ sourceId: z.string().min(1).max(191),
+  question: z.string().min(1).max(1000), answer: z.string().min(1).max(1000),
+  receivedAt: z.string().datetime({ offset: true }), evidence: z.literal("MODEL_ANSWER_UNVERIFIED"),
+}).strict()).max(3);
 export const answerSourceSchema = assistantRequestSchema.extend({
   receivedAt: z.string().datetime({ offset: true }),
+  history: answerHistorySchema.optional(),
 }).strict();
 export type AnswerSource = z.infer<typeof answerSourceSchema>;
 
@@ -19,6 +24,7 @@ export function createAnswerInput(raw: unknown) {
     throw new Error("ANSWER_LANE_REFUSED");
   }
   const operation = route.lane === "PUBLIC_RESEARCH" ? RESEARCH_OPERATION : ANSWER_OPERATION;
+  if (operation === RESEARCH_OPERATION && source.history?.length) throw new Error("RESEARCH_HISTORY_DISCLOSURE_REFUSED");
   return Object.freeze({ schemaVersion: 1 as const, operation,
     source: Object.freeze(source), requestFingerprint: canonicalFingerprint({ operation, source }) });
 }

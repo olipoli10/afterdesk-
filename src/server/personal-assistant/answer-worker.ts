@@ -13,7 +13,7 @@ import type { Prisma } from "@prisma-client";
 
 const configurationSchema = z.object({
   general: z.object({ policyVersionId: z.string().min(1).max(191), rateConfiguration: z.unknown(), pilotEnvelopeReview: z.unknown() }).strict(),
-  research: z.object({ policyVersionId: z.string().min(1).max(191), rateConfiguration: z.unknown(), pilotEnvelopeReview: z.unknown() }).strict().nullable(),
+  research: z.object({ policyVersionId: z.string().min(1).max(191), rateConfiguration: z.unknown(), pilotEnvelopeReview: z.unknown(), searchDisclosureReview: z.unknown() }).strict().nullable(),
 }).strict();
 export type PersonalAnswerSmsResult = Readonly<{
   reply: string; finalizeAnswer?: (tx: Prisma.TransactionClient) => Promise<void>;

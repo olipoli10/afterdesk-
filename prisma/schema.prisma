@@ -427,6 +427,7 @@ enum ConstructionAvailabilityKind {
 // ---------- Auth (Better Auth owns these shapes) ----------
 
 model User {
+  personalPropertyResearchJobs PersonalPropertyResearchJob[]
   id            String   @id @default(cuid())
   name          String
   email         String   @unique
@@ -3456,6 +3457,7 @@ model WorkflowCalibrationStratum {
 // ═══════════════════════════════════════════════════════════════════════════
 
 model ConstructionWorkspace {
+  personalPropertyResearchJobs PersonalPropertyResearchJob[]
   id              String                      @id @default(cuid())
   ownerUserId     String
   owner           User                        @relation("ConstructionWorkspaceOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
@@ -5623,6 +5625,7 @@ model ConstructionConnectorCredential {
 // Live pilot operations have their own lifecycle; historical preparation rows
 // retain their no-transport database constraint and immutable evidence meaning.
 model PersonalAssistantOperation {
+  propertyResearchJob PersonalPropertyResearchJob?
   id                                     String                                  @id @default(cuid())
   workspaceId                            String
   connectorAccountId                     String
@@ -5670,6 +5673,31 @@ model PersonalAssistantOperation {
   @@unique([sourcePersonalOperationId, kind])
   @@unique([correlatedTemporalReceiptId, workspaceId, createdByUserId], map: "sms_correlated_calendar_marker_scope_key")
   @@index([workspaceId, kind, status])
+}
+
+model PersonalPropertyResearchJob {
+  id String @id
+  workspaceId String
+  workspace ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  sourceSmsId String @unique
+  sourceSms PersonalAssistantOperation @relation(fields: [sourceSmsId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  request Json
+  requestHash String
+  authorityHash String
+  registryHash String
+  status String @default("pending")
+  attempts Int @default(0)
+  claimToken String?
+  leaseUntil DateTime? @db.Timestamp(3)
+  progress Json @default("[]")
+  report Json?
+  reportHash String?
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(3)
+
+  @@index([status, createdAt], map: "property_job_pending_idx")
 }
 
 model PersonalCalendarSmsConfirmationNonce {

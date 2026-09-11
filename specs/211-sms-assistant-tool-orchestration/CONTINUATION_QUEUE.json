@@ -5,12 +5,12 @@
   "timerRequested": false,
   "goalRuntime": "EXISTING_UNFINISHED_GOAL_PREVENTS_REPLACEMENT",
   "items": [
-    {"id":"A","title":"Contracts and deterministic routing","status":"IN_PROGRESS","dependsOn":[]},
-    {"id":"B","title":"Separate guarded conversational candidate","status":"PENDING","dependsOn":["A"]},
-    {"id":"C","title":"Cited public research","status":"PENDING","dependsOn":["B"]},
-    {"id":"D","title":"Property toolchain and source evidence","status":"PENDING","dependsOn":["A"]},
-    {"id":"E","title":"Canonical reads and prepared-action bridge","status":"PENDING","dependsOn":["A"]},
-    {"id":"F","title":"Durable queue, reports and SMS integration","status":"PENDING","dependsOn":["B","C","D","E"]},
-    {"id":"G","title":"Bounded founder live activation","status":"PENDING","dependsOn":["F"]}
+    {"id":"A","title":"Contracts and deterministic routing","status":"DONE_LOCAL","dependsOn":[],"evidence":"evidence/targeted-tests.json"},
+    {"id":"B","title":"Separate guarded conversational candidate","status":"DONE_LOCAL","dependsOn":["A"],"evidence":"evidence/validation.json","realProviderObserved":false},
+    {"id":"C","title":"Cited public research","status":"DONE_LOCAL","dependsOn":["B"],"evidence":"evidence/validation.json","realSearchObserved":false},
+    {"id":"D","title":"Property toolchain and source evidence","status":"DONE_LOCAL_SYNTHETIC","dependsOn":["A"],"remaining":"Select and qualify one real municipal source set; no live source registered."},
+    {"id":"E","title":"Canonical reads and prepared-action bridge","status":"IN_PROGRESS","dependsOn":["A"],"completed":"Existing canonical, calendar and prepared-intent paths retained and regression-tested.","remaining":"Email draft capability and explicit end-to-end action bridge acceptance."},
+    {"id":"F","title":"Durable queue, reports and SMS integration","status":"IN_PROGRESS","dependsOn":["B","C","D","E"],"completed":"Answer SMS outbox, private reports, bounded general history, synthetic durable property jobs and expiry recovery.","remaining":"Wire a qualified live property connector to progress SMS; add operator latency/settlement dashboard."},
+    {"id":"G","title":"Bounded founder live activation","status":"BLOCKED_PREREQUISITES","dependsOn":["F"],"blockers":["Historical deployment catalog accepts80; new code requires82 and a new release review/trial.","Current published answer policy, exact rates, privacy and aggregate spending review not established.","Owner search disclosure scope and current encrypted credential readiness unverified.","No live municipal adapter is registered."]}
   ]
 }

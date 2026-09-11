@@ -35,9 +35,10 @@ const hash = (value: string) => createHash("sha256").update(value).digest("hex")
  * compare authorityFingerprint before preparing anything, then separately check
  * current action-specific grants. The SMS grant never grants Calendar access.
  */
-export async function inspectPersonalGatewaySubject(
+async function inspectSubject(
   tx: Pick<Prisma.TransactionClient, "$queryRawUnsafe">,
   expected: PersonalGatewayOperationSubject,
+  allowedStatuses: readonly string[],
 ) {
   if (expected.kind !== "personal_assistant_operation" || !expected.operationId || !expected.workspaceId) {
     throw new Error("PERSONAL_GATEWAY_INVALID_SUBJECT");
@@ -65,7 +66,7 @@ export async function inspectPersonalGatewaySubject(
   );
   const row = rows[0];
   if (rows.length !== 1 || !row || row.id !== expected.operationId || row.workspaceId !== expected.workspaceId ||
-    row.kind !== "personal_sms_inbound" || !["received", "processing"].includes(row.status)) {
+    row.kind !== "personal_sms_inbound" || !allowedStatuses.includes(row.status)) {
     throw new Error("PERSONAL_GATEWAY_SUBJECT_NOT_PENDING");
   }
   const received = envelopeSchema.parse(row.request);
@@ -108,4 +109,14 @@ export async function inspectPersonalGatewaySubject(
       sourceHash: contentHash, timezone: row.defaultTimezone, receivedAt,
     }))}` as const,
   });
+}
+
+export async function inspectPersonalGatewaySubject(tx: Pick<Prisma.TransactionClient, "$queryRawUnsafe">, expected: PersonalGatewayOperationSubject) {
+  return inspectSubject(tx, expected, ["received", "processing"]);
+}
+
+/** Separate read-only job lineage inspection. Never accepted by model admission
+ * or action dispatch, which keep the pending-only inspector above. */
+export async function inspectPersonalResearchSource(tx: Pick<Prisma.TransactionClient, "$queryRawUnsafe">, expected: PersonalGatewayOperationSubject) {
+  return inspectSubject(tx, expected, ["received", "processing", "completed"]);
 }

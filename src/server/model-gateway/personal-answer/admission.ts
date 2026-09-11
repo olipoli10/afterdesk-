@@ -15,12 +15,14 @@ import { createAnswerInput, candidateAnswerSchema, RESEARCH_OPERATION } from "./
 import { inspectAnswerBudget } from "./budget-policy";
 import { answerWireRequest } from "./openrouter-adapter";
 import type { PersonalSmsExecutionContext } from "@/server/personal-assistant/sms-worker";
+import { inspectPublicSearchDisclosure } from "./search-disclosure";
+import { loadBoundedAnswerHistory } from "./history";
 
 type Tx = Prisma.TransactionClient;
 const uid = () => `answer_${randomUUID().replaceAll("-", "")}`;
 export const ANSWER_CONTRACT_HASH = canonicalFingerprint(z.toJSONSchema(candidateAnswerSchema));
 export type AnswerAdmissionConfiguration = Readonly<{
-  policyVersionId: string; rateConfiguration: unknown; pilotEnvelopeReview: unknown;
+  policyVersionId: string; rateConfiguration: unknown; pilotEnvelopeReview: unknown; searchDisclosureReview?: unknown;
 }>;
 export type AnswerAdmissionInput = Readonly<{
   context: PersonalSmsExecutionContext; configuration: AnswerAdmissionConfiguration; enabled?: boolean;
@@ -40,14 +42,21 @@ export async function inspectAnswerContext(tx: Tx, input: AnswerAdmissionInput, 
   const now = rows[0].now;
   const source = await inspectPersonalGatewaySubject(tx, { kind: "personal_assistant_operation", operationId: claim.operationId, workspaceId: claim.workspaceId });
   if (source.actorUserId !== claim.userId) throw new Error("ANSWER_ACTOR_CHANGED");
-  const candidateInput = createAnswerInput({ requestId: claim.operationId, workspaceId: claim.workspaceId,
+  const baseInput = createAnswerInput({ requestId: claim.operationId, workspaceId: claim.workspaceId,
     body: source.input.source, senderVerified: true, workspaceBound: true, receivedAt: source.receivedAt });
+  const candidateInput = baseInput.operation === RESEARCH_OPERATION ? baseInput : createAnswerInput({ ...baseInput.source,
+    history: await loadBoundedAnswerHistory(tx, { sourceId: claim.operationId, workspaceId: claim.workspaceId, userId: claim.userId }),
+  });
   const budget = inspectAnswerBudget(input.configuration.rateConfiguration, candidateInput.operation, now);
   const envelope = inspectPersonalModelPilotEnvelope(env, now, budget.ceilingCadMicros, input.configuration.pilotEnvelopeReview);
   const authority = await inspectModelAuthority(tx, source, now);
   // Public search has a distinct disclosure surface. A route needs reviewed
   // search-source terms in addition to inference consent; no key or data is read here.
   if (candidateInput.operation === RESEARCH_OPERATION && env.ENDVERA_PERSONAL_PUBLIC_RESEARCH_ENABLED !== "true") throw new Error("PUBLIC_RESEARCH_NOT_ENABLED");
+  const searchDisclosure = candidateInput.operation === RESEARCH_OPERATION ? await inspectPublicSearchDisclosure(tx, {
+    review: input.configuration.searchDisclosureReview, grantId: authority.grantId, accountId: authority.accountId,
+    userId: source.actorUserId, workspaceId: claim.workspaceId, now,
+  }) : null;
   const policyKey = candidateInput.operation === RESEARCH_OPERATION ? "personal-public-research-v1" : "personal-answer-v1";
   const routeKey = candidateInput.operation === RESEARCH_OPERATION ? "personal-public-research-openrouter-v1" : "personal-answer-openrouter-v1";
   const request: PersonalAnswerGatewayOperationRequest = {
@@ -78,7 +87,8 @@ export async function inspectAnswerContext(tx: Tx, input: AnswerAdmissionInput, 
   if (breaker.status !== "clear") throw new Error("ANSWER_BREAKER_OPEN");
   const binding = { source: source.authorityFingerprint, model: authority.fingerprint, rates: budget.reviewedRateFingerprint,
     policy: resolution.policy.canonicalHash, route: route.canonicalHash, breaker: breaker.generation.toString(),
-    privacy: resolution.privacyEvidenceHash, envelope: canonicalFingerprint(envelope), input: candidateInput.requestFingerprint };
+    privacy: resolution.privacyEvidenceHash, searchDisclosure: searchDisclosure?.fingerprint ?? null,
+    envelope: canonicalFingerprint(envelope), input: candidateInput.requestFingerprint };
   live(input, env);
   return { now, source, authority, candidateInput, request, budget, envelope, policy: resolution.policy, route,
     adapterConfiguration, breakerGeneration: breaker.generation, privacyEvidenceHash: resolution.privacyEvidenceHash,
