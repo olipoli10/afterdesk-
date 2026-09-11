@@ -1,0 +1,99 @@
+{
+  "observedAt": "2026-09-11T00:59:48.343Z",
+  "origin": "https://endvera-core-sandbox-afterdesk.vercel.app",
+  "observations": [
+    {
+      "method": "GET",
+      "route": "/login",
+      "status": 200,
+      "expected": 200,
+      "statusMatches": true,
+      "noStore": true,
+      "healthyService": null,
+      "anonymousSession": null
+    },
+    {
+      "method": "GET",
+      "route": "/api/health",
+      "status": 200,
+      "expected": 200,
+      "statusMatches": true,
+      "noStore": true,
+      "healthyService": true,
+      "anonymousSession": null
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/get-session",
+      "status": 200,
+      "expected": 200,
+      "statusMatches": true,
+      "noStore": true,
+      "healthyService": null,
+      "anonymousSession": true
+    },
+    {
+      "method": "GET",
+      "route": "/api/endvera/v1/personal/phone",
+      "status": 401,
+      "expected": 401,
+      "statusMatches": true,
+      "noStore": true,
+      "healthyService": null,
+      "anonymousSession": null
+    },
+    {
+      "method": "GET",
+      "route": "/api/endvera/v1/personal/google/status",
+      "status": 401,
+      "expected": 401,
+      "statusMatches": true,
+      "noStore": true,
+      "healthyService": null,
+      "anonymousSession": null
+    },
+    {
+      "method": "GET",
+      "route": "/api/endvera/v1/personal/model/status",
+      "status": 401,
+      "expected": 401,
+      "statusMatches": true,
+      "noStore": true,
+      "healthyService": null,
+      "anonymousSession": null
+    },
+    {
+      "method": "GET",
+      "route": "/api/endvera/v1/personal/model/correlated-calendar-reviews/approval-offer",
+      "status": 404,
+      "expected": 404,
+      "statusMatches": true,
+      "noStore": true,
+      "healthyService": null,
+      "anonymousSession": null
+    },
+    {
+      "method": "GET",
+      "route": "/api/endvera/v1/personal/worker/tick",
+      "status": 401,
+      "expected": 401,
+      "statusMatches": true,
+      "noStore": true,
+      "healthyService": null,
+      "anonymousSession": null
+    },
+    {
+      "method": "POST",
+      "route": "/api/webhooks/twilio/sms",
+      "status": 503,
+      "expected": 503,
+      "statusMatches": true,
+      "noStore": false,
+      "healthyService": null,
+      "anonymousSession": null
+    }
+  ],
+  "allExpectedStatuses": true,
+  "authenticatedOwnerObserved": false,
+  "providerFlowObserved": false
+}

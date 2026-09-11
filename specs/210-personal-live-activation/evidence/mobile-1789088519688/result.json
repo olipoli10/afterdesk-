@@ -1,0 +1,11 @@
+{
+  "kind": "mobile",
+  "databaseRuntime": null,
+  "postgresTestFile": null,
+  "exitCode": 1,
+  "finishedAt": "2026-09-11T01:02:08.046Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\mobile-1789088519688",
+  "buildDirectory": null
+}

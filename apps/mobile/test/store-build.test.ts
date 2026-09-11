@@ -19,7 +19,7 @@ describe("R36G credential-free mobile build preparation", () => {
       status: "READY_FOR_SIGNING_AUTHORITY",
       appName: "ENDVERA",
       ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1", artifact: "IPA" },
-      android: { package: "ai.endvera.mobile", versionCode: 4, artifact: "AAB" },
+      android: { package: "ai.endvera.mobile", versionCode: 5, artifact: "AAB" },
       signed: false,
       uploaded: false,
       submitted: false,
@@ -32,7 +32,11 @@ describe("R36G credential-free mobile build preparation", () => {
     const serialized = JSON.stringify(easConfig);
     expect(easConfig).not.toHaveProperty("submit");
     expect(serialized).not.toMatch(/"(?:credentials|credentialsSource|projectId|owner|channel|environment|token|secret|password)"\s*:/iu);
-    expect(serialized).not.toMatch(/eas\s+(?:build|submit|update)|https?:\/\//iu);
+    expect(serialized).not.toMatch(/eas\s+(?:build|submit|update)/iu);
+    expect(easConfig.build['founder-device'].env).toEqual({ EXPO_PUBLIC_ENDVERA_API_URL: 'https://endvera-core-sandbox-afterdesk.vercel.app' });
+    const withoutPublicOrigin = structuredClone(easConfig) as unknown as { build: Record<string, Record<string, unknown>> };
+    delete withoutPublicOrigin.build['founder-device'].env;
+    expect(JSON.stringify(withoutPublicOrigin)).not.toMatch(/https?:\/\//iu);
   });
 
   it("refuses build-profile, identity and readiness inflation", () => {
@@ -94,5 +98,15 @@ describe("R36G credential-free mobile build preparation", () => {
       expect(input).toEqual(expect.objectContaining({ evidenceRequired: expect.any(String), ownerClass: expect.any(String) }));
       expect(input).not.toHaveProperty("value");
     }
+  });
+
+  it.each(['alternate-origin', 'extra-key', 'other-profile', 'nested-env'])('rejects %s outside the one public-origin exception', kind => {
+    const config = structuredClone(easConfig) as unknown as { build: Record<string, Record<string, unknown>> };
+    const origin = { EXPO_PUBLIC_ENDVERA_API_URL: 'https://endvera-core-sandbox-afterdesk.vercel.app' };
+    if (kind === 'alternate-origin') config.build['founder-device'].env = { EXPO_PUBLIC_ENDVERA_API_URL: origin.EXPO_PUBLIC_ENDVERA_API_URL + '/' };
+    if (kind === 'extra-key') config.build['founder-device'].env = { ...origin, TOKEN: 'synthetic' };
+    if (kind === 'other-profile') config.build['store-candidate'].env = origin;
+    if (kind === 'nested-env') config.build['founder-device'].extra = { env: origin };
+    expect(() => validateCredentialFreeMobileBuild({ appConfig, easConfig: config, readiness })).toThrow('MOBILE_BUILD_VALUE_MATERIAL_REFUSED');
   });
 });

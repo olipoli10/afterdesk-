@@ -12,8 +12,7 @@ function fixture() {
   const json = (relative: string) => JSON.parse(readFileSync(path.join(root, relative), "utf8"));
   const app = json("apps/mobile/app.json");
   const eas = json("apps/mobile/eas.json");
-  // Synthetic explicit future profile only; never writes the actual profile.
-  eas.build["founder-device"].env = { EXPO_PUBLIC_ENDVERA_API_URL: origin };
+  // Real source configuration with synthetic HEAD/clean observations only.
   return { expectedHead: head, expectedApiOrigin: origin, expectedVersionCode: app.expo.android.versionCode,
     head, gitStatus: "", app, eas, packageJson: json("apps/mobile/package.json"),
     definition: json("release/endvera-construction-v1/release-definition-v3.json"),
@@ -34,9 +33,9 @@ describe("founder APK input guard separate review — no build authority", () =>
     expect(result.apiOrigin).toBe(origin);
   });
 
-  it("refuses the current source profile without manufacturing an origin", () => {
+  it("refuses a missing source origin without manufacturing one", () => {
     const input = fixture();
-    input.eas = JSON.parse(readFileSync(path.join(root, "apps/mobile/eas.json"), "utf8"));
+    delete input.eas.build["founder-device"].env;
     expect(input.eas.build["founder-device"]).not.toHaveProperty("env");
     expect(() => validateFounderAndroidBuildInputs(input)).toThrow("FOUNDER_ANDROID_FOUNDER_PROFILE");
   });

@@ -50,7 +50,7 @@ describe("Release provenance security regression boundaries",()=>{
   expect(isExactCheckoutCrlfEquivalent(Buffer.from("a\r\n"),Buffer.from("a\n"),"file.png")).toBe(false);
  });
  it.each([
-  ['semanticVersion: "0.2.0"','semanticVersion: "0.9.9"'],['buildNumber: "1"','buildNumber: "2"'],['versionCode: 4','versionCode: 99'],['bundleIdentifier: "ai.endvera.mobile"','bundleIdentifier: "wrong.id"'],['package: "ai.endvera.mobile"','package: "wrong.id"'],['accountDeletion: "/account-deletion"','accountDeletion: "/wrong"'],['readiness: "LOCAL_PACKAGE_READY"','readiness: "EXTERNAL"'],['signed: false','signed: true'],['providerObserved: false','providerObserved: true'],['externalEffectCount: 0','externalEffectCount: 1'],['status: "READY_FOR_SIGNING_AUTHORITY"','status: "DONE"'],
+  ['semanticVersion: "0.2.0"','semanticVersion: "0.9.9"'],['buildNumber: "1"','buildNumber: "2"'],['versionCode: 5','versionCode: 99'],['bundleIdentifier: "ai.endvera.mobile"','bundleIdentifier: "wrong.id"'],['package: "ai.endvera.mobile"','package: "wrong.id"'],['accountDeletion: "/account-deletion"','accountDeletion: "/wrong"'],['readiness: "LOCAL_PACKAGE_READY"','readiness: "EXTERNAL"'],['signed: false','signed: true'],['providerObserved: false','providerObserved: true'],['externalEffectCount: 0','externalEffectCount: 1'],['status: "READY_FOR_SIGNING_AUTHORITY"','status: "DONE"'],
  ])("rejects changed exported mobile metadata: %s",(before,after)=>{
   expect(mobileSource).toContain(before);
   expect(()=>validateMobileReleaseMetadata(mobileSource.replace(before,after),definition)).toThrow("RELEASE_MOBILE_METADATA_MISMATCH");

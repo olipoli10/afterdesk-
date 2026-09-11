@@ -32,18 +32,24 @@ function exactKeys(value: JsonRecord, expected: readonly string[], error: string
   if (JSON.stringify(actual) !== JSON.stringify(wanted)) throw new Error(error);
 }
 
-function assertNoValueMaterial(value: unknown) {
+function assertNoValueMaterial(value: unknown, location: readonly string[] = []) {
   if (!value || typeof value !== "object") return;
   if (Array.isArray(value)) {
-    for (const item of value) assertNoValueMaterial(item);
+    for (const item of value) assertNoValueMaterial(item, [...location, "[]"]);
     return;
   }
   for (const [key, child] of Object.entries(value as JsonRecord)) {
+    if (key === "env" && location.length === 2 && location[0] === "build" && location[1] === "founder-device") {
+      const publicOrigin = record(child, "MOBILE_BUILD_VALUE_MATERIAL_REFUSED");
+      exactKeys(publicOrigin, ["EXPO_PUBLIC_ENDVERA_API_URL"], "MOBILE_BUILD_VALUE_MATERIAL_REFUSED");
+      if (publicOrigin.EXPO_PUBLIC_ENDVERA_API_URL !== "https://endvera-core-sandbox-afterdesk.vercel.app") throw new Error("MOBILE_BUILD_VALUE_MATERIAL_REFUSED");
+      continue;
+    }
     if (forbiddenValueKeys.has(key)) {
       if (key === "submit") throw new Error("MOBILE_BUILD_SUBMIT_PATH_REFUSED");
       throw new Error("MOBILE_BUILD_VALUE_MATERIAL_REFUSED");
     }
-    assertNoValueMaterial(child);
+    assertNoValueMaterial(child, [...location, key]);
   }
 }
 
@@ -89,7 +95,7 @@ function assertIdentity(appConfig: JsonRecord, readiness: JsonRecord) {
     ios.bundleIdentifier !== "ai.endvera.mobile" ||
     ios.buildNumber !== "1" ||
     android.package !== "ai.endvera.mobile" ||
-    android.versionCode !== 4 ||
+    android.versionCode !== 5 ||
     readyIos.bundleIdentifier !== ios.bundleIdentifier ||
     readyIos.buildNumber !== ios.buildNumber ||
     readyIos.artifact !== "IPA" ||
@@ -154,7 +160,7 @@ export function validateCredentialFreeMobileBuild(input: {
     appName: "ENDVERA",
     profiles: [...expectedMobileBuildProfiles],
     ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1", artifact: "IPA" as const },
-    android: { package: "ai.endvera.mobile", versionCode: 4, artifact: "AAB" as const },
+    android: { package: "ai.endvera.mobile", versionCode: 5, artifact: "AAB" as const },
     signed: false,
     uploaded: false,
     submitted: false,

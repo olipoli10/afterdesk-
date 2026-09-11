@@ -512,7 +512,7 @@
     "pilotExpiresAt": "2026-10-10T01:18:26Z",
     "twilioAccountAndNumber": "CURRENT_IN_APP_SESSION_LOGGED_OUT_20260910; PRIOR_NUMBER_14503676562_BALANCE_18_85USD_WEBHOOK_EMPTY_NO_API_KEYS_NOT_REFRESHED",
     "googleOAuthConnection": "GOOGLE_CLOUD_SIGNED_OUT_VERIFIED_BROWSER_20260910",
-    "deploymentAccountAndOrigin": "LIVE_METADATA_RECHECK_20260910: DEDICATED_VERCEL_READY_06e26ce7; PILOT_NEON70_FINISHED_MIGRATIONS_READ; LOCAL79_NOT_DEPLOYED; FLAGS_NOT_FRESHLY_READ",
+    "deploymentAccountAndOrigin": "20260911T0107Z: DEDICATED_VERCEL_READY_8d462bd1; PILOT_NEON79_OBSERVED; HTTPS9_PASS; UNEXPECTED_MAINTENANCE_CRON_DISABLED_PROJECT_GET_CONFIRMED; PROVIDER_FLAGS_OFF_GOOGLE_TWILIO_KEYS_ABSENT; ANDROID5_REVIEWED_NOT_SUBMITTED",
     "approvedPilotRecipient": "NOT_BOUND"
   },
   "resumeRule": "Recheck changed owner configuration and Git. Continue eligible work without GO. No repeated paid attempts, old R37 budget, fabricated observation or routine unchanged notification. Keep timer active; projectComplete remains false."

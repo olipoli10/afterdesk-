@@ -1,0 +1,88 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03/apps/mobile
+
+ ✓ test/connection-navigation-copy.test.ts (7 tests) 13ms
+ ✓ test/personal-correlated-calendar-approval-lifecycle.test.ts (12 tests) 298ms
+ ✓ test/personal-correlated-calendar-approval-attempts.test.ts (15 tests) 152ms
+ ✓ test/voice-review-regressions.test.ts (20 tests) 172ms
+ ✓ test/personal-correlated-calendar-approval-api-review.test.ts (16 tests) 231ms
+ ✓ test/correlated-calendar-approval-attempts-review.test.ts (8 tests) 124ms
+ ✓ test/correlated-calendar-approval-lifecycle-review.test.ts (10 tests) 951ms
+stderr | test/personal-correlated-calendar-review-card.test.ts > autonomous read-only correlated calendar card > retains raw evidence when Intl is unavailable
+[vitest] The DateTimeFormat mock did not use 'function' or 'class' in its implementation, see https://vitest.dev/api/vi#vi-spyon for examples.
+[vitest] The DateTimeFormat mock did not use 'function' or 'class' in its implementation, see https://vitest.dev/api/vi#vi-spyon for examples.
+
+ ✓ test/personal-correlated-calendar-review-card.test.ts (37 tests) 72ms
+ ✓ test/personal-correlated-calendar-approval-render-controller.test.ts (18 tests) 66ms
+ ✓ test/personal-correlated-calendar-approval-api.test.ts (13 tests) 57ms
+ ✓ test/api-caller-cancellation.test.ts (9 tests) 50ms
+ ✓ test/personal-correlated-calendar-list-render.test.ts (18 tests) 48ms
+ ✓ test/project-brain-intake.test.ts (38 tests) 54ms
+ ✓ test/personal-correlated-calendar-list.test.ts (39 tests) 104ms
+ ✓ test/voice-calls.test.ts (5 tests) 38ms
+ ✓ test/personal-correlated-calendar-approval.test.ts (37 tests) 43ms
+stderr | test/personal-correlated-calendar-preview.test.ts > unwired two-source presentation utility > handles unavailable Intl without using the phone timezone
+[vitest] The DateTimeFormat mock did not use 'function' or 'class' in its implementation, see https://vitest.dev/api/vi#vi-spyon for examples.
+
+ ✓ test/personal-correlated-calendar-preview.test.ts (44 tests) 37ms
+ ✓ test/mobile-foundation.test.ts (10 tests) 43ms
+ ✓ test/prepared-actions.test.ts (4 tests) 70ms
+ ✓ test/api-caller-cancellation-review.test.ts (3 tests) 25ms
+ ✓ test/project-brain-voice-upload-deadline.test.ts (3 tests) 28ms
+ ✓ test/project-brain-voice-journal.test.ts (39 tests) 27ms
+ ✓ test/personal-calendar-draft-times.test.ts (7 tests) 28ms
+ ✓ test/intent.test.ts (3 tests) 30ms
+ ✓ test/mobile-assistant.test.ts (4 tests) 29ms
+ ✓ test/personal-correlated-calendar-preview-review.test.ts (18 tests) 28ms
+ ✓ test/correlated-calendar-lifecycle-review.test.ts (2 tests) 25ms
+ ✓ test/personal-calendar-display.test.ts (23 tests) 26ms
+ ✓ test/project-brain-photo-selection.test.ts (52 tests) 21ms
+ ✓ test/calendar-display.test.ts (2 tests) 18ms
+ ✓ test/invoices.test.ts (4 tests) 17ms
+ ✓ test/project-brain-voice-capture.test.ts (28 tests) 16ms
+ ✓ test/jobs.test.ts (4 tests) 23ms
+ ✓ test/follow-ups.test.ts (4 tests) 21ms
+ ✓ test/email-inbox.test.ts (3 tests) 11ms
+ ✓ test/mobile-store-visual-readiness.test.ts (8 tests) 19ms
+ ✓ test/accounting.test.ts (4 tests) 36ms
+ ✓ test/messages.test.ts (5 tests) 13ms
+ ✓ test/outbox.test.ts (6 tests) 14ms
+ ✓ test/personal-model-reviews.test.ts (23 tests) 13ms
+ ✓ test/authority-policies.test.ts (4 tests) 14ms
+ ✓ test/calendar-connectors.test.ts (4 tests) 11ms
+ ✓ test/native-contact-import.test.ts (8 tests) 11ms
+ ✓ test/personal-service.test.ts (11 tests) 12ms
+ ✓ test/privacy.test.ts (4 tests) 13ms
+ ✓ test/project-brain-source-picker.test.ts (33 tests) 28ms
+ ✓ test/human-escalations.test.ts (4 tests) 41ms
+ ✓ test/personal-model.test.ts (13 tests) 10ms
+ ✓ test/secretary-broadcasts.test.ts (2 tests) 9ms
+ ✓ test/calendar-contacts.test.ts (2 tests) 10ms
+ ✓ test/provenance.test.ts (3 tests) 11ms
+ ✓ test/reliability.test.ts (3 tests) 10ms
+ ✓ test/golden-workflow.test.ts (3 tests) 10ms
+ ✓ test/onboarding.test.ts (3 tests) 11ms
+ ✓ test/timeline.test.ts (3 tests) 8ms
+ ✓ test/store-build.test.ts (9 tests) 8ms
+ ✓ test/evidence.test.ts (5 tests) 7ms
+ ✓ test/permissions.test.ts (3 tests) 26ms
+ ✓ test/product-experience-navigation.test.ts (3 tests) 23ms
+ ✓ test/founder-activation.test.ts (4 tests) 10ms
+ ✓ test/mobile-assistant-routing.test.ts (7 tests) 7ms
+ ✓ test/mobile-assistant-experience-polish.test.ts (5 tests) 5ms
+ ✓ test/project-brain-understanding-review.test.ts (2 tests) 6ms
+ ✓ test/project-brain-assistant-memory.test.ts (2 tests) 4ms
+ ✓ test/personal-google.test.ts (2 tests) 5ms
+ ✓ test/device-access.test.ts (7 tests) 3ms
+ ✓ test/virtual-secretary-actions.test.ts (3 tests) 3ms
+ ✓ test/project-brain-local-gate.test.ts (1 test) 4ms
+ ✓ test/release-package.test.ts (2 tests) 4ms
+ ✓ test/secretary-command-entry.test.ts (3 tests) 5ms
+ ✓ test/first-login.test.ts (4 tests) 3ms
+ ✓ test/text-assist-foundation.test.ts (3 tests) 3ms
+
+ Test Files  72 passed (72)
+      Tests  770 passed (770)
+   Start at  21:02:22
+   Duration  7.76s (transform 3.09s, setup 0ms, import 12.71s, tests 3.42s, environment 5ms)
+

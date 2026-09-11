@@ -1,5 +1,22 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 01:07Z — backend READY, actual cron divergence disabled, Android5 reviewed
+
+Dedicated deployment dpl_Cm6AFJxkXrsJWeFq4Z8kY3yKtPfa at8d462bd1 is READY.
+Real anonymous HTTPS probes9/9 PASS at00:59:48Z; first8/9 retained because
+approval-offer OFF correctly returned404, not the probe's mistaken401 expectation.
+Deployed buildCommand has no migration, but actual deployment/project metadata
+revealed root maintenance cron despite personal crons[] config. Do NOT claim
+zero configured crons or zero prior execution. Fixed-project PATCH enabled=false
+returned disabledAt1789088830777; separate GET confirmed disabled at01:07:30Z.
+Definition remains recorded; local config upload precedence investigation continues.
+No public Afterdesk project changed. Provider flags remain OFF, Google/Twilio
+server credentials absent; authenticated owner/SMS/calendar operation unobserved.
+Android0.2.0/code5 exact founder HTTPS profile reviewed: fullmobile770, root104
+targeted, independent32, types/lint/projection PASS. Earlier mobile769/1 retained.
+No code5 EAS submission yet. Continue coherent internal APK and cron correction.
+Historical rubrics unchanged; heartbeat ACTIVE; campaign IN_PROGRESS.
+
 ## 2026-09-11 00:56Z — actual personal pilot79 verified; backend publication building
 
 Actual one-shot pilot70to79 at8d462bd1 succeeded49964ms, receipt139e785a;

@@ -1,0 +1,27 @@
+{
+  "sourceHead": "8d462bd158055b34940732fbbe008cfc9a43811c",
+  "deploymentId": "dpl_Cm6AFJxkXrsJWeFq4Z8kY3yKtPfa",
+  "projectId": "prj_cEvjMH8iJ2C9khbZ0vsQlGKQ4Y75",
+  "teamId": "team_txoYNQAo21jmENCfI2EG4pdP",
+  "readyState": "READY",
+  "origin": "https://endvera-core-sandbox-afterdesk.vercel.app",
+  "observedBuildCommand": "npm run validate:provider-boundary && next build",
+  "httpReceipt": "personal-backend-http-20260911T005948Z.json",
+  "unexpectedCronDefinition": { "path": "/api/cron/maintenance", "schedule": "0 * * * *" },
+  "initialProjectCronDisabledAt": null,
+  "containment": {
+    "method": "PATCH",
+    "path": "/v1/projects/prj_cEvjMH8iJ2C9khbZ0vsQlGKQ4Y75/crons",
+    "body": { "enabled": false },
+    "cliExitCode": 0,
+    "disabledAt": 1789088830777,
+    "separateGetConfirmedAt": "2026-09-11T01:07:30.7347996Z",
+    "definitionStillPresent": true
+  },
+  "priorCronExecution": "NOT_VERIFIED",
+  "noConfiguredCrons": false,
+  "authenticatedOwnerFlowObserved": false,
+  "smsOrCalendarProviderFlowObserved": false,
+  "publicAfterdeskProjectModified": false,
+  "limitations": ["Remote build did not honor the intended empty cron definition; scheduler disabled separately on the exact personal project", "Anonymous HTTP is not a logged-in Samsung or provider test", "No sensitive database URL values requested"]
+}
