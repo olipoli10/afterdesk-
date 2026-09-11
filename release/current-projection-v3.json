@@ -6,11 +6,11 @@
   "currentInputs": [
     {
       "path": "release/endvera-construction-v1/release-definition-v3.json",
-      "sha256": "7b296a2ece405a5aa5ff725a9d15f850c8f5abdf44c09fbd1db14cce08093916"
+      "sha256": "bd1257ad3743a9ad8401c34ec960487ec9e9b0db2f6db01414a17f91b118f033"
     },
     {
       "path": "apps/mobile/app.json",
-      "sha256": "2d601d24756e1b20574b2f7b3b1ebb942d17150c289d27a300c76d265b5a00d2"
+      "sha256": "2ab574c1078e47efc09864a70508de5da49982daf4cd94bd3534da50a7bcadb8"
     },
     {
       "path": "apps/mobile/package.json",
