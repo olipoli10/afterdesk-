@@ -1,5 +1,39 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 01:47Z — Google separation validated; next configuration prepared
+
+Author66/peer69 tests and controller fullroot7086 PASS/3historicalskips; local
+build PASS01:45:32Z. See GOOGLE_SIGN_IN_CONTROLLER_REVIEW and separation contract.
+Dedicated Google scope declaration persisted after reload: openid plus event
+readonly/write, no broadCalendar/Gmail scope. ExactProduction callback independently
+GET-checked true. New dedicated Production settings request global ENABLED and
+GoogleOAuth ENABLED for next publication; social login flag absent, nonGoogle
+providers/workers remain off. These settings are not yet deployed or observed
+owner consent. Need fresh fixed inspection and disabled scheduler check before
+publishing reviewed committed source; do not rerun any migration or Android build.
+
+## 2026-09-11 01:40Z — Android5 finished; dedicated Google setup saved
+
+EAS build cb38a5da-3fd0-46d3-bcd2-082097400a09 FINISHED at01:25:22.813Z,
+source68b29611/tree6107094f. Download127630488bytes hashbf034e6b, independent
+binary manifest ai.endvera.mobile/0.2.0/code5 and bundle expectedHTTPS verified.
+APK v2 block present; cryptographic signature/certificate continuity and Samsung
+installation/login remain UNVERIFIED. Historical code4 artifact remains historical.
+Full root7061/459files/3historicalskips PASS01:10:49 before the new auth separation.
+
+Dedicated Google project endvera-personal-20260910 created, External/Testing with
+one owner test user, Calendar API enabled, one Web client created01:26:34Z with
+only personal calendar callback. GOOGLE_CLIENT_ID/SECRET saved as Production
+secrets in exact dedicated backend; UI and fixed GET inspector confirm presence,
+not credential validity. No secret printed/committed, no user consent/token or
+calendar data read. Global transport OFF; Google enable flag absent. Twilio
+requires owner password login in handed-off Chrome tab; no password requested
+in chat and no provider dispatch. Agent reproduces accidental BetterAuth login
+coupling and implements separate exact opt-in; independent review in progress.
+Current backend remains8d462bd1 READY; maintenance scheduler disabled, inherited
+definition still present and prior execution unknown. No migration or EAS retry.
+Queue/heartbeat remain ACTIVE/IN_PROGRESS; all historical rubric values unchanged.
+
 ## 2026-09-11 01:07Z — backend READY, actual cron divergence disabled, Android5 reviewed
 
 Dedicated deployment dpl_Cm6AFJxkXrsJWeFq4Z8kY3yKtPfa at8d462bd1 is READY.

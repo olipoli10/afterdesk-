@@ -5,15 +5,18 @@ import { expo } from "@better-auth/expo";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { isExternalCapabilityEnabled } from "@/lib/release/external-capabilities";
+import { isGoogleSignInOptedIn } from "@/lib/auth-google";
 
 /**
- * Google sign-in is enabled only when credentials are configured, so the app
- * runs without them and the button is hidden rather than broken.
+ * Google sign-in requires its own explicit opt-in in addition to the shared
+ * OAuth capability and credentials. Calendar-only credentials do not enable
+ * Better Auth's separate callback or its sign-in button.
  * A Google sign-up always produces a CLIENT account — workers apply through
  * the dedicated form because that flow creates their profile for review.
  */
 export const googleEnabled = Boolean(
-  process.env.GOOGLE_CLIENT_ID &&
+  isGoogleSignInOptedIn() &&
+    process.env.GOOGLE_CLIENT_ID &&
     process.env.GOOGLE_CLIENT_SECRET &&
     isExternalCapabilityEnabled("GOOGLE_OAUTH")
 );

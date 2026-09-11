@@ -20,7 +20,8 @@
       "dependencies": ["VOICE_DISCLOSURE_DEADLINE_REPAIR", "SMS_CORRELATED_EXPLICIT_APPROVAL"],
       "evidence": "PILOT_BACKEND_APK_UPGRADE_PLAN.md",
       "completed": ["Historical remote70/local79 mismatch identified; bootstrap68-to70 and APK builder are not sufficient upgrade gates", "Read-only exactcatalog79 and peerreview62 PASS; controller fresh managedNeon metadata70 matches47exact/23LF, old dedicatedVercel06e26ce7 READY confirmed without writes/secrets", "Reviewed real native17.11 populated70-to79 rehearsal PASS21:30:11Z:14 old rows/70 history retained, new proof ledgers empty, private databases retained/server stopped", "Regression native372/20 clones PASS21:35:25Z; full root6268 PASS/3 historical skips21:37:17Z; controller103 focused PASS; current EAS read stillold code4"],
-      "remaining": ["Actual T70to79 source9f8c8d7c observed60124ms with olddata183tables/2624columns preserved;7proofempty and3legacytablesvacuous. Full583objectdelta qualified189ownership+oneactualtimezone,18UTCdefaults/final77bodymatch,Tidle00:21:13Z; no fullbackuprestore claim", "Actual currentpilot70 recaptured00:24Z sameolddata/catalog/history; pilotidle00:24:39Z. Implement/review closed personalpilot profile in existingrunner/bridge under PILOT_CURRENT_UPGRADE_PLAN, no originalpilotwrite yet", "Then actual pilotupgrade with own departure/postconditions, compatible dedicatedVercel backend using personal no-migration/no-cron config, verified source/HTTPS/auth/OFF routes, coherent signed internal APK and owner connections; existing65APKguardtests remain local proof"],
+      "checkpoint": "Actual original pilot70to79 succeeded49964ms at8d462bd1, old183tables/2624columns preserved and8035catalogobjects matchT79; no backuprestore claim. Dedicated backend dpl_Cm6AFJxkXrsJWeFq4Z8kY3yKtPfa READY and anonymousHTTPS9PASS. Inherited cron discovered despite localconfig: scheduler explicitly disabled, definition retained/prior execution unknown. Android5 EAS cb38a5da finished01:25:22Z at68b29611; downloaded hashbf034e6b, manifest/package/code/origin statically verified.",
+      "remaining": ["Cryptographic APK signature and certificate continuity not independently verified; actual Samsung install/login unobserved", "Complete reviewed Google-only configuration publication, owner-controlled consent and phone pairing; recheck scheduler disabled before/after any publication", "Real SMS/calendar/voice and gateway observations remain distinct; do not rerun completed migrations or EAS build"],
       "liveObserved": false
     },
     {
@@ -510,9 +511,9 @@
     "totalPilotBudgetCad": 100,
     "twilioBudgetCad": 30,
     "pilotExpiresAt": "2026-10-10T01:18:26Z",
-    "twilioAccountAndNumber": "CURRENT_IN_APP_SESSION_LOGGED_OUT_20260910; PRIOR_NUMBER_14503676562_BALANCE_18_85USD_WEBHOOK_EMPTY_NO_API_KEYS_NOT_REFRESHED",
-    "googleOAuthConnection": "GOOGLE_CLOUD_SIGNED_OUT_VERIFIED_BROWSER_20260910",
-    "deploymentAccountAndOrigin": "20260911T0107Z: DEDICATED_VERCEL_READY_8d462bd1; PILOT_NEON79_OBSERVED; HTTPS9_PASS; UNEXPECTED_MAINTENANCE_CRON_DISABLED_PROJECT_GET_CONFIRMED; PROVIDER_FLAGS_OFF_GOOGLE_TWILIO_KEYS_ABSENT; ANDROID5_REVIEWED_NOT_SUBMITTED",
+    "twilioAccountAndNumber": "20260911_CHROME_PASSWORD_LOGIN_REQUIRED_HANDOFF_READY; PRIOR_NUMBER_14503676562_BALANCE_18_85USD_NOT_REFRESHED; SERVER_KEYS_ABSENT",
+    "googleOAuthConnection": "20260911: DEDICATED_PROJECT_endvera-personal-20260910_EXTERNAL_TESTING_ONE_OWNER; CALENDAR_API_ENABLED_WEBCLIENT_CREATED; ID_SECRET_SAVED_PERSONAL_VERCEL_PRODUCTION; OWNER_CONSENT_NOT_OBSERVED",
+    "deploymentAccountAndOrigin": "20260911: DEDICATED_VERCEL_READY_8d462bd1; PILOT_NEON79_OBSERVED; HTTPS9_PASS; INHERITED_MAINTENANCE_SCHEDULER_DISABLED_DEFINITION_RETAINED; PROVIDER_FLAGS_OFF_GOOGLE_KEYS_PRESENT_TWILIO_ABSENT; ANDROID5_FINISHED_cb38a5da_STATIC_VERIFIED_DEVICE_UNOBSERVED",
     "approvedPilotRecipient": "NOT_BOUND"
   },
   "resumeRule": "Recheck changed owner configuration and Git. Continue eligible work without GO. No repeated paid attempts, old R37 budget, fabricated observation or routine unchanged notification. Keep timer active; projectComplete remains false."
