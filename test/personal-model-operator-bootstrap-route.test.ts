@@ -60,6 +60,23 @@ describe("one-time personal model bootstrap diagnostics", () => {
     expect(h.inspect).not.toHaveBeenCalled();
   });
 
+  it("accepts only the exact OpenRouter form handoff with the same token gate", async () => {
+    const body = new URLSearchParams({ version: "personal-model-setup-command-v1", setupRef,
+      apiKey: "synthetic_key_not_valid_123456789", token });
+    const accepted = await POST(new Request("https://endvera-core-sandbox.vercel.app/api/endvera/v1/personal/model/operator-bootstrap", {
+      method: "POST", headers: { origin: "https://openrouter.ai", "content-type": "application/x-www-form-urlencoded;charset=utf-8" }, body,
+    }));
+    expect(accepted.status).toBe(200);
+    expect(h.apply).toHaveBeenCalledTimes(1);
+
+    h.apply.mockClear();
+    const refused = await POST(new Request("https://endvera-core-sandbox.vercel.app/api/endvera/v1/personal/model/operator-bootstrap", {
+      method: "POST", headers: { origin: "https://evil.invalid", "content-type": "application/x-www-form-urlencoded;charset=utf-8" }, body,
+    }));
+    expect(refused.status).toBe(404);
+    expect(h.apply).not.toHaveBeenCalled();
+  });
+
   it("distinguishes configuration and command refusal without reflecting secrets", async () => {
     h.inspect.mockImplementationOnce(() => { throw new Error("secret-config"); });
     const configuration = await POST(request());

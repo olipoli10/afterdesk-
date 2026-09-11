@@ -22,11 +22,41 @@ const response = (status: number, code: string) => new Response(
   { status, headers },
 );
 
-function authorized(request: Request): boolean {
+function authorizedValue(supplied: string | null): boolean {
   const expected = process.env.ENDVERA_PERSONAL_MODEL_BOOTSTRAP_TOKEN;
-  const supplied = request.headers.get("x-endvera-bootstrap-token");
   if (!expected || !supplied || !/^[a-f0-9]{64}$/.test(expected) || !/^[a-f0-9]{64}$/.test(supplied)) return false;
   return timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(supplied, "hex"));
+}
+
+function authorized(request: Request): boolean {
+  return authorizedValue(request.headers.get("x-endvera-bootstrap-token"));
+}
+
+async function browserHandoff(request: Request): Promise<{ request: Request; authorized: boolean }> {
+  if (request.headers.get("origin") !== "https://openrouter.ai"
+    || !/^application\/x-www-form-urlencoded(?:\s*;\s*charset=utf-8)?$/i.test(request.headers.get("content-type") ?? "")) {
+    return { request, authorized: false };
+  }
+  const length = request.headers.get("content-length");
+  if (length !== null && (!/^\d{1,10}$/.test(length) || Number(length) > 4096)) return { request, authorized: false };
+  let encoded: string;
+  try { encoded = await request.text(); } catch { return { request, authorized: false }; }
+  if (Buffer.byteLength(encoded, "utf8") > 4096) return { request, authorized: false };
+  const parameters = new URLSearchParams(encoded);
+  const keys = [...parameters.keys()].sort();
+  if (keys.length !== 4 || keys.join(",") !== "apiKey,setupRef,token,version"
+    || [...new Set(keys)].length !== keys.length) return { request, authorized: false };
+  const token = parameters.get("token");
+  const setupRef = parameters.get("setupRef") ?? "";
+  const apiKey = parameters.get("apiKey") ?? "";
+  const version = parameters.get("version") ?? "";
+  const forwarded = new Request(request.url, {
+    method: "POST",
+    headers: { "content-type": "application/json; charset=utf-8" },
+    body: JSON.stringify({ version, setupRef, apiKey }),
+    signal: request.signal,
+  });
+  return { request: forwarded, authorized: authorizedValue(token) };
 }
 
 export function OPTIONS(request: Request) {
@@ -45,7 +75,9 @@ export function OPTIONS(request: Request) {
 export async function POST(request: Request) {
   let dispatched = false;
   try {
-    if (!authorized(request)) return response(404, "UNAVAILABLE");
+    const handoff = await browserHandoff(request);
+    if (!authorized(request) && !handoff.authorized) return response(404, "UNAVAILABLE");
+    request = handoff.request;
     let ingress: ReturnType<typeof inspectPersonalModelIngressConfiguration>;
     try {
       ingress = inspectPersonalModelIngressConfiguration(
