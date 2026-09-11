@@ -1,5 +1,21 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 01:54Z — Calendar-only backend READY, actual browser verified
+
+ONE publication dpl_8xvCAkanXMWGrDUiDjRc2Zm7jSPi READY atbd8e76f7; dedicatedalias
+assigned. No migration; actualproject scheduler still disabledAt1789088830777
+afterpublication while its inheriteddefinition remains. Fresh10expected HTTP
+statuses PASS. Initial rawHTMLregex incorrectly treated embedded Googlelogin
+translation as a visiblebutton (exit1 retained); actualChrome DOM shows only
+Afficher/Se connecter and no Googlelogincontrol. No code change hid a failedtest.
+Google global/OAuth configuration enabled; sociallogin and otherproviders/workers
+remain off. Ownerlogin/consent/tokenexchange/calendaroperation NOT observed.
+Twilio still passwordloginblocked; handedoff. Android5artifact link delivered
+with explicit static/device/providerevidence limits; no duplicatebuild.
+Continue missing private OpenRouter operator setup: audit found preparation and
+encryptedcredential helper but no productcaller/publisher. Plan/review in progress,
+no invented model/rate/privacycertification, externalAI call or new authorization.
+
 ## 2026-09-11 01:47Z — Google separation validated; next configuration prepared
 
 Author66/peer69 tests and controller fullroot7086 PASS/3historicalskips; local
