@@ -41,6 +41,20 @@ export type PersonalSmsSourceClaim = Readonly<{ operationId: string; workspaceId
 export type PersonalSmsExecutionContext = Readonly<{ claim: PersonalSmsSourceClaim; signal: AbortSignal; deadlineAt: number }>;
 type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; calendar?: typeof readGoogleCalendarWithAuthority; deadlineAt?: number };
 
+const SAFE_OUTBOUND_FAILURE_CODES = new Set([
+  "PERSONAL_OUTBOUND_DISABLED", "TWILIO_CONFIGURATION_REQUIRED", "CURRENT_TWILIO_RATE_REVIEW_REQUIRED",
+  "CURRENT_CAD_BUDGET_REQUIRED", "BUDGET_EXHAUSTED", "TWILIO_CALLBACK_REQUIRED", "AUTOMATIC_REPLIES_DISABLED",
+  "AUTOMATIC_REPLY_REFUSED", "AUTOMATIC_REPLY_CONSENT_REQUIRED", "VERIFIED_SELF_RECIPIENT_REQUIRED",
+  "SMS_CONNECTION_REVOKED", "OUTBOUND_GRANT_REQUIRED", "OUTBOUND_CONTENT_CHANGED", "APPROVAL_REQUIRED",
+  "APPROVAL_EXPIRED_OR_CHANGED", "OUTBOUND_DEADLINE_REACHED", "OUTBOUND_OUTCOME_REQUIRES_REVIEW",
+]);
+/** Coarse operational evidence only. Never expose provider responses, message
+ * bodies, phone numbers, operation ids, credentials, or arbitrary exception text. */
+export function personalSmsOutboundFailureCode(error: unknown) {
+  return error instanceof Error && SAFE_OUTBOUND_FAILURE_CODES.has(error.message)
+    ? error.message : "OUTBOUND_UNAVAILABLE";
+}
+
 class SmsWorkerDeadline extends Error { constructor() { super("SMS_WORKER_DEADLINE"); } }
 async function withinDeadline<T>(work: () => Promise<T>, deadlineAt: number, expired: () => void = () => undefined): Promise<T> {
   if (Date.now() >= deadlineAt) { expired(); throw new SmsWorkerDeadline(); }
@@ -304,6 +318,7 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
   if (!personalSmsWorkerEnabled(env)) return { disabled: true, processed: 0 };
   const deadlineAt = Math.min(Date.now() + PERSONAL_SMS_BATCH_BUDGET_MS, deps.deadlineAt ?? Infinity);
   const batchController = new AbortController();
+  const outboundFailures: string[] = [];
   const requireBatchTime = () => { if (batchController.signal.aborted || Date.now() >= deadlineAt) throw new SmsWorkerDeadline(); };
   let processed = 0;
   const work = async () => {
@@ -327,9 +342,11 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
     try {
       selection = await selectPersonalAutomaticOutboundCandidates({ enabled: true, limit: batchSize, includeConfirmations: confirmationEnabled,
         deadlineAt, signal: batchController.signal }, env);
-    } catch {
+    } catch (error) {
+      outboundFailures.push(`SELECTOR:${personalSmsOutboundFailureCode(error)}`);
       requireBatchTime();
-      return { disabled: false, processed, outboundSelection: "UNAVAILABLE" as const, deadlineReached: false };
+      return { disabled: false, processed, outboundSelection: "UNAVAILABLE" as const,
+        outboundFailures: [...new Set(outboundFailures)], deadlineReached: false };
     }
     // Read-only hints never bypass canonical approval, ownership and dispatch fences below.
     for (const reply of selection.candidates) {
@@ -340,10 +357,16 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
           requireBatchTime();
           await sendAutomaticCalendarConfirmationSummary(reply.id, env, undefined, { deadlineAt, signal: batchController.signal });
         } else await sendAutomaticPersonalReply(reply.id, env, undefined, { deadlineAt, signal: batchController.signal });
-      } catch { /* Missing authority/configuration or unknown delivery is retained; never retry a claimed effect or invent a receipt. */ }
+      } catch (error) {
+        // Missing authority/configuration or unknown delivery is retained; never
+        // retry a claimed effect or invent a receipt. The protected worker may
+        // expose only this fixed diagnostic code to its operator.
+        outboundFailures.push(personalSmsOutboundFailureCode(error));
+      }
     }
   }
-  return { disabled: false, processed, deadlineReached: Date.now() >= deadlineAt - CLEANUP_BUDGET_MS };
+  return { disabled: false, processed, outboundFailures: [...new Set(outboundFailures)],
+    deadlineReached: Date.now() >= deadlineAt - CLEANUP_BUDGET_MS };
   };
   try { return await withinDeadline(work, deadlineAt, () => batchController.abort()); }
   catch (error) { if (!(error instanceof SmsWorkerDeadline)) throw error; return { disabled: false, processed, deadlineReached: true }; }
