@@ -20,7 +20,7 @@ vi.mock("@/server/model-gateway/personal-intent/operator-ingress", () => ({
   assertPersonalModelOperatorIngressPublication: h.publication,
 }));
 
-import { POST } from "../src/app/api/endvera/v1/personal/model/operator-bootstrap/route";
+import { OPTIONS, POST } from "../src/app/api/endvera/v1/personal/model/operator-bootstrap/route";
 
 const token = "a".repeat(64);
 const setupRef = "12345678-1234-4234-8234-123456789abc";
@@ -42,6 +42,17 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
 describe("one-time personal model bootstrap diagnostics", () => {
+  it("allows only the OpenRouter origin to preflight the one-time bootstrap", async () => {
+    const accepted = OPTIONS(new Request("https://endvera-core-sandbox.vercel.app/api/endvera/v1/personal/model/operator-bootstrap", {
+      method: "OPTIONS", headers: { origin: "https://openrouter.ai" },
+    }));
+    expect(accepted.status).toBe(204);
+    expect(accepted.headers.get("access-control-allow-origin")).toBe("https://openrouter.ai");
+    expect(OPTIONS(new Request("https://endvera-core-sandbox.vercel.app/api/endvera/v1/personal/model/operator-bootstrap", {
+      method: "OPTIONS", headers: { origin: "https://evil.invalid" },
+    })).status).toBe(403);
+  });
+
   it("keeps absent or invalid bootstrap authorization unavailable", async () => {
     vi.stubEnv("ENDVERA_PERSONAL_MODEL_BOOTSTRAP_TOKEN", "");
     const response = await POST(request());

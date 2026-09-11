@@ -11,8 +11,10 @@ import {
 
 export const runtime = "nodejs";
 const headers = {
+  "access-control-allow-origin": "https://openrouter.ai",
   "cache-control": "private, no-store",
   "content-type": "application/json; charset=utf-8",
+  vary: "Origin",
   "x-content-type-options": "nosniff",
 };
 const response = (status: number, code: string) => new Response(
@@ -25,6 +27,16 @@ function authorized(request: Request): boolean {
   const supplied = request.headers.get("x-endvera-bootstrap-token");
   if (!expected || !supplied || !/^[a-f0-9]{64}$/.test(expected) || !/^[a-f0-9]{64}$/.test(supplied)) return false;
   return timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(supplied, "hex"));
+}
+
+export function OPTIONS(request: Request) {
+  if (request.headers.get("origin") !== "https://openrouter.ai") return response(403, "ORIGIN_REFUSED");
+  return new Response(null, { status: 204, headers: {
+    ...headers,
+    "access-control-allow-headers": "content-type,x-endvera-bootstrap-token",
+    "access-control-allow-methods": "POST,OPTIONS",
+    "access-control-max-age": "60",
+  } });
 }
 
 /** One-time controller bootstrap for the exact signed owner manifest.
