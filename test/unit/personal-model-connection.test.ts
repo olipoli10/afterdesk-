@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { consentPersonalModelConnection, disconnectPersonalModelConnection, personalModelConnectionStatus,
   personalModelCredentialForDispatch, preparePersonalModelConnection, provisionPersonalModelCredential,
-  PERSONAL_MODEL_CONSENT_VERSION } from "@/server/personal-assistant/model-connection";
+  provisionPersonalModelCredentialFromOwnerSession, PERSONAL_MODEL_CONSENT_VERSION,
+  PERSONAL_MODEL_CREDENTIAL_CONFIRMATION } from "@/server/personal-assistant/model-connection";
 import { PERSONAL_MODEL_AUTHORITY } from "@/server/model-gateway/personal-intent/budget-policy";
 import type { PersonalIntentAdmission } from "@/server/model-gateway/personal-intent/admission";
 import { createPersonalIntentInput } from "@/server/model-gateway/personal-intent/contract";
@@ -75,6 +76,32 @@ describe("owner-only personal model connection (synthetic ORM and cipher)", () =
     await expect(personalModelCredentialForDispatch({ source, modelAuthority }, env)).rejects.toThrow("BINDING_CHANGED");
     shared.source.mockResolvedValue({ ...source, authorityFingerprint: "revoked-sms-identity" });
     await expect(personalModelCredentialForDispatch({ source, modelAuthority }, env)).rejects.toThrow("SOURCE_AUTHORITY_CHANGED");
+  });
+  it("accepts a versioned owner-session credential only after current consent and is idempotent by command", async () => {
+    const { tx, account } = fixture(); const apiKey = "synthetic_key_".repeat(4);
+    account.grants.push({ capability: "personal_model_inference", status: "active", revokedAt: null, grantedAt: now,
+      grantedScopes: ["personal_data:inference", `authority:${PERSONAL_MODEL_AUTHORITY}`] });
+    const commandId = "12345678-1234-4234-8234-123456789abc";
+    const request = { ...input, apiKey, commandId, confirmation: PERSONAL_MODEL_CREDENTIAL_CONFIRMATION as const };
+    expect(await provisionPersonalModelCredentialFromOwnerSession(request, env)).toEqual({ commandId, credentialPrepared: true,
+      providerVerified: false, executionAuthorized: false });
+    expect(JSON.stringify(tx.constructionConnectorCredential.create.mock.calls)).not.toContain(apiKey);
+    const stored = tx.constructionConnectorCredential.create.mock.calls[0][0].data;
+    tx.constructionConnectorCredential.findFirst.mockResolvedValue(stored);
+    expect(await provisionPersonalModelCredentialFromOwnerSession(request, env)).toMatchObject({ commandId, credentialPrepared: true });
+    expect(tx.constructionConnectorCredential.create).toHaveBeenCalledTimes(1);
+    await expect(provisionPersonalModelCredentialFromOwnerSession({ ...request, apiKey: "different_synthetic_key_123456789012" }, env))
+      .rejects.toThrow("COMMAND_CONFLICT");
+    await expect(provisionPersonalModelCredentialFromOwnerSession({ ...request, commandId: "12345678-1234-4234-8234-123456789abd" }, env))
+      .rejects.toThrow("ALREADY_CONFIGURED");
+    expect(tx.constructionConnectorCredential.create).toHaveBeenCalledTimes(1);
+  });
+  it("refuses owner-session credential writes without the exact current consent", async () => {
+    const { tx } = fixture(); const apiKey = "synthetic_key_".repeat(4);
+    await expect(provisionPersonalModelCredentialFromOwnerSession({ ...input, apiKey,
+      commandId: "12345678-1234-4234-8234-123456789abc", confirmation: PERSONAL_MODEL_CREDENTIAL_CONFIRMATION }, env))
+      .rejects.toThrow("CONSENT_REQUIRED");
+    expect(tx.constructionConnectorCredential.create).not.toHaveBeenCalled();
   });
   it("revokes locally while preserving operation evidence and spend holds", async () => {
     const { tx } = fixture(); expect(await disconnectPersonalModelConnection(input)).toEqual({ disconnected: true, providerGrantRevoked: false });

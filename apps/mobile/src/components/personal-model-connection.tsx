@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppState, Platform, Switch, Text, View } from "react-native";
-import { Button, Card, Label, Notice, sharedStyles } from "@/components/ui";
+import { AppState, Platform, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Button, Card, colors, Label, Notice, sharedStyles } from "@/components/ui";
 import { MobileApi } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { loadPersonalModelState, personalModelReadinessLabel, type PersonalModelStatus } from "@/lib/personal-model";
@@ -11,6 +11,7 @@ export function PersonalModelConnection({ workspaceId }: { workspaceId: string }
   const [model, setModel] = useState<PersonalModelStatus | null>(null);
   const [unavailable, setUnavailable] = useState(false); const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false); const [accepted, setAccepted] = useState(false); const [message, setMessage] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState("");
   const mounted = useRef(false); const lifecycle = useRef(0); const readVersion = useRef(0);
   const busyRef = useRef(false); const loadingRef = useRef(true);
   const reload = useCallback(async () => {
@@ -41,6 +42,21 @@ export function PersonalModelConnection({ workspaceId }: { workspaceId: string }
     } catch { if (current()) setMessage("La modification n’a pas été confirmée. Actualise l’état avant de réessayer : aucune activation n’est présumée."); }
     finally { if (current()) await reload(); if (current()) { busyRef.current = false; setBusy(false); } }
   }
+  async function provisionCredential() {
+    if (!mounted.current || busyRef.current || loadingRef.current || !model || !model.prepared || !model.consentGranted) return;
+    const submittedKey = apiKey; setApiKey("");
+    if (!/^[A-Za-z0-9_-]{24,512}$/.test(submittedKey) || typeof globalThis.crypto?.randomUUID !== "function") {
+      setMessage("La clé ne ressemble pas à une clé OpenRouter valide. Rien n’a été enregistré."); return;
+    }
+    const version = lifecycle.current; const current = () => mounted.current && lifecycle.current === version;
+    busyRef.current = true; setBusy(true); setMessage(null);
+    try {
+      await api.provisionPersonalModelCredential(workspaceId, globalThis.crypto.randomUUID(), submittedKey);
+      if (!current()) return;
+      setMessage("La clé a été chiffrée sur le serveur puis effacée de ce formulaire. Aucun appel IA n’a été lancé par cette étape.");
+    } catch { if (current()) setMessage("La clé n’a pas été confirmée. Elle a été effacée du formulaire et aucun fonctionnement réel n’est présumé."); }
+    finally { if (current()) await reload(); if (current()) { busyRef.current = false; setBusy(false); } }
+  }
   return <Card>
     <Label>3 · L’IA qui comprend tes textos</Label>
     <Text style={sharedStyles.value}>{loading ? "Vérification de la connexion IA…" : unavailable || !model ? "État de la connexion IA indisponible" : personalModelReadinessLabel(model)}</Text>
@@ -56,6 +72,13 @@ export function PersonalModelConnection({ workspaceId }: { workspaceId: string }
         </View>
         <Button disabled={busy || loading || !accepted} onPress={() => void run("CONSENT")}>Enregistrer mon autorisation IA</Button>
       </> : null}
+      {model.prepared && model.consentGranted && !model.credentialPrepared ? <View style={sharedStyles.stack}>
+        <Text style={sharedStyles.muted}>Colle ta clé OpenRouter ici. Elle part directement vers ENDVERA par connexion chiffrée, est chiffrée sur le serveur et n’est pas conservée dans l’application.</Text>
+        <TextInput accessibilityLabel="Clé OpenRouter" value={apiKey} onChangeText={setApiKey} maxLength={512}
+          secureTextEntry autoCapitalize="none" autoCorrect={false} spellCheck={false} autoComplete="off"
+          importantForAutofill="noExcludeDescendants" placeholder="sk-or-v1-…" placeholderTextColor={colors.subtle} style={styles.secretInput} />
+        <Button disabled={busy || loading || apiKey.length < 24} onPress={() => void provisionCredential()}>Chiffrer ma clé OpenRouter</Button>
+      </View> : null}
       {model.prepared ? <Button tone="secondary" disabled={busy || loading} onPress={() => void run("DISCONNECT")}>Retirer mon accès IA</Button> : null}
     </> : null}
     {unavailable && !loading ? <Notice>La connexion IA est invérifiable pour le moment. Tu peux continuer la configuration du numéro ou du calendrier séparément.</Notice> : null}
@@ -63,3 +86,8 @@ export function PersonalModelConnection({ workspaceId }: { workspaceId: string }
     <Button tone="secondary" disabled={busy || loading} onPress={() => void reload()}>Actualiser la connexion IA</Button>
   </Card>;
 }
+
+const styles = StyleSheet.create({
+  secretInput: { minHeight: 52, borderRadius: 14, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.panelStrong,
+    color: colors.text, fontSize: 15, paddingHorizontal: 14, paddingVertical: 12 },
+});

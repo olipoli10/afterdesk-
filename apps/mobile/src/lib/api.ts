@@ -6,7 +6,8 @@ import {
 import { mobileApiBaseUrl } from "@/lib/config";
 import { personalGoogleStatusSchema, personalGoogleDisconnectSchema, personalGoogleEventsSchema, personalGoogleActionsSchema, validatePersonalGoogleLaunch } from "@/lib/personal-google";
 import { personalOutboxSchema, personalPairingSchema, personalPhoneSchema } from "@/lib/personal-service";
-import { personalModelCommand, personalModelStatusSchema, personalModelPreparedSchema, personalModelConsentSchema, personalModelDisconnectedSchema } from "@/lib/personal-model";
+import { personalModelCommand, personalModelCredentialCommand, personalModelCredentialResultSchema, personalModelStatusSchema,
+  personalModelPreparedSchema, personalModelConsentSchema, personalModelDisconnectedSchema } from "@/lib/personal-model";
 import { personalModelReviewsSchema } from "@/lib/personal-model-reviews";
 import { parsePersonalCorrelatedCalendarList } from "@/lib/personal-correlated-calendar-list";
 import {
@@ -202,6 +203,14 @@ export class MobileApi {
   }
   async consentPersonalModel(workspaceId: string) {
     return personalModelConsentSchema.parse(await this.request("/api/endvera/v1/personal/model/consent", { method: "POST", body: JSON.stringify(personalModelCommand(workspaceId, "CONSENT")) }));
+  }
+  async provisionPersonalModelCredential(workspaceId: string, commandId: string, apiKey: string) {
+    const command = personalModelCredentialCommand(workspaceId, commandId, apiKey);
+    const result = personalModelCredentialResultSchema.parse(await this.request("/api/endvera/v1/personal/model/credential", {
+      method: "POST", headers: { "X-ENDVERA-Mobile-Client": "android-v1" }, body: JSON.stringify(command),
+    }));
+    if (result.commandId !== command.commandId) throw new MobileApiError("INVALID_RESPONSE");
+    return result;
   }
   async disconnectPersonalModel(workspaceId: string) {
     return personalModelDisconnectedSchema.parse(await this.request("/api/endvera/v1/personal/model/disconnect", { method: "POST", body: JSON.stringify(personalModelCommand(workspaceId, "DISCONNECT")) }));

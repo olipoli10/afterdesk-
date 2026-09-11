@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import type { Prisma } from "@prisma-client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
@@ -11,6 +11,7 @@ import { openConnectorSecret, requireConnectorKey, sealConnectorSecret } from ".
 
 const scopes = ["personal_data:inference", `authority:${PERSONAL_MODEL_AUTHORITY}`];
 export const PERSONAL_MODEL_CONSENT_VERSION = "personal-model-consent-v1";
+export const PERSONAL_MODEL_CREDENTIAL_CONFIRMATION = "personal-model-credential-v1";
 const secretSchema = z.object({ apiKey: z.string().regex(/^[A-Za-z0-9_-]{24,512}$/) }).strict();
 const binding = (workspaceId: string, accountId: string, credentialId: string) => JSON.stringify([workspaceId, accountId, `openrouter-api-key:${credentialId}`]);
 type Tx = Prisma.TransactionClient;
@@ -81,6 +82,56 @@ export async function provisionPersonalModelCredential(input: OwnerInput & { api
     await writeModelCredential(tx, input.workspaceId, account.id, id, parsed.data, key, now);
     return { credentialPrepared: true as const, providerVerified: false as const, executionAuthorized: false as const };
   }, { isolationLevel: "Serializable" });
+}
+
+/** Authenticated owner self-service provisioning for the native app. The key is
+ * transient request material: it is encrypted inside this transaction and is
+ * never returned. A command UUID makes a lost-response retry idempotent. */
+export async function provisionPersonalModelCredentialFromOwnerSession(input: OwnerInput & {
+  apiKey: string;
+  commandId: string;
+  confirmation: typeof PERSONAL_MODEL_CREDENTIAL_CONFIRMATION;
+}, env: NodeJS.ProcessEnv = process.env) {
+  if (input.confirmation !== PERSONAL_MODEL_CREDENTIAL_CONFIRMATION) throw new Error("PERSONAL_MODEL_CREDENTIAL_CONFIRMATION_REQUIRED");
+  const parsed = secretSchema.safeParse({ apiKey: input.apiKey });
+  if (!parsed.success || !z.string().uuid().safeParse(input.commandId).success) throw new Error("PERSONAL_MODEL_CREDENTIAL_INVALID");
+  const key = requireConnectorKey(env.ENDVERA_CONNECTOR_ENCRYPTION_KEY);
+  try {
+    return await prisma.$transaction(async tx => {
+      await requireOwner(tx, input); const now = await databaseNow(tx); requireCurrentAuthority(env, now);
+      const account = await tx.constructionConnectorAccount.findUnique({
+        where: { workspaceId_provider: { workspaceId: input.workspaceId, provider: "openrouter" } },
+        include: { grants: true },
+      });
+      if (!account || account.createdByUserId !== input.userId || account.revokedAt) throw new Error("PERSONAL_MODEL_ACCOUNT_OWNER_MISMATCH");
+      const grant = account.grants.find(candidate => candidate.capability === "personal_model_inference");
+      const consentCurrent = grant?.status === "active" && !grant.revokedAt && grant.grantedAt
+        && grant.grantedAt.getTime() >= Date.parse("2026-09-10T01:18:26Z") && grant.grantedAt.getTime() <= now.getTime()
+        && scopes.every(scope => grant.grantedScopes.includes(scope));
+      if (!consentCurrent) throw new Error("PERSONAL_MODEL_CONSENT_REQUIRED");
+      const current = account.credentialRef ? await tx.constructionConnectorCredential.findFirst({
+        where: { id: account.credentialRef, connectorAccountId: account.id, workspaceId: input.workspaceId, revokedAt: null },
+        select: { id: true, ciphertext: true },
+      }) : null;
+      if (current?.id === input.commandId) {
+        let storedApiKey: string;
+        try { storedApiKey = secretSchema.parse(JSON.parse(openConnectorSecret(current.ciphertext,
+          binding(input.workspaceId, account.id, current.id), key))).apiKey; }
+        catch { throw new Error("PERSONAL_MODEL_CREDENTIAL_STATE_INVALID"); }
+        const storedDigest = createHash("sha256").update(storedApiKey, "utf8").digest();
+        const submittedDigest = createHash("sha256").update(parsed.data.apiKey, "utf8").digest();
+        const matchesStoredCredential = timingSafeEqual(storedDigest, submittedDigest);
+        storedDigest.fill(0); submittedDigest.fill(0);
+        if (!matchesStoredCredential) throw new Error("PERSONAL_MODEL_CREDENTIAL_COMMAND_CONFLICT");
+        return { commandId: input.commandId, credentialPrepared: true as const,
+          providerVerified: false as const, executionAuthorized: false as const };
+      }
+      if (current) throw new Error("PERSONAL_MODEL_CREDENTIAL_ALREADY_CONFIGURED");
+      if (account.credentialRef && !current) throw new Error("PERSONAL_MODEL_CREDENTIAL_STATE_INVALID");
+      await writeModelCredential(tx, input.workspaceId, account.id, input.commandId, parsed.data, key, now);
+      return { commandId: input.commandId, credentialPrepared: true as const, providerVerified: false as const, executionAuthorized: false as const };
+    }, { isolationLevel: "Serializable" });
+  } finally { key.fill(0); }
 }
 
 async function writeModelCredential(tx: Tx, workspaceId: string, accountId: string, id: string,

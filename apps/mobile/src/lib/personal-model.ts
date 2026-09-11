@@ -1,5 +1,6 @@
 import { z } from "zod";
 export const PERSONAL_MODEL_CONSENT_VERSION = "personal-model-consent-v1";
+export const PERSONAL_MODEL_CREDENTIAL_CONFIRMATION = "personal-model-credential-v1";
 export const personalModelStatusSchema = z.object({ prepared: z.boolean(), credentialPrepared: z.boolean(), credentialStorageConfigured: z.boolean(),
   consentGranted: z.boolean(), configured: z.boolean(), transportConfigured: z.boolean(), readyForAdmission: z.boolean(),
   liveObserved: z.literal(false), executionAuthorized: z.literal(false), consentVersion: z.literal(PERSONAL_MODEL_CONSENT_VERSION),
@@ -9,12 +10,22 @@ export type PersonalModelStatus = z.infer<typeof personalModelStatusSchema>;
 export const personalModelPreparedSchema = z.object({ prepared: z.literal(true), executionAuthorized: z.literal(false) }).strict();
 export const personalModelConsentSchema = z.object({ consentGranted: z.literal(true), executionAuthorized: z.literal(false), consentVersion: z.literal(PERSONAL_MODEL_CONSENT_VERSION) }).strict();
 export const personalModelDisconnectedSchema = z.object({ disconnected: z.literal(true), providerGrantRevoked: z.literal(false) }).strict();
+export const personalModelCredentialResultSchema = z.object({ commandId: z.string().uuid(), credentialPrepared: z.literal(true),
+  providerVerified: z.literal(false), executionAuthorized: z.literal(false) }).strict();
 export function personalModelCommand(workspaceId: string, action: "PREPARE" | "CONSENT" | "DISCONNECT") {
   const validatedWorkspace = z.string().min(1).max(160).parse(workspaceId);
   if (action === "DISCONNECT") return Object.freeze({ workspaceId: validatedWorkspace });
   if (action === "PREPARE") return Object.freeze({ workspaceId: validatedWorkspace, action });
   if (action === "CONSENT") return Object.freeze({ workspaceId: validatedWorkspace, action, confirmation: PERSONAL_MODEL_CONSENT_VERSION });
   throw new Error("PERSONAL_MODEL_ACTION_INVALID");
+}
+export function personalModelCredentialCommand(workspaceId: string, commandId: string, apiKey: string) {
+  return Object.freeze(z.object({ version: z.literal("personal-model-mobile-credential-v1"), commandId: z.string().uuid(),
+    workspaceId: z.string().min(1).max(160), confirmation: z.literal(PERSONAL_MODEL_CREDENTIAL_CONFIRMATION),
+    apiKey: z.string().regex(/^[A-Za-z0-9_-]{24,512}$/) }).strict().parse({
+      version: "personal-model-mobile-credential-v1", commandId, workspaceId,
+      confirmation: PERSONAL_MODEL_CREDENTIAL_CONFIRMATION, apiKey,
+    }));
 }
 export async function loadPersonalModelState(read: () => Promise<unknown>) {
   try { return { model: personalModelStatusSchema.parse(await read()), unavailable: false as const }; }

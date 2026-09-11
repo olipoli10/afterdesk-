@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { loadPersonalModelState, personalModelCommand, personalModelConsentSchema, personalModelDisconnectedSchema, personalModelReadinessLabel, personalModelStatusSchema } from "../src/lib/personal-model";
+import { loadPersonalModelState, personalModelCommand, personalModelConsentSchema, personalModelCredentialCommand,
+  personalModelCredentialResultSchema, personalModelDisconnectedSchema, personalModelReadinessLabel, personalModelStatusSchema } from "../src/lib/personal-model";
 const status = { prepared: true, credentialPrepared: true, credentialStorageConfigured: true, consentGranted: true, configured: true,
   transportConfigured: true, readyForAdmission: true, liveObserved: false as const, executionAuthorized: false as const, consentVersion: "personal-model-consent-v1" as const };
 describe("mobile model consent and prerequisite-only status", () => {
@@ -34,5 +35,17 @@ describe("mobile model consent and prerequisite-only status", () => {
     expect(personalModelConsentSchema.safeParse({ consentGranted: true, executionAuthorized: true, consentVersion: "personal-model-consent-v1" }).success).toBe(false);
     expect(personalModelDisconnectedSchema.safeParse({ disconnected: true, providerGrantRevoked: true }).success).toBe(false);
     expect(personalModelDisconnectedSchema.safeParse({ disconnected: true, providerGrantRevoked: false }).success).toBe(true);
+  });
+  it("builds a closed one-attempt credential command without claiming provider verification", () => {
+    const command = personalModelCredentialCommand("synthetic-workspace", "12345678-1234-4234-8234-123456789abc", "synthetic_key_12345678901234567890");
+    expect(command).toEqual({ version: "personal-model-mobile-credential-v1", commandId: "12345678-1234-4234-8234-123456789abc",
+      workspaceId: "synthetic-workspace", confirmation: "personal-model-credential-v1", apiKey: "synthetic_key_12345678901234567890" });
+    expect(Object.isFrozen(command)).toBe(true);
+    expect(() => personalModelCredentialCommand("synthetic-workspace", "not-a-uuid", "synthetic_key_12345678901234567890")).toThrow();
+    expect(() => personalModelCredentialCommand("synthetic-workspace", "12345678-1234-4234-8234-123456789abc", "short")).toThrow();
+    expect(personalModelCredentialResultSchema.safeParse({ commandId: command.commandId, credentialPrepared: true,
+      providerVerified: false, executionAuthorized: false }).success).toBe(true);
+    expect(personalModelCredentialResultSchema.safeParse({ commandId: command.commandId, credentialPrepared: true,
+      providerVerified: true, executionAuthorized: false }).success).toBe(false);
   });
 });
