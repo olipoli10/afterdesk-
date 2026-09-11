@@ -1,5 +1,17 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 00:24Z — actual T79 compatibility observed, current pilot unchanged
+
+One trialmigration source9f8c8d7c succeeds60124ms; actualhistory79 andfirst70
+unchanged. Olddata183/2624matches,7proofempty/3legacytablesvacuous,18UTCdefaults
+andfinal77function match. Complete583objectdelta reconciled189ownership andone
+actualtimezone-deparserdifference, with190originaldifferences retained. Tidle
+00:21:13Z. Independentpostobservationreview confirms boundedcopy milestone,
+notbackuprestore/app/providerreadiness. Main then actualreadonlypilot70:
+sameolddata/catalog/history, pilotidle00:24:39Z. No originalpilot/mainwrite.
+Next closedpilotprofile runner/bridge+peer, then same guardedupgrade and dedicated
+backendpublication beforeAPK. Read PILOT_CURRENT_UPGRADE_PLAN. Continue; noGO.
+
 ## 2026-09-11 00:14Z — single trial migration reviewed, before state unchanged
 
 T-only beforewrite captures reconfirmed183tables/2624oldcolumns aggregateMATCH

@@ -80,3 +80,44 @@ hashes. Never infer these from Prisma exit0/history79 alone.
 
 Project remainsIN_PROGRESS; heartbeatACTIVE. Dashboard22%roadmap/46.75%localbuild/
 C2 preparation18of18/real-testNO-GO/Verified-E2E0% unchanged.
+
+## Actual attempt and postconditions, approximately00:17–00:24Z
+
+Committed source9f8c8d7ce9f7e1d90f625b72db3b50b3ffb49287 was checked out clean
+in the owned execution worktree; T marker absent before the attempt. Actual
+CRLF runner56272a61c071b90f6aeb41b951824433f777e37feb31d86d26480a18471703eb,
+cataloga9ebecf1 unchanged, Node96f768b9 andPrismaCLIc2a77456 unchanged,
+client27files/tree4271c323 unchanged. Originalbaseline3137a7b4 retained.
+One private rawTTY bridge session26561 returned fixedHISTORY79VERIFIED/exit0.
+Runner receipt60124ms, PG180006,79history842ff3dbe0842e94f45d9d84ce505b44e8220679bbe05cabb5c84d6f8ba4441f;
+first70 still47e1af336b1dee8ac0ed63b01e5833a926ccb0e359652688bebb9425c7564343.
+Retain marker and stage32d9f8db-9277-4e61-9432-22ef0c9748ce. T suspended and
+idle00:17:37Z before separate after79 reads. No retry or second migration.
+
+After79 original-column capture SHA82efe5155bd3247744d8c022aa19f715379b3fd7dbefb929d5d392c000d743ac
+is byte-identical to actual fresh prewrite; strict183table/2624column comparator
+zerochanged. Actual sevenproofs empty; three inspectedlegacy tables contain0rows,
+so their15addedcolumn checks are explicitly vacuous, not nonempty behavior proof.
+Aftercatalog8035objects SHA821e8267b9b400ca38521526d03441687b7e91dd1865b160f811bac1387e6861.
+The complete four-capture delta has583expected/583actual, no removal or unexpected
+change-shape. All four PG18-specific objects retained. Remaining190 differences
+are not erased:189newACLowners synthetic_local_operator→neondb_owner, all exact;
+one PersonalSmsTemporalClarification_check1 definition has the same fixed expiry
+instant rendered in another session timezone. Actual READ ONLY TimeZoneToronto
+reproduced nativehashdb42828858820f7026bceb6eae5fbec5a6421cfe7b8943b7c65cca1c6efd50a2;
+actual UTC hashd08f9aaad09b999ce884aaf214f08748e5e7449b14c07317eecd5f990968f925.
+Actualsameinstant=true andconstraintvalidated/enforced=true. Source migration76
+contains the explicit timestamptzZ AT TIME ZONE UTC bound. No source/hash rewrite.
+
+All18UTC default hashes match their exact expectedexpression. Final77function
+bodySHA34a6ce271c170a0da403ba97d016d3681f3d3897e2415f6038f30adc8c6ccae1
+matches source; no known invalid/disabled/unvalidated/unenforced guards or
+unsupportedcatalogobjects. Strict fullcatalog comparison retains its coverage
+limits. Distinct peer read the analysis and actual captures/receipts; see separate
+postobservationaudit. Final T suspend observedidle00:21:13Z.
+
+Decision: observed T-copy compatibility milestone, NOT fullbackuprestore,
+originalpilot/mainupgrade, appreadiness or providerE2E. Then actual readonly
+currentpilot70 capture at00:24Z matched sameolddata/catalog/history, endpoint
+ep-purple-union-axj3h2t5 suspended00:24:39Z. Continue closed pilot-profile code
+under PILOT_CURRENT_UPGRADE_PLAN; no pilotwrite yet. Existingmain/A/T retained.

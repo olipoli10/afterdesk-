@@ -1,0 +1,106 @@
+{
+  "version": "pilot-trial-postobservation-controller-v1",
+  "target": {
+    "projectId": "withered-mud-08129552",
+    "branchId": "br-holy-brook-ax7k68oh",
+    "endpointId": "ep-crimson-violet-axmmwtjw",
+    "hostname": "ep-crimson-violet-axmmwtjw.c-4.us-east-2.aws.neon.tech",
+    "database": "neondb",
+    "role": "neondb_owner"
+  },
+  "sourceHead": "9f8c8d7ce9f7e1d90f625b72db3b50b3ffb49287",
+  "migrationElapsedMs": 60124,
+  "actualMigrationObserved": true,
+  "actualHistory79Observed": true,
+  "oldAggregateComparison": {
+    "status": "SUPPLIED_OLD_COLUMN_AGGREGATES_MATCH",
+    "tables": 183,
+    "columns": 2624,
+    "changedTables": 0,
+    "changedCounts": 0,
+    "changedDigests": 0
+  },
+  "addedState": {
+    "sevenProofTablesEmpty": true,
+    "legacyTablesVacuous": [
+      "AiOperation",
+      "PersonalAssistantOperation",
+      "VoiceIntakeSession"
+    ],
+    "legacyRows": 0,
+    "nonemptyLegacyBehaviorObserved": false
+  },
+  "catalog": {
+    "version": "trial-catalog-four-capture-analysis-v1",
+    "inputHashes": [
+      {
+        "sha256": "c65354c20ba3a8b0e32f3887c835fa7e8b2219b79c871da9ac95b87487de01a3",
+        "normalizedSha256": "4712414bd28abe78b9c3f2b89a67b5cd271d58825ac29e4014ded4b6b3b176ed"
+      },
+      {
+        "sha256": "2b16a0287ab05397949268f8c1d569ae9938c48b67cb1f1438c24d52bfb20c34",
+        "normalizedSha256": "63876531ce63fea938db72a5381bf84bfc36f1ac21e654a39ed9fc19de26e1d7"
+      },
+      {
+        "sha256": "05425e32b60aa07113376652535395241ca43733dc775a13b1d00d72804229f4",
+        "normalizedSha256": "b1c8f9902f0d30d6f0da0c1534f66e72d839a50c5f20af93fff58c2909fd1966"
+      },
+      {
+        "sha256": "821e8267b9b400ca38521526d03441687b7e91dd1865b160f811bac1387e6861",
+        "normalizedSha256": "bc819bd2ba395ef04c440b33411d23ec38a5577f561e03d83414707086940943"
+      }
+    ],
+    "expectedChangedObjects": 583,
+    "actualChangedObjects": 583,
+    "actualChangeFamilies": {
+      "column": 151,
+      "constraint": 97,
+      "acl": 189,
+      "function": 48,
+      "index": 53,
+      "table": 7,
+      "trigger": 38
+    },
+    "serverChanged": false,
+    "discrepancyCount": 190,
+    "completeSupportedComparison": true,
+    "fullDatabaseEquivalent": false,
+    "backupVerified": false,
+    "executionAuthorized": false
+  },
+  "qualifications": {
+    "ownerCount": 189,
+    "ownerPairs": [
+      "[\"synthetic_local_operator\",\"neondb_owner\"]"
+    ],
+    "timezoneConstraint": {
+      "identity": [
+        "public",
+        "PersonalSmsTemporalClarification",
+        "PersonalSmsTemporalClarification_check1"
+      ],
+      "rawUtcDefinitionSha256": "d08f9aaad09b999ce884aaf214f08748e5e7449b14c07317eecd5f990968f925",
+      "observedToronto": {
+        "timezone": "America/Toronto",
+        "definition_sha256": "db42828858820f7026bceb6eae5fbec5a6421cfe7b8943b7c65cca1c6efd50a2",
+        "same_instant": true,
+        "convalidated": true,
+        "enforced": true
+      }
+    },
+    "all18UtcDefaultsMatch": true,
+    "migration77BodyHash": "34a6ce271c170a0da403ba97d016d3681f3d3897e2415f6038f30adc8c6ccae1",
+    "migration77BodyMatchesSource": true,
+    "knownGuardReviewCount": 0,
+    "unsupportedObjectCount": 0
+  },
+  "endpointObservedIdle": true,
+  "suspendedAt": "2026-09-11T00:21:13Z",
+  "trialCopyCompatibilityObserved": true,
+  "originalPilotUpgraded": false,
+  "mainUpgraded": false,
+  "backupRestoreVerified": false,
+  "fullDatabaseEquivalent": false,
+  "applicationReady": false,
+  "providerCustomerE2E": false
+}
