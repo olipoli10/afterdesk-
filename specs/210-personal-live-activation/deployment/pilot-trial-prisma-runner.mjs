@@ -1,4 +1,4 @@
-// Single isolated trial only. No credential lookup, arbitrary SQL, retry or release flag.
+// Two closed source-owned targets. No credential lookup, arbitrary SQL, retry or release flag.
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
@@ -13,6 +13,8 @@ import { privatePrismaConfig, verifyInstalledPrisma } from './migration-rehearsa
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 export const PILOT_TRIAL_TARGET = Object.freeze({ projectId: 'withered-mud-08129552', branchId: 'br-holy-brook-ax7k68oh',
   endpointId: 'ep-crimson-violet-axmmwtjw', hostname: 'ep-crimson-violet-axmmwtjw.c-4.us-east-2.aws.neon.tech', database: 'neondb', role: 'neondb_owner' });
+const PERSONAL_PILOT_TARGET = Object.freeze({ projectId: 'withered-mud-08129552', branchId: 'br-nameless-moon-ax8nmuwj',
+  endpointId: 'ep-purple-union-axj3h2t5', hostname: 'ep-purple-union-axj3h2t5.c-4.us-east-2.aws.neon.tech', database: 'neondb', role: 'neondb_owner' });
 const SELF = 'specs/210-personal-live-activation/deployment/pilot-trial-prisma-runner.mjs';
 const SOURCES = [SELF, 'scripts/endvera-release-source-binding.mjs', 'specs/208-astra-r02-local-preflight/preflight.mjs',
   'specs/210-personal-live-activation/deployment/pilot-migration-catalog.mjs',
@@ -114,19 +116,25 @@ function inspectSource(root, expected, remaining) {
  * URL normalization ambiguities. The controller constructs this exact envelope
  * privately; returned credentials must never be included in a receipt or error. */
 export function decodePilotTrialCredential(bytes) {
+  return decodeCredential(bytes, PILOT_TRIAL_TARGET);
+}
+export function decodePilotCurrentCredential(bytes) {
+  return decodeCredential(bytes, PERSONAL_PILOT_TARGET);
+}
+function decodeCredential(bytes, target) {
   if (!(bytes instanceof Uint8Array) || bytes.byteLength < 1 || bytes.byteLength > 4096) fail('CREDENTIAL_REFUSED');
   try {
     const copy = Buffer.from(bytes), text = copy.toString('utf8');
     if (!Buffer.from(text).equals(copy) || /[\r\n\0]/.test(text)) fail('CREDENTIAL_REFUSED');
     const parsed = JSON.parse(text), value = fields(parsed, ['version', 'url']);
     if (JSON.stringify(value) !== text || value.version !== 'pilot-trial-credential-v1' || typeof value.url !== 'string') fail('CREDENTIAL_REFUSED');
-    const prefix = `postgresql://${PILOT_TRIAL_TARGET.role}:`, suffix = `@${PILOT_TRIAL_TARGET.hostname}/${PILOT_TRIAL_TARGET.database}?sslmode=require&sslaccept=strict&connect_timeout=10&connection_limit=1`;
+    const prefix = `postgresql://${target.role}:`, suffix = `@${target.hostname}/${target.database}?sslmode=require&sslaccept=strict&connect_timeout=10&connection_limit=1`;
     if (!value.url.startsWith(prefix) || !value.url.endsWith(suffix)
       || !/^[A-Za-z0-9_-]{16,256}$/.test(value.url.slice(prefix.length, -suffix.length))) fail('CREDENTIAL_REFUSED');
     return value.url;
   } catch { fail('CREDENTIAL_REFUSED'); }
 }
-async function readCredential(input, remaining) {
+async function readCredential(input, remaining, target = PILOT_TRIAL_TARGET) {
   if (!input || input.isTTY === true) fail('PRIVATE_STDIN_REQUIRED');
   return new Promise((resolve, reject) => {
     const chunks = []; let size = 0, count = 0, settled = false;
@@ -142,7 +150,7 @@ async function readCredential(input, remaining) {
       if (!(chunk instanceof Uint8Array) || chunk.byteLength === 0 || ++count > 64 || (size += chunk.byteLength) > 4096) return done(true);
       chunks.push(Buffer.from(chunk));
     };
-    const end = () => { let merged; try { remaining(); merged = Buffer.concat(chunks); done(false, decodePilotTrialCredential(merged)); } catch { done(true); } finally { merged?.fill(0); } };
+    const end = () => { let merged; try { remaining(); merged = Buffer.concat(chunks); done(false, decodeCredential(merged, target)); } catch { done(true); } finally { merged?.fill(0); } };
     const errorEvent = () => done(true);
     const timer = setTimeout(() => done(true), Math.min(5000, remaining()));
     input.on('data', data); input.once('end', end); input.once('error', errorEvent);
@@ -154,7 +162,10 @@ async function readCredential(input, remaining) {
  * @param {string} url
  * @param {Record<string, string | undefined>} platform */
 export function pilotTrialChildEnvironment(url, platform = process.env) {
-  const checked = decodePilotTrialCredential(Buffer.from(JSON.stringify({ version: 'pilot-trial-credential-v1', url })));
+  return childEnvironment(url, platform, PILOT_TRIAL_TARGET);
+}
+function childEnvironment(url, platform, target) {
+  const checked = decodeCredential(Buffer.from(JSON.stringify({ version: 'pilot-trial-credential-v1', url })), target);
   const env = {};
   for (const key of ['PATH', 'SystemRoot', 'WINDIR', 'TEMP', 'TMP']) {
     const name = Object.keys(platform).find(name => name.toLowerCase() === key.toLowerCase());
@@ -275,7 +286,7 @@ export function classifyPilotTrialProcessOutcome(phase, exitCode, completedVerif
  * @param {unknown} rawExpected
  * @param {{repositoryRoot?: string, input?: import('node:stream').Readable}} options */
 export async function runPilotTrialPrisma(mode, rawExpected, options = {}) {
-  if (mode === 'MIGRATE_70_TO_79') return runTrialMigration(rawExpected, options);
+  if (mode === 'MIGRATE_70_TO_79') return runMigration(rawExpected, options, TRIAL_PROFILE);
   if (mode !== 'PREFLIGHT_70') fail('MODE');
   const { repositoryRoot = ROOT, input = process.stdin } = options;
   const expected = expectations(rawExpected), root = path.resolve(repositoryRoot), remaining = budget();
@@ -329,19 +340,28 @@ export async function runPilotTrialPrisma(mode, rawExpected, options = {}) {
   } finally { if (env) { delete env.DATABASE_URL; delete env.DIRECT_URL; } url = undefined; }
 }
 
-// One fixed trial, one persistent local attempt. These pins describe retained
+// Two fixed profiles, one persistent attempt per profile. These pins describe retained
 // controller evidence; matching bytes does not prove current remote preservation.
-const MIGRATION_BASELINE = '3137a7b4e7fd3bd18487a1a139cf155a757e1e73c590b01f9e4962450339140a';
 const MIGRATION_HISTORY70 = '47e1af336b1dee8ac0ed63b01e5833a926ccb0e359652688bebb9425c7564343';
-const BASELINE_FILE = '.scratch/pilot-trial-data-before70-20260910T2308Z.json';
-const ATTEMPT_FILE = '.scratch/pilot-trial-migration-br-holy-brook-ax7k68oh.attempt.json';
-function migrationExpectations(raw) {
+const TRIAL_PROFILE = Object.freeze({ target: PILOT_TRIAL_TARGET,
+  baseline: '3137a7b4e7fd3bd18487a1a139cf155a757e1e73c590b01f9e4962450339140a',
+  baselineFile: '.scratch/pilot-trial-data-before70-20260910T2308Z.json',
+  attemptFile: '.scratch/pilot-trial-migration-br-holy-brook-ax7k68oh.attempt.json',
+  receiptVersion: 'pilot-trial-migration-receipt-v1', attemptVersion: 'pilot-trial-migration-attempt-v1',
+  success: 'MIGRATION_HISTORY_79_VERIFIED', uncertain: 'MIGRATION_OUTCOME_UNCERTAIN', refused: 'MIGRATION_REFUSED_BEFORE_SPAWN' });
+const PERSONAL_PROFILE = Object.freeze({ target: PERSONAL_PILOT_TARGET,
+  baseline: '82efe5155bd3247744d8c022aa19f715379b3fd7dbefb929d5d392c000d743ac',
+  baselineFile: '.scratch/pilot-current-data-before70-20260911T0024Z.json',
+  attemptFile: '.scratch/pilot-current-migration-br-nameless-moon-ax8nmuwj.attempt.json',
+  receiptVersion: 'pilot-current-migration-receipt-v1', attemptVersion: 'pilot-current-migration-attempt-v1',
+  success: 'PERSONAL_PILOT_HISTORY_79_VERIFIED', uncertain: 'PERSONAL_PILOT_MIGRATION_OUTCOME_UNCERTAIN', refused: 'PERSONAL_PILOT_MIGRATION_REFUSED_BEFORE_SPAWN' });
+function migrationExpectations(raw, profile = TRIAL_PROFILE) {
   // Preserve the old closed refusal for incomplete attempts, before options/input.
   let value;
   try { value = fields(raw, ['expectedHead', 'expectedCatalogSha256', 'expectedBaselineSha256', 'expectedHistory70Sha256']); }
   catch { fail('PRESERVATION_EVIDENCE_NOT_READY'); }
   expectations({ expectedHead: value.expectedHead, expectedCatalogSha256: value.expectedCatalogSha256 });
-  if (value.expectedBaselineSha256 !== MIGRATION_BASELINE || value.expectedHistory70Sha256 !== MIGRATION_HISTORY70) fail('BASELINE_PIN_REFUSED');
+  if (value.expectedBaselineSha256 !== profile.baseline || value.expectedHistory70Sha256 !== MIGRATION_HISTORY70) fail('BASELINE_PIN_REFUSED');
   return Object.freeze(value);
 }
 function probeTrialHistory(source, stage, env, remaining, count, maxMs) {
@@ -356,29 +376,35 @@ function probeTrialHistory(source, stage, env, remaining, count, maxMs) {
   let snapshot; try { snapshot = JSON.parse(child.stdout); } catch { fail('PREFLIGHT_REFUSED', 'SNAPSHOT_JSON_INVALID'); }
   return inspectPilotTrialHistory(snapshot, source.catalog, count);
 }
-async function runTrialMigration(rawExpected, options) {
-  const expected = migrationExpectations(rawExpected);
+/** Closed personal migration entry. No caller-selected mode or target is accepted.
+ * @param {unknown} rawExpected
+ * @param {{repositoryRoot?: string, input?: import('node:stream').Readable}} options */
+export async function runPilotCurrentMigration(rawExpected, options = {}) {
+  return runMigration(rawExpected, options, PERSONAL_PROFILE);
+}
+async function runMigration(rawExpected, options, profile) {
+  const expected = migrationExpectations(rawExpected, profile);
   const { repositoryRoot = ROOT, input = process.stdin } = options;
-  const root = path.resolve(repositoryRoot), remaining = budget(180000), marker = path.join(root, ATTEMPT_FILE);
+  const root = path.resolve(repositoryRoot), remaining = budget(180000), marker = path.join(root, profile.attemptFile);
   let stage, env, url, writtenReceipt, childExit = null, mayHaveStarted = false, diagnosticStage = 'SOURCE';
   try {
     const source = inspectSource(root, expected, remaining);
-    if (hash(regular(root, BASELINE_FILE, 2097152)) !== MIGRATION_BASELINE) fail('BASELINE_BYTES_REFUSED');
+    if (hash(regular(root, profile.baselineFile, 2097152)) !== profile.baseline) fail('BASELINE_BYTES_REFUSED');
     if (lstatSync(marker, { throwIfNoEntry: false })) fail('ATTEMPT_ALREADY_RECORDED');
     diagnosticStage = 'STAGING'; stage = stageSource(root, source); remaining();
-    diagnosticStage = 'CREDENTIAL'; url = await readCredential(input, remaining);
+    diagnosticStage = 'CREDENTIAL'; url = await readCredential(input, remaining, profile.target);
     diagnosticStage = 'RECHECK';
     const checked = inspectSource(root, expected, remaining);
     if (checked.fingerprint !== source.fingerprint) fail('SOURCE_CHANGED');
-    if (hash(regular(root, BASELINE_FILE, 2097152)) !== MIGRATION_BASELINE) fail('BASELINE_BYTES_REFUSED');
-    verifyStage(root, stage); env = pilotTrialChildEnvironment(url);
+    if (hash(regular(root, profile.baselineFile, 2097152)) !== profile.baseline) fail('BASELINE_BYTES_REFUSED');
+    verifyStage(root, stage); env = childEnvironment(url, process.env, profile.target);
     diagnosticStage = 'PREFLIGHT_70';
     const preflightHistory = probeTrialHistory(checked, stage, env, remaining, 70, 30000);
     if (preflightHistory.historySha256 !== MIGRATION_HISTORY70) fail('BASELINE_HISTORY_REFUSED');
     diagnosticStage = 'RECHECK';
     const finalSource = inspectSource(root, expected, remaining);
     if (finalSource.fingerprint !== source.fingerprint) fail('SOURCE_CHANGED');
-    if (hash(regular(root, BASELINE_FILE, 2097152)) !== MIGRATION_BASELINE) fail('BASELINE_BYTES_REFUSED');
+    if (hash(regular(root, profile.baselineFile, 2097152)) !== profile.baseline) fail('BASELINE_BYTES_REFUSED');
     verifyStage(root, stage);
     const phase = pilotTrialPrismaPhase('MIGRATE_70_TO_79', root, stage.directory);
     const runtimeRoot = realpathSync(path.join(root, 'node_modules'));
@@ -387,12 +413,12 @@ async function runTrialMigration(rawExpected, options) {
       || realpathSync(phase.args[0]) !== cli) fail('SOURCE_CHANGED');
     if (remaining() < 140000) fail('MIGRATION_BUDGET_REFUSED');
     diagnosticStage = 'ATTEMPT';
-    const markerBytes = JSON.stringify({ version: 'pilot-trial-migration-attempt-v1', target: PILOT_TRIAL_TARGET,
+    const markerBytes = JSON.stringify({ version: profile.attemptVersion, target: profile.target,
       sourceHead: expected.expectedHead, catalogSha256: expected.expectedCatalogSha256, sourceFingerprint: source.fingerprint,
-      baselineSha256: MIGRATION_BASELINE, history70Sha256: MIGRATION_HISTORY70,
+      baselineSha256: profile.baseline, history70Sha256: MIGRATION_HISTORY70,
       stageFingerprint: hash(JSON.stringify(stage.files)), automaticRetry: false });
     writeFileSync(marker, markerBytes, { flag: 'wx', mode: 0o600 });
-    if (!regular(root, ATTEMPT_FILE, 4096).equals(Buffer.from(markerBytes))) fail('ATTEMPT_RECORD_REFUSED');
+    if (!regular(root, profile.attemptFile, 4096).equals(Buffer.from(markerBytes))) fail('ATTEMPT_RECORD_REFUSED');
     // A recorded marker is never removed, even if this last budget check refuses.
     if (remaining() < 140000) fail('MIGRATION_BUDGET_REFUSED');
     diagnosticStage = 'MIGRATE'; mayHaveStarted = true;
@@ -410,9 +436,9 @@ async function runTrialMigration(rawExpected, options) {
     diagnosticStage = 'VERIFY'; verifyStage(root, stage);
     const finalCheck = inspectSource(root, expected, remaining);
     if (finalCheck.fingerprint !== source.fingerprint) fail('SOURCE_CHANGED');
-    const receipt = frozen({ version: 'pilot-trial-migration-receipt-v1', mode: 'MIGRATE_70_TO_79', status: 'MIGRATION_HISTORY_79_VERIFIED',
+    const receipt = frozen({ version: profile.receiptVersion, mode: 'MIGRATE_70_TO_79', status: profile.success,
       sourceHead: expected.expectedHead, catalogSha256: expected.expectedCatalogSha256, sourceFingerprint: source.fingerprint,
-      baselineSha256: MIGRATION_BASELINE, history70Sha256: MIGRATION_HISTORY70, target: PILOT_TRIAL_TARGET,
+      baselineSha256: profile.baseline, history70Sha256: MIGRATION_HISTORY70, target: profile.target,
       preflightHistory, history, clientTransportPolicy: 'PRISMA_REQUIRE_TLS_STRICT_CERT', childExit,
       automaticRetry: false, migrationInvoked: true, executionAuthorized: false, backupVerified: false,
       dataPreservationVerified: false, schemaPreservationVerified: false,
@@ -424,7 +450,7 @@ async function runTrialMigration(rawExpected, options) {
     remaining();
     return receipt;
   } catch (error) {
-    const status = mayHaveStarted ? 'MIGRATION_OUTCOME_UNCERTAIN' : 'MIGRATION_REFUSED_BEFORE_SPAWN';
+    const status = mayHaveStarted ? profile.uncertain : profile.refused;
     const diagnostic = Object.freeze({ version: 'pilot-trial-preflight-diagnostic-v1', stage: diagnosticStage,
       reason: failureReasons.get(error) ?? 'LOCAL_VALIDATION_REFUSED' });
     if (stage) { try {
@@ -434,7 +460,7 @@ async function runTrialMigration(rawExpected, options) {
       verifyStage(root, writtenReceipt ? { directory: stage.directory, files: [...stage.files,
         { name: 'receipt.json', byteSize: writtenReceipt.length, sha256: hash(writtenReceipt) }] } : stage);
       writeFileSync(path.join(stage.directory, writtenReceipt ? 'failure-outcome.json' : 'receipt.json'), JSON.stringify({
-      version: 'pilot-trial-migration-receipt-v1', mode: 'MIGRATE_70_TO_79', status, childExit,
+      version: profile.receiptVersion, mode: 'MIGRATE_70_TO_79', status, childExit,
       migrationInvoked: mayHaveStarted, automaticRetry: false, executionAuthorized: false,
       dataPreservationVerified: false, schemaPreservationVerified: false, backupVerified: false, diagnostic }), { flag: 'wx', mode: 0o600 });
     } catch { /* Retain stage and marker; no raw errors or retry. */ } }
@@ -446,23 +472,30 @@ async function runTrialMigration(rawExpected, options) {
 /** Pure, closed argument grammar for the two reviewed fixed trial phases. No
  * arbitrary target, executable, SQL, option bag or environment flag is accepted. */
 export function parsePilotTrialPrismaArguments(raw) {
+  return parseArguments(raw, TRIAL_PROFILE, false);
+}
+export function parsePilotCurrentPrismaArguments(raw) {
+  return parseArguments(raw, PERSONAL_PROFILE, true);
+}
+function parseArguments(raw, profile, personal) {
   if (!raw || types.isProxy(raw) || !Array.isArray(raw) || Object.getPrototypeOf(raw) !== Array.prototype) fail('CLI_REFUSED');
   const length = Object.getOwnPropertyDescriptor(raw, 'length')?.value;
-  if ((length !== 6 && length !== 10) || Reflect.ownKeys(raw).length !== length + 1) fail('CLI_REFUSED');
+  if ((personal ? length !== 11 : length !== 6 && length !== 10) || Reflect.ownKeys(raw).length !== length + 1) fail('CLI_REFUSED');
   const args = [];
   for (let i = 0; i < length; i++) {
     const d = Object.getOwnPropertyDescriptor(raw, String(i));
     if (!d?.enumerable || !('value' in d) || typeof d.value !== 'string' || d.value.length > 128) fail('CLI_REFUSED');
     args.push(d.value);
   }
+  if (personal && args.shift() !== '--personal-pilot') fail('CLI_REFUSED');
   if (args[0] !== '--mode' || args[2] !== '--expected-head' || args[4] !== '--expected-catalog-sha256') fail('CLI_REFUSED');
   let expected;
   try {
-    if (length === 6 && args[1] === 'PREFLIGHT_70') expected = expectations({ expectedHead: args[3], expectedCatalogSha256: args[5] });
-    else if (length === 10 && args[1] === 'MIGRATE_70_TO_79'
+    if (!personal && args.length === 6 && args[1] === 'PREFLIGHT_70') expected = expectations({ expectedHead: args[3], expectedCatalogSha256: args[5] });
+    else if (args.length === 10 && args[1] === 'MIGRATE_70_TO_79'
       && args[6] === '--expected-baseline-sha256' && args[8] === '--expected-history70-sha256') {
       expected = migrationExpectations({ expectedHead: args[3], expectedCatalogSha256: args[5],
-        expectedBaselineSha256: args[7], expectedHistory70Sha256: args[9] });
+        expectedBaselineSha256: args[7], expectedHistory70Sha256: args[9] }, profile);
     } else fail('CLI_REFUSED');
   } catch { fail('CLI_REFUSED'); }
   return Object.freeze({ mode: args[1], expected });
@@ -470,8 +503,14 @@ export function parsePilotTrialPrismaArguments(raw) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const command = parsePilotTrialPrismaArguments(process.argv.slice(2));
-    const receipt = await runPilotTrialPrisma(command.mode, command.expected);
+    let receipt;
+    if (process.argv[2] === '--personal-pilot') {
+      const command = parsePilotCurrentPrismaArguments(process.argv.slice(2));
+      receipt = await runPilotCurrentMigration(command.expected);
+    } else {
+      const command = parsePilotTrialPrismaArguments(process.argv.slice(2));
+      receipt = await runPilotTrialPrisma(command.mode, command.expected);
+    }
     // No path, URL, raw query rows, Prisma output or caller error is logged.
     process.stdout.write(JSON.stringify(receipt) + '\n');
   } catch (error) {

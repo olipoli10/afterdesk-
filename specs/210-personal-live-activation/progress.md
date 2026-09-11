@@ -1,5 +1,14 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 00:39Z — original pilot upgrade path reviewed
+
+Closed current runner/bridge profile and exact CLI reviewed separately; peer69
+PASS, types/lintPASS. Controller root7019PASS/457files/3historicalskips00:39:16Z.
+Fresh originalpilot beforedata/catalog still identical, zero other client session
+observed, pilotidle00:38:58Z. Retained captures differ only JSON formatting; no
+rebaseline. See PILOT_CURRENT_MIGRATION_CONTROLLER. Next one current70to79 actual
+attempt after cleancommit/sourcepins; no originalpilot DDL or newAPK/deploy yet.
+
 ## 2026-09-11 00:24Z — actual T79 compatibility observed, current pilot unchanged
 
 One trialmigration source9f8c8d7c succeeds60124ms; actualhistory79 andfirst70
