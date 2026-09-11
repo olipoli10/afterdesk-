@@ -1,5 +1,18 @@
 # Progress — 2026-09-09
 
+## 2026-09-11 02:55Z — Operator ingress local proof, form work continues
+
+Stage A committed cfdfac6a64885095289836f51e81ea8531c0cc43, Brain checkpoint
+7a78246 local/no push. B1 author65 and B2 author39 PASS; native initial15 then
+expanded19 PASS02:53:53Z with exact disposable server stopped. B3 HTTP author38
+and peer15 pass after three recorded strict-boolean/actor-snapshot failures;
+bounded reader author27+peer5 reviewed. See audits/PERSONAL_MODEL_OPERATOR_
+INGRESS_CONTROLLER.md and PERSONAL_MODEL_OPERATOR_HTTP_PEER_REVIEW.md.
+Final B1/B2 peer review and global build remain active. Minimal owner webform is
+being designed; no new deployed button, secret delivery, consent or inference.
+Actual backend remains bd8e76f7/Google-only, Android5 unchanged. Existing ACTIVE
+three-minute heartbeat verified; no duplicate, pause, metrics transition or GO.
+
 ## 2026-09-11 02:32Z — Stage A reviewed locally; Stage B is active work
 
 See audits/PERSONAL_MODEL_OPERATOR_SETUP_CONTROLLER_REVIEW.md. Corrected core

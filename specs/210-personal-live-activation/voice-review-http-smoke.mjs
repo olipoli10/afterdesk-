@@ -13,6 +13,7 @@ const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const receipt = process.argv[2];
 const target = process.argv[3] ?? 'voice-review';
 const targets = {
+  'personal-model-operator-setup': { path: '/api/endvera/v1/personal/model/operator-setup', query: '', kind: 'PERSONAL_MODEL_OPERATOR_SETUP_OFF_HTTP', prefix: 'personal-model-operator-setup', both: true },
   'voice-review': { path: '/api/endvera/v1/mobile/project-brain-intake/voice-review', query: '&sessionId=synthetic', kind: 'VOICE_REVIEW_OFF_HTTP', prefix: 'voice-review' },
   'correlated-calendar-reviews': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews', query: '', kind: 'CORRELATED_CALENDAR_REVIEW_OFF_HTTP', prefix: 'correlated-calendar-review' },
   'correlated-calendar-approval-result': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews/approval-result', query: '&reviewId=synthetic', kind: 'CORRELATED_CALENDAR_APPROVAL_RESULT_OFF_HTTP', prefix: 'correlated-calendar-approval-result' },
@@ -54,7 +55,10 @@ try {
   if (!ready || closed || startError) throw new Error('OWNED_SERVER_NOT_READY');
   const path = selected.path;
   const sessionQuery = selected.query;
-  const cases = selected.post ? [
+  const cases = selected.both ? [
+    ['GET', '', 404], ['GET', '?setupRef=synthetic', 404], ['POST', '', 404], ['POST', '?setupRef=synthetic', 404],
+    ['HEAD', '', 404], ['OPTIONS', '', 204], ['DELETE', '', 405],
+  ] : selected.post ? [
     ['POST', '', 404], ['POST', '?workspaceId=synthetic', 404], ['POST', '?workspaceId=one&workspaceId=two', 404],
     ['GET', '', 405], ['HEAD', '', 405], ['OPTIONS', '', 204], ['DELETE', '', 405],
   ] : [
@@ -70,14 +74,14 @@ try {
       bodySha256: createHash('sha256').update(body).digest('hex') };
     observations.push(observation);
     if (response.status !== expectedStatus) throw new Error('HTTP_STATUS_MISMATCH');
-    const ownedResponse = selected.post ? method === 'POST' : method === 'GET' || method === 'HEAD';
+    const ownedResponse = selected.both ? ['GET', 'HEAD', 'POST'].includes(method) : selected.post ? method === 'POST' : method === 'GET' || method === 'HEAD';
     if (ownedResponse) {
       if (!/private/.test(observation.cacheControl ?? '') || !/no-store/.test(observation.cacheControl ?? '')
         || !/Cookie/i.test(observation.vary ?? '') || !/Authorization/i.test(observation.vary ?? '')) throw new Error('PRIVATE_RESPONSE_HEADERS_REQUIRED');
-      if (method !== 'HEAD' && body !== '{"error":"Not found."}') throw new Error('OPAQUE_OFF_RESPONSE_REQUIRED');
+      if (method !== 'HEAD' && body !== (selected.both ? '{"status":"UNAVAILABLE","automaticRetry":false}' : '{"error":"Not found."}')) throw new Error('OPAQUE_OFF_RESPONSE_REQUIRED');
     }
     if ((!ownedResponse || method === 'HEAD') && body !== '') throw new Error('EMPTY_FRAMEWORK_METHOD_BODY_REQUIRED');
-    if (method === 'OPTIONS' && observation.allow?.split(',').map(value => value.trim()).sort().join(',') !== (selected.post ? 'OPTIONS,POST' : 'GET,HEAD,OPTIONS')) throw new Error('EXACT_METHOD_ALLOW_REQUIRED');
+    if (method === 'OPTIONS' && observation.allow?.split(',').map(value => value.trim()).sort().join(',') !== (selected.both ? 'GET,HEAD,OPTIONS,POST' : selected.post ? 'OPTIONS,POST' : 'GET,HEAD,OPTIONS')) throw new Error('EXACT_METHOD_ALLOW_REQUIRED');
   }
 } catch (error) {
   errorCode = /^[A-Z_]+$/.test(error.message ?? '') ? error.message : 'LOCAL_HTTP_PROBE_FAILED';

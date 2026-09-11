@@ -484,7 +484,8 @@
       "dependencies": ["PERSONAL_MODEL_OPERATOR_SETUP_CORE"],
       "evidence": "PERSONAL_MODEL_OPERATOR_INGRESS_PLAN.md",
       "completed": ["Controller reviewed Stage B design: unique server configuration, existing owner session, durable claim/archive then atomic applied receipt; no secret export or generic admin route"],
-      "remaining": ["Local B1 pure contract, B2 transaction orchestrator and bounded HTTP reader/route with independent review and native proofs", "No live enabling until authentic reviews, owner consent, fixed deployment receipt and secret delivery/logging checks exist"],
+      "checkpoint": "B1author65/B2author39 PASS, native19PASS02:53:53Z/exactserverSTOPPED; B3author38+peer15 and reader32 PASS after preserved seam REDs. Maintypes/lint PASS, B1/B2peer and build remain active. Minimal form design in progress; not deployed.",
+      "remaining": ["Finish B1/B2 peer review and global validation; implement and review minimal owner-only form after server proofs", "No live enabling until authentic reviews, owner consent, fixed deployment receipt and secret delivery/logging checks exist"],
       "liveObserved": false
     },
     {

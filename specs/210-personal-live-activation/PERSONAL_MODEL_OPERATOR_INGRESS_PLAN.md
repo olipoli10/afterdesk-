@@ -1,5 +1,20 @@
 # Personal model operator ingress — Stage B design
 
+## Controller admission — B3 HTTP, 2026-09-11 02:43Z
+
+Controller reviewed B1/B2 source and the installed Next route-handler guide.
+Admit local implementation of the exact owner-only GET/POST route below, with
+the reviewed bounded HTTP reader. No server configuration, deployment, owner
+consent, real key delivery or provider activation is admitted by this subsection.
+Absent/malformed config refuses before auth; POST additionally checks current
+window and exact fixed Origin. Capture original request context before any await;
+recheck original configuration after auth/rate/body/ingress and serialization.
+GET only accepts the configured setupRef and can reconcile expired history.
+The existing generic personalApiUser helper is deliberately not widened/reused.
+Error bodies stay fixed, no dependency exception fields are reflected; after
+ingress dispatch every ambiguous result is UNKNOWN with automaticRetry:false.
+Peer review plus isolated route tests precede any possible deployment.
+
 Status: DESIGN FOR CONTROLLER REVIEW, 2026-09-11. This document authorizes no
 route implementation, secret delivery, deployment, database write or provider
 activation. It supplements `PERSONAL_MODEL_OPERATOR_SETUP_PLAN.md`; Stage A
@@ -364,6 +379,15 @@ Pure builders cannot prove a claim insert, commit, operator review authenticity,
 actual deployment, current owner/consent or provider behavior. Those remain later
 orchestration/controller gates. No secret-bearing command parser is part of B1.
 
+B1 implementation checkpoint: 65/65 author tests passed at 22:38:36 local runner
+time, using the real synthetic artifact/manifest producers. Scoped ESLint and the
+shared root TypeScript check (session 67773) exited 0. Initial lint rejected a test
+variable named `module`; initial TypeScript found a literal-inferred size parameter
+and B2's hostname union typing. These were corrected without changing limits or
+oracles. No B1 test executed HTTP, SQL, secret lookup, provider transport or current
+deployment verification. Historical parsing remains supplied-data integrity only;
+known commit, current ownership and actual publication timestamps belong to B2.
+
 ## B2 — approved local orchestrator slice (implementation note before code)
 
 Owned files: `operator-ingress.ts` and `test/personal-model-operator-ingress.test.ts`.
@@ -401,3 +425,44 @@ Tests use explicit mock transaction/DB boundaries, with the real B1 contract whe
 available, and distinguish lost claim acknowledgement (zero core calls), lost core
 acknowledgement (no retry), malformed readback, abort/deadline/config changes and
 expired-window historical reads. Controller owns subsequent native proof.
+
+### B2 local implementation evidence and exact seams
+
+`applyPersonalModelOperatorIngress({actor:{userId,role,emailVerified},setupRef,apiKey},env,context)`
+and `readPersonalModelOperatorIngress({actor,setupRef},env,context)` return the exact
+B1 receipt only after a known transaction resolution. Context carries the original
+wall/monotonic deadlines and original AbortSignal. Server session validity is a
+caller prerequisite; the role/email/identity fields are not a caller-created
+capability, and current DB owner/consent checks remain mandatory.
+
+`assertPersonalModelOperatorIngressPublication(receipt)` uses a private WeakMap
+registered only after known commit. Future HTTP code must call it before and
+after serialization. Copied/unregistered receipts refuse. It rechecks the original
+configuration/target/gates/cancellation/clock budget, not a new owner DB inspection
+after locks have been released. Current owner locks protect transaction-time
+disclosure checks; a later revocation is not instantaneously observable forever.
+Historical receipt false flags describe what setup did, not a promise that a
+separate later controller never activated the runtime.
+
+TX1 maxWait+timeout together are capped at3s; TX2 together at10s, each also within
+the same entry15s remaining budget. No promise race starts a detached next phase.
+The DB-derived monotonic expiry uses the query-start anchor and the minimum of
+configuration window, pilot, privacy and review freshness bounds, with the actual
+artifact validator at each DB-clock observation. No app/DB epoch equality is used.
+
+Readback maps the actual ten Prisma audit columns explicitly to the closed B1
+insert descriptor (createdAt validated but not confused with claimedAt). Claims
+and applied rows use the existing namespace/PK/unique fingerprint. Historical
+read additionally binds the receipt's publishedAt to the actual route timestamp;
+missing or conflicting records are UNKNOWN, not a new attempt. No ledger is read
+or written and no source/SMS/customer payload is archived.
+
+Initial baseline22:29:16: missing new module, failed suite/zero tests (not a product
+vulnerability RED). First full run22:36:13 had36PASS/1FAIL: the TTL test fixture left
+only1ms, correctly rejected by the minimum3ms transaction budget before TX2. The
+fixture now leaves1000ms, explicitly asserts two commits, passes at999ms and
+refuses at1000ms; no guard was weakened. Subsequent102/102 then104/104 PASS22:37:55
+combine65 B1 and39 B2 tests. Concurrency is simulated and Stage A effects are
+mocked in B2 tests; actual A/native tests are distinct. Scoped lint passed. A
+TypeScript hostname literal-union error was corrected with exact comparisons.
+No actual setup/DB/network/provider/configuration/deployment execution occurred.

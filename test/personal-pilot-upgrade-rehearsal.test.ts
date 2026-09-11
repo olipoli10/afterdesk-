@@ -119,12 +119,12 @@ describe('populated upgrade rehearsal — pure/static, no database or provider',
     expect(branch).not.toContain('vitest');
     expect(harness).not.toMatch(/DROP DATABASE|migrate.{0,10}reset|pg_terminate_backend/);
   });
-  it('preserves the twenty existing native suites plus the reviewed operator setup suite', () => {
-    // Spec210 adds one separately reviewed synthetic suite. Keep exact identities,
+  it('preserves the twenty existing native suites plus both reviewed operator setup suites', () => {
+    // Spec210 adds two separately reviewed synthetic suites. Keep exact identities,
     // not just a count that could hide removal/replacement of an older suite.
     const expected = [
       'confirmation-maintenance', 'confirmation-worker', 'confirmation', 'correlated-calendar-serialization',
-      'google', 'inbox', 'outbox', 'personal-model-connection', 'personal-model-operator-setup', 'personal-model',
+      'google', 'inbox', 'outbox', 'personal-model-connection', 'personal-model-operator-setup', 'personal-model-operator-ingress', 'personal-model',
       'personal-subject', 'project-brain-voice-gateway', 'project-brain-voice-recovery',
       'project-brain-voice-transcript-review', 'project-brain-voice', 'recovery', 'sms-calendar-read',
       'sms-inbound-recovery', 'temporal-registry', 'utc-datetime', 'voice-transcript-purge-utc',
