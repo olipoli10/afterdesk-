@@ -119,7 +119,10 @@ export async function readPersonalModelOperatorFormView() {
       executionAuthorized: false as const, providerVerified: false as const });
     return Object.freeze({ status: "AVAILABLE" as const, view });
   } catch {
-    console.warn("PERSONAL_MODEL_OPERATOR_FORM_UNAVAILABLE", { stage });
+    const configBytes = typeof process.env[configKey] === "string"
+      ? Buffer.byteLength(process.env[configKey], "utf8")
+      : null;
+    console.warn("PERSONAL_MODEL_OPERATOR_FORM_UNAVAILABLE", { stage, configBytes });
     return unavailable;
   }
 }
