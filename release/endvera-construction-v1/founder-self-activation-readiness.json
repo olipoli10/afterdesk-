@@ -21,6 +21,36 @@
       "requestMode": "PROGRESSIVE_NATIVE_READ_WRITE",
       "declared": true,
       "observedGranted": false
+    },
+    {
+      "resource": "MICROPHONE",
+      "requestMode": "PROGRESSIVE_NATIVE",
+      "declared": true,
+      "observedGranted": false
+    },
+    {
+      "resource": "CAMERA",
+      "requestMode": "PROGRESSIVE_NATIVE",
+      "declared": true,
+      "observedGranted": false
+    },
+    {
+      "resource": "PHOTOS",
+      "requestMode": "PROGRESSIVE_NATIVE",
+      "declared": true,
+      "observedGranted": false
+    },
+    {
+      "resource": "NOTIFICATIONS",
+      "requestMode": "PROGRESSIVE_NATIVE",
+      "declared": true,
+      "observedGranted": false
+    },
+    {
+      "resource": "LOCATION",
+      "requestMode": "PROGRESSIVE_NATIVE",
+      "declared": true,
+      "observedGranted": false
     }
   ],
   "dedicatedNumber": {

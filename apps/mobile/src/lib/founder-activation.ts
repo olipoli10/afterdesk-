@@ -21,11 +21,11 @@ export const founderActivationReadinessSchema = z.object({
     installedOnFounderDevice: z.boolean(),
   }).strict(),
   devicePermissions: z.array(z.object({
-    resource: z.enum(["CONTACTS", "CALENDAR"]),
+    resource: z.enum(["CONTACTS", "CALENDAR", "MICROPHONE", "CAMERA", "PHOTOS", "NOTIFICATIONS", "LOCATION"]),
     requestMode: z.enum(["PROGRESSIVE_NATIVE", "PROGRESSIVE_NATIVE_READ_WRITE"]),
     declared: z.boolean(),
     observedGranted: z.boolean(),
-  }).strict()).length(2),
+  }).strict()).length(7),
   dedicatedNumber: z.object({
     providerCandidate: z.literal("TWILIO"),
     numberProvisioned: z.boolean(),

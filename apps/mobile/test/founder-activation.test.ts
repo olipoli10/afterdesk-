@@ -20,7 +20,7 @@ describe("founder self live activation boundary", () => {
     expect("withoutCredentials" in easConfig.build["founder-device"].android).toBe(false);
     expect(parsed.status).toBe("CODE_READY_EXTERNAL_SETUP_REQUIRED");
     expect(parsed.mobile).toMatchObject({ signed: true, installedOnFounderDevice: true });
-    expect(parsed.devicePermissions.map((item) => item.resource)).toEqual(["CONTACTS", "CALENDAR"]);
+    expect(parsed.devicePermissions.map((item) => item.resource)).toEqual(["CONTACTS", "CALENDAR", "MICROPHONE", "CAMERA", "PHOTOS", "NOTIFICATIONS", "LOCATION"]);
     expect(parsed.claims).toMatchObject({ signedBuildReady: true, liveNumberReady: false, liveSelfPilotReady: false, externalTransportPerformed: false });
   });
 
