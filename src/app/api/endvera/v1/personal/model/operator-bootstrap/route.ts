@@ -34,11 +34,26 @@ export async function POST(request: Request) {
   let dispatched = false;
   try {
     if (!authorized(request)) return response(404, "UNAVAILABLE");
-    const context = personalModelOperatorRequestContext(request);
-    const ingress = inspectPersonalModelIngressConfiguration(
-      process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION,
-    );
-    const command = await readPersonalModelOperatorCommand(request, context);
+    let ingress: ReturnType<typeof inspectPersonalModelIngressConfiguration>;
+    try {
+      ingress = inspectPersonalModelIngressConfiguration(
+        process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION,
+      );
+    } catch {
+      return response(503, "CONFIGURATION_REFUSED");
+    }
+    let context: ReturnType<typeof personalModelOperatorRequestContext>;
+    try {
+      context = personalModelOperatorRequestContext(request);
+    } catch {
+      return response(408, "REQUEST_CONTEXT_REFUSED");
+    }
+    let command: Awaited<ReturnType<typeof readPersonalModelOperatorCommand>>;
+    try {
+      command = await readPersonalModelOperatorCommand(request, context);
+    } catch {
+      return response(400, "COMMAND_REFUSED");
+    }
     if (command.setupRef !== ingress.configuration.setupRef) return response(404, "UNAVAILABLE");
     dispatched = true;
     const receipt = await applyPersonalModelOperatorIngress({
