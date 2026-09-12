@@ -15,6 +15,10 @@ import { reserveAccountProviderSpendInTransaction } from "../src/server/account-
 import { canonicalFingerprint } from "../src/server/model-gateway/evidence";
 import { openConnectorSecret, requireConnectorKey } from "../src/server/personal-assistant/credential-cipher";
 import { twilioDispatchPolicy } from "../src/server/personal-assistant/twilio-outbound";
+import { preparePersonalOutbound, approvePersonalOutbound, dispatchPersonalOutbound } from "../src/server/personal-assistant/outbox";
+import { createPersonalIntentInput } from "../src/server/model-gateway/personal-intent/contract";
+import { createOpenRouterPersonalIntentAdapter } from "../src/server/model-gateway/personal-intent/openrouter-adapter";
+import { createPersonalOpenRouterTransport } from "../src/server/model-gateway/personal-intent/openrouter-transport";
 
 const env = process.env;
 const incident = env.ENDVERA_BUILD_PERSONAL_INCIDENT_PROBE;
@@ -22,6 +26,7 @@ let stage = "CONFIGURATION";
 const cases = [
   ["general", "Explique simplement la différence entre le béton 25 MPa et 32 MPa."],
   ["current-sources", "Il annonce cmb demain a mtl"],
+  ["calendar-intent", "Ajoute un rendez-vous demain à Montréal."],
 ] as const;
 async function main() {
   if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-3]$/u.test(incident)) throw new Error();
@@ -43,7 +48,8 @@ async function main() {
   for (const [name, body] of cases) {
     const id = `operator-canary:${incident}:${name}`;
     const receivedAt = new Date().toISOString();
-    const input = createAnswerInput({ requestId: id, workspaceId: ingress.manifest.workspaceId,
+    const intent = name === "calendar-intent" ? createPersonalIntentInput(id, body) : null;
+    const input = intent ? null : createAnswerInput({ requestId: id, workspaceId: ingress.manifest.workspaceId,
       body, receivedAt, senderVerified: true, workspaceBound: true });
     // These fields are adapter prerequisites only; the evidence below explicitly
     // records OPERATOR_CANARY, never a received SMS or customer action.
@@ -60,7 +66,7 @@ async function main() {
       const hold = await reserveAccountProviderSpendInTransaction(tx, { operationKey: id, attempt: 1, provider: "openrouter",
         worstCaseMicros: budget.reservationUsdMicros, now: new Date() }, env);
       if (!hold.ok || !hold.created || hold.grantedMicros !== budget.reservationUsdMicros) throw new Error();
-      const request = { evidenceKind: "OPERATOR_CANARY", incident, case: name, requestFingerprint: input.requestFingerprint,
+      const request = { evidenceKind: "OPERATOR_CANARY", incident, case: name, requestFingerprint: (intent ?? input)!.requestFingerprint,
         accountHoldId: hold.holdId, actionAuthority: false };
       const metadata = { ...request, accountId: authority.accountId, budgetId: budget.budgetId,
         reservedCadMicros: budget.reservationCadMicros.toString(), automaticRetry: false };
@@ -72,8 +78,7 @@ async function main() {
     if (!won) { console.info(JSON.stringify({ event: "incident.canary", case: name, status: "ALREADY_ATTEMPTED_NO_RETRY" })); continue; }
     const adapterConfig = { enabled: true, allowedModels: budget.allowedModels, providerEndpoints: budget.providerEndpoints,
       timeoutMs: 25_000, maxOutputTokens: budget.maxOutputTokens };
-    const transport = createAnswerTransport({ enabled: true, expectedRequest: answerWireRequest(input, adapterConfig),
-      getApiKey: async () => {
+    const getApiKey = async () => {
         const authority = await inspectModelAuthority(prisma, subject, new Date());
         const account = await prisma.constructionConnectorAccount.findUniqueOrThrow({ where: { id: authority.accountId } });
         if (!account.credentialRef) throw new Error();
@@ -84,19 +89,51 @@ async function main() {
           const binding = JSON.stringify([ingress.manifest.workspaceId, authority.accountId, `openrouter-api-key:${row.id}`]);
           return JSON.parse(openConnectorSecret(row.ciphertext, binding, key)).apiKey as string;
         } finally { key.fill(0); }
-      } }, env);
+      };
     stage = `DISPATCH_${name.toUpperCase().replaceAll("-", "_")}`;
-    const result = await createOpenRouterAnswerAdapter(adapterConfig, transport).dispatch(input, new AbortController().signal);
+    const signal = new AbortController().signal;
+    const result = intent ? await createOpenRouterPersonalIntentAdapter({ enabled: true, modelKey: budget.allowedModels[0],
+      providerEndpointSlug: budget.providerEndpoints[0], maxOutputTokens: budget.maxOutputTokens, timeoutMs: 25_000,
+      transportMode: "EXTERNAL_PROVIDER", transport: createPersonalOpenRouterTransport({ enabled: true, source: intent,
+        modelKey: budget.allowedModels[0], providerEndpointSlug: budget.providerEndpoints[0], maxOutputTokens: budget.maxOutputTokens, getApiKey }, env),
+    }).dispatch(intent, signal) : await createOpenRouterAnswerAdapter(adapterConfig, createAnswerTransport({ enabled: true,
+      expectedRequest: answerWireRequest(input!, adapterConfig), getApiKey }, env)).dispatch(input!, signal);
     const evidence = result.status === "ANSWER_INSPECTED"
       ? { status: result.status, providerRequestId: result.providerRequestId, servedModel: result.servedModel,
         usage: result.usage, responseFingerprint: canonicalFingerprint(result), actionAuthority: false }
-      : { status: result.status, diagnosticCode: safeAdapterReason(result.reason), actionAuthority: false };
+      : result.status === "PROPOSAL_INSPECTED_NOT_AUTHORIZED"
+        ? { status: result.status, providerRequestId: result.providerRequestId, actionKinds: result.inspected.proposal.actions.map(action => action.kind),
+          responseFingerprint: canonicalFingerprint(result), actionAuthority: false }
+        : { status: result.status, diagnosticCode: safeAdapterReason(result.reason), actionAuthority: false };
     stage = "RECORD_RESULT";
     await prisma.constructionAuditEvent.create({ data: { id: `${id}:result`, workspaceId: ingress.manifest.workspaceId,
       actorUserId: ingress.manifest.ownerUserId, entityType: "operator_answer_canary", entityId: id,
       action: "operator_canary.observed", metadata: { ...evidence, externalTransportPerformed: result.dispatched },
       fingerprint: canonicalFingerprint({ id, evidence }) } });
     console.info(JSON.stringify({ event: "incident.canary", case: name, ...evidence }));
+  }
+  // Separate, explicitly requested owner-pilot transport check. Not a forged
+  // webhook, not an employee recipient, and not an assertion that calendar works.
+  if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_SELF_SMS === "20260912-check1") {
+    stage = "SELF_SMS";
+    const proof = await prisma.constructionAuditEvent.findUnique({ where: { id: `operator-canary:${incident}:general:result` } });
+    if ((proof?.metadata as { status?: string } | null)?.status !== "ANSWER_INSPECTED") throw new Error();
+    const requestId = "868d963b-48a6-4eae-b195-301f2a1be8b3";
+    const idempotencyKey = `personal-outbound:${ingress.manifest.workspaceId}:${requestId}`;
+    if (await prisma.personalAssistantOperation.findUnique({ where: { idempotencyKey } })) {
+      console.info(JSON.stringify({ event: "incident.self_sms", status: "ALREADY_PREPARED_NO_RETRY" })); return;
+    }
+    const identities = await prisma.constructionCommunicationIdentity.findMany({ where: { workspaceId: ingress.manifest.workspaceId,
+      userId: ingress.manifest.ownerUserId, channel: "sms", status: "active", verified: true, permissions: { has: "COMMAND" } },
+      select: { normalizedAddress: true } });
+    if (identities.length !== 1) throw new Error();
+    const actor = { userId: ingress.manifest.ownerUserId, workspaceId: ingress.manifest.workspaceId };
+    const prepared = await preparePersonalOutbound({ ...actor, requestId, kind: "sms_outbound", to: identities[0].normalizedAddress,
+      text: "Test technique ENDVERA : OpenRouter répond aux questions générales. La météo et le calendrier sont encore en correction. Ce message vérifie seulement le retour SMS." }, env);
+    await approvePersonalOutbound({ ...actor, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, env);
+    const sent = await dispatchPersonalOutbound(prepared.operationId, env);
+    console.info(JSON.stringify({ event: "incident.self_sms", operationId: prepared.operationId, providerSid: sent.providerSid,
+      acceptedByProvider: true, deliveryConfirmed: false }));
   }
 }
 void main().catch(error => {

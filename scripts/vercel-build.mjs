@@ -65,7 +65,8 @@ export const PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND =
 export function resolveBuildPipelineCommands(plan, cliArguments = [], env = {}) {
   const diagnostics = plan.env === "production" && env.ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_KEY === "true"
     ? [PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND] : [];
-  // Explicit, metered operator canary; no request is replayed and no SMS is sent.
+  // Explicit, metered operator canary; no incoming request is replayed. A separate
+  // exact build-only flag permits one idempotent owner-pilot SMS transport check.
   const canary = plan.env === "production" && /^20260912-r[1-3]$/u.test(env.ENDVERA_BUILD_PERSONAL_INCIDENT_PROBE ?? "")
     ? ["tsx --require ./scripts/register-server-only.cjs scripts/run-personal-sms-incident.ts"] : [];
   return [PROVIDER_BOUNDARY_COMMAND, ...diagnostics, ...canary, ...resolveCommands(plan, cliArguments)];

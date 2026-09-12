@@ -97,8 +97,10 @@ export async function temporalCurrentBinding(tx: TemporalRegistryDB, actor: Temp
       AND ma.provider='openrouter' AND ma.status='connected' AND ma."revokedAt" IS NULL AND mc."revokedAt" IS NULL
       AND mg.capability='personal_model_inference' AND mg.status='active' AND mg."revokedAt" IS NULL AND 'personal_data:inference'=ANY(mg."grantedScopes")
       AND $8=ANY(mg."grantedScopes") AND mg."grantedAt">=('2026-09-10T01:18:26Z'::timestamptz AT TIME ZONE 'UTC') AND mg."grantedAt"<=(clock_timestamp() AT TIME ZONE 'UTC')
-      AND ga.provider='google_calendar' AND ga.status='connected' AND ga."revokedAt" IS NULL AND gc."revokedAt" IS NULL
-      AND gg.capability='calendar_write' AND gg.status='active' AND gg."revokedAt" IS NULL AND $7=ANY(ga."grantedScopes") AND $7=ANY(gg."grantedScopes")
+      AND ga.provider IN ('google_calendar','endvera_android_device') AND ga.status='connected' AND ga."revokedAt" IS NULL AND gc."revokedAt" IS NULL
+      AND gg.capability='calendar_write' AND gg.status='active' AND gg."revokedAt" IS NULL
+      AND ((ga.provider='google_calendar' AND $7=ANY(ga."grantedScopes") AND $7=ANY(gg."grantedScopes"))
+        OR (ga.provider='endvera_android_device' AND 'device:calendar:write'=ANY(ga."grantedScopes") AND 'device:calendar:write'=ANY(gg."grantedScopes")))
     FOR SHARE OF s,w,m,i,a,sg,child,ma,mc,mg,ga,gc,gg`, sourceId, actor.workspaceId, actor.userId, modelChildId,
   sourceClaim ? new Date(sourceClaim.leaseUntil) : null, temporalSha(env.TWILIO_ACCOUNT_SID ?? ""), GOOGLE_CALENDAR_WRITE_SCOPE, `authority:${PERSONAL_MODEL_AUTHORITY}`);
   if (rows.length !== 1) throw new Error("TEMPORAL_REGISTRY_CURRENT_BINDING_REQUIRED");

@@ -91,9 +91,11 @@ export async function selectPersonalAutomaticOutboundCandidates(input: Input = {
                 AND qag.capability='personal_model_inference' AND qag.status='active' AND qag."revokedAt" IS NULL
                 AND qag."stateVersion"::text=q.prepared#>>'{binding,modelGrantVersion}' AND 'personal_data:inference'=ANY(qag."grantedScopes") AND $7=ANY(qag."grantedScopes")
                 AND qag."grantedAt">=('2026-09-10T01:18:26Z'::timestamptz AT TIME ZONE 'UTC') AND qag."grantedAt"<=(clock_timestamp() AT TIME ZONE 'UTC')
-                AND qg.provider='google_calendar' AND qg.status='connected' AND qg."revokedAt" IS NULL AND qgc."revokedAt" IS NULL
-                AND qg."stateVersion"::text=q.prepared#>>'{binding,calendarAccountVersion}' AND $5=ANY(qg."grantedScopes")
-                AND qgg.capability='calendar_write' AND qgg.status='active' AND qgg."revokedAt" IS NULL AND $5=ANY(qgg."grantedScopes")
+                AND qg.provider IN ('google_calendar','endvera_android_device') AND qg.status='connected' AND qg."revokedAt" IS NULL AND qgc."revokedAt" IS NULL
+                AND qg."stateVersion"::text=q.prepared#>>'{binding,calendarAccountVersion}'
+                AND qgg.capability='calendar_write' AND qgg.status='active' AND qgg."revokedAt" IS NULL
+                AND ((qg.provider='google_calendar' AND $5=ANY(qg."grantedScopes") AND $5=ANY(qgg."grantedScopes"))
+                  OR (qg.provider='endvera_android_device' AND 'device:calendar:write'=ANY(qg."grantedScopes") AND 'device:calendar:write'=ANY(qgg."grantedScopes")))
                 AND qgg."stateVersion"::text=q.prepared#>>'{binding,calendarWriteGrantVersion}'
                 AND EXISTS (SELECT 1 FROM "PersonalSmsConversationExpectation" qe WHERE qe.id='temporal:'||q.id AND qe."clarificationId"=q.id
                   AND qe.kind='TEMPORAL_CLARIFICATION' AND qe.namespace=q.namespace AND qe.active)))))
@@ -124,11 +126,13 @@ export async function selectPersonalAutomaticOutboundCandidates(input: Input = {
               AND d."correlatedTemporalReceiptId" IS NULL
               AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarReview" correlated WHERE correlated."calendarOperationId"=d.id)
               AND d."requestHash"=c.prepared#>>'{binding,calendar,requestHash}'
-              AND g.provider='google_calendar' AND g.status='connected' AND g."revokedAt" IS NULL AND credential."revokedAt" IS NULL
+              AND g.provider IN ('google_calendar','endvera_android_device') AND g.status='connected' AND g."revokedAt" IS NULL AND credential."revokedAt" IS NULL
               AND g.id=c.prepared#>>'{binding,calendar,accountId}' AND g."stateVersion"::text=c.prepared#>>'{binding,calendar,accountVersion}'
               AND credential.id=c.prepared#>>'{binding,calendar,credentialId}'
               AND write.capability='calendar_write' AND write.status='active' AND write."revokedAt" IS NULL
-              AND write."stateVersion"::text=c.prepared#>>'{binding,calendar,writeGrantVersion}' AND $5=ANY(g."grantedScopes") AND $5=ANY(write."grantedScopes")
+              AND write."stateVersion"::text=c.prepared#>>'{binding,calendar,writeGrantVersion}'
+              AND ((g.provider='google_calendar' AND $5=ANY(g."grantedScopes") AND $5=ANY(write."grantedScopes"))
+                OR (g.provider='endvera_android_device' AND 'device:calendar:write'=ANY(g."grantedScopes") AND 'device:calendar:write'=ANY(write."grantedScopes")))
               AND inbound.capability='sms_inbound' AND inbound.status='active' AND inbound."revokedAt" IS NULL
               AND inbound."stateVersion"::text=c.prepared#>>'{binding,owner,smsInboundGrantVersion}'
               AND a.id=c.prepared#>>'{binding,owner,smsAccountId}' AND a."stateVersion"::text=c.prepared#>>'{binding,owner,smsAccountVersion}')))

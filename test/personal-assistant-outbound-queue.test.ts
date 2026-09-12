@@ -12,6 +12,15 @@ beforeEach(() => { vi.resetAllMocks(); vi.useFakeTimers(); vi.setSystemTime(new 
   m.query.mockResolvedValue([]); m.configure.mockResolvedValue(1); m.transaction.mockImplementation(work => work({ $queryRawUnsafe: m.query, $executeRawUnsafe: m.configure })); });
 afterEach(() => vi.useRealTimers());
 describe("read-only automatic outbound queue hints", () => {
+  it("uses provider-specific calendar scopes for both Android and Google pending replies", async () => {
+    await select({ enabled: true, includeConfirmations: true }, env());
+    const sql = m.query.mock.calls[0][0];
+    expect(sql).toContain("g.provider IN ('google_calendar','endvera_android_device')");
+    expect(sql).toContain("g.provider='endvera_android_device' AND 'device:calendar:write'=ANY(g.\"grantedScopes\") AND 'device:calendar:write'=ANY(write.\"grantedScopes\")");
+    expect(sql).toContain("qg.provider='endvera_android_device' AND 'device:calendar:write'=ANY(qg.\"grantedScopes\") AND 'device:calendar:write'=ANY(qgg.\"grantedScopes\")");
+    expect(sql).toContain("g.provider='google_calendar' AND $5=ANY(g.\"grantedScopes\") AND $5=ANY(write.\"grantedScopes\")");
+    expect(sql).toContain('credential.id=c.prepared#>>\'{binding,calendar,credentialId}\'');
+  });
   it("is OFF by default before database access", async () => { expect(await select({}, env())).toMatchObject({ status: "DISABLED", executionAuthorized: false }); expect(m.transaction).not.toHaveBeenCalled(); });
   it.each(["ENDVERA_EXTERNAL_TRANSPORT_ENABLED", "ENDVERA_PERSONAL_SMS_WORKER_ENABLED", "ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED", "TWILIO_ACCOUNT_SID"])("stays OFF without %s", async key => {
     expect(await select({ enabled: true }, { ...env(), [key]: "" })).toMatchObject({ status: "DISABLED" }); expect(m.transaction).not.toHaveBeenCalled();

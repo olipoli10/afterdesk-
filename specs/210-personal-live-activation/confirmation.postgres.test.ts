@@ -21,7 +21,7 @@ requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
 const sha = (value: string) => createHash("sha256").update(value).digest("hex");
 const span = (body: string, quote: string) => ({ start: body.indexOf(quote), end: body.indexOf(quote) + quote.length, quote });
-async function fixture() {
+async function fixture(android = false) {
   requirePersonalDisposableDatabase();
   const f = await personalModelFixture("Ajoute Visite Laval le 2026-09-12 à 14:00 jusqu’à 15:00.");
   const env: NodeJS.ProcessEnv = { NODE_ENV: "test", ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED: "true", ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true",
@@ -30,9 +30,10 @@ async function fixture() {
     TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
     ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
     GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
-  const google = await prisma.constructionConnectorAccount.create({ data: { workspaceId: f.workspaceId, provider: "google_calendar", createdByUserId: f.userId,
-    status: "prepared", grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], externalAccountKeyHash: "a".repeat(64),
-    grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now, requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+  const calendarScope = android ? "device:calendar:write" : GOOGLE_CALENDAR_WRITE_SCOPE;
+  const google = await prisma.constructionConnectorAccount.create({ data: { workspaceId: f.workspaceId, provider: android ? "endvera_android_device" : "google_calendar", createdByUserId: f.userId,
+    status: "prepared", grantedScopes: [calendarScope], externalAccountKeyHash: "a".repeat(64),
+    grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now, requestedScopes: [calendarScope], grantedScopes: [calendarScope] } } }, include: { grants: true } });
   // Opaque synthetic material only. No credential loader, decryption or network is called.
   const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "synthetic-never-decrypted" } });
   await prisma.constructionConnectorAccount.update({ where: { id: google.id }, data: { status: "connected", connectedAt: f.now, credentialRef: credential.id } });
@@ -129,6 +130,18 @@ describe("durable OFF SMS calendar confirmation on disposable PostgreSQL", () =>
   });
   it("is OFF without explicit switch and creates no records", async () => {
     expect(await prisma.$transaction(tx => prepareCalendarSmsConfirmationInTransaction(tx, {} as never, { NODE_ENV: "test" }))).toEqual({ status: "DISABLED", executionAuthorized: false });
+  });
+  it.each(["ACTIVE", "WRONG_SCOPE", "REVOKED"])("selects Android confirmation only with its current write grant: %s", async mode => {
+    const f = await fixture(true), prepared = await f.prepare();
+    const env = { ...await bridgeControls(f), ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED: "true" };
+    const bridge = await prisma.$transaction(tx => prepareCalendarConfirmationOutboundInTransaction(tx, { actor: f.actor, challengeId: prepared.challengeId }, env), { isolationLevel: "Serializable" });
+    if (bridge.status !== "PREPARED_UNSENT") throw new Error("SYNTHETIC_BRIDGE_REQUIRED");
+    if (mode === "WRONG_SCOPE") await prisma.constructionConnectorGrant.update({ where: { id: f.google.grants[0].id }, data: { grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } });
+    if (mode === "REVOKED") await prisma.constructionConnectorGrant.update({ where: { id: f.google.grants[0].id }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+    const selection = await selectPersonalAutomaticOutboundCandidates({ enabled: true, limit: 10, includeConfirmations: true }, env);
+    expect(selection.candidates.some(row => row.id === bridge.operationId)).toBe(mode === "ACTIVE");
+    expect(selection.executionAuthorized).toBe(false);
+    expect((await stored(prepared)).phase).toBe("PREPARED");
   });
   it("prepares an exact pending bridge through the real lower authority without granting approval", async () => {
     const f = await fixture(), prepared = await f.prepare(), env = await bridgeControls(f);

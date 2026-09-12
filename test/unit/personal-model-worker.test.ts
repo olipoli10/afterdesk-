@@ -69,9 +69,23 @@ describe("exclusive personal SMS candidate orchestration", () => {
     await expect(result.finalizeReview!({} as Prisma.TransactionClient)).rejects.toThrow("SOURCE_DEADLINE");
     expect(m.review).not.toHaveBeenCalled();
   });
-  it.each(["UNCERTAIN", "NOT_DISPATCHED", "CLAIM_LOST"])("does not convert %s to a successful source reply or run a legacy interpreter", async status => {
+  it.each(["UNCERTAIN", "NOT_DISPATCHED"])("returns an honest failure notice for %s without preparing actions or retrying", async status => {
     m.dispatch.mockResolvedValue({ status });
-    await expect(processPersonalModelSms(context(), env)).rejects.toThrow("OUTCOME_REQUIRES_REVIEW");
+    const result = await processPersonalModelSms(context(), env);
+    expect(result.reply).toContain("Je n’ai pas pu interpréter");
+    expect(result.reply).toContain("Aucun changement de calendrier");
+    expect(result.finalizeReview).toBeUndefined();
+    expect(m.dispatch).toHaveBeenCalledTimes(1);
+    expect(m.review).not.toHaveBeenCalled();
+  });
+  it("does not return even a failure notice after losing the claim", async () => {
+    m.dispatch.mockResolvedValue({ status: "CLAIM_LOST" });
+    await expect(processPersonalModelSms(context(), env)).rejects.toThrow("SOURCE_CLAIM_LOST");
+    expect(m.review).not.toHaveBeenCalled();
+  });
+  it("rechecks the live source after an uncertain provider result", async () => {
+    m.dispatch.mockImplementation(async () => { m.query.mockResolvedValue([]); return { status: "UNCERTAIN" }; });
+    await expect(processPersonalModelSms(context(), env)).rejects.toThrow("SOURCE_CLAIM_LOST");
     expect(m.review).not.toHaveBeenCalled();
   });
   it("never describes READ_REVIEW_ONLY as a fetched agenda", () => {

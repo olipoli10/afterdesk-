@@ -77,6 +77,9 @@ describe("OFF registry transaction and authoritative source boundary", () => {
     const sql = f.query.mock.calls[0][0] as string;
     expect(sql).toContain('mc."revokedAt" IS NULL'); expect(sql).toContain("FOR SHARE OF s,w,m,i,a,sg,child,ma,mc,mg,ga,gc,gg");
     expect(sql).toContain("clock_timestamp()"); expect(sql).not.toContain("secretCiphertext");
+    expect(sql).toContain("ga.provider IN ('google_calendar','endvera_android_device')");
+    expect(sql).toContain("ga.provider='endvera_android_device' AND 'device:calendar:write'=ANY(ga.\"grantedScopes\") AND 'device:calendar:write'=ANY(gg.\"grantedScopes\")");
+    expect(sql).toContain("ga.provider='google_calendar' AND $7=ANY(ga.\"grantedScopes\") AND $7=ANY(gg.\"grantedScopes\")");
   });
   it.each(["2026-09-10T01:18:25Z", "2026-10-10T01:18:26Z"])("rejects inactive pilot at DB instant %s", async timestamp => {
     await expect(temporalCurrentBinding(db([{ ...bindingRow(), now: new Date(timestamp) }]).tx, actor, "source", "child", env)).rejects.toThrow("PILOT_INACTIVE");

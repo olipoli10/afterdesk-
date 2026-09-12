@@ -53,7 +53,7 @@ const span = (body: string, quote: string) => ({ quote, start: body.indexOf(quot
 // generated encrypted synthetic tokens and always inject the Google transport.
 // SMS acceptance below
 // is explicitly TEST-CREATED database evidence, never a provider/delivery claim.
-async function fixture(temporalOptions: { body?: string; start?: string; end?: string; missingEnd?: boolean } = {}) {
+async function fixture(temporalOptions: { body?: string; start?: string; end?: string; missingEnd?: boolean; android?: boolean } = {}) {
   const chosenTemporalBody = temporalOptions.body ?? temporalBody;
   const f = await personalModelFixture(chosenTemporalBody);
   const actor = { userId: f.userId, workspaceId: f.workspaceId };
@@ -65,10 +65,11 @@ async function fixture(temporalOptions: { body?: string; start?: string; end?: s
     GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
   const modelCredential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: f.modelAccountId, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
   await prisma.constructionConnectorAccount.update({ where: { id: f.modelAccountId }, data: { credentialRef: modelCredential.id } });
-  const google = await prisma.constructionConnectorAccount.create({ data: { workspaceId: f.workspaceId, createdByUserId: f.userId, provider: "google_calendar", status: "prepared",
+  const calendarScope = temporalOptions.android ? "device:calendar:write" : GOOGLE_CALENDAR_WRITE_SCOPE;
+  const google = await prisma.constructionConnectorAccount.create({ data: { workspaceId: f.workspaceId, createdByUserId: f.userId, provider: temporalOptions.android ? "endvera_android_device" : "google_calendar", status: "prepared",
     externalAccountKeyHash: sha(`synthetic-google:${f.workspaceId}`),
-    grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
-      requestedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE], grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } } }, include: { grants: true } });
+    grantedScopes: [calendarScope], grants: { create: { capability: "calendar_write", status: "active", grantedAt: f.now,
+      requestedScopes: [calendarScope], grantedScopes: [calendarScope] } } }, include: { grants: true } });
   const credential = await prisma.constructionConnectorCredential.create({ data: { workspaceId: f.workspaceId, connectorAccountId: google.id, ciphertext: "SYNTHETIC_NEVER_DECRYPTED" } });
   await prisma.constructionConnectorAccount.update({ where: { id: google.id }, data: { status: "connected", credentialRef: credential.id } });
   async function candidate(kind: "temporal" | "calendar" = "temporal", original = false, existingClaim?: PersonalSmsSourceClaim) {
@@ -169,8 +170,8 @@ async function budget() {
   return prisma.$queryRawUnsafe(`SELECT id,"reservedCadMicros","ceilingCadMicros" FROM "PersonalAssistantBudget" ORDER BY id`);
 }
 
-async function outboundFixture(ttlMs?: number) {
-  const f = await fixture(), c = await f.candidate("temporal", true), p = await prepare(f, c, ttlMs === undefined ? undefined : { ttlMs });
+async function outboundFixture(ttlMs?: number, android = false) {
+  const f = await fixture({ android }), c = await f.candidate("temporal", true), p = await prepare(f, c, ttlMs === undefined ? undefined : { ttlMs });
   const grant = await prisma.constructionConnectorGrant.create({ data: { connectorAccountId: f.smsAccountId, capability: "personal_sms_send",
     status: "active", grantedAt: new Date(), requestedScopes: ["personal_sms_send"], grantedScopes: ["personal_sms_send"] } });
   const env: NodeJS.ProcessEnv = { ...f.env, ENDVERA_SMS_TEMPORAL_CLARIFICATION_BRIDGE_ENABLED: "true", ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED",
@@ -1604,6 +1605,16 @@ describe("durable receipt inspection after actual synthetic HTTP acceptance and 
 });
 
 describe("native temporal scheduling excludes retained invalid questions before LIMIT1", () => {
+  it.each(["ACTIVE", "WRONG_SCOPE", "REVOKED"])("Android calendar %s keeps the temporal SMS path provider-scoped", async mode => {
+    const { f, p, env } = await outboundFixture(undefined, true);
+    if (mode === "WRONG_SCOPE") await prisma.constructionConnectorGrant.update({ where: { id: f.google.grants[0].id }, data: { grantedScopes: [GOOGLE_CALENDAR_WRITE_SCOPE] } });
+    if (mode === "REVOKED") await prisma.constructionConnectorGrant.update({ where: { id: f.google.grants[0].id }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [], stateVersion: { increment: 1 } } });
+    const selection = await selectPersonalAutomaticOutboundCandidates({ enabled: true, limit: 10 }, {
+      ...env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true",
+    });
+    expect(selection.candidates.some(row => row.id === p.questionId)).toBe(mode === "ACTIVE");
+    expect(selection.executionAuthorized).toBe(false);
+  });
   it.each(["ELIGIBLE", "STORE_OFF", "BRIDGE_OFF", "EXPIRED", "TERMINAL", "GOOGLE_REVOKED", "MODEL_REVOKED", "IDENTITY_REVISED", "OWNER_REVISED"])("%s preserves evidence while selecting the correct oldest candidate", async mode => {
     const short = mode === "EXPIRED" || mode === "TERMINAL";
     const { f, p, env } = await outboundFixture(short ? 1000 : undefined);
