@@ -23,7 +23,7 @@ type Inspected = ReturnType<typeof inspectPersonalIntentCandidate>;
 export type OpenRouterPersonalIntentResult =
   | Readonly<{ status: "NOT_DISPATCHED"; reason: "DISABLED" | "INVALID_INPUT" | "ABORTED"; dispatched: false; executionAuthorized: false }>
   | Readonly<{ status: "PROPOSAL_INSPECTED_NOT_AUTHORIZED"; dispatched: true; executionAuthorized: false; accounting: "UNSETTLED"; providerRequestId: string; inspected: Inspected }>
-  | Readonly<{ status: "DISPATCH_OUTCOME_UNCERTAIN"; reason: "TIMEOUT" | "ABORTED" | "TRANSPORT_ERROR" | "HTTP_ERROR" | "INVALID_RESPONSE"; dispatched: true; executionAuthorized: false; accounting: "UNSETTLED" }>;
+  | Readonly<{ status: "DISPATCH_OUTCOME_UNCERTAIN"; reason: "TIMEOUT" | "ABORTED" | "TRANSPORT_ERROR" | "HTTP_ERROR" | "INVALID_RESPONSE"; diagnosticCode?: string; dispatched: true; executionAuthorized: false; accounting: "UNSETTLED" }>;
 
 // Non-authoritative envelope metadata is discarded. Tool calls/refusals cannot
 // enter through alternate message fields; even otherwise-valid content is refused.
@@ -39,7 +39,16 @@ const wireSchema = z.object({
   })).length(1),
 });
 const notDispatched = (reason: "DISABLED" | "INVALID_INPUT" | "ABORTED"): OpenRouterPersonalIntentResult => Object.freeze({ status: "NOT_DISPATCHED", reason, dispatched: false, executionAuthorized: false });
-const uncertain = (reason: "TIMEOUT" | "ABORTED" | "TRANSPORT_ERROR" | "HTTP_ERROR" | "INVALID_RESPONSE"): OpenRouterPersonalIntentResult => Object.freeze({ status: "DISPATCH_OUTCOME_UNCERTAIN", reason, dispatched: true, executionAuthorized: false, accounting: "UNSETTLED" });
+const uncertain = (reason: "TIMEOUT" | "ABORTED" | "TRANSPORT_ERROR" | "HTTP_ERROR" | "INVALID_RESPONSE", diagnosticCode?: string): OpenRouterPersonalIntentResult => Object.freeze({ status: "DISPATCH_OUTCOME_UNCERTAIN", reason, ...(diagnosticCode ? { diagnosticCode } : {}), dispatched: true, executionAuthorized: false, accounting: "UNSETTLED" });
+
+// Closed diagnostic vocabulary only: never return provider text, quotes or keys.
+function proposalDiagnostic(error: unknown): string {
+  if (error instanceof SyntaxError) return "PROPOSAL_JSON_INVALID";
+  if (error instanceof z.ZodError) return "PROPOSAL_SCHEMA_INVALID";
+  const allowed = new Set(["PERSONAL_INTENT_RESPONSE_LIMIT", "PERSONAL_INTENT_REQUEST_MISMATCH",
+    "PERSONAL_INTENT_ACTION_ORDER_INVALID", "PERSONAL_INTENT_SOURCE_SPAN_MISMATCH"]);
+  return error instanceof Error && allowed.has(error.message) ? error.message : "PROPOSAL_INVALID";
+}
 
 export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
   enabled?: boolean; modelKey: string; providerEndpointSlug: string; timeoutMs: number;
@@ -106,11 +115,18 @@ export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
         if (outcome.value?.httpStatus !== 200) return uncertain("HTTP_ERROR");
         try {
           const raw = outcome.value.body;
-          if (typeof raw !== "string" || Buffer.byteLength(raw, "utf8") > 131_072) throw new Error();
-          const wire = wireSchema.parse(JSON.parse(raw));
-          if (wire.model !== modelKey) throw new Error();
-          if (wire.choices[0].message.model !== undefined && wire.choices[0].message.model !== wire.model) throw new Error();
-          const inspected = inspectPersonalIntentCandidate(wire.choices[0].message.content, input);
+          if (typeof raw !== "string" || Buffer.byteLength(raw, "utf8") > 131_072) return uncertain("INVALID_RESPONSE", "WIRE_RESPONSE_LIMIT");
+          let decoded: unknown;
+          try { decoded = JSON.parse(raw); } catch { return uncertain("INVALID_RESPONSE", "WIRE_JSON_INVALID"); }
+          const parsed = wireSchema.safeParse(decoded);
+          if (!parsed.success) return uncertain("INVALID_RESPONSE", parsed.error.issues.some(issue => issue.path.includes("finish_reason"))
+            ? "OUTPUT_NOT_FINISHED" : "WIRE_SCHEMA_INVALID");
+          const wire = parsed.data;
+          if (wire.model !== modelKey) return uncertain("INVALID_RESPONSE", "SERVED_MODEL_MISMATCH");
+          if (wire.choices[0].message.model !== undefined && wire.choices[0].message.model !== wire.model) return uncertain("INVALID_RESPONSE", "MESSAGE_MODEL_MISMATCH");
+          let inspected: Inspected;
+          try { inspected = inspectPersonalIntentCandidate(wire.choices[0].message.content, input); }
+          catch (error) { return uncertain("INVALID_RESPONSE", proposalDiagnostic(error)); }
           return Object.freeze({ status: "PROPOSAL_INSPECTED_NOT_AUTHORIZED", dispatched: true, executionAuthorized: false,
             accounting: "UNSETTLED", providerRequestId: wire.id, inspected });
         } catch { return uncertain("INVALID_RESPONSE"); }

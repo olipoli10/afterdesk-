@@ -109,7 +109,7 @@ async function main() {
       : result.status === "PROPOSAL_INSPECTED_NOT_AUTHORIZED"
         ? { status: result.status, providerRequestId: result.providerRequestId, actionKinds: result.inspected.proposal.actions.map(action => action.kind),
           responseFingerprint: canonicalFingerprint(result), actionAuthority: false }
-        : { status: result.status, diagnosticCode: safeAdapterReason(result.reason), actionAuthority: false };
+        : { status: result.status, diagnosticCode: safeAdapterReason("diagnosticCode" in result && result.diagnosticCode ? result.diagnosticCode : result.reason), actionAuthority: false };
     stage = "RECORD_RESULT";
     await prisma.constructionAuditEvent.create({ data: { id: `${id}:result`, workspaceId: ingress.manifest.workspaceId,
       actorUserId: ingress.manifest.ownerUserId, entityType: "operator_answer_canary", entityId: id,

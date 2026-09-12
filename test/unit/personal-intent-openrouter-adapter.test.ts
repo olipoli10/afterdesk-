@@ -12,6 +12,26 @@ const create = (transport: OpenRouterPersonalIntentTransport, options: { enabled
   createOpenRouterPersonalIntentAdapter({ modelKey: "synthetic/model", providerEndpointSlug: "synthetic/provider", timeoutMs: 1000, ...options, transport });
 
 describe("OFF-by-default personal OpenRouter transport adapter", () => {
+  it.each([
+    ["finish", "OUTPUT_NOT_FINISHED"], ["span", "PERSONAL_INTENT_SOURCE_SPAN_MISMATCH"],
+    ["fingerprint", "PERSONAL_INTENT_REQUEST_MISMATCH"], ["schema", "PROPOSAL_SCHEMA_INVALID"],
+  ])("reports a safe diagnostic for %s without exposing source or provider text", async (kind, diagnosticCode) => {
+    const body = wire();
+    if (kind === "finish") body.choices[0].finish_reason = "length";
+    else {
+      const proposal = structuredClone(value);
+      if (kind === "span") proposal.actions[0].period.start = 0;
+      if (kind === "fingerprint") proposal.requestFingerprint = `sha256:${"f".repeat(64)}`;
+      if (kind === "schema") Object.assign(proposal, { secretProviderBody: "not-for-logs" });
+      body.choices[0].message.content = JSON.stringify(proposal);
+    }
+    const transport = vi.fn(async () => ({ httpStatus: 200, body: JSON.stringify(body) }));
+    const result = await create(transport).dispatch(input, signal());
+    expect(result).toMatchObject({ status: "DISPATCH_OUTCOME_UNCERTAIN", reason: "INVALID_RESPONSE", diagnosticCode, executionAuthorized: false });
+    expect(transport).toHaveBeenCalledOnce();
+    expect(JSON.stringify(result)).not.toContain("not-for-logs");
+    expect(JSON.stringify(result)).not.toContain(input.source);
+  });
   it("works with a strict reasoning endpoint that refuses temperature", async () => {
     const transport = vi.fn<OpenRouterPersonalIntentTransport>(async request =>
       "temperature" in request ? { httpStatus: 404, body: "" } : response());
