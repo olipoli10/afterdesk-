@@ -32,8 +32,9 @@ const cases = [
   ["calendar-complete", "Ajoute Visite demain à 14:00 jusqu’à 15:00."],
 ] as const;
 async function main() {
-  if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-5]$/u.test(incident)) throw new Error();
+  if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-6]$/u.test(incident)) throw new Error();
   if (incident === "20260912-r5" && env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE !== "calendar-intent") throw new Error();
+  if (incident === "20260912-r6" && env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE !== "capacity") throw new Error();
   const ingress = inspectPersonalModelIngressConfiguration(readPersonalOperatorConfiguration(env));
   const config = loadAnswerConfiguration(env, false);
   if (!config) throw new Error();
@@ -58,7 +59,8 @@ async function main() {
     console.info(JSON.stringify({ event: "incident.twilio_preflight", ready: false, diagnosticCode: code }));
   }
   for (const [name, body] of cases) {
-    if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE && name !== env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE) continue;
+    if (incident === "20260912-r6" ? !["general", "calendar-complete"].includes(name)
+      : env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE && name !== env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE) continue;
     const id = `operator-canary:${incident}:${name}`;
     const receivedAt = new Date().toISOString();
     const intent = name.startsWith("calendar-") ? createPersonalIntentInput(id, body) : null;
@@ -116,7 +118,7 @@ async function main() {
           // Synthetic canary only. Inspect field TYPES, never message content,
           // arbitrary provider values or unknown property names. The transport
           // has already enforced the byte bound; never clone an unbounded body.
-          if (response.httpStatus === 200 && ["20260912-r4", "20260912-r5"].includes(incident)) {
+          if (response.httpStatus === 200 && ["20260912-r4", "20260912-r5", "20260912-r6"].includes(incident)) {
             let envelope;
             try { envelope = JSON.parse(response.body); } catch { envelope = null; }
             const message = envelope?.choices?.[0]?.message;
