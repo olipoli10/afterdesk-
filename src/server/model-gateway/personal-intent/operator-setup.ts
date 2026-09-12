@@ -135,7 +135,7 @@ export function inspectPersonalModelSetupManifest(raw: unknown) {
 }
 
 export type PersonalModelSetupContext = Readonly<{ expectedHead: string; expectedSchemaCatalogSha256: string; expectedArtifactHash: string; expectedManifestHash: string;
-  deadlineAt: number; monotoneDeadlineAt: number; signal?: AbortSignal }>;
+  deadlineAt: number; monotoneDeadlineAt: number; signal?: AbortSignal; diagnosticStages?: true }>;
 type Tx = Prisma.TransactionClient;
 type Mapped = ReturnType<typeof inspectPersonalModelSetupManifest>;
 
@@ -224,17 +224,22 @@ async function storedAnswer(tx: Tx, mapped: Mapped, c: ReturnType<typeof invocat
  */
 export async function applyPersonalModelOperatorSetupInTransaction(tx: Tx, raw: unknown, apiKey: string,
   env: NodeJS.ProcessEnv, context: PersonalModelSetupContext) {
+  let stage = "MANIFEST";
   try {
   const mapped = inspectPersonalModelSetupManifest(raw), c = invocation(tx, mapped, context, env, true);
   const answer = mapped.answer;
+  stage = "TRANSACTION";
   await transaction(tx, c);
   const keys = [`personal-model-setup:workspace:${mapped.manifest.workspaceId}`,
     `personal-model-setup:route:${mapped.route.routeKey}:${mapped.route.version}`,
     `personal-model-setup:policy:${mapped.policy.policyKey}:${mapped.policy.version}`,
     ...(answer ? [`personal-model-setup:route:${answer.route.routeKey}:${answer.route.version}`,
       `personal-model-setup:policy:${answer.policy.policyKey}:${answer.policy.version}`] : [])].sort();
+  stage = "LOCKS";
   for (const key of keys) { await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock(hashtextextended($1,0))::text AS acquired", key); c.live(); }
+  stage = "REBUILD";
   const now = await clock(tx, c); await rebuilt(mapped, now); c.live();
+  stage = "COLLISIONS";
   const routeCollision = await tx.modelGatewayRouteProfile.findFirst({ where: { OR: [{ id: mapped.route.id },
     { routeKey: mapped.route.routeKey, version: mapped.route.version }, { canonicalHash: mapped.route.canonicalHash }] }, select: { id: true } }); c.live();
   const policyCollision = await tx.modelGatewayPolicyVersion.findFirst({ where: { OR: [{ id: mapped.policy.id },
@@ -244,25 +249,35 @@ export async function applyPersonalModelOperatorSetupInTransaction(tx: Tx, raw: 
   const answerPolicyCollision = answer ? await tx.modelGatewayPolicyVersion.findFirst({ where: { OR: [{ id: answer.policy.id },
     { policyKey: answer.policy.policyKey, version: answer.policy.version }, { canonicalHash: answer.policy.canonicalHash }] }, select: { id: true } }) : null; c.live();
   if (routeCollision || policyCollision || answerRouteCollision || answerPolicyCollision) fail();
+  stage = "CREDENTIAL";
   const { provisionInitialPersonalModelCredentialInTransaction } = await import("@/server/personal-assistant/model-connection"); c.live();
   await provisionInitialPersonalModelCredentialInTransaction(tx, { userId: mapped.manifest.ownerUserId,
     workspaceId: mapped.manifest.workspaceId, credentialId: mapped.manifest.setupId, apiKey }, env, c); c.live();
+  stage = "INTENT_ROUTE";
   await tx.modelGatewayRouteProfile.create({ data: { ...mapped.route, pricingEvidence: mapped.route.pricingEvidence as Prisma.InputJsonObject,
     privacyEvidence: mapped.route.privacyEvidence as Prisma.InputJsonObject, status: "published", publishedAt: now } }); c.live();
+  stage = "INTENT_POLICY";
   await tx.modelGatewayPolicyVersion.create({ data: { ...mapped.policy, status: "published", publishedAt: now } }); c.live();
   if (answer) {
+    stage = "ANSWER_ROUTE";
     await tx.modelGatewayRouteProfile.create({ data: { ...answer.route, pricingEvidence: answer.route.pricingEvidence as Prisma.InputJsonObject,
       privacyEvidence: answer.route.privacyEvidence as Prisma.InputJsonObject, status: "published", publishedAt: now } }); c.live();
+    stage = "ANSWER_POLICY";
     await tx.modelGatewayPolicyVersion.create({ data: { ...answer.policy, status: "published", publishedAt: now } }); c.live();
   }
+  stage = "STORED_VERIFICATION";
   await stored(tx, mapped, c); if (answer) await storedAnswer(tx, mapped, c);
+  stage = "FINAL_REBUILD";
   const finalNow = await clock(tx, c); if (finalNow < now) fail();
   await rebuilt(mapped, finalNow); c.live();
   return frozen({ status: "SETUP_PREPARED_NOT_COMMITTED" as const, setupId: mapped.manifest.setupId,
     artifactHash: mapped.manifest.artifact.artifactHash, manifestHash: mapped.manifestHash, routeHash: mapped.route.canonicalHash, policyHash: mapped.policy.canonicalHash,
     committed: false as const, executionAuthorized: false as const, providerVerified: false as const, consentCreated: false as const,
     budgetAvailabilityVerified: false as const, runtimeActivated: false as const });
-  } catch { return fail(); }
+  } catch {
+    if (context.diagnosticStages) throw new Error(`PERSONAL_MODEL_SETUP_STAGE_${stage}`);
+    return fail();
+  }
 }
 
 /** Read-only historical integrity, not renewed review/consent or write replay.

@@ -108,8 +108,16 @@ describe("one-time personal model bootstrap diagnostics", () => {
   it("dispatches only an exact setup reference", async () => {
     expect((await POST(request())).status).toBe(200);
     expect(h.apply).toHaveBeenCalledTimes(1);
+    expect(h.apply.mock.calls[0]?.[2]).toMatchObject({ diagnosticStages: true });
     h.read.mockResolvedValueOnce({ setupRef: "22345678-1234-4234-8234-123456789abc", apiKey: "synthetic" });
     expect((await POST(request())).status).toBe(404);
     expect(h.apply).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns only a bounded setup stage after dispatch", async () => {
+    h.apply.mockRejectedValueOnce(new Error("PERSONAL_MODEL_SETUP_STAGE_CREDENTIAL"));
+    const response = await POST(request());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ status: "SETUP_STAGE_CREDENTIAL", automaticRetry: false });
   });
 });

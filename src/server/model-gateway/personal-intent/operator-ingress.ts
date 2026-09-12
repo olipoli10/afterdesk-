@@ -15,7 +15,7 @@ const configurationKey = "ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION";
 const uuid = z.string().regex(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
 const actorSchema = z.object({ userId: z.string().min(1).max(191), role: z.literal("CLIENT"), emailVerified: z.literal(true) }).strict();
 type Actor = Readonly<{ userId: string; role: string; emailVerified: boolean }>;
-export type PersonalModelOperatorIngressContext = Readonly<{ deadlineAt: number; monotoneDeadlineAt: number; signal?: AbortSignal }>;
+export type PersonalModelOperatorIngressContext = Readonly<{ deadlineAt: number; monotoneDeadlineAt: number; signal?: AbortSignal; diagnosticStages?: true }>;
 type Tx = Prisma.TransactionClient;
 type Receipt = ReturnType<typeof buildPersonalModelSetupApplied>["metadata"]["receipt"];
 const publications = new WeakMap<object, () => void>();
@@ -58,9 +58,10 @@ function databaseUrl(value: unknown, direct: boolean) {
 
 function begin(raw: unknown, env: NodeJS.ProcessEnv, context: PersonalModelOperatorIngressContext, write: boolean) {
   let lastWall = Date.now(), lastMono = performance.now();
-  const entry = plain(context, ["deadlineAt", "monotoneDeadlineAt", "signal"]);
+  const entry = plain(context, ["deadlineAt", "monotoneDeadlineAt", "signal", "diagnosticStages"]);
   if (typeof entry.deadlineAt !== "number" || typeof entry.monotoneDeadlineAt !== "number"
-    || entry.signal !== undefined && (types.isProxy(entry.signal) || !(entry.signal instanceof AbortSignal))) refused();
+    || entry.signal !== undefined && (types.isProxy(entry.signal) || !(entry.signal instanceof AbortSignal))
+    || entry.diagnosticStages !== undefined && entry.diagnosticStages !== true) refused();
   const signal = entry.signal as AbortSignal | undefined;
   const deadlineAt = Math.min(entry.deadlineAt as number, lastWall + 15000);
   const monotoneDeadlineAt = Math.min(entry.monotoneDeadlineAt as number, lastMono + 15000);
@@ -109,7 +110,8 @@ function begin(raw: unknown, env: NodeJS.ProcessEnv, context: PersonalModelOpera
     live();
   };
   live();
-  return { config, actor, apiKey, live, remaining, observeDb, context: { deadlineAt, monotoneDeadlineAt, signal } };
+  return { config, actor, apiKey, live, remaining, observeDb,
+    context: { deadlineAt, monotoneDeadlineAt, signal, ...(entry.diagnosticStages === true ? { diagnosticStages: true as const } : {}) } };
 }
 type Invocation = ReturnType<typeof begin>;
 
@@ -209,7 +211,10 @@ export async function applyPersonalModelOperatorIngress(input: Readonly<{ actor:
       await clock(tx, i); i.live(); return checked.metadata.receipt;
     }, options(i, 10000));
     return publishReceipt(receipt, i);
-  } catch { return attempted ? unknown() : refused(); }
+  } catch (error) {
+    if (context.diagnosticStages && error instanceof Error && /^PERSONAL_MODEL_SETUP_STAGE_[A-Z_]+$/.test(error.message)) throw error;
+    return attempted ? unknown() : refused();
+  }
 }
 
 /** Historical read only; expired configuration/consent/key do not authorize a retry. */

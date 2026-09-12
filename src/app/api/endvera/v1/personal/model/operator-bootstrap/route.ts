@@ -143,13 +143,17 @@ export async function POST(request: Request) {
       deadlineAt: context.deadlineAt,
       monotoneDeadlineAt: context.monotoneDeadlineAt,
       signal: context.signal,
+      diagnosticStages: true,
     });
     context.remaining();
     assertPersonalModelOperatorIngressPublication(receipt);
     const encoded = JSON.stringify(receipt);
     if (Buffer.byteLength(encoded, "utf8") > PERSONAL_MODEL_INGRESS_LIMITS.receiptUtf8) throw new Error("RECEIPT_TOO_LARGE");
     return new Response(encoded, { status: 200, headers });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && /^PERSONAL_MODEL_SETUP_STAGE_[A-Z_]+$/.test(error.message)) {
+      return response(503, error.message.replace("PERSONAL_MODEL_SETUP_STAGE_", "SETUP_STAGE_"));
+    }
     return response(503, dispatched ? "UNKNOWN" : "REFUSED");
   }
 }
