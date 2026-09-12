@@ -78,13 +78,17 @@ export async function POST(request: Request) {
     const handoff = await browserHandoff(request);
     if (!authorized(request) && !handoff.authorized) return response(404, "UNAVAILABLE");
     request = handoff.request;
+    const storedConfiguration = process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION;
+    const normalizedConfiguration = typeof storedConfiguration === "string"
+      ? storedConfiguration.replace(/^\uFEFF/, "").trim()
+      : storedConfiguration;
     let ingress: ReturnType<typeof inspectPersonalModelIngressConfiguration>;
     try {
       ingress = inspectPersonalModelIngressConfiguration(
-        process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION,
+        normalizedConfiguration,
       );
     } catch {
-      const raw = process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION;
+      const raw = normalizedConfiguration;
       if (typeof raw !== "string") return response(503, "CONFIGURATION_MISSING");
       if (Buffer.byteLength(raw, "utf8") > PERSONAL_MODEL_INGRESS_LIMITS.configurationUtf8) {
         return response(503, "CONFIGURATION_TOO_LARGE");

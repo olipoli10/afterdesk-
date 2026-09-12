@@ -89,6 +89,12 @@ describe("one-time personal model bootstrap diagnostics", () => {
     expect(await command.text()).toBe('{"status":"COMMAND_REFUSED","automaticRetry":false}');
   });
 
+  it("normalizes a transport BOM and outer whitespace before inspecting configuration", async () => {
+    vi.stubEnv("ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION", "\uFEFF  synthetic  \r\n");
+    await POST(request());
+    expect(h.inspect).toHaveBeenCalledWith("synthetic");
+  });
+
   it("dispatches only an exact setup reference", async () => {
     expect((await POST(request())).status).toBe(200);
     expect(h.apply).toHaveBeenCalledTimes(1);
