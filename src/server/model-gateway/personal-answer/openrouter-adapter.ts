@@ -111,19 +111,31 @@ export function createOpenRouterAnswerAdapter(configuration: AnswerAdapterConfig
         if (signal.aborted) return uncertain("ABORTED");
         if (response.httpStatus !== 200) return uncertain("HTTP_ERROR", { httpStatus: response.httpStatus, resultContractStatus: "not_evaluated" });
         if (typeof response.body !== "string" || Buffer.byteLength(response.body, "utf8") > 131_072) return uncertain("INVALID_RESPONSE", { httpStatus: 200, resultContractStatus: "invalid" });
-        try {
-          const wire = wireSchema.parse(JSON.parse(response.body));
-          if (!config.allowedModels.includes(wire.model)) return uncertain("SERVED_MODEL_NOT_ALLOWED", { httpStatus: 200, resultContractStatus: "invalid" });
-          const observedAt = new Date().toISOString();
-          const citations: AnswerCitation[] = (wire.choices[0].message.annotations ?? []).map((a, i) => ({
-            id: `s${i + 1}`, url: a.url_citation.url, title: a.url_citation.title, excerpt: a.url_citation.content, observedAt,
-          }));
-          if (input.operation === ANSWER_OPERATION && wire.usage.server_tool_use?.web_search_requests) return uncertain("UNEXPECTED_TOOL_USAGE", { httpStatus: 200, resultContractStatus: "invalid" });
-          if (input.operation === RESEARCH_OPERATION && wire.usage.server_tool_use?.web_search_requests !== 1) return uncertain("SEARCH_NOT_OBSERVED", { httpStatus: 200, resultContractStatus: "invalid" });
-          const answer = inspectAnswer(JSON.parse(wire.choices[0].message.content), input, citations);
-          return { status: "ANSWER_INSPECTED", dispatched: true, accounting: "UNSETTLED", actionAuthority: false,
-            providerRequestId: wire.id, requestedModel: "openrouter/auto", servedModel: wire.model, usage: wire.usage, answer, observedAt };
-        } catch { return uncertain("INVALID_RESPONSE", { httpStatus: 200, resultContractStatus: "invalid" }); }
+        let decoded: unknown;
+        try { decoded = JSON.parse(response.body); }
+        catch { return uncertain("INVALID_RESPONSE_NOT_JSON", { httpStatus: 200, resultContractStatus: "invalid" }); }
+        const inspectedWire = wireSchema.safeParse(decoded);
+        if (!inspectedWire.success) {
+          const root = inspectedWire.error.issues[0]?.path[0];
+          const section = root === "id" || root === "model" || root === "choices" || root === "usage" ? String(root).toUpperCase() : "SHAPE";
+          return uncertain(`INVALID_WIRE_${section}`, { httpStatus: 200, resultContractStatus: "invalid" });
+        }
+        const wire = inspectedWire.data;
+        if (!config.allowedModels.includes(wire.model)) return uncertain("SERVED_MODEL_NOT_ALLOWED", { httpStatus: 200, resultContractStatus: "invalid" });
+        const observedAt = new Date().toISOString();
+        const citations: AnswerCitation[] = (wire.choices[0].message.annotations ?? []).map((a, i) => ({
+          id: `s${i + 1}`, url: a.url_citation.url, title: a.url_citation.title, excerpt: a.url_citation.content, observedAt,
+        }));
+        if (input.operation === ANSWER_OPERATION && wire.usage.server_tool_use?.web_search_requests) return uncertain("UNEXPECTED_TOOL_USAGE", { httpStatus: 200, resultContractStatus: "invalid" });
+        if (input.operation === RESEARCH_OPERATION && wire.usage.server_tool_use?.web_search_requests !== 1) return uncertain("SEARCH_NOT_OBSERVED", { httpStatus: 200, resultContractStatus: "invalid" });
+        let candidate: unknown;
+        try { candidate = JSON.parse(wire.choices[0].message.content); }
+        catch { return uncertain("INVALID_ANSWER_NOT_JSON", { httpStatus: 200, resultContractStatus: "invalid" }); }
+        let answer: ReturnType<typeof inspectAnswer>;
+        try { answer = inspectAnswer(candidate, input, citations); }
+        catch { return uncertain("INVALID_ANSWER_CONTRACT", { httpStatus: 200, resultContractStatus: "invalid" }); }
+        return { status: "ANSWER_INSPECTED", dispatched: true, accounting: "UNSETTLED", actionAuthority: false,
+          providerRequestId: wire.id, requestedModel: "openrouter/auto", servedModel: wire.model, usage: wire.usage, answer, observedAt };
       } catch { return uncertain(signal.aborted ? "ABORTED" : controller.signal.aborted ? "TIMEOUT" : "TRANSPORT_ERROR"); }
       finally { if (timer) clearTimeout(timer); signal.removeEventListener("abort", abort); }
     },

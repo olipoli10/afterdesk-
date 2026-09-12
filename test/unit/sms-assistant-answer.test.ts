@@ -41,7 +41,9 @@ describe("answer-only OpenRouter candidate", () => {
     expect(rejected).toMatchObject({ status: "UNCERTAIN", reason: "HTTP_ERROR", httpStatus: 429, resultContractStatus: "not_evaluated" });
     expect(JSON.stringify(rejected)).not.toContain(privateMarker);
     expect(await createOpenRouterAnswerAdapter(config, async () => ({ httpStatus: 200, body: "not-json" })).dispatch(input, signal()))
-      .toMatchObject({ status: "UNCERTAIN", reason: "INVALID_RESPONSE", httpStatus: 200, resultContractStatus: "invalid" });
+      .toMatchObject({ status: "UNCERTAIN", reason: "INVALID_RESPONSE_NOT_JSON", httpStatus: 200, resultContractStatus: "invalid" });
+    expect(await createOpenRouterAnswerAdapter(config, async () => response({ ...wire(), usage: null })).dispatch(input, signal()))
+      .toMatchObject({ status: "UNCERTAIN", reason: "INVALID_WIRE_USAGE", httpStatus: 200, resultContractStatus: "invalid" });
   });
   it("cannot interpret action or identity requests through answer-only dispatch", () => {
     for (const body of ["Appelle Marc", "mon horaire"]) expect(() => createAnswerInput(source(body))).toThrow("ANSWER_LANE_REFUSED");
