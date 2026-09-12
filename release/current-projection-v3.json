@@ -44,9 +44,9 @@
     }
   ],
   "mobileConfiguration": {
-    "semanticVersion": "0.2.0",
+    "semanticVersion": "0.2.1",
     "iosBuildNumber": "1",
-    "androidVersionCode": 9,
+    "androidVersionCode": 10,
     "accountDeletionPath": "/account-deletion"
   },
   "evidenceClass": "STATIC_SOURCE_CONFIGURATION_ONLY",

@@ -44,7 +44,7 @@ describe("founder device access", () => {
   });
 
   it("covers every useful permission without SMS or call-log surveillance", () => {
-    expect(DEVICE_RESOURCES).toEqual(["CONTACTS", "CALENDAR", "MICROPHONE", "CAMERA", "PHOTOS", "NOTIFICATIONS", "LOCATION"]);
+    expect(DEVICE_RESOURCES).toEqual(["CALENDAR", "CONTACTS", "MICROPHONE", "CAMERA", "PHOTOS", "NOTIFICATIONS", "LOCATION"]);
     expect(screenSource).toContain("Tu écris au numéro ENDVERA depuis l’application Messages normale");
     expect(screenSource).toContain("Le serveur prépare une action");
     expect(screenSource).not.toContain("READ_SMS");
@@ -56,5 +56,13 @@ describe("founder device access", () => {
     expect(screenSource).toContain("async function askNativePermission");
     expect(screenSource.match(/catch \{/gu)?.length).toBeGreaterThanOrEqual(3);
     expect(screenSource).not.toContain("Promise.all([Contacts.getPermissionsAsync()");
+  });
+
+  it("never leaves the permission review button silent", () => {
+    expect(screenSource).toContain("Une vérification est déjà en cours. Réessaie dans un instant.");
+    expect(screenSource).toContain("Android vérifie les permissions une à une…");
+    expect(screenSource).toContain("Vérification terminée");
+    expect(screenSource).toContain("Vérification en cours…");
+    expect(screenSource).toContain("finally(() =>");
   });
 });

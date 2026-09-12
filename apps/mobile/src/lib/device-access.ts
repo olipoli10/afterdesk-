@@ -1,4 +1,4 @@
-export const DEVICE_RESOURCES = ["CONTACTS", "CALENDAR", "MICROPHONE", "CAMERA", "PHOTOS", "NOTIFICATIONS", "LOCATION"] as const;
+export const DEVICE_RESOURCES = ["CALENDAR", "CONTACTS", "MICROPHONE", "CAMERA", "PHOTOS", "NOTIFICATIONS", "LOCATION"] as const;
 export type DeviceResource = (typeof DEVICE_RESOURCES)[number];
 export type DeviceAccessStatus = "UNDETERMINED" | "DENIED" | "GRANTED" | "LIMITED" | "UNAVAILABLE";
 

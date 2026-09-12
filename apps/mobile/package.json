@@ -1,7 +1,7 @@
 {
   "name": "@endvera/mobile",
   "main": "expo-router/entry",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "dependencies": {
     "@better-auth/expo": "1.6.25",
     "better-auth": "1.6.25",

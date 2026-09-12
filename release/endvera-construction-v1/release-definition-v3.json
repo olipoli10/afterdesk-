@@ -23,7 +23,7 @@
       "target": "IOS",
       "appName": "ENDVERA",
       "slug": "endvera",
-      "semanticVersion": "0.2.0",
+      "semanticVersion": "0.2.1",
       "scheme": "endvera",
       "bundleIdentifier": "ai.endvera.mobile",
       "buildNumber": "1"
@@ -32,10 +32,10 @@
       "target": "ANDROID",
       "appName": "ENDVERA",
       "slug": "endvera",
-      "semanticVersion": "0.2.0",
+      "semanticVersion": "0.2.1",
       "scheme": "endvera",
       "package": "ai.endvera.mobile",
-      "versionCode": 9
+      "versionCode": 10
     }
   ],
   "publicPaths": {

@@ -97,6 +97,7 @@ export default function DeviceAccessScreen() {
   const [selectedCalendar, setSelectedCalendar] = useState<WritableDeviceCalendar | null>(null);
   const [deviceLinked, setDeviceLinked] = useState(false);
   const [bridgeOutcome, setBridgeOutcome] = useState<DeviceBridgeOutcome | null>(null);
+  const [permissionFeedback, setPermissionFeedback] = useState<string | null>(null);
   const mounted = useRef(false);
   // Native permission dialogs can foreground the app while a request is in flight.
   // Do not start a competing refresh or allow a second tap before React renders.
@@ -146,8 +147,11 @@ export default function DeviceAccessScreen() {
       setWritableCalendars(calendars);
       setSelectedCalendar(selected);
       setDeviceLinked(Boolean(bridge.identity && bridge.identity.workspaceId === activeWorkspace?.id));
+    }).catch(() => {
+      if (active) setError("Impossible de vérifier certains accès. Réessaie ou ouvre les réglages du téléphone.");
+    }).finally(() => {
       pending.current = false;
-      setBusy(null);
+      if (active) setBusy(null);
     });
     const subscription = AppState.addEventListener("change", state => {
       if (state === "active") void refresh();
@@ -156,10 +160,14 @@ export default function DeviceAccessScreen() {
   }, [activeWorkspace, refresh]);
 
   const request = async (resource: DeviceResource) => {
-    if (pending.current) return;
+    if (pending.current) {
+      setPermissionFeedback("Une vérification est déjà en cours. Réessaie dans un instant.");
+      return;
+    }
     pending.current = true;
     setBusy(resource);
     setError(null);
+    setPermissionFeedback(null);
     try {
       const current = await readNativePermission(resource);
       if (!mounted.current) return;
@@ -170,6 +178,7 @@ export default function DeviceAccessScreen() {
         setWritableCalendars(await listWritableDeviceCalendars());
       }
       if (permission.status === "UNAVAILABLE") setError(`${DEVICE_ACCESS_COPY[resource].title} n’est pas disponible sur ce téléphone.`);
+      else setPermissionFeedback(`${DEVICE_ACCESS_COPY[resource].title} : ${statusCopy[permission.status]}.`);
     } finally {
       pending.current = false;
       if (mounted.current) setBusy(null);
@@ -177,10 +186,14 @@ export default function DeviceAccessScreen() {
   };
 
   const requestAll = async () => {
-    if (pending.current) return;
+    if (pending.current) {
+      setPermissionFeedback("Une vérification est déjà en cours. Réessaie dans un instant.");
+      return;
+    }
     pending.current = true;
     setBusy("ALL");
     setError(null);
+    setPermissionFeedback("Android vérifie les permissions une à une…");
     try {
       const next: DeviceAccessState[] = [];
       for (const resource of DEVICE_RESOURCES) {
@@ -191,9 +204,21 @@ export default function DeviceAccessScreen() {
       }
       if (!mounted.current) return;
       setStates(next);
+      const calendars = await listWritableDeviceCalendars();
+      if (!mounted.current) return;
+      setWritableCalendars(calendars);
+      const granted = next.filter((state) => state.status === "GRANTED" || state.status === "LIMITED").length;
+      const calendar = next.find((state) => state.resource === "CALENDAR");
+      setPermissionFeedback(
+        calendar?.status === "GRANTED"
+          ? `Vérification terminée : ${granted}/${next.length} accès accordés. Calendrier actif; descends pour choisir ton calendrier et associer ce téléphone.`
+          : `Vérification terminée : ${granted}/${next.length} accès accordés. L’accès Calendrier doit être autorisé avant l’association.`,
+      );
       if (next.some((state) => state.status === "UNAVAILABLE")) {
         setError("Au moins un accès n’est pas disponible; les autres permissions restent utilisables.");
       }
+    } catch {
+      if (mounted.current) setError("La vérification des permissions a échoué. Aucun accès n’est supposé accordé.");
     } finally {
       pending.current = false;
       if (mounted.current) setBusy(null);
@@ -265,7 +290,10 @@ export default function DeviceAccessScreen() {
       <Card>
         <Text style={sharedStyles.name}>Choisis tes accès</Text>
         <Text style={sharedStyles.muted}>Tu peux activer un accès à la fois ci-dessous ou examiner les demandes restantes. Le téléphone présente chaque choix séparément; tu peux refuser. Un accès accordé ne signifie pas qu’un service est connecté.</Text>
-        <Button disabled={busy !== null} onPress={() => void requestAll()}>Examiner les permissions restantes</Button>
+        <Button disabled={busy !== null} onPress={() => void requestAll()}>
+          {busy === "ALL" ? "Vérification en cours…" : "Examiner les permissions restantes"}
+        </Button>
+        {permissionFeedback ? <Notice>{permissionFeedback}</Notice> : null}
       </Card>
 
       {states.map((state) => (
