@@ -11,12 +11,28 @@ describe("R37O provider boundary release gate", () => {
       "tsx scripts/validate-provider-boundary.ts",
     );
     expect(packageJson.scripts.build).toBe("node scripts/vercel-build.mjs");
+    const vercelConfig = JSON.parse(readFileSync("vercel.json", "utf8")) as {
+      buildCommand?: string;
+    };
+    expect(vercelConfig.buildCommand).toBe("node scripts/vercel-build.mjs");
     const pipeline = await import("../scripts/vercel-build.mjs");
     expect(
       pipeline.resolveBuildPipelineCommands(
         pipeline.computePlan({ VERCEL_ENV: "development" }),
       ),
     ).toEqual(["npm run validate:provider-boundary", "next build"]);
+    expect(
+      pipeline.resolveBuildPipelineCommands(
+        pipeline.computePlan({ VERCEL_ENV: "production", DIRECT_URL: "configured" }),
+        [],
+        { ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_KEY: "true" },
+      ),
+    ).toEqual([
+      "npm run validate:provider-boundary",
+      pipeline.PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND,
+      "prisma migrate deploy",
+      "next build",
+    ]);
   });
 
   it("accepts a safe public source graph", () => {

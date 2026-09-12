@@ -12,7 +12,7 @@ const configSchema = z.object({
 export const PERSONAL_ANSWER_PROMPT_VERSION = "personal-answer-system-v1";
 export type AnswerAdapterConfig = z.input<typeof configSchema>;
 export type AnswerWireRequest = Readonly<{
-  model: "openrouter/auto"; stream: false; max_completion_tokens: number;
+  model: "openrouter/auto"; stream: false; max_tokens: number;
   messages: readonly { role: "system" | "user"; content: string }[];
   plugins: readonly { id: "auto-router"; allowed_models: readonly string[] }[];
   provider: { only: readonly string[]; allow_fallbacks: false; require_parameters: true; data_collection: "deny"; zdr: true };
@@ -28,7 +28,10 @@ export function answerWireRequest(input: AnswerInput, configuration: AnswerAdapt
   const config = configSchema.parse(configuration);
   const research = input.operation === RESEARCH_OPERATION;
   return {
-    model: "openrouter/auto", stream: false, max_completion_tokens: config.maxOutputTokens,
+    // The reviewed OpenAI endpoint for Luna currently advertises max_tokens,
+    // while require_parameters=true rejects max_completion_tokens before any
+    // generation can start. Keep the wire parameter bound to that endpoint.
+    model: "openrouter/auto", stream: false, max_tokens: config.maxOutputTokens,
     messages: [
       { role: "system", content: "Tu es ENDVERA, l’assistant personnel par SMS. Réponds en français québécois naturel, brièvement. "
         + "Tu ne possèdes aucun outil d’action : ne prétends jamais avoir envoyé, appelé, modifié ou consulté un dossier privé. "

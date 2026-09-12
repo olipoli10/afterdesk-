@@ -60,9 +60,14 @@ export function resolveCommands(plan, cliArguments = []) {
 }
 
 export const PROVIDER_BOUNDARY_COMMAND = "npm run validate:provider-boundary";
+export const PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND =
+  "tsx --require ./scripts/register-server-only.cjs scripts/inspect-personal-answer-runtime.ts --require-ready --verify-provider-key";
 
-export function resolveBuildPipelineCommands(plan, cliArguments = []) {
-  return [PROVIDER_BOUNDARY_COMMAND, ...resolveCommands(plan, cliArguments)];
+export function resolveBuildPipelineCommands(plan, cliArguments = [], env = {}) {
+  const diagnostics = plan.env === "production" && env.ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_KEY === "true"
+    ? [PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND]
+    : [];
+  return [PROVIDER_BOUNDARY_COMMAND, ...diagnostics, ...resolveCommands(plan, cliArguments)];
 }
 
 const invokedDirectly =
@@ -70,7 +75,7 @@ const invokedDirectly =
 
 if (invokedDirectly) {
   const plan = computePlan(process.env);
-  const commands = resolveBuildPipelineCommands(plan, process.argv.slice(2));
+  const commands = resolveBuildPipelineCommands(plan, process.argv.slice(2), process.env);
   console.log(`[vercel-build] env=${plan.env} plan=${commands.join(" && ")}`);
   for (const cmd of commands) {
     execSync(cmd, { stdio: "inherit", env: process.env });
