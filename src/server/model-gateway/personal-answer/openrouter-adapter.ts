@@ -68,7 +68,8 @@ const wireSchema = z.object({
 });
 export type AnswerAdapterResult =
   | { status: "NOT_DISPATCHED"; reason: string; dispatched: false; actionAuthority: false }
-  | { status: "UNCERTAIN"; reason: string; dispatched: true; accounting: "UNSETTLED"; actionAuthority: false }
+  | { status: "UNCERTAIN"; reason: string; dispatched: true; accounting: "UNSETTLED"; actionAuthority: false;
+      httpStatus?: number; resultContractStatus?: "invalid" | "not_evaluated" }
   | { status: "ANSWER_INSPECTED"; dispatched: true; accounting: "UNSETTLED"; actionAuthority: false;
       providerRequestId: string; requestedModel: "openrouter/auto"; servedModel: string;
       usage: z.infer<typeof wireSchema>["usage"]; answer: ReturnType<typeof inspectAnswer>; observedAt: string };
@@ -79,7 +80,8 @@ export function createOpenRouterAnswerAdapter(configuration: AnswerAdapterConfig
   const config = configSchema.parse(configuration);
   const used = new Set<string>();
   const refuse = (reason: string): AnswerAdapterResult => ({ status: "NOT_DISPATCHED", reason, dispatched: false, actionAuthority: false });
-  const uncertain = (reason: string): AnswerAdapterResult => ({ status: "UNCERTAIN", reason, dispatched: true, accounting: "UNSETTLED", actionAuthority: false });
+  const uncertain = (reason: string, diagnostics: Pick<Extract<AnswerAdapterResult, { status: "UNCERTAIN" }>, "httpStatus" | "resultContractStatus"> = {}): AnswerAdapterResult =>
+    ({ status: "UNCERTAIN", reason, dispatched: true, accounting: "UNSETTLED", actionAuthority: false, ...diagnostics });
   return Object.freeze({ key: "openrouter-personal-answer-candidate" as const, configurationFingerprint: canonicalFingerprint(config),
     async dispatch(raw: AnswerInput, signal: AbortSignal): Promise<AnswerAdapterResult> {
       if (!config.enabled) return refuse("DISABLED");
@@ -107,21 +109,21 @@ export function createOpenRouterAnswerAdapter(configuration: AnswerAdapterConfig
           return transport(request, controller.signal);
         }), interrupted]);
         if (signal.aborted) return uncertain("ABORTED");
-        if (response.httpStatus !== 200) return uncertain("HTTP_ERROR");
-        if (typeof response.body !== "string" || Buffer.byteLength(response.body, "utf8") > 131_072) return uncertain("INVALID_RESPONSE");
+        if (response.httpStatus !== 200) return uncertain("HTTP_ERROR", { httpStatus: response.httpStatus, resultContractStatus: "not_evaluated" });
+        if (typeof response.body !== "string" || Buffer.byteLength(response.body, "utf8") > 131_072) return uncertain("INVALID_RESPONSE", { httpStatus: 200, resultContractStatus: "invalid" });
         try {
           const wire = wireSchema.parse(JSON.parse(response.body));
-          if (!config.allowedModels.includes(wire.model)) return uncertain("SERVED_MODEL_NOT_ALLOWED");
+          if (!config.allowedModels.includes(wire.model)) return uncertain("SERVED_MODEL_NOT_ALLOWED", { httpStatus: 200, resultContractStatus: "invalid" });
           const observedAt = new Date().toISOString();
           const citations: AnswerCitation[] = (wire.choices[0].message.annotations ?? []).map((a, i) => ({
             id: `s${i + 1}`, url: a.url_citation.url, title: a.url_citation.title, excerpt: a.url_citation.content, observedAt,
           }));
-          if (input.operation === ANSWER_OPERATION && wire.usage.server_tool_use?.web_search_requests) return uncertain("UNEXPECTED_TOOL_USAGE");
-          if (input.operation === RESEARCH_OPERATION && wire.usage.server_tool_use?.web_search_requests !== 1) return uncertain("SEARCH_NOT_OBSERVED");
+          if (input.operation === ANSWER_OPERATION && wire.usage.server_tool_use?.web_search_requests) return uncertain("UNEXPECTED_TOOL_USAGE", { httpStatus: 200, resultContractStatus: "invalid" });
+          if (input.operation === RESEARCH_OPERATION && wire.usage.server_tool_use?.web_search_requests !== 1) return uncertain("SEARCH_NOT_OBSERVED", { httpStatus: 200, resultContractStatus: "invalid" });
           const answer = inspectAnswer(JSON.parse(wire.choices[0].message.content), input, citations);
           return { status: "ANSWER_INSPECTED", dispatched: true, accounting: "UNSETTLED", actionAuthority: false,
             providerRequestId: wire.id, requestedModel: "openrouter/auto", servedModel: wire.model, usage: wire.usage, answer, observedAt };
-        } catch { return uncertain("INVALID_RESPONSE"); }
+        } catch { return uncertain("INVALID_RESPONSE", { httpStatus: 200, resultContractStatus: "invalid" }); }
       } catch { return uncertain(signal.aborted ? "ABORTED" : controller.signal.aborted ? "TIMEOUT" : "TRANSPORT_ERROR"); }
       finally { if (timer) clearTimeout(timer); signal.removeEventListener("abort", abort); }
     },

@@ -21,6 +21,14 @@ const configurationSchema = z.object({
 export type PersonalAnswerSmsResult = Readonly<{
   reply: string; finalizeAnswer?: (tx: Prisma.TransactionClient) => Promise<void>;
 }>;
+const ANSWER_REINSPECTION_MAX_MS = 8_000;
+export const ANSWER_REINSPECTION_MAX_WAIT_MS = 1_000;
+const ANSWER_REINSPECTION_RESERVE_MS = 3_000;
+export function personalAnswerReinspectionTimeoutMs(deadlineAt: number, now = Date.now()) {
+  const available = deadlineAt - now - ANSWER_REINSPECTION_RESERVE_MS - ANSWER_REINSPECTION_MAX_WAIT_MS;
+  if (!Number.isFinite(available) || available < 1) throw new Error("ANSWER_REINSPECTION_DEADLINE");
+  return Math.min(ANSWER_REINSPECTION_MAX_MS, available);
+}
 export function loadAnswerConfiguration(env: NodeJS.ProcessEnv, research: boolean): AnswerAdmissionConfiguration | null {
   const raw = env.ENDVERA_PERSONAL_ANSWER_CONFIGURATION_JSON;
   if (env.ENDVERA_PERSONAL_ANSWER_ENGINE_ENABLED !== "true") return null;
@@ -51,7 +59,8 @@ export async function processPersonalAnswerSms(context: PersonalSmsExecutionCont
       await prisma.$transaction(async tx => {
         const inspected = await inspectAnswerContext(tx, { context, configuration, enabled: true }, env);
         if (inspected.bindingFingerprint !== admission.current.bindingFingerprint) throw new Error("ANSWER_CURRENT_AUTHORITY_REQUIRED");
-      }, { isolationLevel: "Serializable", timeout: 2000 });
+      }, { isolationLevel: "Serializable", maxWait: ANSWER_REINSPECTION_MAX_WAIT_MS,
+        timeout: personalAnswerReinspectionTimeoutMs(context.deadlineAt) });
       unchanged();
     };
     const transport = createAnswerTransport({ enabled: true,

@@ -44,7 +44,19 @@ async function requireLineage(tx: Tx, a: AnswerAdmission, expectedStatus: "prepa
   if (rows.length !== 1 || rows[0].requestHash !== canonicalFingerprint(a.childRequest)
     || canonicalFingerprint(rows[0].request) !== rows[0].requestHash) throw new Error("ANSWER_LINEAGE_CHANGED");
 }
-async function retainUncertain(a: AnswerAdmission) {
+const SAFE_ADAPTER_ERROR_CLASSES: Readonly<Record<string, string>> = {
+  ABORTED: "provider_dispatch_aborted",
+  HTTP_ERROR: "provider_http_error",
+  INVALID_RESPONSE: "provider_contract_invalid",
+  SERVED_MODEL_NOT_ALLOWED: "provider_model_not_allowed",
+  TIMEOUT: "provider_timeout",
+  TRANSPORT_ERROR: "provider_transport_unavailable",
+  UNEXPECTED_TOOL_USAGE: "provider_tool_usage_invalid",
+  SEARCH_NOT_OBSERVED: "provider_search_not_observed",
+};
+const safeAdapterErrorClass = (reason?: string) => reason ? SAFE_ADAPTER_ERROR_CLASSES[reason] ?? "unknown_dispatched_outcome" : "unknown_dispatched_outcome";
+async function retainUncertain(a: AnswerAdmission, diagnostics?: Readonly<{ reason?: string; httpStatus?: number;
+  resultContractStatus?: "invalid" | "not_evaluated" }>) {
   try {
     await prisma.$transaction(async tx => {
       // Record only the exact owned lineage, including after expiry/revocation.
@@ -59,7 +71,11 @@ async function retainUncertain(a: AnswerAdmission) {
       const result = state("UNCERTAIN", "ANSWER_OUTCOME_REQUIRES_REVIEW");
       await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='uncertain',attempts=1,result=$2::jsonb,"leaseUntil"=NULL,"updatedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1`, a.childId, JSON.stringify(result));
       await tx.$executeRawUnsafe(`UPDATE "AiOperation" SET status='abandoned',"resultId"=$2,"resultKind"='personal_answer_uncertain',"finishedAt"=(now() AT TIME ZONE 'UTC'),"lockedBy"=NULL,"lockedAt"=NULL,"leaseExpiresAt"=NULL,"updatedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1`, a.aiId, a.childId);
-      await tx.$executeRawUnsafe(`UPDATE "ModelGatewayAttempt" SET status='uncertain',"errorClass"='unknown_dispatched_outcome',"finishedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1 AND status IN ('prepared','dispatched')`, a.attempt.id);
+      const httpStatus = Number.isInteger(diagnostics?.httpStatus) && diagnostics!.httpStatus! >= 100 && diagnostics!.httpStatus! <= 599
+        ? diagnostics!.httpStatus! : null;
+      const contractStatus = diagnostics?.resultContractStatus ?? "not_evaluated";
+      await tx.$executeRawUnsafe(`UPDATE "ModelGatewayAttempt" SET status='uncertain',"errorClass"=$2,"httpStatus"=$3,"resultContractStatus"=$4,"finishedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1 AND status IN ('prepared','dispatched')`,
+        a.attempt.id, safeAdapterErrorClass(diagnostics?.reason), httpStatus, contractStatus);
       await tx.$executeRawUnsafe(`UPDATE "ModelGatewayOperation" SET status='uncertain',"finishedAt"=(now() AT TIME ZONE 'UTC'),"finalAttemptId"=$2 WHERE id=$1`, a.operation.id, a.attempt.id);
     }, { isolationLevel: "Serializable", timeout: 2000 });
   } catch { /* A failed DB acknowledgment does not prove cleanup; leave recoverable. */ }
@@ -102,7 +118,7 @@ export async function dispatchPersonalAnswer(input: { admission: AnswerAdmission
     const adapter = createOpenRouterAnswerAdapter({ ...a.current.adapterConfiguration,
       timeoutMs: Math.max(1, Math.min(25_000, a.context.deadlineAt - Date.now() - 3000)) }, input.transport);
     const response = await adapter.dispatch(a.current.candidateInput, a.context.signal);
-    if (response.status !== "ANSWER_INSPECTED") return retainUncertain(a);
+    if (response.status !== "ANSWER_INSPECTED") return retainUncertain(a, response);
     await storeAnswer(a, response, env, transportActive);
     return { status: "ANSWER_STORED" as const, childId: a.childId, answer: response.answer, actionAuthority: false as const, accounting: "UNSETTLED" as const };
   } catch { return retainUncertain(a); }

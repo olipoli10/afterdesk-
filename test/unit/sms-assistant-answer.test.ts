@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { createAnswerInput, inspectAnswer, publicCitationUrl } from "../../src/server/model-gateway/personal-answer/contract";
 import { answerWireRequest, createOpenRouterAnswerAdapter, type AnswerAdapterConfig, type AnswerTransport } from "../../src/server/model-gateway/personal-answer/openrouter-adapter";
+import { personalAnswerReinspectionTimeoutMs } from "../../src/server/personal-assistant/answer-worker";
 
 const source = (body = "Explique-moi le béton") => ({ requestId: "sms-1", workspaceId: "ws-1", senderVerified: true, workspaceBound: true, body, receivedAt: "2026-09-11T15:00:00Z" });
 const config: AnswerAdapterConfig = { enabled: true, allowedModels: ["synthetic/model-a", "synthetic/model-b"], providerEndpoints: ["synthetic/provider"], timeoutMs: 1000 };
@@ -12,6 +13,11 @@ const response = (body: unknown) => ({ httpStatus: 200, body: JSON.stringify(bod
 const signal = () => new AbortController().signal;
 
 describe("answer-only OpenRouter candidate", () => {
+  it("allows bounded remote DB reinspection beyond the former two-second cutoff", () => {
+    expect(personalAnswerReinspectionTimeoutMs(20_000, 10_000)).toBe(6_000);
+    expect(personalAnswerReinspectionTimeoutMs(30_000, 10_000)).toBe(8_000);
+    expect(() => personalAnswerReinspectionTimeoutMs(13_999, 10_000)).toThrow("ANSWER_REINSPECTION_DEADLINE");
+  });
   it("defaults OFF and never calls transport", async () => {
     const transport = vi.fn<AnswerTransport>(async () => response(wire()));
     expect(await createOpenRouterAnswerAdapter({ ...config, enabled: undefined }, transport).dispatch(input, signal())).toMatchObject({ status: "NOT_DISPATCHED", reason: "DISABLED" });
@@ -28,6 +34,14 @@ describe("answer-only OpenRouter candidate", () => {
   it("refuses an out-of-policy served model even after a successful HTTP response", async () => {
     const result = await createOpenRouterAnswerAdapter(config, async () => response({ ...wire(), model: "unknown/model" })).dispatch(input, signal());
     expect(result).toMatchObject({ status: "UNCERTAIN", reason: "SERVED_MODEL_NOT_ALLOWED" });
+  });
+  it("retains safe HTTP and contract diagnostics without provider body content", async () => {
+    const privateMarker = "private-upstream-body-must-not-be-retained";
+    const rejected = await createOpenRouterAnswerAdapter(config, async () => ({ httpStatus: 429, body: privateMarker })).dispatch(input, signal());
+    expect(rejected).toMatchObject({ status: "UNCERTAIN", reason: "HTTP_ERROR", httpStatus: 429, resultContractStatus: "not_evaluated" });
+    expect(JSON.stringify(rejected)).not.toContain(privateMarker);
+    expect(await createOpenRouterAnswerAdapter(config, async () => ({ httpStatus: 200, body: "not-json" })).dispatch(input, signal()))
+      .toMatchObject({ status: "UNCERTAIN", reason: "INVALID_RESPONSE", httpStatus: 200, resultContractStatus: "invalid" });
   });
   it("cannot interpret action or identity requests through answer-only dispatch", () => {
     for (const body of ["Appelle Marc", "mon horaire"]) expect(() => createAnswerInput(source(body))).toThrow("ANSWER_LANE_REFUSED");
