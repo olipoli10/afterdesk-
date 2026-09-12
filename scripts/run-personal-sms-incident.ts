@@ -18,6 +18,7 @@ import { twilioDispatchPolicy } from "../src/server/personal-assistant/twilio-ou
 
 const env = process.env;
 const incident = env.ENDVERA_BUILD_PERSONAL_INCIDENT_PROBE;
+let stage = "CONFIGURATION";
 const cases = [
   ["general", "Explique simplement la différence entre le béton 25 MPa et 32 MPa."],
   ["current-sources", "Il annonce cmb demain a mtl"],
@@ -46,10 +47,11 @@ async function main() {
       body, receivedAt, senderVerified: true, workspaceBound: true });
     // These fields are adapter prerequisites only; the evidence below explicitly
     // records OPERATOR_CANARY, never a received SMS or customer action.
+    stage = `RESERVE_${name.toUpperCase().replaceAll("-", "_")}`;
     const won = await prisma.$transaction(async tx => {
       const authority = await inspectModelAuthority(tx, subject, new Date());
       await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))::text AS acquired', budget.budgetId);
-      if (await tx.personalAssistantOperation.findUnique({ where: { id } })) return false;
+      if (await tx.constructionAuditEvent.findUnique({ where: { id } })) return false;
       const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantBudget" SET "reservedCadMicros"="reservedCadMicros"+$2,"updatedAt"=(now() AT TIME ZONE 'UTC')
         WHERE id=$1 AND "ceilingCadMicros"=$3 AND "expiresAt"=($4::timestamptz AT TIME ZONE 'UTC')
           AND "expiresAt">(clock_timestamp() AT TIME ZONE 'UTC') AND "reservedCadMicros"+$2<="ceilingCadMicros"`,
@@ -60,10 +62,11 @@ async function main() {
       if (!hold.ok || !hold.created || hold.grantedMicros !== budget.reservationUsdMicros) throw new Error();
       const request = { evidenceKind: "OPERATOR_CANARY", incident, case: name, requestFingerprint: input.requestFingerprint,
         accountHoldId: hold.holdId, actionAuthority: false };
-      await tx.personalAssistantOperation.create({ data: { id, idempotencyKey: id, workspaceId: ingress.manifest.workspaceId,
-        createdByUserId: ingress.manifest.ownerUserId, connectorAccountId: authority.accountId, kind: "operator_answer_canary",
-        status: "processing", attempts: 1, request, requestHash: canonicalFingerprint(request),
-        budgetId: budget.budgetId, reservedCadMicros: budget.reservationCadMicros } });
+      const metadata = { ...request, accountId: authority.accountId, budgetId: budget.budgetId,
+        reservedCadMicros: budget.reservationCadMicros.toString(), automaticRetry: false };
+      await tx.constructionAuditEvent.create({ data: { id, workspaceId: ingress.manifest.workspaceId,
+        actorUserId: ingress.manifest.ownerUserId, entityType: "operator_answer_canary", entityId: id,
+        action: "operator_canary.reserved", metadata, fingerprint: canonicalFingerprint({ id, metadata }) } });
       return true;
     }, { isolationLevel: "Serializable", timeout: 8000 });
     if (!won) { console.info(JSON.stringify({ event: "incident.canary", case: name, status: "ALREADY_ATTEMPTED_NO_RETRY" })); continue; }
@@ -82,16 +85,22 @@ async function main() {
           return JSON.parse(openConnectorSecret(row.ciphertext, binding, key)).apiKey as string;
         } finally { key.fill(0); }
       } }, env);
+    stage = `DISPATCH_${name.toUpperCase().replaceAll("-", "_")}`;
     const result = await createOpenRouterAnswerAdapter(adapterConfig, transport).dispatch(input, new AbortController().signal);
     const evidence = result.status === "ANSWER_INSPECTED"
       ? { status: result.status, providerRequestId: result.providerRequestId, servedModel: result.servedModel,
         usage: result.usage, responseFingerprint: canonicalFingerprint(result), actionAuthority: false }
       : { status: result.status, diagnosticCode: safeAdapterReason(result.reason), actionAuthority: false };
-    await prisma.personalAssistantOperation.update({ where: { id }, data: {
-      status: result.status === "ANSWER_INSPECTED" ? "completed" : "uncertain", result: evidence,
-      externalTransportPerformed: result.dispatched } });
+    stage = "RECORD_RESULT";
+    await prisma.constructionAuditEvent.create({ data: { id: `${id}:result`, workspaceId: ingress.manifest.workspaceId,
+      actorUserId: ingress.manifest.ownerUserId, entityType: "operator_answer_canary", entityId: id,
+      action: "operator_canary.observed", metadata: { ...evidence, externalTransportPerformed: result.dispatched },
+      fingerprint: canonicalFingerprint({ id, evidence }) } });
     console.info(JSON.stringify({ event: "incident.canary", case: name, ...evidence }));
   }
 }
-void main().catch(() => { console.error("PERSONAL_INCIDENT_CANARY_FAILED_REVIEW_REQUIRED"); process.exitCode = 1; })
+void main().catch(error => {
+  const code = error && typeof error === "object" && "code" in error && /^P[0-9]{4}$/u.test(String(error.code)) ? String(error.code) : "UNAVAILABLE";
+  console.error(JSON.stringify({ event: "incident.failed", stage, code })); process.exitCode = 1;
+})
   .finally(() => prisma.$disconnect());
