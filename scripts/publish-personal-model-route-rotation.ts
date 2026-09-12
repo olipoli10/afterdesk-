@@ -127,6 +127,11 @@ async function main() {
       { id: answer.route.id, canonicalHash: answer.route.canonicalHash },
     ] } });
     if (stored !== 2) fail();
+    const finalNowRows = await tx.$queryRawUnsafe<Array<{ now: Date }>>("SELECT clock_timestamp() AS now");
+    const finalNow = finalNowRows[0]?.now;
+    if (!(finalNow instanceof Date) || !Number.isFinite(finalNow.getTime())) fail();
+    assertPersonalModelIngressWindow(encoded, finalNow.getTime());
+    if (validatePersonalModelOperatorArtifact(mapped.manifest.artifact, finalNow).status !== "PREPARED_NOT_PUBLISHED") fail();
     return { status: "PERSONAL_MODEL_AZURE_ZDR_ROUTE_V3_PUBLISHED", setupRef: ingress.configuration.setupRef,
       intentPolicyVersionId: mapped.policy.id, answerPolicyVersionId: answer.policy.id };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 10_000, timeout: 20_000 });

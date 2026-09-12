@@ -59,6 +59,7 @@ describe("answer-only OpenRouter candidate", () => {
     expect(JSON.stringify(extraResult)).not.toContain(privateMarker);
     if (extraResult.status !== "UNCERTAIN") throw new Error("EXPECTED_UNCERTAIN");
     expect(safeAdapterErrorClass(extraResult.reason)).toBe("provider_contract_invalid");
+    expect(safeAdapterErrorClass("INVALID_RESPONSE")).toBe("provider_contract_invalid");
     expect(safeAdapterErrorClass("INVALID_ANSWER_CONTRACT")).toBe("provider_contract_invalid");
     expect(safeAdapterErrorClass("MESSAGE_MODEL_MISMATCH")).toBe("provider_model_not_allowed");
   });

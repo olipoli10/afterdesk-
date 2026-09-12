@@ -47,6 +47,7 @@ async function requireLineage(tx: Tx, a: AnswerAdmission, expectedStatus: "prepa
 const SAFE_ADAPTER_ERROR_CLASSES: Readonly<Record<string, string>> = {
   ABORTED: "provider_dispatch_aborted",
   HTTP_ERROR: "provider_http_error",
+  INVALID_RESPONSE: "provider_contract_invalid",
   INVALID_RESPONSE_NOT_JSON: "provider_contract_invalid",
   INVALID_ANSWER_NOT_JSON: "provider_contract_invalid",
   INVALID_ANSWER_CONTRACT: "provider_contract_invalid",
