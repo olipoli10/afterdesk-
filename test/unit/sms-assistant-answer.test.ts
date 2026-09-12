@@ -44,6 +44,10 @@ describe("answer-only OpenRouter candidate", () => {
       .toMatchObject({ status: "UNCERTAIN", reason: "INVALID_RESPONSE_NOT_JSON", httpStatus: 200, resultContractStatus: "invalid" });
     expect(await createOpenRouterAnswerAdapter(config, async () => response({ ...wire(), usage: null })).dispatch(input, signal()))
       .toMatchObject({ status: "UNCERTAIN", reason: "INVALID_WIRE_USAGE_INVALID_TYPE", httpStatus: 200, resultContractStatus: "invalid" });
+    const extra = wire(); Object.assign(extra.choices[0].message, { provider_private_text: privateMarker });
+    const extraResult = await createOpenRouterAnswerAdapter(config, async () => response(extra)).dispatch(input, signal());
+    expect(extraResult).toMatchObject({ status: "UNCERTAIN", reason: "INVALID_WIRE_CHOICES_ITEM_MESSAGE_UNRECOGNIZED_KEYS_PROVIDER_PRIVATE_TEXT" });
+    expect(JSON.stringify(extraResult)).not.toContain(privateMarker);
   });
   it("cannot interpret action or identity requests through answer-only dispatch", () => {
     for (const body of ["Appelle Marc", "mon horaire"]) expect(() => createAnswerInput(source(body))).toThrow("ANSWER_LANE_REFUSED");

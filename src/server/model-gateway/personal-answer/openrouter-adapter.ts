@@ -120,7 +120,9 @@ export function createOpenRouterAnswerAdapter(configuration: AnswerAdapterConfig
           const path = issue?.path.slice(0, 5).map(part => typeof part === "number" ? "ITEM" : String(part).replace(/[^A-Za-z0-9_]/gu, "_").toUpperCase()) ?? [];
           const detail = path.length ? path.join("_") : "SHAPE";
           const code = issue?.code ? issue.code.toUpperCase() : "UNKNOWN";
-          return uncertain(`INVALID_WIRE_${detail}_${code}`.slice(0, 120), { httpStatus: 200, resultContractStatus: "invalid" });
+          const unknownKeys = issue?.code === "unrecognized_keys" && "keys" in issue && Array.isArray(issue.keys)
+            ? issue.keys.slice(0, 5).map(part => String(part).replace(/[^A-Za-z0-9_]/gu, "_").toUpperCase()).join("_") : "";
+          return uncertain(`INVALID_WIRE_${detail}_${code}${unknownKeys ? `_${unknownKeys}` : ""}`.slice(0, 160), { httpStatus: 200, resultContractStatus: "invalid" });
         }
         const wire = inspectedWire.data;
         if (!config.allowedModels.includes(wire.model)) return uncertain("SERVED_MODEL_NOT_ALLOWED", { httpStatus: 200, resultContractStatus: "invalid" });
