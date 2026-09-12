@@ -27,8 +27,8 @@ describe("answer-only OpenRouter candidate", () => {
     const transport = vi.fn<AnswerTransport>(async () => response(wire()));
     const result = await createOpenRouterAnswerAdapter(config, transport).dispatch(input, signal());
     expect(result).toMatchObject({ status: "ANSWER_INSPECTED", requestedModel: "openrouter/auto", servedModel: "synthetic/model-b", accounting: "UNSETTLED", actionAuthority: false });
-    expect(transport.mock.calls[0]?.[0]).toMatchObject({ max_tokens: 1024 });
-    expect(transport.mock.calls[0]?.[0]).not.toHaveProperty("max_completion_tokens");
+    expect(transport.mock.calls[0]?.[0]).toMatchObject({ max_completion_tokens: 1024 });
+    expect(transport.mock.calls[0]?.[0]).not.toHaveProperty("max_tokens");
     expect(transport.mock.calls[0]?.[0]).not.toHaveProperty("tools");
   });
   it("refuses an out-of-policy served model even after a successful HTTP response", async () => {
