@@ -9,6 +9,22 @@ function fixture() {
   return { deps, callbacks, run };
 }
 describe("durable SMS best-effort wakeup", () => {
+  it("reports bounded diagnostic codes without raw worker/provider content", async () => {
+    const { deps, callbacks, run } = fixture();
+    const observe = vi.fn();
+    run.mockResolvedValue({ processed: 1, outboundFailures: ["CURRENT_TWILIO_RATE_REVIEW_REQUIRED", "secret=private"], body: "private SMS" });
+    schedulePersonalSmsWakeup({ replayed: false }, { ...deps, observe });
+    await callbacks[0]();
+    expect(observe).toHaveBeenCalledWith({ event: "personal_sms.drain_finished", processed: 1, deadlineReached: false,
+      outboundFailures: ["CURRENT_TWILIO_RATE_REVIEW_REQUIRED", "UNCLASSIFIED"] });
+    expect(JSON.stringify(observe.mock.calls)).not.toContain("private");
+  });
+  it("does not retry when the observer fails", async () => {
+    const { deps, callbacks, run } = fixture();
+    schedulePersonalSmsWakeup({ replayed: false }, { ...deps, observe: () => { throw new Error("logging unavailable"); } });
+    await expect(callbacks[0]()).resolves.toBeUndefined();
+    expect(run).toHaveBeenCalledOnce();
+  });
   it("schedules without waiting for or claiming completed work", async () => {
     const { deps, callbacks, run } = fixture();
     expect(schedulePersonalSmsWakeup({ replayed: false }, deps)).toBe("SCHEDULED");

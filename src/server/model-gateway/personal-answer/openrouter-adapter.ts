@@ -139,7 +139,13 @@ export function createOpenRouterAnswerAdapter(configuration: AnswerAdapterConfig
         catch { return uncertain("INVALID_ANSWER_NOT_JSON", { httpStatus: 200, resultContractStatus: "invalid" }); }
         let answer: ReturnType<typeof inspectAnswer>;
         try { answer = inspectAnswer(candidate, input, citations); }
-        catch { return uncertain("INVALID_ANSWER_CONTRACT", { httpStatus: 200, resultContractStatus: "invalid" }); }
+        catch (error) {
+          // A valid request for grounding is not a malformed provider payload.
+          // Never publish the ungrounded answer or silently start another call.
+          const reason = error instanceof Error && error.message === "ANSWER_REQUIRES_RESEARCH"
+            ? "ANSWER_REQUIRES_RESEARCH" : "INVALID_ANSWER_CONTRACT";
+          return uncertain(reason, { httpStatus: 200, resultContractStatus: "invalid" });
+        }
         return { status: "ANSWER_INSPECTED", dispatched: true, accounting: "UNSETTLED", actionAuthority: false,
           providerRequestId: wire.id, requestedModel: "openrouter/auto", servedModel: wire.model, usage: wire.usage, answer, observedAt };
       } catch { return uncertain(signal.aborted ? "ABORTED" : controller.signal.aborted ? "TIMEOUT" : "TRANSPORT_ERROR"); }

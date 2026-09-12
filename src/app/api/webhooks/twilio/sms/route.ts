@@ -17,6 +17,7 @@ export async function POST(request: Request): Promise<Response> {
         enabled: process.env.ENDVERA_PERSONAL_SMS_WORKER_ENABLED === "true",
         deadlineAt, now: Date.now, schedule: callback => after(callback),
         run: deadline => drainPersonalSms(process.env, 1, { deadlineAt: deadline }),
+        observe: event => console.info(JSON.stringify(event)),
       });
       return receipt;
     }, now: Date.now,

@@ -57,7 +57,10 @@ const SAFE_ADAPTER_ERROR_CLASSES: Readonly<Record<string, string>> = {
   TRANSPORT_ERROR: "provider_transport_unavailable",
   UNEXPECTED_TOOL_USAGE: "provider_tool_usage_invalid",
   SEARCH_NOT_OBSERVED: "provider_search_not_observed",
+  ANSWER_REQUIRES_RESEARCH: "current_sources_required",
 };
+export const safeAdapterReason = (reason?: string) => reason && (Object.hasOwn(SAFE_ADAPTER_ERROR_CLASSES, reason)
+  || /^INVALID_WIRE_[A-Z0-9_]{1,107}$/u.test(reason)) ? reason : "UNKNOWN_DISPATCHED_OUTCOME";
 export const safeAdapterErrorClass = (reason?: string) => {
   if (reason?.startsWith("INVALID_WIRE_")) return "provider_contract_invalid";
   return reason ? SAFE_ADAPTER_ERROR_CLASSES[reason] ?? "unknown_dispatched_outcome" : "unknown_dispatched_outcome";
@@ -75,7 +78,7 @@ async function retainUncertain(a: AnswerAdmission, diagnostics?: Readonly<{ reas
           AND g.id=$4 AND c.id=$5 AND c.kind='personal_answer_v1' AND c.status IN ('received','processing')
         FOR UPDATE OF ai,g,c`, a.aiId, a.lockedBy, a.current.request.operationType, a.operation.id, a.childId);
       if (rows.length !== 1) return;
-      const result = state("UNCERTAIN", "ANSWER_OUTCOME_REQUIRES_REVIEW");
+      const result = { ...state("UNCERTAIN", "ANSWER_OUTCOME_REQUIRES_REVIEW"), diagnosticCode: safeAdapterReason(diagnostics?.reason) };
       await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='uncertain',attempts=1,result=$2::jsonb,"leaseUntil"=NULL,"updatedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1`, a.childId, JSON.stringify(result));
       await tx.$executeRawUnsafe(`UPDATE "AiOperation" SET status='abandoned',"resultId"=$2,"resultKind"='personal_answer_uncertain',"finishedAt"=(now() AT TIME ZONE 'UTC'),"lockedBy"=NULL,"lockedAt"=NULL,"leaseExpiresAt"=NULL,"updatedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1`, a.aiId, a.childId);
       const httpStatus = Number.isInteger(diagnostics?.httpStatus) && diagnostics!.httpStatus! >= 100 && diagnostics!.httpStatus! <= 599
@@ -86,7 +89,7 @@ async function retainUncertain(a: AnswerAdmission, diagnostics?: Readonly<{ reas
       await tx.$executeRawUnsafe(`UPDATE "ModelGatewayOperation" SET status='uncertain',"finishedAt"=(now() AT TIME ZONE 'UTC'),"finalAttemptId"=$2 WHERE id=$1`, a.operation.id, a.attempt.id);
     }, { isolationLevel: "Serializable", timeout: 2000 });
   } catch { /* A failed DB acknowledgment does not prove cleanup; leave recoverable. */ }
-  return state("UNCERTAIN", "ANSWER_OUTCOME_REQUIRES_REVIEW");
+  return { ...state("UNCERTAIN", "ANSWER_OUTCOME_REQUIRES_REVIEW"), diagnosticCode: safeAdapterReason(diagnostics?.reason) };
 }
 
 export async function dispatchPersonalAnswer(input: { admission: AnswerAdmission; enabled?: boolean;

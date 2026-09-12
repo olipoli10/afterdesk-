@@ -65,7 +65,10 @@ export const PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND =
 export function resolveBuildPipelineCommands(plan, cliArguments = [], env = {}) {
   const diagnostics = plan.env === "production" && env.ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_KEY === "true"
     ? [PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND] : [];
-  return [PROVIDER_BOUNDARY_COMMAND, ...diagnostics, ...resolveCommands(plan, cliArguments)];
+  // Explicit, metered operator canary; no request is replayed and no SMS is sent.
+  const canary = plan.env === "production" && /^20260912-r[1-3]$/u.test(env.ENDVERA_BUILD_PERSONAL_INCIDENT_PROBE ?? "")
+    ? ["tsx --require ./scripts/register-server-only.cjs scripts/run-personal-sms-incident.ts"] : [];
+  return [PROVIDER_BOUNDARY_COMMAND, ...diagnostics, ...canary, ...resolveCommands(plan, cliArguments)];
 }
 
 const invokedDirectly =

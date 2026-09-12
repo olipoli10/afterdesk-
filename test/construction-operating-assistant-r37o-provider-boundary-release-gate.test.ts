@@ -3,6 +3,16 @@ import { readFileSync } from "node:fs";
 import { validateProviderBoundaryModules } from "@/lib/construction-operating-assistant-r37o/provider-boundary-release-gate";
 
 describe("R37O provider boundary release gate", () => {
+  it("never runs the operator canary in preview or without a fixed explicit incident flag", async () => {
+    const pipeline = await import("../scripts/vercel-build.mjs");
+    for (const target of ["preview", "development", "production"]) {
+      const plan = pipeline.computePlan({ VERCEL_ENV: target, DIRECT_URL: "configured" });
+      expect(pipeline.resolveBuildPipelineCommands(plan, [], {}).join(" ")).not.toContain("run-personal-sms-incident");
+      const enabled = pipeline.resolveBuildPipelineCommands(plan, [], { ENDVERA_BUILD_PERSONAL_INCIDENT_PROBE: "20260912-r1" });
+      expect(enabled.join(" ").includes("run-personal-sms-incident")).toBe(target === "production");
+      expect(pipeline.resolveBuildPipelineCommands(plan, [], { ENDVERA_BUILD_PERSONAL_INCIDENT_PROBE: "anything" }).join(" ")).not.toContain("run-personal-sms-incident");
+    }
+  });
   it("is mandatory before the release build", async () => {
     const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
       scripts: Record<string, string>;

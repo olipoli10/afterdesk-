@@ -40,7 +40,8 @@ function currentOutboundPolicy(row: OutboundOwner, request: PersonalOutbound, en
   const fingerprint = hash(JSON.stringify({ budgetId: policy.budgetId, ceiling: policy.ceiling.toString(), reservation: policy.reservation.toString(),
     expiresAt: policy.expiresAt.toISOString(), callback: policy.callback, authority: env.ENDVERA_EXTERNAL_AUTHORITY_REF, owner: env.ENDVERA_EXTERNAL_OWNER_REF,
     account: env.TWILIO_ACCOUNT_SID, keyId: env.TWILIO_API_KEY_SID, from: env.TWILIO_PHONE_NUMBER,
-    rateRef: env.ENDVERA_TWILIO_RATE_REVIEW_REF, reviewedAt: env.ENDVERA_TWILIO_RATE_REVIEWED_AT }));
+    rateRef: env.ENDVERA_TWILIO_RATE_REVIEW_REF, reviewedAt: env.ENDVERA_TWILIO_RATE_REVIEWED_AT,
+    rateValidUntil: env.ENDVERA_TWILIO_RATE_VALID_UNTIL }));
   return { policy, fingerprint };
 }
 type OutboundClaim = Readonly<{ row: OutboundOwner; request: PersonalOutbound; leaseUntil: Date; approvedUntil: number;

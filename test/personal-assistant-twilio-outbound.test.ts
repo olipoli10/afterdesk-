@@ -8,6 +8,20 @@ const request = { from: env.TWILIO_PHONE_NUMBER, to: "+15005550001", text: "Mess
 const operationId = "synthetic-operation-210";
 afterEach(() => { vi.useRealTimers(); });
 describe("bounded personal Twilio transport with fake HTTP", () => {
+  it("reproduces the production daily outage and accepts only an explicit bounded rate review", () => {
+    const now = Date.parse("2026-09-12T17:01:44Z");
+    const reviewed = { ...env, ENDVERA_TWILIO_RATE_REVIEWED_AT: "2026-09-11T14:03:58.481Z",
+      ENDVERA_PERSONAL_PILOT_EXPIRES_AT: "2026-10-10T01:18:26Z" };
+    expect(() => twilioDispatchPolicy(reviewed, "sms_outbound", "Test", now)).toThrow("CURRENT_TWILIO_RATE_REVIEW_REQUIRED");
+    expect(twilioDispatchPolicy({ ...reviewed, ENDVERA_TWILIO_RATE_VALID_UNTIL: "2026-09-18T14:03:58.481Z" }, "sms_outbound", "Test", now).reservation).toBe(100000n);
+    for (const until of ["invalid", "2026-09-12T17:01:44Z", "2026-09-19T14:03:58.481Z", "2026-10-11T00:00:00Z"]) {
+      expect(() => twilioDispatchPolicy({ ...reviewed, ENDVERA_TWILIO_RATE_VALID_UNTIL: until }, "sms_outbound", "Test", now)).toThrow();
+    }
+    expect(() => twilioDispatchPolicy({ ...reviewed, ENDVERA_TWILIO_RATE_REVIEWED_AT: "2026-09-13T00:00:00Z",
+      ENDVERA_TWILIO_RATE_VALID_UNTIL: "2026-09-14T00:00:00Z" }, "sms_outbound", "Test", now)).toThrow();
+    expect(() => twilioDispatchPolicy({ ...reviewed, ENDVERA_TWILIO_RATE_VALID_UNTIL: "2026-09-18T14:03:58.481Z",
+      ENDVERA_PERSONAL_PILOT_EXPIRES_AT: "2026-09-13T00:00:00Z" }, "sms_outbound", "Test", now)).toThrow();
+  });
   it("refuses expired or aborted caller lifetimes without HTTP", async () => {
     const controller = new AbortController(); controller.abort();
     for (const context of [{ deadlineAt: Date.now() - 1 }, { signal: controller.signal }, { deadlineAt: NaN }]) {

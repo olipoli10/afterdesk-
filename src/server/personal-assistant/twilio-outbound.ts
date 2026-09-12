@@ -46,7 +46,14 @@ export function twilioDispatchPolicy(env: ConnectorEnvironment, kind: OutboundKi
   if (!externalCapabilityDecision(capability, env).enabled || env.ENDVERA_PERSONAL_OUTBOUND_ENABLED !== "true" || !(expiry > now)) throw new Error("PERSONAL_OUTBOUND_DISABLED");
   if (!/^AC[0-9a-f]{32}$/i.test(env.TWILIO_ACCOUNT_SID ?? "") || !/^SK[0-9a-f]{32}$/i.test(env.TWILIO_API_KEY_SID ?? "")) throw new Error("TWILIO_CONFIGURATION_REQUIRED");
   const reviewedAt = Date.parse(env.ENDVERA_TWILIO_RATE_REVIEWED_AT ?? "");
-  if (!env.ENDVERA_TWILIO_RATE_REVIEW_REF || !(reviewedAt <= now && now - reviewedAt < 86400000)) throw new Error("CURRENT_TWILIO_RATE_REVIEW_REQUIRED");
+  // A reviewed rate window is distinct from the spending authorization. Keep
+  // legacy configurations at 24h; an operator can explicitly review up to seven
+  // days, never beyond the non-renewing pilot. No rolling refresh on dispatch.
+  const reviewUntil = env.ENDVERA_TWILIO_RATE_VALID_UNTIL === undefined
+    ? reviewedAt + 86_400_000 : Date.parse(env.ENDVERA_TWILIO_RATE_VALID_UNTIL);
+  if (!env.ENDVERA_TWILIO_RATE_REVIEW_REF || !(reviewedAt <= now && reviewUntil > now
+    && reviewUntil > reviewedAt && reviewUntil - reviewedAt <= 7 * 86_400_000)
+    || (env.ENDVERA_TWILIO_RATE_VALID_UNTIL !== undefined && reviewUntil > expiry)) throw new Error("CURRENT_TWILIO_RATE_REVIEW_REQUIRED");
   const ceiling = cadMicros(env.ENDVERA_PERSONAL_BUDGET_CAD);
   // Conservative UCS-2 segment count: JS length counts UTF-16 code units.
   const units = kind === "sms_outbound" ? text.length <= 70 ? 1 : Math.ceil(text.length / 67) : 1;

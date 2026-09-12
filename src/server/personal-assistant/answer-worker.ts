@@ -72,7 +72,12 @@ export async function processPersonalAnswerSms(context: PersonalSmsExecutionCont
       } }, env);
     const dispatched = await dispatchPersonalAnswer({ admission, transport, enabled: true, transportMode: "EXTERNAL_PROVIDER" }, env);
     unchanged();
-    if (dispatched.status !== "ANSWER_STORED") return { reply: "Je n’ai pas pu confirmer la réponse à ta question. La demande est conservée; aucun nouvel essai automatique n’a été lancé." };
+    if (dispatched.status !== "ANSWER_STORED") {
+      if ("diagnosticCode" in dispatched && dispatched.diagnosticCode === "ANSWER_REQUIRES_RESEARCH") {
+        return { reply: "Cette question demande des informations à jour. Ma recherche en direct n’est pas encore connectée; je ne peux pas te donner une réponse fiable sans consulter une source actuelle." };
+      }
+      return { reply: "Je n’ai pas pu confirmer la réponse à ta question. La demande est conservée; aucun nouvel essai automatique n’a été lancé." };
+    }
     const reply = formatAssistantAnswerSms(dispatched.answer, assistantReportLink(dispatched.childId, env));
     return { reply, finalizeAnswer: async tx => {
       unchanged();

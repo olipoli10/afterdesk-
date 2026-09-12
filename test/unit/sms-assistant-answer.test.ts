@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createAnswerInput, inspectAnswer, publicCitationUrl } from "../../src/server/model-gateway/personal-answer/contract";
 import { answerWireRequest, createOpenRouterAnswerAdapter, type AnswerAdapterConfig, type AnswerTransport } from "../../src/server/model-gateway/personal-answer/openrouter-adapter";
 import { personalAnswerReinspectionTimeoutMs } from "../../src/server/personal-assistant/answer-worker";
-import { safeAdapterErrorClass } from "../../src/server/model-gateway/personal-answer/dispatch";
+import { safeAdapterErrorClass, safeAdapterReason } from "../../src/server/model-gateway/personal-answer/dispatch";
 
 const source = (body = "Explique-moi le béton") => ({ requestId: "sms-1", workspaceId: "ws-1", senderVerified: true, workspaceBound: true, body, receivedAt: "2026-09-11T15:00:00Z" });
 const config: AnswerAdapterConfig = { enabled: true, allowedModels: ["synthetic/model-a", "synthetic/model-b"], providerEndpoints: ["synthetic/provider"], timeoutMs: 1000 };
@@ -14,6 +14,17 @@ const response = (body: unknown) => ({ httpStatus: 200, body: JSON.stringify(bod
 const signal = () => new AbortController().signal;
 
 describe("answer-only OpenRouter candidate", () => {
+  it("keeps a grounding request distinct from corrupt output without publishing invented weather", async () => {
+    const w = wire();
+    w.choices[0].message.content = JSON.stringify({ ...candidate(), answer: "Il fera 99 degrés demain.", needsCurrentSources: true });
+    const result = await createOpenRouterAnswerAdapter(config, async () => response(w)).dispatch(input, signal());
+    expect(result).toMatchObject({ status: "UNCERTAIN", reason: "ANSWER_REQUIRES_RESEARCH", actionAuthority: false });
+    expect(JSON.stringify(result)).not.toContain("99 degrés");
+    expect(safeAdapterErrorClass("ANSWER_REQUIRES_RESEARCH")).toBe("current_sources_required");
+    expect(safeAdapterReason("ANSWER_REQUIRES_RESEARCH")).toBe("ANSWER_REQUIRES_RESEARCH");
+    expect(safeAdapterReason("private-provider-body")).toBe("UNKNOWN_DISPATCHED_OUTCOME");
+    expect(safeAdapterReason("INVALID_WIRE_private data")).toBe("UNKNOWN_DISPATCHED_OUTCOME");
+  });
   it("allows bounded remote DB reinspection beyond the former two-second cutoff", () => {
     expect(personalAnswerReinspectionTimeoutMs(20_000, 10_000)).toBe(6_000);
     expect(personalAnswerReinspectionTimeoutMs(30_000, 10_000)).toBe(8_000);

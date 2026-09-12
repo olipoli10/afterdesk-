@@ -1,0 +1,97 @@
+/** Explicit operator canary, never an incoming customer SMS or an unattended
+ * retry. Synthetic text only, current owner consent, both durable budget holds,
+ * one attempt per fixed incident/case. No credential or raw response logging. */
+import { prisma } from "../src/lib/db";
+import { loadAnswerConfiguration } from "../src/server/personal-assistant/answer-worker";
+import { readPersonalOperatorConfiguration } from "../src/server/model-gateway/personal-intent/operator-configuration-environment";
+import { inspectPersonalModelIngressConfiguration } from "../src/server/model-gateway/personal-intent/operator-ingress-contract";
+import { inspectModelAuthority, inspectPersonalModelPilotEnvelope } from "../src/server/model-gateway/personal-intent/admission";
+import { inspectAnswerBudget } from "../src/server/model-gateway/personal-answer/budget-policy";
+import { ANSWER_OPERATION, createAnswerInput } from "../src/server/model-gateway/personal-answer/contract";
+import { answerWireRequest, createOpenRouterAnswerAdapter } from "../src/server/model-gateway/personal-answer/openrouter-adapter";
+import { createAnswerTransport } from "../src/server/model-gateway/personal-answer/openrouter-transport";
+import { safeAdapterReason } from "../src/server/model-gateway/personal-answer/dispatch";
+import { reserveAccountProviderSpendInTransaction } from "../src/server/account-spend";
+import { canonicalFingerprint } from "../src/server/model-gateway/evidence";
+import { openConnectorSecret, requireConnectorKey } from "../src/server/personal-assistant/credential-cipher";
+import { twilioDispatchPolicy } from "../src/server/personal-assistant/twilio-outbound";
+
+const env = process.env;
+const incident = env.ENDVERA_BUILD_PERSONAL_INCIDENT_PROBE;
+const cases = [
+  ["general", "Explique simplement la différence entre le béton 25 MPa et 32 MPa."],
+  ["current-sources", "Il annonce cmb demain a mtl"],
+] as const;
+async function main() {
+  if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-3]$/u.test(incident)) throw new Error();
+  const ingress = inspectPersonalModelIngressConfiguration(readPersonalOperatorConfiguration(env));
+  const config = loadAnswerConfiguration(env, false);
+  if (!config) throw new Error();
+  const subject = { subject: { kind: "personal_assistant_operation" as const, workspaceId: ingress.manifest.workspaceId,
+    operationId: `operator-canary:${incident}` }, actorUserId: ingress.manifest.ownerUserId };
+  const budget = inspectAnswerBudget(config.rateConfiguration, ANSWER_OPERATION, new Date());
+  inspectPersonalModelPilotEnvelope(env, new Date(), budget.ceilingCadMicros, config.pilotEnvelopeReview);
+  if (budget.reservationUsdMicros > 100_000n || budget.reservationCadMicros > 200_000n) throw new Error();
+  try {
+    const policy = twilioDispatchPolicy(env, "sms_outbound", "Vérification technique ENDVERA.");
+    console.info(JSON.stringify({ event: "incident.twilio_preflight", ready: true, reservationCadMicros: policy.reservation.toString() }));
+  } catch (error) {
+    const code = error instanceof Error && /^[A-Z_]{1,100}$/u.test(error.message) ? error.message : "UNAVAILABLE";
+    console.info(JSON.stringify({ event: "incident.twilio_preflight", ready: false, diagnosticCode: code }));
+  }
+  for (const [name, body] of cases) {
+    const id = `operator-canary:${incident}:${name}`;
+    const receivedAt = new Date().toISOString();
+    const input = createAnswerInput({ requestId: id, workspaceId: ingress.manifest.workspaceId,
+      body, receivedAt, senderVerified: true, workspaceBound: true });
+    // These fields are adapter prerequisites only; the evidence below explicitly
+    // records OPERATOR_CANARY, never a received SMS or customer action.
+    const won = await prisma.$transaction(async tx => {
+      const authority = await inspectModelAuthority(tx, subject, new Date());
+      await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))::text AS acquired', budget.budgetId);
+      if (await tx.personalAssistantOperation.findUnique({ where: { id } })) return false;
+      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantBudget" SET "reservedCadMicros"="reservedCadMicros"+$2,"updatedAt"=(now() AT TIME ZONE 'UTC')
+        WHERE id=$1 AND "ceilingCadMicros"=$3 AND "expiresAt"=($4::timestamptz AT TIME ZONE 'UTC')
+          AND "expiresAt">(clock_timestamp() AT TIME ZONE 'UTC') AND "reservedCadMicros"+$2<="ceilingCadMicros"`,
+        budget.budgetId, budget.reservationCadMicros, budget.ceilingCadMicros, new Date(budget.expiresAt));
+      if (changed !== 1) throw new Error();
+      const hold = await reserveAccountProviderSpendInTransaction(tx, { operationKey: id, attempt: 1, provider: "openrouter",
+        worstCaseMicros: budget.reservationUsdMicros, now: new Date() }, env);
+      if (!hold.ok || !hold.created || hold.grantedMicros !== budget.reservationUsdMicros) throw new Error();
+      const request = { evidenceKind: "OPERATOR_CANARY", incident, case: name, requestFingerprint: input.requestFingerprint,
+        accountHoldId: hold.holdId, actionAuthority: false };
+      await tx.personalAssistantOperation.create({ data: { id, idempotencyKey: id, workspaceId: ingress.manifest.workspaceId,
+        createdByUserId: ingress.manifest.ownerUserId, connectorAccountId: authority.accountId, kind: "operator_answer_canary",
+        status: "processing", attempts: 1, request, requestHash: canonicalFingerprint(request),
+        budgetId: budget.budgetId, reservedCadMicros: budget.reservationCadMicros } });
+      return true;
+    }, { isolationLevel: "Serializable", timeout: 8000 });
+    if (!won) { console.info(JSON.stringify({ event: "incident.canary", case: name, status: "ALREADY_ATTEMPTED_NO_RETRY" })); continue; }
+    const adapterConfig = { enabled: true, allowedModels: budget.allowedModels, providerEndpoints: budget.providerEndpoints,
+      timeoutMs: 25_000, maxOutputTokens: budget.maxOutputTokens };
+    const transport = createAnswerTransport({ enabled: true, expectedRequest: answerWireRequest(input, adapterConfig),
+      getApiKey: async () => {
+        const authority = await inspectModelAuthority(prisma, subject, new Date());
+        const account = await prisma.constructionConnectorAccount.findUniqueOrThrow({ where: { id: authority.accountId } });
+        if (!account.credentialRef) throw new Error();
+        const row = await prisma.constructionConnectorCredential.findFirstOrThrow({ where: { id: account.credentialRef,
+          connectorAccountId: authority.accountId, workspaceId: ingress.manifest.workspaceId, revokedAt: null } });
+        const key = requireConnectorKey(env.ENDVERA_CONNECTOR_ENCRYPTION_KEY);
+        try {
+          const binding = JSON.stringify([ingress.manifest.workspaceId, authority.accountId, `openrouter-api-key:${row.id}`]);
+          return JSON.parse(openConnectorSecret(row.ciphertext, binding, key)).apiKey as string;
+        } finally { key.fill(0); }
+      } }, env);
+    const result = await createOpenRouterAnswerAdapter(adapterConfig, transport).dispatch(input, new AbortController().signal);
+    const evidence = result.status === "ANSWER_INSPECTED"
+      ? { status: result.status, providerRequestId: result.providerRequestId, servedModel: result.servedModel,
+        usage: result.usage, responseFingerprint: canonicalFingerprint(result), actionAuthority: false }
+      : { status: result.status, diagnosticCode: safeAdapterReason(result.reason), actionAuthority: false };
+    await prisma.personalAssistantOperation.update({ where: { id }, data: {
+      status: result.status === "ANSWER_INSPECTED" ? "completed" : "uncertain", result: evidence,
+      externalTransportPerformed: result.dispatched } });
+    console.info(JSON.stringify({ event: "incident.canary", case: name, ...evidence }));
+  }
+}
+void main().catch(() => { console.error("PERSONAL_INCIDENT_CANARY_FAILED_REVIEW_REQUIRED"); process.exitCode = 1; })
+  .finally(() => prisma.$disconnect());
