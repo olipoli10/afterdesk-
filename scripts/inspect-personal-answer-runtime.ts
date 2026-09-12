@@ -100,6 +100,7 @@ try {
       report.providerAnswerCompletionTokens = result.usage.completion_tokens;
       report.providerAnswerContractInspected = true;
     } else if (result.status === "UNCERTAIN") {
+      report.providerAnswerReason = result.reason;
       report.providerAnswerHttpStatus = result.httpStatus;
       report.providerAnswerContractStatus = result.resultContractStatus;
     }
