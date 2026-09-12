@@ -15,7 +15,7 @@ function operationKey(inspected: Awaited<ReturnType<typeof inspectPersonalGatewa
 
 /** Reservation does not authorize provider execution or any business action. */
 export async function reservePersonalAiOperation(tx: Tx, subject: PersonalGatewayOperationSubject) {
-  const inspected = await inspectPersonalGatewaySubject(tx, subject);
+  const inspected = await inspectPersonalGatewaySubject(tx, subject, true);
   const key = operationKey(inspected);
   await tx.$executeRawUnsafe(
     `INSERT INTO "AiOperation" (id,"personalAssistantOperationId",purpose,"operationKey",status,attempts,"createdAt","updatedAt")
@@ -39,7 +39,7 @@ export async function reservePersonalAiOperation(tx: Tx, subject: PersonalGatewa
  * Use in the SAME transaction as both budget holds and gateway admission.
  */
 export async function claimPersonalAiOperation(tx: Tx, subject: PersonalGatewayOperationSubject): Promise<PersonalAiOperationClaim | null> {
-  const inspected = await inspectPersonalGatewaySubject(tx, subject);
+  const inspected = await inspectPersonalGatewaySubject(tx, subject, true);
   const key = operationKey(inspected);
   const lockedBy = randomUUID();
   const [row] = await tx.$queryRawUnsafe<Array<{ id: string }>>(
@@ -75,7 +75,7 @@ export async function finishPersonalAiOperation(tx: Tx, input: {
   // Changed authority suppresses proposal acceptance, but must not suppress
   // recording an uncertain/refused outcome or retaining its budget exposure.
   if (input.outcome === "PROPOSAL_INSPECTED") {
-    const current = await inspectPersonalGatewaySubject(tx, claim.subject);
+    const current = await inspectPersonalGatewaySubject(tx, claim.subject, true);
     if (operationKey(current) !== claim.operationKey || current.authorityFingerprint !== claim.authorityFingerprint) {
       throw new Error("PERSONAL_AI_AUTHORITY_CHANGED");
     }

@@ -12,12 +12,14 @@ import { inspectPersonalIntentCandidate, type PersonalIntentInput, type Personal
  * TIME: two-digit HH:mm; H[h] or H[h]MM with H=0 or 13..23;
  *       1..11 h [MM] du matin; 1..6 or 12 h de l'après-midi;
  *       5..11 h du soir; midi / minuit. Contradictory dayparts clarify.
- * Bare 1..12 h is ambiguous. No guessed duration, offset, year or timezone.
+ * Bare 1..12 h is ambiguous. An END span may instead be an explicitly cued
+ * duration (for example "il dure 1 h" or "pendant 30 minutes"). No duration,
+ * offset, year or timezone is ever guessed.
  * Dates 2000..2100 and minute-granularity modern IANA offsets only. The offset
  * search exhausts -14:00..+14:00, refusing nonexistent or duplicate wall times.
  * Context must later come from authenticated DB state, NOT a model's fields.
  */
-export const PERSONAL_TEMPORAL_GRAMMAR_VERSION = "quebec-explicit-calendar-v1";
+export const PERSONAL_TEMPORAL_GRAMMAR_VERSION = "quebec-explicit-calendar-v2";
 const contextSchema = z.object({ receivedAt: z.string().datetime({ offset: true }), timezone: z.string().min(1).max(100) }).strict();
 export type PersonalTemporalContext = Readonly<z.infer<typeof contextSchema>>;
 type Reason = "INVALID_INPUT" | "INVALID_CONTEXT" | "UNSUPPORTED_ACTION" | "UNSUPPORTED_TEMPORAL_GRAMMAR"
@@ -137,6 +139,22 @@ function time(quote: string): { hour: number; minute: number } | Failure {
   } else if (hour >= 1 && hour <= 12) return clarify("AMBIGUOUS_TIME");
   return { hour, minute };
 }
+function explicitDuration(raw: string): { minutes: number } | Failure | null {
+  const quote = normalize(raw);
+  const cue = /^(?:(?:il|elle|ça|ca|le rendez-vous|le rdv)\s+)?(?:dure|durera|durée(?:\s+de)?|pendant)\s+(.+)$/u.exec(quote);
+  if (!cue) return null;
+  const value = cue[1];
+  let hours = 0; let minutes = 0; let minuteOnly = false;
+  const hour = /^(\d{1,2})\s*h(?:\s*(\d{2}))?$/u.exec(value);
+  const minute = /^(\d{1,3})\s*(?:min|minute|minutes)$/u.exec(value);
+  const word = /^(?:une|1)\s+heure(?:\s+(\d{1,2})\s*(?:min|minute|minutes))?$/u.exec(value);
+  if (hour) { hours = Number(hour[1]); minutes = Number(hour[2] ?? 0); }
+  else if (minute) { minutes = Number(minute[1]); minuteOnly = true; }
+  else if (word) { hours = 1; minutes = Number(word[1] ?? 0); }
+  else return clarify("UNSUPPORTED_TEMPORAL_GRAMMAR");
+  const total = hours * 60 + minutes;
+  return total >= 1 && total <= 1440 && (minuteOnly || minutes < 60) ? { minutes: total } : clarify("INVALID_DATE");
+}
 function parseWall(raw: string, today: CalendarDate, endDate?: CalendarDate, ambiguousTime?: { hour: number; minute: number }): Wall | Failure {
   const quote = normalize(raw);
   // An explicit reply can clarify only a literal the unchanged parser actually
@@ -170,6 +188,10 @@ function parseWall(raw: string, today: CalendarDate, endDate?: CalendarDate, amb
 export function classifyPersonalCalendarTemporalSlot(raw: string, position: "START" | "END", untrustedContext: PersonalTemporalContext): "AMBIGUOUS" | "EXPLICIT" | "UNSUPPORTED" {
   try {
     if (typeof raw !== "string" || !["START", "END"].includes(position)) return "UNSUPPORTED";
+    if (position === "END") {
+      const duration = explicitDuration(raw);
+      if (duration) return "status" in duration ? "UNSUPPORTED" : "EXPLICIT";
+    }
     const context = contextSchema.parse(untrustedContext);
     const today = parts(new Date(context.receivedAt), formatter(context.timezone));
     if (!dateValid(today)) return "UNSUPPORTED";
@@ -197,7 +219,7 @@ function resolvePersonalCalendarTemporalInternal(input: PersonalIntentInput, raw
   if (action.kind === "CLARIFY") return clarify(action.reason === "MISSING_END_TIME" ? "MISSING_END_TIME"
     : action.reason === "AMBIGUOUS_TIME" ? "AMBIGUOUS_TIME" : "UNSUPPORTED_ACTION");
   if (!explicitTimezoneAgrees(input.source, context.timezone)) return clarify("EXPLICIT_TIMEZONE_UNSUPPORTED");
-  let starts: Wall | Failure; let ends: Wall | Failure;
+  let starts: Wall | Failure; let ends: Wall | Failure | undefined; let durationMinutes: number | undefined;
   if (action.kind === "READ_CALENDAR") {
     const quote = normalize(action.period.quote).replace(/^pour /, "").replace(/^toute la journée /, "").replace(/ toute la journée$/, "");
     if (quote !== "demain" && quote !== "aujourd'hui") return clarify("UNSUPPORTED_TEMPORAL_GRAMMAR");
@@ -206,11 +228,17 @@ function resolvePersonalCalendarTemporalInternal(input: PersonalIntentInput, raw
   } else if (action.kind === "PREPARE_CALENDAR_EVENT") {
     starts = parseWall(action.starts.quote, today, undefined, override?.slot === "START" ? override : undefined);
     if ("status" in starts) return starts;
-    ends = parseWall(action.ends.quote, today, starts, override?.slot === "END" ? override : undefined);
+    const duration = override?.slot === "END" ? null : explicitDuration(action.ends.quote);
+    if (duration && "status" in duration) return duration;
+    if (duration) durationMinutes = duration.minutes;
+    else ends = parseWall(action.ends.quote, today, starts, override?.slot === "END" ? override : undefined);
   } else return clarify("UNSUPPORTED_ACTION");
-  if ("status" in ends) return ends;
+  if (ends && "status" in ends) return ends;
   const start = uniqueUtc(starts, format); if ("status" in start) return start;
-  const end = uniqueUtc(ends, format); if ("status" in end) return end;
+  const end = durationMinutes !== undefined
+    ? { instant: new Date(Date.parse(start.instant) + durationMinutes * 60_000).toISOString() }
+    : uniqueUtc(ends!, format);
+  if ("status" in end) return end;
   if (Date.parse(end.instant) <= Date.parse(start.instant)) return clarify("END_NOT_AFTER_START");
   return Object.freeze({ status: "RESOLVED_NOT_AUTHORIZED", executionAuthorized: false, preview: null,
     kind: action.kind, requestFingerprint: inspected.requestFingerprint, actionId: action.id,

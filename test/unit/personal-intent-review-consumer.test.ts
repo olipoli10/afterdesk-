@@ -21,7 +21,8 @@ function fixture(body = "Texte-moi : Bonjour", kind: "sms" | "call" | "calendar"
     : { id: "a", dependsOn: [], kind: "PREPARE_CALENDAR_EVENT", title: span("visite"), starts: span("demain à 14h"), ends: span("15h") };
   const proposal = { schemaVersion: 1, requestFingerprint: sourceInput.requestFingerprint, actions: [action] } as PersonalIntentProposal;
   const source = { actorUserId: "owner", input: sourceInput, subject: { kind: "personal_assistant_operation", operationId: "source", workspaceId: "workspace" },
-    authorityFingerprint: fp("source-auth"), receivedAt: "2026-09-10T13:00:00Z", timezone: "America/Toronto" };
+    authorityFingerprint: fp("source-auth"), receivedAt: "2026-09-10T13:00:00Z", timezone: "America/Toronto",
+    conversationContext: body.startsWith("[ENDVERA_SMS_TRANSCRIPT_V1]\n") ? { transcriptHash: fp(body) } : null };
   const model = { accountId: "model-account", fingerprint: fp("model-auth") };
   const request = { schemaVersion: 1, sourceOperationId: "source", requestFingerprint: sourceInput.requestFingerprint,
     sourceAuthorityFingerprint: source.authorityFingerprint, modelAuthorityFingerprint: model.fingerprint, reviewedRateFingerprint: fp("rates"),
@@ -59,6 +60,16 @@ describe("stored personal candidate review consumer (local, mocked persistence)"
     const action = f.proposal.actions[0]; if (action.kind !== "PREPARE_CALENDAR_EVENT") throw new Error("fixture");
     action.starts = f.span("demain de 14h"); f.reseal();
     expect(await prepareStoredPersonalIntentReview(f.tx, f.input, env)).toMatchObject({ actions: [{ status: "PREPARED_UNSENT", draft: { startsAt: "2026-09-11T18:00:00.000Z", endsAt: "2026-09-11T19:00:00.000Z" } }] });
+  });
+  it("does not reinterpret ENDVERA's own clarification as a user negation", async () => {
+    const body = "[ENDVERA_SMS_TRANSCRIPT_V1]\n[PREVIOUS_CONTEXT]\nAjoute visite demain à 14h\n[/PREVIOUS_CONTEXT]\n"
+      + "[ENDVERA_CLARIFICATION]\nÀ quelle heure se termine-t-il? Aucune durée par défaut n’a été ajoutée.\n[/ENDVERA_CLARIFICATION]\n"
+      + "[CURRENT_USER_REPLY]\n15h\n[/CURRENT_USER_REPLY]";
+    const f = fixture(body, "calendar");
+    expect(await prepareStoredPersonalIntentReview(f.tx, f.input, env)).toMatchObject({
+      actions: [{ status: "PREPARED_UNSENT", draft: { startsAt: "2026-09-11T18:00:00.000Z", endsAt: "2026-09-11T19:00:00.000Z" } }],
+    });
+    expect(shared.calendar).toHaveBeenCalledTimes(1);
   });
   it("does not create an approvable draft when the source explicitly names another timezone", async () => {
     const f = fixture("Ajoute visite demain à 14h à 15h, heure de Vancouver", "calendar");

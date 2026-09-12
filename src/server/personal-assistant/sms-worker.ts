@@ -25,6 +25,7 @@ import { routeSmsAssistant } from "@/lib/sms-assistant/routing";
 import { processPersonalAnswerSms, type PersonalAnswerSmsResult } from "./answer-worker";
 import { weatherQuestion } from "@/lib/sms-assistant/weather";
 import { processPersonalWeather } from "./weather-worker";
+import { inspectPersonalGatewaySubject } from "@/server/model-gateway/personal-subject";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -43,7 +44,7 @@ export const PERSONAL_SMS_BATCH_BUDGET_MS = 50_000;
 const CLEANUP_BUDGET_MS = 2_000;
 export type PersonalSmsSourceClaim = Readonly<{ operationId: string; workspaceId: string; userId: string; attempt: 1; leaseUntil: string }>;
 export type PersonalSmsExecutionContext = Readonly<{ claim: PersonalSmsSourceClaim; signal: AbortSignal; deadlineAt: number }>;
-type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; answer?: typeof processPersonalAnswerSms; calendar?: typeof readGoogleCalendarWithAuthority; deadlineAt?: number };
+type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; answer?: typeof processPersonalAnswerSms; calendar?: typeof readGoogleCalendarWithAuthority; intentContinuation?: (claim: PersonalSmsSourceClaim) => Promise<boolean>; deadlineAt?: number };
 
 const SAFE_OUTBOUND_FAILURE_CODES = new Set([
   "PERSONAL_OUTBOUND_DISABLED", "TWILIO_CONFIGURATION_REQUIRED", "CURRENT_TWILIO_RATE_REVIEW_REQUIRED",
@@ -163,6 +164,16 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       else if (temporal.status !== "NOT_TEMPORAL_CONTEXT" || temporal.sourceCompleted !== false) throw new Error("SMS_TEMPORAL_ROUTING_CHANGED");
     }
     let reply: string; let source: "GOOGLE_CALENDAR" | "ENDVERA_LOCAL" | "CLARIFICATION" | "MODEL_REVIEW_ONLY" | "ENDVERA_ANSWER" | "ENDVERA_WEATHER";
+    let intentContinuation = false;
+    if (!reservedCalendar && !day && temporalFixedReply === undefined
+      && assistantRoute.disposition === "ROUTE" && assistantRoute.lane === "GENERAL_ANSWER"
+      && env.ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED === "true") {
+      intentContinuation = await withinDeadline(async () => deps.intentContinuation
+        ? deps.intentContinuation(claim)
+        : (await inspectPersonalGatewaySubject(prisma, { kind: "personal_assistant_operation",
+          operationId: claim.operationId, workspaceId: claim.workspaceId }, true)).conversationContext !== null, deadlineAt);
+      requireLive();
+    }
     let weatherEvidence: Awaited<ReturnType<typeof processPersonalWeather>>["evidence"];
     let finalizeReview: PersonalModelSmsResult["finalizeReview"];
     let finalizeAnswer: PersonalAnswerSmsResult["finalizeAnswer"];
@@ -215,7 +226,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       // Identity and SMS grants were admitted above; no phone permission needed.
       const result = await processPersonalWeather(received.body, row.createdAt.toISOString(), { signal: controller.signal, deadlineAt }, env);
       requireLive(); reply = result.reply; weatherEvidence = result.evidence; source = "ENDVERA_WEATHER";
-    } else if (assistantRoute.disposition === "ROUTE"
+    } else if (assistantRoute.disposition === "ROUTE" && !intentContinuation
       && (assistantRoute.lane === "GENERAL_ANSWER" || assistantRoute.lane === "PUBLIC_RESEARCH" || assistantRoute.lane === "PROPERTY_RESEARCH")) {
       // Every open-ended answer is generated through the guarded model path.
       // The deterministic router only selects an admissible read-only lane; it

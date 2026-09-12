@@ -67,7 +67,8 @@ describe("owner-only personal model connection (synthetic ORM and cipher)", () =
     tx.constructionConnectorCredential.findFirst.mockResolvedValue(data);
     const source: PersonalIntentAdmission["source"] = { actorUserId: input.userId, subject: { kind: "personal_assistant_operation", operationId: "synthetic-inbound", workspaceId: input.workspaceId },
       authorityFingerprint: `sha256:${"a".repeat(64)}`, status: "SUBJECT_INSPECTED_NOT_DISPATCH_AUTHORIZED", executionAuthorized: false,
-      tenantKey: `construction-workspace:${input.workspaceId}`, timezone: "America/Toronto", receivedAt: now.toISOString(), input: createPersonalIntentInput("synthetic-inbound", "Mon calendrier demain?") };
+      tenantKey: `construction-workspace:${input.workspaceId}`, timezone: "America/Toronto", receivedAt: now.toISOString(),
+      input: createPersonalIntentInput("synthetic-inbound", "Mon calendrier demain?"), conversationContext: null };
     shared.source.mockResolvedValue(source);
     const modelAuthority = { accountId: "synthetic-account", grantId: "synthetic-grant", fingerprint: "synthetic-fingerprint" };
     shared.authority.mockResolvedValue(modelAuthority);

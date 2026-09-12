@@ -34,6 +34,15 @@ describe("source-bound deterministic calendar temporal resolution", () => {
     expect(event("demain à14h", "15h30")).toMatchObject({ status: "RESOLVED_NOT_AUTHORIZED", title: "chantier", startsAtUtc: "2026-09-10T18:00:00.000Z", endsAtUtc: "2026-09-10T19:30:00.000Z" });
     expect(event("aujourd’hui à 2 h de l’après-midi", "5 h du soir")).toMatchObject({ startsAtUtc: "2026-09-09T18:00:00.000Z", endsAtUtc: "2026-09-09T21:00:00.000Z" });
   });
+  it("uses a source-explicit duration without inventing a default end", () => {
+    expect(event("demain à18:30", "il dure 1 h")).toMatchObject({ status: "RESOLVED_NOT_AUTHORIZED",
+      startsAtUtc: "2026-09-10T22:30:00.000Z", endsAtUtc: "2026-09-10T23:30:00.000Z",
+      grammarVersion: "quebec-explicit-calendar-v2", executionAuthorized: false });
+    expect(event("demain à 14h", "pendant 30 minutes")).toMatchObject({ endsAtUtc: "2026-09-10T18:30:00.000Z" });
+  });
+  it("does not reinterpret a bare ambiguous clock as a duration", () => {
+    expect(event("demain à18:30", "1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
+  });
   it("accepts explicit full local ISO dates and cross-day ends without guessing rollover", () => {
     expect(event("2026-09-10T23:30", "2026-09-11 01:15")).toMatchObject({ startsAtUtc: "2026-09-11T03:30:00.000Z", endsAtUtc: "2026-09-11T05:15:00.000Z" });
     expect(event("2026-09-10 à 14:00", "2026-09-10 à 15h")).toMatchObject({ status: "RESOLVED_NOT_AUTHORIZED" });

@@ -5,6 +5,7 @@ import { GOOGLE_CALENDAR_READ_SCOPE, GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/c
 import { personalCalendarDraftSchema, preparePersonalCalendarInTransaction } from "@/server/personal-assistant/calendar-actions";
 import { preparePersonalOutboundInTransaction } from "@/server/personal-assistant/outbox";
 import { personalIntentClarificationQuestion, resolvePersonalCalendarTemporal } from "./temporal";
+import { inspectPersonalSmsTranscript } from "./sms-transcript";
 
 import { loadStoredPersonalIntentReviewProof, type PersonalIntentReviewInput } from "./review-proof";
 export type { PersonalIntentReviewInput } from "./review-proof";
@@ -40,11 +41,16 @@ async function actionAccount(tx: Prisma.TransactionClient, userId: string, works
 export async function prepareStoredPersonalIntentReview(tx: Prisma.TransactionClient, untrusted: PersonalIntentReviewInput, env: NodeJS.ProcessEnv = process.env) {
   const proof = await loadStoredPersonalIntentReviewProof(tx, untrusted, env);
   if (proof.status === "DISABLED") return proof;
-  const { input, row, source, request, inspected, proposalRaw } = proof;
+  const { input, row, source, inspected, proposalRaw } = proof;
   const reviews: ActionReview[] = [];
   const normalized = normalize(source.input.source);
-  const unsafeContext = /\b(?:pas|jamais|non|sauf|annule|annuler|si|sinon|unless|except|not|never|cancel)\b|\bn['’]/.test(normalized);
-  const otherRecipient = /\b(?:texte|appelle|telephone)(?!-moi\b)\b|\benvoie\s+(?!moi\b)/.test(normalized);
+  // Server-authored clarification text is context for the model, never user
+  // intent. Safety checks therefore inspect only the preserved user messages.
+  const transcript = source.conversationContext ? inspectPersonalSmsTranscript(source.input.source) : null;
+  if (source.conversationContext && transcript?.isTranscript !== true) throw new Error("PERSONAL_REVIEW_CONTEXT_INVALID");
+  const normalizedUserSource = normalize(transcript?.userText ?? source.input.source);
+  const unsafeContext = /\b(?:pas|jamais|non|sauf|annule|annuler|si|sinon|unless|except|not|never|cancel)\b|\bn['’]/.test(normalizedUserSource);
+  const otherRecipient = /\b(?:texte|appelle|telephone)(?!-moi\b)\b|\benvoie\s+(?!moi\b)/.test(normalizedUserSource);
   for (const action of inspected.proposal.actions) {
     const ask = (question: string) => reviews.push(clarify(action.id, action.kind, question));
     if (unsafeContext) { ask("Confirme séparément l’action exacte : la demande contient une négation ou une condition. Rien n’est préparé."); continue; }

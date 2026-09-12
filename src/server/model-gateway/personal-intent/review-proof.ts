@@ -51,7 +51,7 @@ export async function loadStoredPersonalIntentReviewProof(tx: Prisma.Transaction
   if (!(row.now instanceof Date) || !Number.isFinite(row.now.getTime()) || row.now.getTime() < Date.parse("2026-09-10T01:18:26Z")
     || row.now.getTime() >= Date.parse("2026-10-10T01:18:26Z") || env.ENDVERA_EXTERNAL_AUTHORITY_REF !== PERSONAL_MODEL_AUTHORITY
     || env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT !== "2026-10-10T01:18:26Z") throw new Error("PERSONAL_REVIEW_PILOT_INACTIVE");
-  const source = await inspectPersonalGatewaySubject(tx, { kind: "personal_assistant_operation", operationId: input.sourceOperationId, workspaceId: input.workspaceId });
+  const source = await inspectPersonalGatewaySubject(tx, { kind: "personal_assistant_operation", operationId: input.sourceOperationId, workspaceId: input.workspaceId }, true);
   if (source.actorUserId !== input.userId) throw new Error("PERSONAL_REVIEW_ACTOR_MISMATCH");
   const model = await inspectModelAuthority(tx, source, row.now);
   const request = childRequestSchema.parse(row.request);

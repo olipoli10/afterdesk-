@@ -235,7 +235,7 @@ export async function personalModelCredentialForDispatch(input: {
   return prisma.$transaction(async tx => {
     await requireOwner(tx, { userId: input.source.actorUserId, workspaceId: input.source.subject.workspaceId });
     const now = await databaseNow(tx); requireCurrentAuthority(env, now);
-    const currentSource = await inspectPersonalGatewaySubject(tx, input.source.subject);
+    const currentSource = await inspectPersonalGatewaySubject(tx, input.source.subject, true);
     if (currentSource.authorityFingerprint !== input.source.authorityFingerprint) throw new Error("PERSONAL_MODEL_SOURCE_AUTHORITY_CHANGED");
     const current = await inspectModelAuthority(tx, currentSource, now);
     if (current.accountId !== input.modelAuthority.accountId || current.fingerprint !== input.modelAuthority.fingerprint) throw new Error("PERSONAL_MODEL_CREDENTIAL_BINDING_CHANGED");

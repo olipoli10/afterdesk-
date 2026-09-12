@@ -18,7 +18,7 @@ describe("single-use personal AiOperation primitives (synthetic transaction)", (
   it("reserves one explicit inbound subject without fake Task/client identifiers", async () => {
     const f = fixture(); f.query.mockResolvedValue([{ id: claim.operationId, operationKey: key, personalAssistantOperationId: subject.operationId }]);
     expect(await reservePersonalAiOperation(f.tx, subject)).toMatchObject({ operationId: claim.operationId, operationKey: key });
-    expect(shared.inspect).toHaveBeenCalledWith(f.tx, subject);
+    expect(shared.inspect).toHaveBeenCalledWith(f.tx, subject, true);
     expect(f.execute.mock.calls[0][0]).toContain('ON CONFLICT ("personalAssistantOperationId") DO NOTHING');
     expect(f.execute.mock.calls[0][0]).toContain("'reserved',0,(now() AT TIME ZONE 'UTC'),(now() AT TIME ZONE 'UTC')");
     expect(f.execute.mock.calls[0].slice(2)).toEqual([subject.operationId, "personal_intent_candidate_v1", key]);

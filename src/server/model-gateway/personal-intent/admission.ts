@@ -106,7 +106,7 @@ async function currentContext(tx: Tx, input: PersonalIntentAdmissionInput, env: 
   if (!clock || !Number.isFinite(clock.now.getTime())) refuse("PERSONAL_MODEL_DATABASE_CLOCK_REQUIRED");
   const budgetPolicy = inspectPersonalModelBudget(input.rateConfiguration, clock.now);
   const pilotEnvelopeReview = inspectPersonalModelPilotEnvelope(env, clock.now, budgetPolicy.ceilingCadMicros, input.pilotEnvelopeReview);
-  const source = await inspectPersonalGatewaySubject(tx, input.subject);
+  const source = await inspectPersonalGatewaySubject(tx, input.subject, true);
   const modelAuthority = await inspectModelAuthority(tx, source, clock.now);
   if (!/^sha256:[a-f0-9]{64}$/.test(source.input.requestFingerprint)) refuse("PERSONAL_MODEL_FINGERPRINT_INVALID");
   const request: PersonalGatewayOperationRequest = Object.freeze({
