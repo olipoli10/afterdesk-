@@ -33,6 +33,18 @@ describe("R37O provider boundary release gate", () => {
       "prisma migrate deploy",
       "next build",
     ]);
+    expect(
+      pipeline.resolveBuildPipelineCommands(
+        pipeline.computePlan({ VERCEL_ENV: "production", DIRECT_URL: "configured" }),
+        [],
+        { ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_KEY: "true", ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_ANSWER: "true" },
+      ),
+    ).toEqual([
+      "npm run validate:provider-boundary",
+      pipeline.PERSONAL_PROVIDER_ANSWER_DIAGNOSTIC_COMMAND,
+      "prisma migrate deploy",
+      "next build",
+    ]);
   });
 
   it("accepts a safe public source graph", () => {
