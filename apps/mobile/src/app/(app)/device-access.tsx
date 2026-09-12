@@ -32,6 +32,7 @@ import {
   type DeviceBridgeOutcome,
   type WritableDeviceCalendar,
 } from "@/lib/device-calendar-bridge";
+import { preferredWritableDeviceCalendar } from "@/lib/device-calendar-selection";
 
 const statusCopy: Record<DeviceAccessState["status"], string> = {
   UNDETERMINED: "Pas encore demandé",
@@ -209,11 +210,37 @@ export default function DeviceAccessScreen() {
       setWritableCalendars(calendars);
       const granted = next.filter((state) => state.status === "GRANTED" || state.status === "LIMITED").length;
       const calendar = next.find((state) => state.resource === "CALENDAR");
-      setPermissionFeedback(
-        calendar?.status === "GRANTED"
-          ? `Vérification terminée : ${granted}/${next.length} accès accordés. Calendrier actif; descends pour choisir ton calendrier et associer ce téléphone.`
-          : `Vérification terminée : ${granted}/${next.length} accès accordés. L’accès Calendrier doit être autorisé avant l’association.`,
-      );
+      if (calendar?.status !== "GRANTED") {
+        setPermissionFeedback(`Vérification terminée : ${granted}/${next.length} accès accordés. L’accès Calendrier doit être autorisé avant l’association.`);
+      } else if (!activeWorkspace) {
+        setPermissionFeedback(`Vérification terminée : ${granted}/${next.length} accès accordés. Reconnecte-toi à ton espace pour associer ce téléphone.`);
+      } else {
+        const choice = preferredWritableDeviceCalendar(calendars, await loadSelectedDeviceCalendar());
+        if (!choice) {
+          setSelectedCalendar(null);
+          setDeviceLinked(false);
+          setPermissionFeedback(`Vérification terminée : ${granted}/${next.length} accès accordés, mais aucun calendrier Android modifiable n’a été trouvé.`);
+        } else {
+          await selectWritableDeviceCalendar(choice);
+          if (!mounted.current) return;
+          setSelectedCalendar(choice);
+          try {
+            const registration = await registerThisAndroidDevice(activeWorkspace.id);
+            if (registration.status !== "LINKED" || !registration.calendarWriteEnabled) throw new Error("DEVICE_CALENDAR_NOT_LINKED");
+            if (!mounted.current) return;
+            setDeviceLinked(true);
+            const outcome = await runDeviceCalendarBridge(activeWorkspace.id);
+            if (!mounted.current) return;
+            setBridgeOutcome(outcome);
+            setPermissionFeedback(`Prêt : ${granted}/${next.length} accès accordés. « ${choice.title} » est choisi et ce téléphone est associé à ENDVERA.`);
+          } catch {
+            if (!mounted.current) return;
+            setDeviceLinked(false);
+            setPermissionFeedback(`Permissions accordées : ${granted}/${next.length}. « ${choice.title} » est choisi, mais l’association au serveur a échoué.`);
+            setError("Association refusée. Vérifie la connexion et la session, puis appuie de nouveau sur le bouton.");
+          }
+        }
+      }
       if (next.some((state) => state.status === "UNAVAILABLE")) {
         setError("Au moins un accès n’est pas disponible; les autres permissions restent utilisables.");
       }
@@ -249,7 +276,8 @@ export default function DeviceAccessScreen() {
     setBusy("REFRESH");
     setError(null);
     try {
-      await registerThisAndroidDevice(activeWorkspace.id);
+      const registration = await registerThisAndroidDevice(activeWorkspace.id);
+      if (registration.status !== "LINKED" || !registration.calendarWriteEnabled) throw new Error("DEVICE_CALENDAR_NOT_LINKED");
       if (!mounted.current) return;
       setDeviceLinked(true);
       setBridgeOutcome(await runDeviceCalendarBridge(activeWorkspace.id));

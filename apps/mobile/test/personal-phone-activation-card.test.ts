@@ -19,5 +19,8 @@ describe("personal phone activation card wiring", () => {
     expect(screen).toContain("PersonalPhoneActivationCard");
     expect(screen).toContain("requestAll");
     expect(screen).toContain("Examiner les permissions restantes");
+    expect(screen).toContain("preferredWritableDeviceCalendar");
+    expect(screen).toContain("registerThisAndroidDevice(activeWorkspace.id)");
+    expect(screen).toContain("est choisi et ce téléphone est associé à ENDVERA");
   });
 });

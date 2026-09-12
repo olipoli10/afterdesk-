@@ -85,13 +85,14 @@ export async function listWritableDeviceCalendars(): Promise<WritableDeviceCalen
   const calendars = await Calendar.getCalendars(Calendar.EntityTypes.EVENT);
   return calendars
     .filter((calendar) => calendar.allowsModifications && calendar.isVisible !== false)
+    .sort((left, right) => Number(Boolean(right.isPrimary)) - Number(Boolean(left.isPrimary))
+      || left.title.localeCompare(right.title))
     .map((calendar) => selectedCalendarSchema.parse({
       schemaVersion: 1,
       id: calendar.id,
       title: calendar.title,
       ownerAccount: calendar.ownerAccount ?? null,
-    }))
-    .sort((left, right) => left.title.localeCompare(right.title));
+    }));
 }
 
 export async function loadSelectedDeviceCalendar() {
@@ -264,4 +265,3 @@ export async function revokeThisAndroidDevice(workspaceId: string) {
     SecureStore.deleteItemAsync(JOURNAL_KEY),
   ]);
 }
-
