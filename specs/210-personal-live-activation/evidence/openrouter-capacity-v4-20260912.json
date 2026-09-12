@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-12T21:03:00Z",
+  "authorityId": "ENDVERA-PERSONAL-20260910-100CAD",
+  "sourceHead": "8c5ca2509844e9942c2a24dcde479d61921b6a76",
+  "deployment": {
+    "id": "dpl_BMjASnDCsnQyVLaC3yztH8aS82sa",
+    "state": "READY",
+    "aliases": ["endvera-core-sandbox.vercel.app", "endvera-core-sandbox-afterdesk.vercel.app"],
+    "health": "ENDVERA_WEB/alive"
+  },
+  "reason": "PROVIDER_BODY_RATE_LIMIT_EXCEEDED",
+  "routeVersion": 4,
+  "previousModel": "openai/gpt-5.6-luna",
+  "model": "openai/gpt-5.6-luna-pro",
+  "endpoint": "azure",
+  "review": {
+    "sourceUrl": "https://openrouter.ai/api/v1/endpoints/zdr",
+    "retrievedAt": "2026-09-12T20:59:32.987Z",
+    "model": "openai/gpt-5.6-luna-pro",
+    "provider": "azure",
+    "status": 0,
+    "pricing": {
+      "prompt": "0.0000002",
+      "completion": "0.0000012",
+      "web_search": "0.01",
+      "input_cache_read": "0.00000002",
+      "input_cache_write": "0.00000025",
+      "discount": 0,
+      "overrides": [
+        {
+          "min_prompt_tokens": 272000,
+          "prompt": "0.0000004",
+          "completion": "0.0000018",
+          "input_cache_read": "0.00000004",
+          "input_cache_write": "0.0000005"
+        }
+      ]
+    },
+    "supportedParameters": [
+      "max_completion_tokens",
+      "reasoning",
+      "include_reasoning",
+      "seed",
+      "response_format",
+      "structured_outputs",
+      "tools",
+      "tool_choice",
+      "reasoning_effort"
+    ],
+    "zeroRetentionCatalogMember": true,
+    "existingProviderAndResidencyUnchanged": true
+  },
+  "fxReview": {
+    "source": "https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=1",
+    "observationDate": "2026-09-11",
+    "observedUsdCad": 1.3866,
+    "cadMicrosPerUsd": 1400000,
+    "headroomBasisPoints": 1000,
+    "reviewedAt": "2026-09-12T20:57:00Z",
+    "note": "Rounded upward; provider/payment fees and FX headroom retained"
+  },
+  "setupId": "c06c0855-6094-4dd8-b44d-f29d56be214b",
+  "manifestHash": "sha256:430f4c0671f8438943ac0c6038c1c6aea3baa75eb4e88dcef58219317785bb20",
+  "routeIds": [
+    "personal-intent-route-859319b9-039b-436c-985f-01c3ba73df82",
+    "personal-answer-route-aecfd869-d2e4-41eb-94a3-a03568436754"
+  ],
+  "policyIds": [
+    "personal-intent-policy-9e76ba06-f9fb-429b-8c24-de86764ca5b9",
+    "personal-answer-policy-55041371-975a-452e-bf4e-f6d811bdb0d1"
+  ],
+  "policyMaximumUsdMicros": "9012",
+  "maxOutputTokens": 2048,
+  "modelCeilingCad": "20.00",
+  "smsCeilingCad": "15.00",
+  "providerFallbacks": false,
+  "automaticRetries": false,
+  "actionAuthority": false,
+  "actualCanaries": [
+    {
+      "case": "general",
+      "status": "ANSWER_INSPECTED",
+      "providerRequestId": "gen-1789246920-TWJaVnPTTyNIE3Q6rbLl",
+      "responseFingerprint": "sha256:6e627fd3aefcb96b6ff41f82017895b4dc20cce2e4acaae686c715f2b8fab491",
+      "usage": {
+        "prompt_tokens": 3237,
+        "completion_tokens": 854
+      }
+    },
+    {
+      "case": "calendar-complete",
+      "status": "PROPOSAL_INSPECTED_NOT_AUTHORIZED",
+      "providerRequestId": "gen-1789246927-X7OPunZGrhfJv7R2JxqH",
+      "actions": [
+        "PREPARE_CALENDAR_EVENT"
+      ],
+      "responseFingerprint": "sha256:3735cc79c6b2f43a5fff927dda21e7f6a92c68ca90a2b0e5dd91ac5213c4e847"
+    }
+  ],
+  "freshInboundE2eObserved": false,
+  "nativeCalendarWriteObserved": false
+}

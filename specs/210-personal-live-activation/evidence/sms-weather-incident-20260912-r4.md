@@ -97,3 +97,68 @@ Primary source requirements checked2026-09-12:
 Next: isolate the calendar HTTP200/no-message envelope, retain strict backend
 action checks, then correlate a new legitimate incoming message if one arrives.
 Never fabricate inbound delivery or ask the founder for another test loop.
+
+## 21:09Z update — provider throttling isolated; bounded replacement deployed
+
+This entry supersedes the unresolved wire diagnosis above, not its historical
+observations. The r5 synthetic calendar attempt returned HTTP 200 with an error
+body: code 429 and metadata.error_type `rate_limit_exceeded`. The adapter now
+retains only the closed diagnostic `PROVIDER_BODY_RATE_LIMIT_EXCEEDED`. No raw
+provider error, SMS, key or model content is logged. The canary now uses the
+intent diagnostic sanitizer instead of the answer-only sanitizer. Top-level or
+choice-level provider errors remain failures even if usable content also exists.
+No automatic retry, uncertainty reset or authorization bypass was introduced.
+
+The current public OpenRouter catalog reported the old Azure GPT-5.6 Luna
+endpoint unavailable/status -5. An available first-party endpoint was NOT used
+because it was outside the existing zero-retention configuration. Reviewed
+Azure GPT-5.6 Luna Pro was available/status 0 in the zero-retention catalog, at
+the same input/output prices: USD 0.20/1.20 per million tokens. Existing provider,
+residency and no-fallback restrictions were retained. Current FX was checked;
+the rounded-up conversion and 10% headroom remain within the same budget.
+
+Version 4 creates new route/policy records and preserves version 3. Exact-owner,
+consent, credential-presence, prior-route, collision and pilot/budget checks ran
+inside the publication transaction. No credential, consent, daily spending
+ceiling, pilot expiry or total budget was enlarged. Model output limit is now
+2048 tokens, including reasoning, with its bounded cost reservation.
+The answer auto route is constrained to the reviewed model; this does not claim
+unrestricted cheapest-model routing across the entire OpenRouter catalog.
+
+Two actual r6 synthetic candidate calls succeeded:
+- general: ANSWER_INSPECTED, gen-1789246920-TWJaVnPTTyNIE3Q6rbLl;
+- calendar-complete: PROPOSAL_INSPECTED_NOT_AUTHORIZED with
+  PREPARE_CALENDAR_EVENT, gen-1789246927-X7OPunZGrhfJv7R2JxqH.
+
+Exact reviewed route IDs, fingerprints, prices and canary outcomes are in
+openrouter-capacity-v4-20260912.json. Four operator model attempts total in this
+weather repair (r4, r5, two r6); one separately authorized owner weather SMS.
+Legitimate inbound processing is separate. Latest observed conservative holds:
+Twilio 7.800000/15 CAD and OpenRouter 0.267558/20 CAD; these are NOT settled bills.
+
+Functional source 8c5ca2509844e9942c2a24dcde479d61921b6a76. Production deployment
+dpl_BMjASnDCsnQyVLaC3yztH8aS82sa READY; both existing production aliases verified.
+The production /api/health returns ENDVERA_WEB/alive. Build PASS, 802 provider
+boundary modules with zero violations; 199 targeted tests in 10 files and
+TypeScript PASS. No schema/lockfile change; 82 existing migrations, none pending.
+Build-only canary flags were not saved as project defaults.
+
+Read-only owner workspace check at 21:06Z found no connector account for
+endvera_android_device. Granted Android permissions therefore do not yet prove
+server association with a selected writable calendar. Native write and closed-app
+wakeup remain unobserved. No new inbound is present in the final deployment's
+21:04–21:08:55 runtime log window, so full new SMS -> model/weather -> delivered
+response is NOT claimed. No further founder test is requested.
+
+Remaining boundary: require an authentic device/calendar association and native
+write receipt before calling the calendar path complete. No phone is accessible
+to this operator session. Existing internal APK11 was not rebuilt for this server
+repair. No employee sends, timers, new purchases, store release or Git push.
+Historical roadmap 22%, build-readiness 46.75% and C2 18/18 remain unremeasured;
+owner-only controlled pilot GO, global customer NO-GO; aggregate Verified-E2E
+coverage is not promoted from these separate observations.
+
+Additional primary sources checked 2026-09-12:
+- https://openrouter.ai/docs/api_reference/errors-and-debugging
+- https://openrouter.ai/api/v1/endpoints/zdr
+- https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=1
