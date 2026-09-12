@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const h = vi.hoisted(() => ({ inspect: vi.fn(), read: vi.fn(), apply: vi.fn(), publication: vi.fn() }));
+const h = vi.hoisted(() => ({ inspect: vi.fn(), read: vi.fn(), apply: vi.fn(), readIngress: vi.fn(), publication: vi.fn(), provision: vi.fn() }));
 
 vi.mock("@/server/model-gateway/personal-intent/operator-ingress-contract", () => ({
   PERSONAL_MODEL_INGRESS_LIMITS: { receiptUtf8: 16384 },
@@ -17,9 +17,14 @@ vi.mock("@/server/model-gateway/personal-intent/operator-http", () => ({
 }));
 vi.mock("@/server/model-gateway/personal-intent/operator-ingress", () => ({
   applyPersonalModelOperatorIngress: h.apply,
+  readPersonalModelOperatorIngress: h.readIngress,
   assertPersonalModelOperatorIngressPublication: h.publication,
 }));
 vi.mock("@/server/personal-assistant/credential-cipher", () => ({ requireConnectorKey: () => Buffer.alloc(32) }));
+vi.mock("@/server/personal-assistant/model-connection", () => ({
+  PERSONAL_MODEL_CREDENTIAL_CONFIRMATION: "personal-model-credential-v1",
+  provisionPersonalModelCredentialFromOwnerSession: h.provision,
+}));
 
 import { OPTIONS, POST } from "../src/app/api/endvera/v1/personal/model/operator-bootstrap/route";
 
@@ -39,6 +44,8 @@ beforeEach(() => {
   h.inspect.mockReturnValue({ configuration: { setupRef }, manifest: { ownerUserId: "owner" } });
   h.read.mockResolvedValue({ setupRef, apiKey: "synthetic_key_not_valid_123456789" });
   h.apply.mockResolvedValue(receipt);
+  h.readIngress.mockResolvedValue(receipt);
+  h.provision.mockResolvedValue({ credentialPrepared: true });
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
@@ -119,5 +126,20 @@ describe("one-time personal model bootstrap diagnostics", () => {
     const response = await POST(request());
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ status: "SETUP_STAGE_CREDENTIAL", automaticRetry: false });
+  });
+
+  it("rotates a configured credential only behind the same applied setup", async () => {
+    h.read.mockResolvedValueOnce({ version: "personal-model-credential-rotation-v1", setupRef,
+      commandId: "22345678-1234-4234-8234-123456789abc", apiKey: "synthetic_key_not_valid_123456789" });
+    const response = await POST(request());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: "CREDENTIAL_ROTATED_NOT_VERIFIED", automaticRetry: false });
+    expect(h.readIngress).toHaveBeenCalledTimes(1);
+    expect(h.publication).toHaveBeenCalledWith(receipt);
+    expect(h.provision).toHaveBeenCalledWith(expect.objectContaining({
+      userId: "owner", commandId: "22345678-1234-4234-8234-123456789abc",
+      confirmation: "personal-model-credential-v1",
+    }));
+    expect(h.apply).not.toHaveBeenCalled();
   });
 });

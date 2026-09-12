@@ -92,9 +92,14 @@ describe("owner-only personal model connection (synthetic ORM and cipher)", () =
     expect(tx.constructionConnectorCredential.create).toHaveBeenCalledTimes(1);
     await expect(provisionPersonalModelCredentialFromOwnerSession({ ...request, apiKey: "different_synthetic_key_123456789012" }, env))
       .rejects.toThrow("COMMAND_CONFLICT");
-    await expect(provisionPersonalModelCredentialFromOwnerSession({ ...request, commandId: "12345678-1234-4234-8234-123456789abd" }, env))
-      .rejects.toThrow("ALREADY_CONFIGURED");
-    expect(tx.constructionConnectorCredential.create).toHaveBeenCalledTimes(1);
+    const rotated = await provisionPersonalModelCredentialFromOwnerSession({ ...request,
+      commandId: "12345678-1234-4234-8234-123456789abd" }, env);
+    expect(rotated).toMatchObject({ commandId: "12345678-1234-4234-8234-123456789abd", credentialPrepared: true });
+    expect(tx.constructionConnectorCredential.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: commandId, revokedAt: null }),
+      data: expect.objectContaining({ ciphertext: "revoked" }),
+    }));
+    expect(tx.constructionConnectorCredential.create).toHaveBeenCalledTimes(2);
   });
   it("refuses owner-session credential writes without the exact current consent", async () => {
     const { tx } = fixture(); const apiKey = "synthetic_key_".repeat(4);

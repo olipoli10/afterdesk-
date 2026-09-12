@@ -25,10 +25,15 @@ export function personalModelOperatorRequestContext(request: Request) {
 }
 export type PersonalModelOperatorRequestContext = ReturnType<typeof personalModelOperatorRequestContext>;
 
-const command = z.object({ version: z.literal("personal-model-setup-command-v1"),
+const setupCommand = z.object({ version: z.literal("personal-model-setup-command-v1"),
   setupRef: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/),
   apiKey: z.string().min(24).max(512).regex(/^[A-Za-z0-9_-]+$/),
 }).strict();
+const rotationCommand = setupCommand.extend({
+  version: z.literal("personal-model-credential-rotation-v1"),
+  commandId: z.string().uuid(),
+}).strict();
+const command = z.discriminatedUnion("version", [setupCommand, rotationCommand]);
 
 /** Specialized secret-bearing JSON body reader. No DB, env, auth, logging or
  * network call. The route must independently enforce exact origin and owner.

@@ -22,6 +22,11 @@ describe("operator installation JSON body, no session or installation authority"
   it("accepts explicit UTF-8 media type", async () => {
     expect(await read(request(JSON.stringify(payload), { "content-type": "Application/JSON; charset=UTF-8" }))).toEqual(payload);
   });
+  it("accepts the explicit idempotent credential rotation command", async () => {
+    const rotation = { ...payload, version: "personal-model-credential-rotation-v1",
+      commandId: "22345678-1234-4234-8234-123456789abc" };
+    expect(await read(request(JSON.stringify(rotation)))).toEqual(rotation);
+  });
   it.each(["text/plain", "application/x-www-form-urlencoded", "application/json; charset=utf-16", ""])("refuses media type %s", async type => {
     await expect(read(request("{}", { "content-type": type }))).rejects.toThrow("UNSUPPORTED_MEDIA_TYPE");
   });

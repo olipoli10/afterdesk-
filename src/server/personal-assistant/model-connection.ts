@@ -126,8 +126,13 @@ export async function provisionPersonalModelCredentialFromOwnerSession(input: Ow
         return { commandId: input.commandId, credentialPrepared: true as const,
           providerVerified: false as const, executionAuthorized: false as const };
       }
-      if (current) throw new Error("PERSONAL_MODEL_CREDENTIAL_ALREADY_CONFIGURED");
       if (account.credentialRef && !current) throw new Error("PERSONAL_MODEL_CREDENTIAL_STATE_INVALID");
+      if (current) {
+        await tx.constructionConnectorCredential.updateMany({
+          where: { id: current.id, connectorAccountId: account.id, workspaceId: input.workspaceId, revokedAt: null },
+          data: { ciphertext: "revoked", revokedAt: now, version: { increment: 1 } },
+        });
+      }
       await writeModelCredential(tx, input.workspaceId, account.id, input.commandId, parsed.data, key, now);
       return { commandId: input.commandId, credentialPrepared: true as const, providerVerified: false as const, executionAuthorized: false as const };
     }, { isolationLevel: "Serializable" });

@@ -3,12 +3,15 @@ import { inspectPersonalModelIngressConfiguration, PERSONAL_MODEL_INGRESS_LIMITS
 import {
   applyPersonalModelOperatorIngress,
   assertPersonalModelOperatorIngressPublication,
+  readPersonalModelOperatorIngress,
 } from "@/server/model-gateway/personal-intent/operator-ingress";
 import {
   personalModelOperatorRequestContext,
   readPersonalModelOperatorCommand,
 } from "@/server/model-gateway/personal-intent/operator-http";
 import { requireConnectorKey } from "@/server/personal-assistant/credential-cipher";
+import { PERSONAL_MODEL_CREDENTIAL_CONFIRMATION,
+  provisionPersonalModelCredentialFromOwnerSession } from "@/server/personal-assistant/model-connection";
 
 export const runtime = "nodejs";
 const headers = {
@@ -55,16 +58,18 @@ async function browserHandoff(request: Request): Promise<{ request: Request; aut
   if (Buffer.byteLength(encoded, "utf8") > 4096) return { request, authorized: false };
   const parameters = new URLSearchParams(encoded);
   const keys = [...parameters.keys()].sort();
-  if (keys.length !== 4 || keys.join(",") !== "apiKey,setupRef,token,version"
-    || [...new Set(keys)].length !== keys.length) return { request, authorized: false };
+  const setupFields = keys.length === 4 && keys.join(",") === "apiKey,setupRef,token,version";
+  const rotationFields = keys.length === 5 && keys.join(",") === "apiKey,commandId,setupRef,token,version";
+  if ((!setupFields && !rotationFields) || [...new Set(keys)].length !== keys.length) return { request, authorized: false };
   const token = parameters.get("token");
   const setupRef = parameters.get("setupRef") ?? "";
   const apiKey = parameters.get("apiKey") ?? "";
   const version = parameters.get("version") ?? "";
+  const commandId = parameters.get("commandId");
   const forwarded = new Request(request.url, {
     method: "POST",
     headers: { "content-type": "application/json; charset=utf-8" },
-    body: JSON.stringify({ version, setupRef, apiKey }),
+    body: JSON.stringify({ version, setupRef, apiKey, ...(commandId === null ? {} : { commandId }) }),
     signal: request.signal,
   });
   return { request: forwarded, authorized: authorizedValue(token) };
@@ -133,6 +138,26 @@ export async function POST(request: Request) {
       connectorKey.fill(0);
     } catch {
       return response(503, "CREDENTIAL_STORAGE_REFUSED");
+    }
+    if (command.version === "personal-model-credential-rotation-v1") {
+      const receipt = await readPersonalModelOperatorIngress({
+        actor: { userId: ingress.manifest.ownerUserId, role: "CLIENT", emailVerified: true },
+        setupRef: command.setupRef,
+      }, process.env, {
+        deadlineAt: context.deadlineAt,
+        monotoneDeadlineAt: context.monotoneDeadlineAt,
+        signal: context.signal,
+      });
+      assertPersonalModelOperatorIngressPublication(receipt);
+      dispatched = true;
+      await provisionPersonalModelCredentialFromOwnerSession({
+        userId: ingress.manifest.ownerUserId,
+        workspaceId: ingress.manifest.workspaceId,
+        commandId: command.commandId,
+        confirmation: PERSONAL_MODEL_CREDENTIAL_CONFIRMATION,
+        apiKey: command.apiKey,
+      });
+      return response(200, "CREDENTIAL_ROTATED_NOT_VERIFIED");
     }
     dispatched = true;
     const receipt = await applyPersonalModelOperatorIngress({
