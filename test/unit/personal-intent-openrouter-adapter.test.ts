@@ -32,6 +32,14 @@ describe("OFF-by-default personal OpenRouter transport adapter", () => {
     expect(request[0].messages[1].content).toBe(JSON.stringify({ requestFingerprint: input.requestFingerprint, source: input.source }));
     expect(adapter.modelKey).toBe("synthetic/model");
   });
+  it("accepts OpenRouter's matching per-message model and rejects a disagreement", async () => {
+    const matching = wire(); Object.assign(matching.choices[0].message, { model: matching.model });
+    expect(await create(async () => ({ httpStatus: 200, body: JSON.stringify(matching) })).dispatch(input, signal()))
+      .toMatchObject({ status: "PROPOSAL_INSPECTED_NOT_AUTHORIZED" });
+    const changed = wire(); Object.assign(changed.choices[0].message, { model: "another/model" });
+    expect(await create(async () => ({ httpStatus: 200, body: JSON.stringify(changed) })).dispatch(input, signal()))
+      .toMatchObject({ status: "DISPATCH_OUTCOME_UNCERTAIN", reason: "INVALID_RESPONSE" });
+  });
   it("rejects mutated or extra-field input before transport", async () => {
     const transport = vi.fn(async () => response());
     for (const bad of [{ ...input, source: "lundi" }, { ...input, executionAuthorized: true }, { ...input, schemaVersion: 2 }]) {

@@ -31,6 +31,7 @@ const wireSchema = z.object({
   id: z.string().min(1).max(191), model: z.string().min(1).max(200),
   choices: z.array(z.object({ index: z.literal(0), finish_reason: z.literal("stop"),
     message: z.object({ role: z.literal("assistant"), content: z.string().min(1),
+      model: z.string().min(1).max(200).optional(),
       refusal: z.null().optional(), tool_calls: z.array(z.never()).max(0).optional(),
       reasoning: z.string().max(65_536).nullable().optional(),
       reasoning_details: z.array(z.unknown()).max(100).optional(),
@@ -106,6 +107,7 @@ export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
           if (typeof raw !== "string" || Buffer.byteLength(raw, "utf8") > 131_072) throw new Error();
           const wire = wireSchema.parse(JSON.parse(raw));
           if (wire.model !== modelKey) throw new Error();
+          if (wire.choices[0].message.model !== undefined && wire.choices[0].message.model !== wire.model) throw new Error();
           const inspected = inspectPersonalIntentCandidate(wire.choices[0].message.content, input);
           return Object.freeze({ status: "PROPOSAL_INSPECTED_NOT_AUTHORIZED", dispatched: true, executionAuthorized: false,
             accounting: "UNSETTLED", providerRequestId: wire.id, inspected });
