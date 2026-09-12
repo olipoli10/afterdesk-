@@ -8,7 +8,7 @@ afterEach(() => vi.useRealTimers());
 function fixture() {
   vi.useFakeTimers(); vi.setSystemTime(new Date("2026-09-10T04:00:00Z"));
   const source = createPersonalIntentInput("synthetic-inbound", "Qu’est-ce que j’ai demain?");
-  const request = { model: "synthetic/model", stream: false as const, temperature: 0 as const, max_completion_tokens: 512,
+  const request = { model: "synthetic/model", stream: false as const, max_completion_tokens: 512,
     messages: personalIntentMessages(source), response_format: personalIntentResponseFormat(),
     provider: { only: ["synthetic-endpoint"] as [string], allow_fallbacks: false as const, require_parameters: true as const, data_collection: "deny" as const, zdr: true as const } };
   const env: NodeJS.ProcessEnv = { NODE_ENV: "test", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_AUTHORITY_REF: PERSONAL_MODEL_AUTHORITY,

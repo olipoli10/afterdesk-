@@ -9,7 +9,7 @@ import { personalIntentMessages, personalIntentResponseFormat, PERSONAL_INTENT_P
 // https://openrouter.ai/docs/guides/routing/provider-selection
 // Local-only adapter; no credential reader, network implementation or registration.
 export type OpenRouterPersonalIntentRequest = Readonly<{
-  model: string; stream: false; temperature: 0; max_completion_tokens: number;
+  model: string; stream: false; max_completion_tokens: number;
   messages: ReturnType<typeof personalIntentMessages>;
   response_format: ReturnType<typeof personalIntentResponseFormat>;
   provider: Readonly<{ only: readonly [string]; allow_fallbacks: false; require_parameters: true; data_collection: "deny"; zdr: true }>;
@@ -77,7 +77,9 @@ export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
       } catch { return notDispatched("INVALID_INPUT"); }
       if (signal.aborted) return notDispatched("ABORTED");
       const request: OpenRouterPersonalIntentRequest = Object.freeze({
-        model: modelKey, stream: false, temperature: 0, max_completion_tokens: maxOutputTokens,
+        // Reasoning endpoints do not universally support sampling controls.
+        // Deterministic backend validation, not temperature, guards actions.
+        model: modelKey, stream: false, max_completion_tokens: maxOutputTokens,
         messages: personalIntentMessages(input), response_format: personalIntentResponseFormat(),
         provider: Object.freeze({ only: Object.freeze([providerEndpointSlug]) as readonly [string],
           allow_fallbacks: false, require_parameters: true, data_collection: "deny", zdr: true }),

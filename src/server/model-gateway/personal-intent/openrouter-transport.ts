@@ -27,7 +27,7 @@ export function createPersonalOpenRouterTransport(input: Readonly<{
   getApiKey: () => Promise<string>;
 }>, env: NodeJS.ProcessEnv = process.env, fetcher: typeof fetch = fetch): OpenRouterPersonalIntentTransport {
   const expected: OpenRouterPersonalIntentRequest = {
-    model: input.modelKey, stream: false, temperature: 0, max_completion_tokens: input.maxOutputTokens,
+    model: input.modelKey, stream: false, max_completion_tokens: input.maxOutputTokens,
     messages: personalIntentMessages(input.source), response_format: personalIntentResponseFormat(),
     provider: { only: [input.providerEndpointSlug], allow_fallbacks: false, require_parameters: true, data_collection: "deny", zdr: true },
   };

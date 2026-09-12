@@ -12,6 +12,12 @@ const create = (transport: OpenRouterPersonalIntentTransport, options: { enabled
   createOpenRouterPersonalIntentAdapter({ modelKey: "synthetic/model", providerEndpointSlug: "synthetic/provider", timeoutMs: 1000, ...options, transport });
 
 describe("OFF-by-default personal OpenRouter transport adapter", () => {
+  it("works with a strict reasoning endpoint that refuses temperature", async () => {
+    const transport = vi.fn<OpenRouterPersonalIntentTransport>(async request =>
+      "temperature" in request ? { httpStatus: 404, body: "" } : response());
+    expect(await create(transport).dispatch(input, signal())).toMatchObject({ status: "PROPOSAL_INSPECTED_NOT_AUTHORIZED", executionAuthorized: false });
+    expect(transport).toHaveBeenCalledOnce();
+  });
   it("does not dispatch unless explicitly enabled", async () => {
     const transport = vi.fn(async () => response());
     expect(await create(transport, {}).dispatch(input, signal())).toMatchObject({ status: "NOT_DISPATCHED", reason: "DISABLED" });
@@ -28,6 +34,7 @@ describe("OFF-by-default personal OpenRouter transport adapter", () => {
       provider: { only: ["synthetic/provider"], allow_fallbacks: false, data_collection: "deny", zdr: true, require_parameters: true },
       response_format: { type: "json_schema", json_schema: { strict: true, schema: { additionalProperties: false } } } });
     expect(request[0]).not.toHaveProperty("tools");
+    expect(request[0]).not.toHaveProperty("temperature");
     expect(request[0]).not.toHaveProperty("apiKey");
     expect(request[0].messages[1].content).toBe(JSON.stringify({ requestFingerprint: input.requestFingerprint, source: input.source }));
     expect(adapter.modelKey).toBe("synthetic/model");

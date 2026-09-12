@@ -11,7 +11,7 @@ function fixture() {
   const env: NodeJS.ProcessEnv = { NODE_ENV: "test", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true",
     ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED: "true", ENDVERA_EXTERNAL_AUTHORITY_REF: PERSONAL_MODEL_AUTHORITY,
     ENDVERA_PERSONAL_PILOT_EXPIRES_AT: "2026-10-10T01:18:26Z" };
-  const request = { model: "synthetic/model", stream: false as const, temperature: 0 as const, max_completion_tokens: 512,
+  const request = { model: "synthetic/model", stream: false as const, max_completion_tokens: 512,
     messages: personalIntentMessages(source), response_format: personalIntentResponseFormat(),
     provider: { only: ["synthetic-endpoint"] as [string], allow_fallbacks: false as const, require_parameters: true as const, data_collection: "deny" as const, zdr: true as const } };
   const key = vi.fn(async () => "synthetic-generated-local-key-not-provider");
