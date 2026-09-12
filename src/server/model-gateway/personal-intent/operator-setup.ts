@@ -259,11 +259,13 @@ export async function applyPersonalModelOperatorSetupInTransaction(tx: Tx, raw: 
   stage = "INTENT_POLICY";
   await tx.modelGatewayPolicyVersion.create({ data: { ...mapped.policy, status: "published", publishedAt: now } }); c.live();
   if (answer) {
-    stage = "ANSWER_ROUTE";
+    stage = "ANSWER_ROUTE_CREATE";
     await tx.modelGatewayRouteProfile.create({ data: { ...answer.route, pricingEvidence: answer.route.pricingEvidence as Prisma.InputJsonObject,
-      privacyEvidence: answer.route.privacyEvidence as Prisma.InputJsonObject, status: "published", publishedAt: now } }); c.live();
-    stage = "ANSWER_POLICY";
-    await tx.modelGatewayPolicyVersion.create({ data: { ...answer.policy, status: "published", publishedAt: now } }); c.live();
+      privacyEvidence: answer.route.privacyEvidence as Prisma.InputJsonObject, status: "published", publishedAt: now } });
+    stage = "ANSWER_ROUTE_LIVE"; c.live();
+    stage = "ANSWER_POLICY_CREATE";
+    await tx.modelGatewayPolicyVersion.create({ data: { ...answer.policy, status: "published", publishedAt: now } });
+    stage = "ANSWER_POLICY_LIVE"; c.live();
   }
   stage = "STORED_VERIFICATION";
   await stored(tx, mapped, c); if (answer) await storedAnswer(tx, mapped, c);
