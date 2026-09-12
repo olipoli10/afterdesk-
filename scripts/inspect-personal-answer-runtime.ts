@@ -89,7 +89,7 @@ try {
       body: "Explique en une phrase la différence entre le béton 25 MPa et 32 MPa.", senderVerified: true,
       workspaceBound: true, receivedAt: new Date().toISOString() });
     const adapterConfiguration = { enabled: true, allowedModels: budget.allowedModels, providerEndpoints: budget.providerEndpoints,
-      timeoutMs: 20_000, maxOutputTokens: 256 };
+      timeoutMs: 20_000, maxOutputTokens: budget.maxOutputTokens };
     const expectedRequest = answerWireRequest(input, adapterConfiguration);
     const transport = createAnswerTransport({ enabled: true, expectedRequest, getApiKey: async () => providerApiKey! }, env);
     const result = await createOpenRouterAnswerAdapter(adapterConfiguration, transport).dispatch(input, new AbortController().signal);
