@@ -95,6 +95,15 @@ describe("one-time personal model bootstrap diagnostics", () => {
     expect(h.inspect).toHaveBeenCalledWith("synthetic");
   });
 
+  it("reassembles a bounded split configuration before inspecting it", async () => {
+    vi.stubEnv("ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_COUNT", "3");
+    vi.stubEnv("ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_1", "syn");
+    vi.stubEnv("ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_2", "the");
+    vi.stubEnv("ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_3", "tic");
+    await POST(request());
+    expect(h.inspect).toHaveBeenCalledWith("synthetic");
+  });
+
   it("dispatches only an exact setup reference", async () => {
     expect((await POST(request())).status).toBe(200);
     expect(h.apply).toHaveBeenCalledTimes(1);

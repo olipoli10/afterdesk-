@@ -22,6 +22,16 @@ const response = (status: number, code: string) => new Response(
   { status, headers },
 );
 
+function storedConfiguration(): string | undefined {
+  const count = process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_COUNT;
+  if (count === undefined) return process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION;
+  if (!/^[1-4]$/.test(count)) return undefined;
+  const parts = Array.from({ length: Number(count) }, (_, index) =>
+    process.env[`ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_${index + 1}`]);
+  if (parts.some(part => typeof part !== "string" || part.length === 0)) return undefined;
+  return parts.join("");
+}
+
 function authorizedValue(supplied: string | null): boolean {
   const expected = process.env.ENDVERA_PERSONAL_MODEL_BOOTSTRAP_TOKEN;
   if (!expected || !supplied || !/^[a-f0-9]{64}$/.test(expected) || !/^[a-f0-9]{64}$/.test(supplied)) return false;
@@ -78,10 +88,8 @@ export async function POST(request: Request) {
     const handoff = await browserHandoff(request);
     if (!authorized(request) && !handoff.authorized) return response(404, "UNAVAILABLE");
     request = handoff.request;
-    const storedConfiguration = process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION;
-    const normalizedConfiguration = typeof storedConfiguration === "string"
-      ? storedConfiguration.replace(/^\uFEFF/, "").trim()
-      : storedConfiguration;
+    const stored = storedConfiguration();
+    const normalizedConfiguration = typeof stored === "string" ? stored.replace(/^\uFEFF/, "").trim() : stored;
     let ingress: ReturnType<typeof inspectPersonalModelIngressConfiguration>;
     try {
       ingress = inspectPersonalModelIngressConfiguration(
