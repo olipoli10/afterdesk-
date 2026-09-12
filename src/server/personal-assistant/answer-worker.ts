@@ -44,6 +44,9 @@ export function loadAnswerConfiguration(env: NodeJS.ProcessEnv, research: boolea
 }
 export async function processPersonalAnswerSms(context: PersonalSmsExecutionContext, research: boolean, env: NodeJS.ProcessEnv = process.env): Promise<PersonalAnswerSmsResult> {
   const configuration = loadAnswerConfiguration(env, research);
+  if (research && !configuration) {
+    return { reply: "Cette question demande une recherche à jour. La recherche web n’est pas encore connectée à ENDVERA; ce n’est pas un problème de permissions sur ton téléphone." };
+  }
   if (!configuration || env.ENDVERA_PERSONAL_ANSWER_EXTERNAL_TRANSPORT_ENABLED !== "true" || env.ENDVERA_EXTERNAL_TRANSPORT_ENABLED !== "ENABLED") {
     return { reply: "La connexion IA pour répondre à cette question n’est pas encore active. Ta demande est conservée dans ENDVERA." };
   }

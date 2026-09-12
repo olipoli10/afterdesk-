@@ -23,6 +23,8 @@ import { processSmsTemporalReply } from "./sms-temporal-reply-worker";
 import { prepareCorrelatedCalendarAfterCommittedSms } from "./sms-correlated-calendar-preparation-hook";
 import { routeSmsAssistant } from "@/lib/sms-assistant/routing";
 import { processPersonalAnswerSms, type PersonalAnswerSmsResult } from "./answer-worker";
+import { weatherQuestion } from "@/lib/sms-assistant/weather";
+import { processPersonalWeather } from "./weather-worker";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -160,7 +162,8 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       }
       else if (temporal.status !== "NOT_TEMPORAL_CONTEXT" || temporal.sourceCompleted !== false) throw new Error("SMS_TEMPORAL_ROUTING_CHANGED");
     }
-    let reply: string; let source: "GOOGLE_CALENDAR" | "ENDVERA_LOCAL" | "CLARIFICATION" | "MODEL_REVIEW_ONLY" | "ENDVERA_ANSWER";
+    let reply: string; let source: "GOOGLE_CALENDAR" | "ENDVERA_LOCAL" | "CLARIFICATION" | "MODEL_REVIEW_ONLY" | "ENDVERA_ANSWER" | "ENDVERA_WEATHER";
+    let weatherEvidence: Awaited<ReturnType<typeof processPersonalWeather>>["evidence"];
     let finalizeReview: PersonalModelSmsResult["finalizeReview"];
     let finalizeAnswer: PersonalAnswerSmsResult["finalizeAnswer"];
     let googleReadAuthority: GoogleReadAuthority | undefined;
@@ -207,6 +210,11 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         ? "La consultation de ce document nécessite une source et un coût précis. Aucun achat n’a été effectué."
         : "Ta demande combine une recherche et une action. Précise d’abord la recherche à faire; nous pourrons ensuite préparer le message ou l’appel avec son destinataire exact.";
       source = "CLARIFICATION";
+    } else if (assistantRoute.disposition === "ROUTE" && assistantRoute.lane === "PUBLIC_RESEARCH" && weatherQuestion(received.body)) {
+      // A bounded read-only public weather tool, not a canned model answer.
+      // Identity and SMS grants were admitted above; no phone permission needed.
+      const result = await processPersonalWeather(received.body, row.createdAt.toISOString(), { signal: controller.signal, deadlineAt }, env);
+      requireLive(); reply = result.reply; weatherEvidence = result.evidence; source = "ENDVERA_WEATHER";
     } else if (assistantRoute.disposition === "ROUTE"
       && (assistantRoute.lane === "GENERAL_ANSWER" || assistantRoute.lane === "PUBLIC_RESEARCH" || assistantRoute.lane === "PROPERTY_RESEARCH")) {
       // Every open-ended answer is generated through the guarded model path.
@@ -305,7 +313,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC')
           AND kind='personal_sms_inbound' AND status='processing' AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')`,
         claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil), JSON.stringify({ reply, source, replyDelivery: "PREPARED_UNSENT",
-          ...(source === "GOOGLE_CALENDAR" ? { googleReadAuthority, googleReadRange } : {}), ...(personalModelReview ? { personalModelReview } : {}) }));
+          ...(source === "GOOGLE_CALENDAR" ? { googleReadAuthority, googleReadRange } : {}), ...(weatherEvidence ? { weatherEvidence } : {}), ...(personalModelReview ? { personalModelReview } : {}) }));
       if (finished !== 1) throw new Error("SMS_SOURCE_CLAIM_LOST");
       requireTemporalPreparationCurrent();
       if (calendarConfirmationId) {
@@ -363,7 +371,10 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
       && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true" && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true";
     let selection: Awaited<ReturnType<typeof selectPersonalAutomaticOutboundCandidates>>;
     try {
-      selection = await selectPersonalAutomaticOutboundCandidates({ enabled: true, limit: batchSize, includeConfirmations: confirmationEnabled,
+      // One new inbound can coexist with an older unsent reply. Reusing the
+      // inbound limit (1 on webhook wakeups) leaves a permanent one-SMS lag.
+      // Only never-claimed replies are selected; every send keeps its guards.
+      selection = await selectPersonalAutomaticOutboundCandidates({ enabled: true, limit: 10, includeConfirmations: confirmationEnabled,
         deadlineAt, signal: batchController.signal }, env);
     } catch (error) {
       outboundFailures.push(`SELECTOR:${personalSmsOutboundFailureCode(error)}`);

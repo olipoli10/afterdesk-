@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { classifyAssistantIntent } from "../construction-operating-assistant-r36a/classifier";
+import { weatherQuestion } from "./weather";
 
 export const assistantLaneSchema = z.enum([
   "CANONICAL_QUERY", "GENERAL_ANSWER", "PUBLIC_RESEARCH", "PROPERTY_RESEARCH",
@@ -56,6 +57,7 @@ export function routeSmsAssistant(value: unknown): AssistantRoute {
     return route("EXTERNAL_ACTION", "PREPARE_THROUGH_EXISTING_GATEWAY");
   }
   if (property) return route("PROPERTY_RESEARCH", "PROPERTY_EVIDENCE_CHAIN");
+  if (weatherQuestion(text) && !/\b(?:calendrier|agenda|calendar|horaire|schedule|chantier)\b/u.test(text)) return route("PUBLIC_RESEARCH", "CURRENT_PUBLIC_WEATHER_REQUIRED");
   if (/\b(?:parler|parle|transfere|joindre|besoin d'un|speak to|talk to)\b.*\b(?:humain|operateur|conseiller|human|operator)\b/u.test(text)) {
     return route("HUMAN", "HUMAN_EXPLICITLY_REQUESTED");
   }
@@ -64,7 +66,7 @@ export function routeSmsAssistant(value: unknown): AssistantRoute {
     || /\b(?:qu'est-ce que j'ai|j'ai quoi|quoi.*demain)\b/u.test(text)) {
     return route("CANONICAL_QUERY", "WORKSPACE_FACTS_REQUIRED");
   }
-  if (research) return route("PUBLIC_RESEARCH", "CURRENT_PUBLIC_SOURCES_REQUIRED");
+  if (research || weatherQuestion(text)) return route("PUBLIC_RESEARCH", "CURRENT_PUBLIC_SOURCES_REQUIRED");
   return route("GENERAL_ANSWER", "CONVERSATIONAL_ANSWER");
 }
 

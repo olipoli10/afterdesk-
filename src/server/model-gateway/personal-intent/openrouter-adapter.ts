@@ -32,9 +32,12 @@ const wireSchema = z.object({
   choices: z.array(z.object({ index: z.literal(0), finish_reason: z.literal("stop"),
     message: z.object({ role: z.literal("assistant"), content: z.string().min(1),
       model: z.string().min(1).max(200).optional(),
-      refusal: z.null().optional(), tool_calls: z.array(z.never()).max(0).optional(),
+      refusal: z.null().optional(), tool_calls: z.array(z.never()).max(0).nullable().optional(),
+      // OpenRouter can include an empty citation list on text-only responses.
+      // Empty/null is metadata, not evidence or permission to search.
+      annotations: z.array(z.never()).max(0).nullable().optional(),
       reasoning: z.string().max(65_536).nullable().optional(),
-      reasoning_details: z.array(z.unknown()).max(100).optional(),
+      reasoning_details: z.array(z.unknown()).max(100).nullable().optional(),
     }).strict(),
   })).length(1),
 });
@@ -52,7 +55,7 @@ function proposalDiagnostic(error: unknown): string {
 
 export function safePersonalIntentDiagnostic(value: unknown): string {
   const allowed = new Set(["TIMEOUT", "ABORTED", "TRANSPORT_ERROR", "HTTP_ERROR", "INVALID_RESPONSE",
-    "WIRE_RESPONSE_LIMIT", "WIRE_JSON_INVALID", "WIRE_SCHEMA_INVALID", "OUTPUT_NOT_FINISHED",
+    "WIRE_RESPONSE_LIMIT", "WIRE_JSON_INVALID", "WIRE_SCHEMA_INVALID", "WIRE_MESSAGE_EXTRA_FIELDS", "WIRE_MESSAGE_METADATA_INVALID", "OUTPUT_NOT_FINISHED",
     "SERVED_MODEL_MISMATCH", "MESSAGE_MODEL_MISMATCH", "PROPOSAL_JSON_INVALID", "PROPOSAL_SCHEMA_INVALID",
     "PROPOSAL_INVALID", "PERSONAL_INTENT_RESPONSE_LIMIT", "PERSONAL_INTENT_REQUEST_MISMATCH",
     "PERSONAL_INTENT_ACTION_ORDER_INVALID", "PERSONAL_INTENT_SOURCE_SPAN_MISMATCH"]);
@@ -128,8 +131,14 @@ export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
           let decoded: unknown;
           try { decoded = JSON.parse(raw); } catch { return uncertain("INVALID_RESPONSE", "WIRE_JSON_INVALID"); }
           const parsed = wireSchema.safeParse(decoded);
-          if (!parsed.success) return uncertain("INVALID_RESPONSE", parsed.error.issues.some(issue => issue.path.includes("finish_reason"))
-            ? "OUTPUT_NOT_FINISHED" : "WIRE_SCHEMA_INVALID");
+          if (!parsed.success) {
+            const issues = parsed.error.issues;
+            const code = issues.some(issue => issue.path.includes("finish_reason")) ? "OUTPUT_NOT_FINISHED"
+              : issues.some(issue => issue.code === "unrecognized_keys" && issue.path.includes("message")) ? "WIRE_MESSAGE_EXTRA_FIELDS"
+              : issues.some(issue => issue.path.some(key => ["reasoning", "reasoning_details", "annotations"].includes(String(key)))) ? "WIRE_MESSAGE_METADATA_INVALID"
+              : "WIRE_SCHEMA_INVALID";
+            return uncertain("INVALID_RESPONSE", code);
+          }
           const wire = parsed.data;
           if (wire.model !== modelKey) return uncertain("INVALID_RESPONSE", "SERVED_MODEL_MISMATCH");
           if (wire.choices[0].message.model !== undefined && wire.choices[0].message.model !== wire.model) return uncertain("INVALID_RESPONSE", "MESSAGE_MODEL_MISMATCH");

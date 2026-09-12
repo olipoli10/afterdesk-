@@ -19,10 +19,12 @@ import { preparePersonalOutbound, approvePersonalOutbound, dispatchPersonalOutbo
 import { createPersonalIntentInput } from "../src/server/model-gateway/personal-intent/contract";
 import { createOpenRouterPersonalIntentAdapter } from "../src/server/model-gateway/personal-intent/openrouter-adapter";
 import { createPersonalOpenRouterTransport } from "../src/server/model-gateway/personal-intent/openrouter-transport";
+import { processPersonalWeather } from "../src/server/personal-assistant/weather-worker";
 
 const env = process.env;
 const incident = env.ENDVERA_BUILD_PERSONAL_INCIDENT_PROBE;
 let stage = "CONFIGURATION";
+let weatherReport: Awaited<ReturnType<typeof processPersonalWeather>> | undefined;
 const cases = [
   ["general", "Explique simplement la différence entre le béton 25 MPa et 32 MPa."],
   ["current-sources", "Il annonce cmb demain a mtl"],
@@ -30,7 +32,7 @@ const cases = [
   ["calendar-complete", "Ajoute Visite demain à 14:00 jusqu’à 15:00."],
 ] as const;
 async function main() {
-  if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-3]$/u.test(incident)) throw new Error();
+  if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-4]$/u.test(incident)) throw new Error();
   const ingress = inspectPersonalModelIngressConfiguration(readPersonalOperatorConfiguration(env));
   const config = loadAnswerConfiguration(env, false);
   if (!config) throw new Error();
@@ -39,6 +41,14 @@ async function main() {
   const budget = inspectAnswerBudget(config.rateConfiguration, ANSWER_OPERATION, new Date());
   inspectPersonalModelPilotEnvelope(env, new Date(), budget.ceilingCadMicros, config.pilotEnvelopeReview);
   if (budget.reservationUsdMicros > 100_000n || budget.reservationCadMicros > 200_000n) throw new Error();
+  if (incident === "20260912-r4" || env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE === "weather") {
+    const result = await processPersonalWeather("Quel meteo a mtl demain", new Date().toISOString(),
+      { signal: new AbortController().signal, deadlineAt: Date.now() + 12_000 }, env);
+    console.info(JSON.stringify({ event: "incident.weather", ...result, customerSms: false, modelCall: false }));
+    if (!result.evidence) throw new Error("WEATHER_CANARY_FAILED");
+    weatherReport = result;
+    if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE === "weather") return;
+  }
   try {
     const policy = twilioDispatchPolicy(env, "sms_outbound", "Vérification technique ENDVERA.");
     console.info(JSON.stringify({ event: "incident.twilio_preflight", ready: true, reservationCadMicros: policy.reservation.toString() }));
@@ -47,8 +57,7 @@ async function main() {
     console.info(JSON.stringify({ event: "incident.twilio_preflight", ready: false, diagnosticCode: code }));
   }
   for (const [name, body] of cases) {
-    if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE === "calendar-intent" && name !== "calendar-intent") continue;
-    if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE === "calendar-complete" && name !== "calendar-complete") continue;
+    if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE && name !== env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE) continue;
     const id = `operator-canary:${incident}:${name}`;
     const receivedAt = new Date().toISOString();
     const intent = name.startsWith("calendar-") ? createPersonalIntentInput(id, body) : null;
@@ -100,7 +109,19 @@ async function main() {
       transportMode: "EXTERNAL_PROVIDER", transport: createPersonalOpenRouterTransport({ enabled: true, source: intent,
         modelKey: budget.allowedModels[0], providerEndpointSlug: budget.providerEndpoints[0], maxOutputTokens: budget.maxOutputTokens, getApiKey }, env,
         async (...args) => { const response = await fetch(...args);
-          console.info(JSON.stringify({ event: "incident.intent_http", status: response.status })); return response; }),
+          console.info(JSON.stringify({ event: "incident.intent_http", status: response.status }));
+          // Synthetic canary only. Inspect field TYPES, never message content,
+          // arbitrary provider values or unknown property names.
+          if (response.status === 200 && incident === "20260912-r4") {
+            const envelope = await response.clone().json().catch(() => null);
+            const message = envelope?.choices?.[0]?.message;
+            const fields = ["role", "content", "model", "refusal", "tool_calls", "reasoning", "reasoning_details", "annotations", "audio", "images", "function_call", "channel"];
+            const shape = message && typeof message === "object" ? Object.fromEntries(fields.filter(key => key in message)
+              .map(key => [key, message[key] === null ? "null" : Array.isArray(message[key]) ? `array:${message[key].length}` : typeof message[key]])) : null;
+            console.info(JSON.stringify({ event: "incident.intent_wire_shape", shape,
+              unknownFields: message ? Object.keys(message).filter(key => !fields.includes(key)).length : null }));
+          }
+          return response; }),
     }).dispatch(intent, signal) : await createOpenRouterAnswerAdapter(adapterConfig, createAnswerTransport({ enabled: true,
       expectedRequest: answerWireRequest(input!, adapterConfig), getApiKey }, env)).dispatch(input!, signal);
     const evidence = result.status === "ANSWER_INSPECTED"
@@ -119,11 +140,13 @@ async function main() {
   }
   // Separate, explicitly requested owner-pilot transport check. Not a forged
   // webhook, not an employee recipient, and not an assertion that calendar works.
-  if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_SELF_SMS === "20260912-check1") {
+  const sendWeather = incident === "20260912-r4" && env.ENDVERA_BUILD_PERSONAL_INCIDENT_SELF_SMS === "20260912-weather1";
+  if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_SELF_SMS === "20260912-check1" || sendWeather) {
     stage = "SELF_SMS";
     const proof = await prisma.constructionAuditEvent.findUnique({ where: { id: "operator-canary:20260912-r1:general:result" } });
     if ((proof?.metadata as { status?: string } | null)?.status !== "ANSWER_INSPECTED") throw new Error();
-    const requestId = "868d963b-48a6-4eae-b195-301f2a1be8b3";
+    if (sendWeather && !weatherReport?.evidence) throw new Error("WEATHER_EVIDENCE_REQUIRED");
+    const requestId = sendWeather ? "6f155880-84f7-44a2-9d52-760328ba0bd9" : "868d963b-48a6-4eae-b195-301f2a1be8b3";
     const idempotencyKey = `personal-outbound:${ingress.manifest.workspaceId}:${requestId}`;
     if (await prisma.personalAssistantOperation.findUnique({ where: { idempotencyKey } })) {
       console.info(JSON.stringify({ event: "incident.self_sms", status: "ALREADY_PREPARED_NO_RETRY" })); return;
@@ -141,7 +164,7 @@ async function main() {
     const actor = { userId: ingress.manifest.ownerUserId, workspaceId: ingress.manifest.workspaceId };
     stage = "SELF_SMS_PREPARE";
     const prepared = await preparePersonalOutbound({ ...actor, requestId, kind: "sms_outbound", to: identities[0].normalizedAddress,
-      text: "Test technique ENDVERA : OpenRouter répond aux questions générales. La météo et le calendrier sont encore en correction. Ce message vérifie seulement le retour SMS." }, env);
+      text: sendWeather ? weatherReport!.reply : "Test technique ENDVERA : OpenRouter répond aux questions générales. La météo et le calendrier sont encore en correction. Ce message vérifie seulement le retour SMS." }, env);
     stage = "SELF_SMS_APPROVE";
     await approvePersonalOutbound({ ...actor, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, env);
     stage = "SELF_SMS_DISPATCH";

@@ -56,12 +56,12 @@ const wireSchema = z.object({
   choices: z.array(z.object({ index: z.literal(0), finish_reason: z.literal("stop"), message: z.object({
     role: z.literal("assistant"), content: z.string().min(1).max(15_000),
     model: key.optional(),
-    refusal: z.null().optional(), tool_calls: z.array(z.never()).max(0).optional(),
-    reasoning: z.string().max(65_536).nullable().optional(), reasoning_details: z.array(z.unknown()).max(100).optional(),
+    refusal: z.null().optional(), tool_calls: z.array(z.never()).max(0).nullable().optional(),
+    reasoning: z.string().max(65_536).nullable().optional(), reasoning_details: z.array(z.unknown()).max(100).nullable().optional(),
     annotations: z.array(z.object({ type: z.literal("url_citation"), url_citation: z.object({
       url: z.string().max(2048), title: z.string().max(300), content: z.string().max(10_000),
       start_index: z.number().int().nonnegative().optional(), end_index: z.number().int().nonnegative().optional(),
-    }) })).max(5).optional(),
+    }) })).max(5).nullable().optional(),
   }).strict() })).length(1),
   usage: z.object({ prompt_tokens: z.number().int().safe().nonnegative(), completion_tokens: z.number().int().safe().nonnegative(),
     server_tool_use: z.object({ web_search_requests: z.number().int().min(0).max(1) }).optional(),

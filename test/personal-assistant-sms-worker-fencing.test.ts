@@ -47,6 +47,18 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 
 describe("personal SMS source deadline and exact ownership", () => {
+  it("drains an older unsent reply AND the new reply during a one-inbound webhook wakeup", async () => {
+    mocks.list.mockResolvedValue([{ id: row.id }]);
+    mocks.selectOutbound.mockImplementation(async ({ limit }) => ({ candidates: [
+      { id: "older", idempotencyKey: "reply:older-inbound" },
+      { id: "fresh", idempotencyKey: "reply:inbound" },
+    ].slice(0, limit) }));
+    const result = await drainPersonalSms({ ...env, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 1);
+    expect(result).toMatchObject({ processed: 1, outboundFailures: [] });
+    expect(mocks.selectOutbound).toHaveBeenCalledWith(expect.objectContaining({ limit: 10 }), expect.anything());
+    expect(mocks.send.mock.calls.map(call => call[0])).toEqual(["older", "fresh"]);
+    expect(mocks.engine).toHaveBeenCalledTimes(1);
+  });
   it.each(["Trouve son téléphone privé", "Trouve le propriétaire puis appelle-le"])("does not send a refused or mixed action request to either model path: %s", async body => {
     mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body } });
     const answer = vi.fn();
@@ -146,7 +158,7 @@ describe("personal SMS source deadline and exact ownership", () => {
     expect(await drainPersonalSms({ ...confirmationEnv, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 1, { deadlineAt })).toMatchObject({ processed: 0 });
     expect(mocks.sendSummary).toHaveBeenCalledExactlyOnceWith("summary", expect.anything(), undefined, expect.objectContaining({ deadlineAt }));
     expect(mocks.send).not.toHaveBeenCalled();
-    expect(mocks.selectOutbound).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ enabled: true, limit: 1, includeConfirmations: true, deadlineAt }), expect.anything());
+    expect(mocks.selectOutbound).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ enabled: true, limit: 10, includeConfirmations: true, deadlineAt }), expect.anything());
     expect(mocks.list).toHaveBeenCalledTimes(1);
   });
   it("does not select summary branch while store flag is off", async () => {

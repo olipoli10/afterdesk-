@@ -12,6 +12,19 @@ const create = (transport: OpenRouterPersonalIntentTransport, options: { enabled
   createOpenRouterPersonalIntentAdapter({ modelKey: "synthetic/model", providerEndpointSlug: "synthetic/provider", timeoutMs: 1000, ...options, transport });
 
 describe("OFF-by-default personal OpenRouter transport adapter", () => {
+  it.each([[], null])("accepts inert empty provider metadata without weakening the action contract: %j", async annotations => {
+    const body = wire();
+    Object.assign(body.choices[0].message, { annotations, reasoning: null, reasoning_details: null, tool_calls: null });
+    const result = await create(async () => ({ httpStatus: 200, body: JSON.stringify(body) })).dispatch(input, signal());
+    expect(result).toMatchObject({ status: "PROPOSAL_INSPECTED_NOT_AUTHORIZED", executionAuthorized: false });
+  });
+  it("does not admit citations or alternate action authority in the intent envelope", async () => {
+    for (const metadata of [{ annotations: [{ type: "url_citation" }] }, { executionAuthorized: true }, { tool_calls: [{ function: { name: "call" } }] }]) {
+      const body = wire(); Object.assign(body.choices[0].message, metadata);
+      expect(await create(async () => ({ httpStatus: 200, body: JSON.stringify(body) })).dispatch(input, signal()))
+        .toMatchObject({ status: "DISPATCH_OUTCOME_UNCERTAIN", executionAuthorized: false });
+    }
+  });
   it.each([
     ["finish", "OUTPUT_NOT_FINISHED"], ["span", "PERSONAL_INTENT_SOURCE_SPAN_MISMATCH"],
     ["fingerprint", "PERSONAL_INTENT_REQUEST_MISMATCH"], ["schema", "PROPOSAL_SCHEMA_INVALID"],

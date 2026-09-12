@@ -61,9 +61,11 @@ describe("temporal scheduling hints filter before LIMIT without downgrading atta
       "qc.kind='personal_model_candidate_v1' AND qc.status='completed' AND qc.attempts=1", 'qc."modelGatewayOperationId"=q."modelGatewayOperationId"',
       "qa.provider='openrouter' AND qa.status='connected'", 'qa."revokedAt" IS NULL AND qac."revokedAt" IS NULL', "'{binding,modelAccountVersion}'", "'{binding,modelGrantVersion}'",
       "qag.capability='personal_model_inference' AND qag.status='active'", 'qag."revokedAt" IS NULL', "'personal_data:inference'=ANY(qag.\"grantedScopes\")", '$7=ANY(qag."grantedScopes")',
-      "qg.provider='google_calendar' AND qg.status='connected'", 'qg."revokedAt" IS NULL AND qgc."revokedAt" IS NULL', "'{binding,calendarAccountVersion}'", "'{binding,calendarWriteGrantVersion}'",
+      "qg.provider IN ('google_calendar','endvera_android_device') AND qg.status='connected'", 'qg."revokedAt" IS NULL AND qgc."revokedAt" IS NULL', "'{binding,calendarAccountVersion}'", "'{binding,calendarWriteGrantVersion}'",
       "qgg.capability='calendar_write' AND qgg.status='active'", 'qgg."revokedAt" IS NULL', '$5=ANY(qg."grantedScopes")', '$5=ANY(qgg."grantedScopes")']) expect(sql).toContain(fragment);
     expect(sql).not.toContain("ciphertext");
+    expect(sql).toContain("'device:calendar:write'=ANY(qg.\"grantedScopes\")");
+    expect(sql).toContain("'device:calendar:write'=ANY(qgg.\"grantedScopes\")");
   });
   it.each(["ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED", "ENDVERA_SMS_TEMPORAL_CLARIFICATION_BRIDGE_ENABLED"])("withholds results if %s changes during query", async flag => {
     const flags = env(); mock.query.mockImplementation(async () => { flags[flag as keyof typeof flags] = "false"; return [{ id: "q", idempotencyKey: "reply:s" }]; });
