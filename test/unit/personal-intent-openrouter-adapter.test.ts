@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createPersonalIntentInput } from "@/server/model-gateway/personal-intent/contract";
-import { createOpenRouterPersonalIntentAdapter, type OpenRouterPersonalIntentTransport } from "@/server/model-gateway/personal-intent/openrouter-adapter";
+import { createOpenRouterPersonalIntentAdapter, safePersonalIntentDiagnostic, type OpenRouterPersonalIntentTransport } from "@/server/model-gateway/personal-intent/openrouter-adapter";
 
 const input = createPersonalIntentInput("synthetic-inbound", "Hey demain j’ai quoi?");
 const value = { schemaVersion: 1, requestFingerprint: input.requestFingerprint,
@@ -12,6 +12,26 @@ const create = (transport: OpenRouterPersonalIntentTransport, options: { enabled
   createOpenRouterPersonalIntentAdapter({ modelKey: "synthetic/model", providerEndpointSlug: "synthetic/provider", timeoutMs: 1000, ...options, transport });
 
 describe("OFF-by-default personal OpenRouter transport adapter", () => {
+  it.each(["invalid_request", "provider_unavailable", "rate_limit_exceeded", "max_tokens_exceeded", "timeout"])("recognizes HTTP200 body error %s without retry or error-text disclosure", async kind => {
+    const transport = vi.fn(async () => ({ httpStatus: 200, body: JSON.stringify({ error: {
+      code: 502, message: "private-upstream-content", metadata: { error_type: kind, raw: "private" },
+    } }) }));
+    const result = await create(transport).dispatch(input, signal());
+    expect(result).toMatchObject({ status: "DISPATCH_OUTCOME_UNCERTAIN", reason: "HTTP_ERROR",
+      diagnosticCode: `PROVIDER_BODY_${kind.toUpperCase()}`, executionAuthorized: false, accounting: "UNSETTLED" });
+    expect(transport).toHaveBeenCalledOnce();
+    expect(JSON.stringify(result)).not.toContain("private");
+    expect(safePersonalIntentDiagnostic(`PROVIDER_BODY_${kind.toUpperCase()}`)).toBe(`PROVIDER_BODY_${kind.toUpperCase()}`);
+  });
+  it("rejects an error alongside valid content, and never promotes arbitrary error types", async () => {
+    const body = { ...wire(), error: { metadata: { error_type: "private-upstream-key" } } };
+    expect(await create(async () => ({ httpStatus: 200, body: JSON.stringify(body) })).dispatch(input, signal()))
+      .toMatchObject({ reason: "HTTP_ERROR", diagnosticCode: "PROVIDER_BODY_UNCLASSIFIED", executionAuthorized: false });
+    expect(safePersonalIntentDiagnostic("PROVIDER_BODY_PRIVATE-UPSTREAM-KEY")).toBe("UNAVAILABLE");
+    const choiceError = wire(); Object.assign(choiceError.choices[0], { error: { metadata: { error_type: "server" } } });
+    expect(await create(async () => ({ httpStatus: 200, body: JSON.stringify(choiceError) })).dispatch(input, signal()))
+      .toMatchObject({ reason: "HTTP_ERROR", diagnosticCode: "PROVIDER_BODY_SERVER", executionAuthorized: false });
+  });
   it.each([[], null])("accepts inert empty provider metadata without weakening the action contract: %j", async annotations => {
     const body = wire();
     Object.assign(body.choices[0].message, { annotations, reasoning: null, reasoning_details: null, tool_calls: null });

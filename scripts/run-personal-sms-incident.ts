@@ -17,7 +17,7 @@ import { openConnectorSecret, requireConnectorKey } from "../src/server/personal
 import { twilioDispatchPolicy } from "../src/server/personal-assistant/twilio-outbound";
 import { preparePersonalOutbound, approvePersonalOutbound, dispatchPersonalOutbound } from "../src/server/personal-assistant/outbox";
 import { createPersonalIntentInput } from "../src/server/model-gateway/personal-intent/contract";
-import { createOpenRouterPersonalIntentAdapter } from "../src/server/model-gateway/personal-intent/openrouter-adapter";
+import { createOpenRouterPersonalIntentAdapter, safePersonalIntentDiagnostic, personalIntentProviderErrorDiagnostic } from "../src/server/model-gateway/personal-intent/openrouter-adapter";
 import { createPersonalOpenRouterTransport } from "../src/server/model-gateway/personal-intent/openrouter-transport";
 import { processPersonalWeather } from "../src/server/personal-assistant/weather-worker";
 
@@ -32,7 +32,8 @@ const cases = [
   ["calendar-complete", "Ajoute Visite demain à 14:00 jusqu’à 15:00."],
 ] as const;
 async function main() {
-  if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-4]$/u.test(incident)) throw new Error();
+  if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-5]$/u.test(incident)) throw new Error();
+  if (incident === "20260912-r5" && env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE !== "calendar-intent") throw new Error();
   const ingress = inspectPersonalModelIngressConfiguration(readPersonalOperatorConfiguration(env));
   const config = loadAnswerConfiguration(env, false);
   if (!config) throw new Error();
@@ -104,24 +105,37 @@ async function main() {
       };
     stage = `DISPATCH_${name.toUpperCase().replaceAll("-", "_")}`;
     const signal = new AbortController().signal;
+    const intentTransport = intent ? createPersonalOpenRouterTransport({ enabled: true, source: intent,
+      modelKey: budget.allowedModels[0], providerEndpointSlug: budget.providerEndpoints[0],
+      maxOutputTokens: budget.maxOutputTokens, getApiKey }, env) : null;
     const result = intent ? await createOpenRouterPersonalIntentAdapter({ enabled: true, modelKey: budget.allowedModels[0],
       providerEndpointSlug: budget.providerEndpoints[0], maxOutputTokens: budget.maxOutputTokens, timeoutMs: 25_000,
-      transportMode: "EXTERNAL_PROVIDER", transport: createPersonalOpenRouterTransport({ enabled: true, source: intent,
-        modelKey: budget.allowedModels[0], providerEndpointSlug: budget.providerEndpoints[0], maxOutputTokens: budget.maxOutputTokens, getApiKey }, env,
-        async (...args) => { const response = await fetch(...args);
-          console.info(JSON.stringify({ event: "incident.intent_http", status: response.status }));
+      transportMode: "EXTERNAL_PROVIDER", transport: async (request, transportSignal) => {
+          const response = await intentTransport!(request, transportSignal);
+          console.info(JSON.stringify({ event: "incident.intent_http", status: response.httpStatus }));
           // Synthetic canary only. Inspect field TYPES, never message content,
-          // arbitrary provider values or unknown property names.
-          if (response.status === 200 && incident === "20260912-r4") {
-            const envelope = await response.clone().json().catch(() => null);
+          // arbitrary provider values or unknown property names. The transport
+          // has already enforced the byte bound; never clone an unbounded body.
+          if (response.httpStatus === 200 && ["20260912-r4", "20260912-r5"].includes(incident)) {
+            let envelope;
+            try { envelope = JSON.parse(response.body); } catch { envelope = null; }
             const message = envelope?.choices?.[0]?.message;
             const fields = ["role", "content", "model", "refusal", "tool_calls", "reasoning", "reasoning_details", "annotations", "audio", "images", "function_call", "channel"];
             const shape = message && typeof message === "object" ? Object.fromEntries(fields.filter(key => key in message)
               .map(key => [key, message[key] === null ? "null" : Array.isArray(message[key]) ? `array:${message[key].length}` : typeof message[key]])) : null;
             console.info(JSON.stringify({ event: "incident.intent_wire_shape", shape,
               unknownFields: message ? Object.keys(message).filter(key => !fields.includes(key)).length : null }));
+            const error = envelope?.error ?? envelope?.choices?.[0]?.error;
+            const code = typeof error?.code === "number" && [400,401,402,403,404,408,413,422,429,500,502,503,504].includes(error.code) ? error.code : null;
+            // Closed categories, never raw error text, arbitrary keys or metadata.
+            const detail = typeof error?.message === "string" ? error.message : "";
+            console.info(JSON.stringify({ event: "incident.intent_provider_error", diagnosticCode: personalIntentProviderErrorDiagnostic(envelope), code,
+              schemaMentioned: /json_schema|response_format|invalid schema/iu.test(detail),
+              parameterMentioned: /unsupported parameter|unsupported value|invalid parameter/iu.test(detail),
+              outputLimitMentioned: /max_completion_tokens|max_tokens|token limit/iu.test(detail),
+              timeoutMentioned: /timed?\s*out|timeout/iu.test(detail) }));
           }
-          return response; }),
+          return response; },
     }).dispatch(intent, signal) : await createOpenRouterAnswerAdapter(adapterConfig, createAnswerTransport({ enabled: true,
       expectedRequest: answerWireRequest(input!, adapterConfig), getApiKey }, env)).dispatch(input!, signal);
     const evidence = result.status === "ANSWER_INSPECTED"
@@ -130,7 +144,7 @@ async function main() {
       : result.status === "PROPOSAL_INSPECTED_NOT_AUTHORIZED"
         ? { status: result.status, providerRequestId: result.providerRequestId, actionKinds: result.inspected.proposal.actions.map(action => action.kind),
           responseFingerprint: canonicalFingerprint(result), actionAuthority: false }
-        : { status: result.status, diagnosticCode: safeAdapterReason("diagnosticCode" in result && result.diagnosticCode ? result.diagnosticCode : result.reason), actionAuthority: false };
+        : { status: result.status, diagnosticCode: (intent ? safePersonalIntentDiagnostic : safeAdapterReason)("diagnosticCode" in result && result.diagnosticCode ? result.diagnosticCode : result.reason), actionAuthority: false };
     stage = "RECORD_RESULT";
     await prisma.constructionAuditEvent.create({ data: { id: `${id}:result`, workspaceId: ingress.manifest.workspaceId,
       actorUserId: ingress.manifest.ownerUserId, entityType: "operator_answer_canary", entityId: id,

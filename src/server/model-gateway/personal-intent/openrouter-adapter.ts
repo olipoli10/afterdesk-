@@ -44,6 +44,27 @@ const wireSchema = z.object({
 const notDispatched = (reason: "DISABLED" | "INVALID_INPUT" | "ABORTED"): OpenRouterPersonalIntentResult => Object.freeze({ status: "NOT_DISPATCHED", reason, dispatched: false, executionAuthorized: false });
 const uncertain = (reason: "TIMEOUT" | "ABORTED" | "TRANSPORT_ERROR" | "HTTP_ERROR" | "INVALID_RESPONSE", diagnosticCode?: string): OpenRouterPersonalIntentResult => Object.freeze({ status: "DISPATCH_OUTCOME_UNCERTAIN", reason, ...(diagnosticCode ? { diagnosticCode } : {}), dispatched: true, executionAuthorized: false, accounting: "UNSETTLED" });
 
+// HTTP200 only commits response headers; OpenRouter may return a body error
+// after the upstream accepts a request. Discard all free-form provider details.
+// https://openrouter.ai/docs/api_reference/errors-and-debugging (2026-09-12)
+const providerErrorTypes = new Set(["context_length_exceeded", "max_tokens_exceeded", "token_limit_exceeded",
+  "string_too_long", "authentication", "permission_denied", "payment_required", "rate_limit_exceeded",
+  "provider_overloaded", "provider_unavailable", "invalid_request", "invalid_prompt", "not_found",
+  "precondition_failed", "payload_too_large", "unprocessable", "content_policy_violation", "refusal",
+  "server", "timeout", "unmapped"]);
+export function personalIntentProviderErrorDiagnostic(decoded: unknown): string | null {
+  if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) return null;
+  const root = decoded as Record<string, unknown>;
+  const first = Array.isArray(root.choices) ? root.choices[0] : null;
+  const candidate = root.error ?? (first && typeof first === "object" ? first.error : undefined);
+  if (candidate === undefined || candidate === null) return null;
+  const metadata = typeof candidate === "object" && !Array.isArray(candidate)
+    ? (candidate as { metadata?: { error_type?: unknown } }).metadata : null;
+  const kind = metadata?.error_type;
+  return typeof kind === "string" && providerErrorTypes.has(kind)
+    ? `PROVIDER_BODY_${kind.toUpperCase()}` : "PROVIDER_BODY_UNCLASSIFIED";
+}
+
 // Closed diagnostic vocabulary only: never return provider text, quotes or keys.
 function proposalDiagnostic(error: unknown): string {
   if (error instanceof SyntaxError) return "PROPOSAL_JSON_INVALID";
@@ -59,6 +80,8 @@ export function safePersonalIntentDiagnostic(value: unknown): string {
     "SERVED_MODEL_MISMATCH", "MESSAGE_MODEL_MISMATCH", "PROPOSAL_JSON_INVALID", "PROPOSAL_SCHEMA_INVALID",
     "PROPOSAL_INVALID", "PERSONAL_INTENT_RESPONSE_LIMIT", "PERSONAL_INTENT_REQUEST_MISMATCH",
     "PERSONAL_INTENT_ACTION_ORDER_INVALID", "PERSONAL_INTENT_SOURCE_SPAN_MISMATCH"]);
+  if (value === "PROVIDER_BODY_UNCLASSIFIED") return value;
+  if (typeof value === "string" && [...providerErrorTypes].some(kind => value === `PROVIDER_BODY_${kind.toUpperCase()}`)) return value;
   return typeof value === "string" && allowed.has(value) ? value : "UNAVAILABLE";
 }
 
@@ -130,6 +153,8 @@ export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
           if (typeof raw !== "string" || Buffer.byteLength(raw, "utf8") > 131_072) return uncertain("INVALID_RESPONSE", "WIRE_RESPONSE_LIMIT");
           let decoded: unknown;
           try { decoded = JSON.parse(raw); } catch { return uncertain("INVALID_RESPONSE", "WIRE_JSON_INVALID"); }
+          const providerError = personalIntentProviderErrorDiagnostic(decoded);
+          if (providerError) return uncertain("HTTP_ERROR", providerError);
           const parsed = wireSchema.safeParse(decoded);
           if (!parsed.success) {
             const issues = parsed.error.issues;
