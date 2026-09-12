@@ -12,6 +12,7 @@ import type { PersonalSmsExecutionContext } from "./sms-worker";
 import type { Prisma } from "@prisma-client";
 import { inspectPersonalModelIngressConfiguration } from "@/server/model-gateway/personal-intent/operator-ingress-contract";
 import { personalAnswerRuntimeFromOperatorConfiguration } from "@/server/model-gateway/personal-intent/operator-setup";
+import { readPersonalOperatorConfiguration } from "@/server/model-gateway/personal-intent/operator-configuration-environment";
 
 const configurationSchema = z.object({
   general: z.object({ policyVersionId: z.string().min(1).max(191), rateConfiguration: z.unknown(), pilotEnvelopeReview: z.unknown() }).strict(),
@@ -29,7 +30,7 @@ export function loadAnswerConfiguration(env: NodeJS.ProcessEnv, research: boolea
       const parsed = configurationSchema.parse(JSON.parse(raw)); return research ? parsed.research : parsed.general;
     }
     if (research) return null;
-    const ingress = inspectPersonalModelIngressConfiguration(env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION);
+    const ingress = inspectPersonalModelIngressConfiguration(readPersonalOperatorConfiguration(env));
     return personalAnswerRuntimeFromOperatorConfiguration(JSON.parse(ingress.configuration.manifestUtf8));
   } catch { return null; }
 }

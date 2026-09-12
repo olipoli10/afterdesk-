@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { readPersonalOperatorConfiguration } from "@/server/model-gateway/personal-intent/operator-configuration-environment";
 import { inspectPersonalModelIngressConfiguration, PERSONAL_MODEL_INGRESS_LIMITS } from "@/server/model-gateway/personal-intent/operator-ingress-contract";
 import {
   applyPersonalModelOperatorIngress,
@@ -27,13 +28,7 @@ const response = (status: number, code: string) => new Response(
 );
 
 function storedConfiguration(): string | undefined {
-  const count = process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_COUNT;
-  if (count === undefined) return process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION;
-  if (!/^[1-4]$/.test(count)) return undefined;
-  const parts = Array.from({ length: Number(count) }, (_, index) =>
-    process.env[`ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_${index + 1}`]);
-  if (parts.some(part => typeof part !== "string" || part.length === 0)) return undefined;
-  return parts.join("");
+  return readPersonalOperatorConfiguration(process.env);
 }
 
 function authorizedValue(supplied: string | null): boolean {

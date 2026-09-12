@@ -5,13 +5,13 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { applyPersonalModelOperatorSetupInTransaction, reconcilePersonalModelOperatorSetupInTransaction } from "./operator-setup";
 import { validatePersonalModelOperatorArtifact } from "./operator-preparation";
+import { readPersonalOperatorConfiguration as configurationFromEnvironment } from "./operator-configuration-environment";
 import { assertPersonalModelIngressWindow, buildPersonalModelSetupApplied, buildPersonalModelSetupClaim,
   inspectPersonalModelIngressConfiguration, inspectPersonalModelSetupApplied, inspectPersonalModelSetupClaim,
   PERSONAL_MODEL_INGRESS_TARGET as target } from "./operator-ingress-contract";
 
 const refused = (): never => { throw new Error("PERSONAL_MODEL_OPERATOR_INGRESS_REFUSED"); };
 const unknown = (): never => { throw new Error("PERSONAL_MODEL_OPERATOR_INGRESS_UNKNOWN"); };
-const configurationKey = "ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION";
 const uuid = z.string().regex(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
 const actorSchema = z.object({ userId: z.string().min(1).max(191), role: z.literal("CLIENT"), emailVerified: z.literal(true) }).strict();
 type Actor = Readonly<{ userId: string; role: string; emailVerified: boolean }>;
@@ -19,16 +19,6 @@ export type PersonalModelOperatorIngressContext = Readonly<{ deadlineAt: number;
 type Tx = Prisma.TransactionClient;
 type Receipt = ReturnType<typeof buildPersonalModelSetupApplied>["metadata"]["receipt"];
 const publications = new WeakMap<object, () => void>();
-
-function configurationFromEnvironment(env: NodeJS.ProcessEnv): string | undefined {
-  const count = env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_COUNT;
-  if (count === undefined) return env[configurationKey];
-  if (!/^[1-4]$/.test(count)) return undefined;
-  const parts = Array.from({ length: Number(count) }, (_, index) =>
-    env[`ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_${index + 1}`]);
-  if (parts.some(part => typeof part !== "string" || part.length === 0)) return undefined;
-  return parts.join("").replace(/^\uFEFF/, "").trim();
-}
 
 function plain(raw: unknown, fields: readonly string[]) {
   if (!raw || typeof raw !== "object" || types.isProxy(raw) || ![Object.prototype, null].includes(Object.getPrototypeOf(raw))) return refused();

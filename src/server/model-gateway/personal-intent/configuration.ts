@@ -3,6 +3,8 @@ import { z } from "zod";
 import { canonicalFingerprint } from "../evidence";
 import { inspectPersonalModelPilotEnvelope } from "./admission";
 import { inspectPersonalModelBudget, type PersonalModelRateConfiguration } from "./budget-policy";
+import { readPersonalOperatorConfiguration } from "./operator-configuration-environment";
+import { inspectPersonalModelIngressConfiguration } from "./operator-ingress-contract";
 
 const schema = z.object({ schemaVersion: z.literal(1), policyVersionId: z.string().regex(/^[A-Za-z0-9_-]{1,191}$/),
   rateConfiguration: z.unknown(), pilotEnvelopeReview: z.unknown() }).strict();
@@ -15,7 +17,9 @@ export function loadPersonalModelConfiguration(env: NodeJS.ProcessEnv = process.
     return Object.freeze({ status: "DISABLED" as const, executionAuthorized: false as const, reason: "PERSONAL_MODEL_DISABLED" });
   }
   try {
-    const encoded = env.ENDVERA_PERSONAL_MODEL_CONFIGURATION_JSON;
+    const encoded = env.ENDVERA_PERSONAL_MODEL_CONFIGURATION_JSON ?? JSON.stringify(
+      inspectPersonalModelIngressConfiguration(readPersonalOperatorConfiguration(env)).manifest.artifact.runtimeConfiguration,
+    );
     if (!encoded || Buffer.byteLength(encoded, "utf8") > 16_384) throw new Error();
     const configuration = schema.parse(JSON.parse(encoded));
     const budgetPolicy = inspectPersonalModelBudget(configuration.rateConfiguration, now);

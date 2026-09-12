@@ -7,8 +7,9 @@ import { applyPersonalModelOperatorIngress, readPersonalModelOperatorIngress,
 import { personalModelOperatorRequestContext, readPersonalModelOperatorCommand,
   PersonalModelOperatorHttpError, type PersonalModelOperatorRequestContext } from "@/server/model-gateway/personal-intent/operator-http";
 
+import { readPersonalOperatorConfiguration } from "@/server/model-gateway/personal-intent/operator-configuration-environment";
+
 export const runtime = "nodejs";
-const configKey = "ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION";
 const headers = { "cache-control": "private, no-store", vary: "Cookie, Authorization",
   "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" };
 const response = (status: number, code: string) => new Response(JSON.stringify({ status: code, automaticRetry: false }), { status, headers });
@@ -19,7 +20,7 @@ async function handle(request: Request, write: boolean) {
   let dispatched = false;
   try {
     const context = personalModelOperatorRequestContext(request);
-    const raw = process.env[configKey];
+    const raw = readPersonalOperatorConfiguration(process.env);
     let config: ReturnType<typeof inspectPersonalModelIngressConfiguration>;
     try {
       config = inspectPersonalModelIngressConfiguration(raw);
@@ -27,7 +28,7 @@ async function handle(request: Request, write: boolean) {
     } catch { return response(404, "UNAVAILABLE"); }
     const live = () => {
       context.remaining();
-      if (process.env[configKey] !== raw) throw new Error("SETUP_CONTEXT_CHANGED");
+      if (readPersonalOperatorConfiguration(process.env) !== raw) throw new Error("SETUP_CONTEXT_CHANGED");
       if (write) assertPersonalModelIngressWindow(raw, Date.now());
     };
     live();

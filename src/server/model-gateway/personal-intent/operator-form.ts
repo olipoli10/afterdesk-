@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/authz";
 import { inspectPersonalModelIngressConfiguration, PERSONAL_MODEL_INGRESS_TARGET as target } from "./operator-ingress-contract";
 import { validatePersonalModelOperatorArtifact } from "./operator-preparation";
+import { readPersonalOperatorConfiguration } from "./operator-configuration-environment";
 
 const configKey = "ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION";
 const unavailable = Object.freeze({ status: "UNAVAILABLE" as const });
@@ -33,11 +34,12 @@ export async function readPersonalModelOperatorFormView() {
     const wallDeadline = wall + 5000, monoDeadline = mono + 5000;
     const names = [configKey, "DATABASE_URL", "DIRECT_URL", "ENDVERA_EXTERNAL_AUTHORITY_REF", "ENDVERA_PERSONAL_PILOT_EXPIRES_AT",
       "ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED", "ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED"] as const;
-    const pins = names.map(name => process.env[name]);
+    const value = (name: string) => name === configKey ? readPersonalOperatorConfiguration(process.env) : process.env[name];
+    const pins = names.map(value);
     function live() {
       const w = Date.now(), m = performance.now();
       if (!Number.isFinite(w) || !Number.isFinite(m) || w < wall || m < mono || w >= wallDeadline || m >= monoDeadline
-        || names.some((name, index) => process.env[name] !== pins[index])) fail();
+        || names.some((name, index) => value(name) !== pins[index])) fail();
       wall = w; mono = m;
       return Math.floor(Math.min(wallDeadline - w, monoDeadline - m));
     }

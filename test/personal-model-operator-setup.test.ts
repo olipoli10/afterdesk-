@@ -6,6 +6,8 @@ import { applyPersonalModelOperatorSetupInTransaction, inspectPersonalModelSetup
   reconcilePersonalModelOperatorSetupInTransaction } from "../src/server/model-gateway/personal-intent/operator-setup";
 import { provisionInitialPersonalModelCredentialInTransaction } from "../src/server/personal-assistant/model-connection";
 import { openConnectorSecret } from "../src/server/personal-assistant/credential-cipher";
+import { loadAnswerConfiguration } from "../src/server/personal-assistant/answer-worker";
+import { loadPersonalModelConfiguration } from "../src/server/model-gateway/personal-intent/configuration";
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 
 const now = new Date("2026-09-11T01:00:00Z");
@@ -42,6 +44,41 @@ function fixture() {
 }
 
 describe("pure initial personal model setup mapping", () => {
+  function runtimeEnvironment(): NodeJS.ProcessEnv {
+    const manifest = fixture(), manifestUtf8 = JSON.stringify(manifest);
+    const encoded = JSON.stringify({ version: "personal-model-operator-ingress-configuration-v1", mode: "ENABLED",
+      setupRef: manifest.setupId, notBefore: now.toISOString(), expiresAt: "2026-09-11T01:10:00.000Z", manifestUtf8,
+      manifestSha256: createHash("sha256").update(manifestUtf8).digest("hex"), expectedSourceHead: manifest.expectedHead,
+      expectedSchemaCatalogSha256: manifest.expectedSchemaCatalogSha256, controllerReceiptRef: "synthetic-only", targetProfile: "PERSONAL_PILOT" });
+    const env: NodeJS.ProcessEnv = { NODE_ENV: "test", ENDVERA_PERSONAL_ANSWER_ENGINE_ENABLED: "true",
+      ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true", ENDVERA_EXTERNAL_AUTHORITY_REF: authority,
+      ENDVERA_PERSONAL_PILOT_EXPIRES_AT: manifest.pilotExpiresAt,
+      ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION: "stale-truncated-configuration",
+      ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_COUNT: "4" };
+    const width = Math.ceil(encoded.length / 4);
+    for (let i = 0; i < 4; i++) env[`ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_${i + 1}`] = encoded.slice(i * width, (i + 1) * width);
+    return env;
+  }
+  it("loads actual answer and intent runtimes from the same four-part published setup", () => {
+    const env = runtimeEnvironment();
+    expect(loadAnswerConfiguration(env, false)).toEqual(personalAnswerRuntimeFromOperatorConfiguration(fixture()));
+    expect(loadPersonalModelConfiguration(env, now)).toMatchObject({ status: "CONFIGURED_NOT_AUTHORIZED", policyVersionId: "synthetic-policy" });
+    expect(loadAnswerConfiguration(env, true)).toBeNull();
+  });
+  it.each(["0", "5", "04", "", "invalid"])("refuses malformed split count %s without accepting stale fallback", count => {
+    const env = runtimeEnvironment(); env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_COUNT = count;
+    expect(loadAnswerConfiguration(env, false)).toBeNull();
+    expect(loadPersonalModelConfiguration(env, now).status).toBe("REFUSED");
+  });
+  it("refuses a missing or tampered chunk, and never activates a disabled engine", () => {
+    const env = runtimeEnvironment();
+    delete env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_2;
+    expect(loadAnswerConfiguration(env, false)).toBeNull();
+    const changed = runtimeEnvironment(); changed.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_2 += "tampered";
+    expect(loadAnswerConfiguration(changed, false)).toBeNull();
+    const disabled = runtimeEnvironment(); disabled.ENDVERA_PERSONAL_ANSWER_ENGINE_ENABLED = "false";
+    expect(loadAnswerConfiguration(disabled, false)).toBeNull();
+  });
   it("maps a real prepared artifact without inventing columns or claiming publication", () => {
     const input = fixture(), result = inspectPersonalModelSetupManifest(input);
     expect(result.status).toBe("MAPPED_NOT_AUTHORIZED");
