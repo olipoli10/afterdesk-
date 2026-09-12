@@ -8,6 +8,8 @@ import { inspectPersonalModelSetupManifest } from "@/server/model-gateway/person
 const WORKSPACE_ID = "cmtrm2ljb0003i5ucritxdsy4";
 const OWNER_USER_ID = "cmtrm2l2t0000i5ucbyzqyf0z";
 const AUTHORITY_ID = "ENDVERA-PERSONAL-20260910-100CAD";
+const FROM_VERSION = 2;
+const TO_VERSION = 3;
 const fail = (): never => { throw new Error("PERSONAL_MODEL_ROUTE_ROTATION_REFUSED"); };
 const sha = (value: string) => `sha256:${createHash("sha256").update(value, "utf8").digest("hex")}`;
 
@@ -41,10 +43,10 @@ async function main() {
   if (ingress.configuration.mode !== "ENABLED" || ingress.configuration.expectedSourceHead !== head
     || mapped.manifest.workspaceId !== WORKSPACE_ID || mapped.manifest.ownerUserId !== OWNER_USER_ID
     || mapped.manifest.authorityId !== AUTHORITY_ID || Date.parse(mapped.manifest.pilotExpiresAt) <= Date.now()
-    || mapped.route.version !== 2 || mapped.policy.version !== 2 || answer.route.version !== 2 || answer.policy.version !== 2
+    || mapped.route.version !== TO_VERSION || mapped.policy.version !== TO_VERSION || answer.route.version !== TO_VERSION || answer.policy.version !== TO_VERSION
     || mapped.route.endpointKey !== "azure" || answer.route.endpointKey !== "azure"
     || mapped.route.modelKey !== "openai/gpt-5.6-luna" || answer.route.modelKey !== "openrouter/auto"
-    || mapped.policy.routeOrder[0]?.version !== 2 || answer.policy.routeOrder[0]?.version !== 2) fail();
+    || mapped.policy.routeOrder[0]?.version !== TO_VERSION || answer.policy.routeOrder[0]?.version !== TO_VERSION) fail();
 
   const receipt = await prisma.$transaction(async tx => {
     await tx.$executeRawUnsafe("SET LOCAL statement_timeout = '15000ms'");
@@ -67,27 +69,27 @@ async function main() {
 
     const priorRoutes = await tx.modelGatewayRouteProfile.findMany({ where: {
       OR: [
-        { routeKey: "personal-intent-openrouter-candidate-v1", version: 1 },
-        { routeKey: "personal-answer-openrouter-v1", version: 1 },
+        { routeKey: "personal-intent-openrouter-candidate-v1", version: FROM_VERSION },
+        { routeKey: "personal-answer-openrouter-v1", version: FROM_VERSION },
       ],
     } });
     const priorPolicies = await tx.modelGatewayPolicyVersion.findMany({ where: {
       OR: [
-        { policyKey: "personal-intent-v1", version: 1 },
-        { policyKey: "personal-answer-v1", version: 1 },
+        { policyKey: "personal-intent-v1", version: FROM_VERSION },
+        { policyKey: "personal-answer-v1", version: FROM_VERSION },
       ],
     } });
     if (priorRoutes.length !== 2 || priorPolicies.length !== 2
-      || priorRoutes.some(row => row.status !== "published" || row.retiredAt || row.endpointKey !== "openai")
+      || priorRoutes.some(row => row.status !== "published" || row.retiredAt || row.endpointKey !== "azure")
       || priorPolicies.some(row => row.status !== "published" || row.retiredAt)) fail();
 
     const routeCollision = await tx.modelGatewayRouteProfile.findFirst({ where: { OR: [
-      { id: mapped.route.id }, { routeKey: mapped.route.routeKey, version: 2 }, { canonicalHash: mapped.route.canonicalHash },
-      { id: answer.route.id }, { routeKey: answer.route.routeKey, version: 2 }, { canonicalHash: answer.route.canonicalHash },
+      { id: mapped.route.id }, { routeKey: mapped.route.routeKey, version: TO_VERSION }, { canonicalHash: mapped.route.canonicalHash },
+      { id: answer.route.id }, { routeKey: answer.route.routeKey, version: TO_VERSION }, { canonicalHash: answer.route.canonicalHash },
     ] }, select: { id: true } });
     const policyCollision = await tx.modelGatewayPolicyVersion.findFirst({ where: { OR: [
-      { id: mapped.policy.id }, { policyKey: mapped.policy.policyKey, version: 2 }, { canonicalHash: mapped.policy.canonicalHash },
-      { id: answer.policy.id }, { policyKey: answer.policy.policyKey, version: 2 }, { canonicalHash: answer.policy.canonicalHash },
+      { id: mapped.policy.id }, { policyKey: mapped.policy.policyKey, version: TO_VERSION }, { canonicalHash: mapped.policy.canonicalHash },
+      { id: answer.policy.id }, { policyKey: answer.policy.policyKey, version: TO_VERSION }, { canonicalHash: answer.policy.canonicalHash },
     ] }, select: { id: true } });
     if (routeCollision || policyCollision) fail();
 
@@ -105,22 +107,22 @@ async function main() {
       status: "published", publishedAt: now } });
     await tx.modelGatewayPolicyVersion.create({ data: { ...answer.policy, status: "published", publishedAt: now } });
 
-    const metadata = { authorityId: AUTHORITY_ID, fromVersion: 1, toVersion: 2, fromEndpoint: "openai", toEndpoint: "azure",
+    const metadata = { authorityId: AUTHORITY_ID, fromVersion: FROM_VERSION, toVersion: TO_VERSION, fromEndpoint: "azure", toEndpoint: "azure",
       intentRouteId: mapped.route.id, intentPolicyId: mapped.policy.id, answerRouteId: answer.route.id, answerPolicyId: answer.policy.id,
       configurationFingerprint: ingress.configurationSha256, rotatedAt: now.toISOString() };
     await tx.constructionAuditEvent.create({ data: {
       id: `personal-model-route-rotation-${ingress.configuration.setupRef}`,
       workspaceId: WORKSPACE_ID, actorUserId: OWNER_USER_ID, entityType: "personal_model_route_rotation",
-      entityId: ingress.configuration.setupRef, action: "PUBLISH_AZURE_ZDR_ROUTE_V2", reasonCode: null,
+      entityId: ingress.configuration.setupRef, action: "PUBLISH_AZURE_ZDR_ROUTE_V3", reasonCode: null,
       metadata, fingerprint: sha(JSON.stringify(metadata)), createdAt: now,
     } });
 
-    const stored = await tx.modelGatewayRouteProfile.count({ where: { version: 2, endpointKey: "azure", OR: [
+    const stored = await tx.modelGatewayRouteProfile.count({ where: { version: TO_VERSION, endpointKey: "azure", OR: [
       { id: mapped.route.id, canonicalHash: mapped.route.canonicalHash },
       { id: answer.route.id, canonicalHash: answer.route.canonicalHash },
     ] } });
     if (stored !== 2) fail();
-    return { status: "PERSONAL_MODEL_AZURE_ZDR_ROUTE_V2_PUBLISHED", setupRef: ingress.configuration.setupRef,
+    return { status: "PERSONAL_MODEL_AZURE_ZDR_ROUTE_V3_PUBLISHED", setupRef: ingress.configuration.setupRef,
       intentPolicyVersionId: mapped.policy.id, answerPolicyVersionId: answer.policy.id };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 10_000, timeout: 20_000 });
 
