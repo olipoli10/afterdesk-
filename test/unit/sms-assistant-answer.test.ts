@@ -35,6 +35,14 @@ describe("answer-only OpenRouter candidate", () => {
     const result = await createOpenRouterAnswerAdapter(config, async () => response({ ...wire(), model: "unknown/model" })).dispatch(input, signal());
     expect(result).toMatchObject({ status: "UNCERTAIN", reason: "SERVED_MODEL_NOT_ALLOWED" });
   });
+  it("accepts OpenRouter's matching per-message model but rejects a disagreement", async () => {
+    const matching = wire(); Object.assign(matching.choices[0].message, { model: matching.model });
+    expect(await createOpenRouterAnswerAdapter(config, async () => response(matching)).dispatch(input, signal()))
+      .toMatchObject({ status: "ANSWER_INSPECTED", servedModel: matching.model });
+    const changed = wire(); Object.assign(changed.choices[0].message, { model: "synthetic/model-a" });
+    expect(await createOpenRouterAnswerAdapter(config, async () => response(changed)).dispatch(input, signal()))
+      .toMatchObject({ status: "UNCERTAIN", reason: "MESSAGE_MODEL_MISMATCH" });
+  });
   it("retains safe HTTP and contract diagnostics without provider body content", async () => {
     const privateMarker = "private-upstream-body-must-not-be-retained";
     const rejected = await createOpenRouterAnswerAdapter(config, async () => ({ httpStatus: 429, body: privateMarker })).dispatch(input, signal());

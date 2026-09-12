@@ -55,6 +55,7 @@ const wireSchema = z.object({
   id: z.string().min(1).max(191), model: key,
   choices: z.array(z.object({ index: z.literal(0), finish_reason: z.literal("stop"), message: z.object({
     role: z.literal("assistant"), content: z.string().min(1).max(15_000),
+    model: key.optional(),
     refusal: z.null().optional(), tool_calls: z.array(z.never()).max(0).optional(),
     reasoning: z.string().max(65_536).nullable().optional(), reasoning_details: z.array(z.unknown()).max(100).optional(),
     annotations: z.array(z.object({ type: z.literal("url_citation"), url_citation: z.object({
@@ -126,6 +127,9 @@ export function createOpenRouterAnswerAdapter(configuration: AnswerAdapterConfig
         }
         const wire = inspectedWire.data;
         if (!config.allowedModels.includes(wire.model)) return uncertain("SERVED_MODEL_NOT_ALLOWED", { httpStatus: 200, resultContractStatus: "invalid" });
+        if (wire.choices[0].message.model !== undefined && wire.choices[0].message.model !== wire.model) {
+          return uncertain("MESSAGE_MODEL_MISMATCH", { httpStatus: 200, resultContractStatus: "invalid" });
+        }
         const observedAt = new Date().toISOString();
         const citations: AnswerCitation[] = (wire.choices[0].message.annotations ?? []).map((a, i) => ({
           id: `s${i + 1}`, url: a.url_citation.url, title: a.url_citation.title, excerpt: a.url_citation.content, observedAt,
