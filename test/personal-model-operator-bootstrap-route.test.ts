@@ -19,6 +19,7 @@ vi.mock("@/server/model-gateway/personal-intent/operator-ingress", () => ({
   applyPersonalModelOperatorIngress: h.apply,
   assertPersonalModelOperatorIngressPublication: h.publication,
 }));
+vi.mock("@/server/personal-assistant/credential-cipher", () => ({ requireConnectorKey: () => Buffer.alloc(32) }));
 
 import { OPTIONS, POST } from "../src/app/api/endvera/v1/personal/model/operator-bootstrap/route";
 

@@ -8,6 +8,7 @@ import {
   personalModelOperatorRequestContext,
   readPersonalModelOperatorCommand,
 } from "@/server/model-gateway/personal-intent/operator-http";
+import { requireConnectorKey } from "@/server/personal-assistant/credential-cipher";
 
 export const runtime = "nodejs";
 const headers = {
@@ -127,6 +128,12 @@ export async function POST(request: Request) {
       return response(400, "COMMAND_REFUSED");
     }
     if (command.setupRef !== ingress.configuration.setupRef) return response(404, "UNAVAILABLE");
+    try {
+      const connectorKey = requireConnectorKey(process.env.ENDVERA_CONNECTOR_ENCRYPTION_KEY);
+      connectorKey.fill(0);
+    } catch {
+      return response(503, "CREDENTIAL_STORAGE_REFUSED");
+    }
     dispatched = true;
     const receipt = await applyPersonalModelOperatorIngress({
       actor: { userId: ingress.manifest.ownerUserId, role: "CLIENT", emailVerified: true },
