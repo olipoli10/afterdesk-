@@ -50,6 +50,15 @@ function proposalDiagnostic(error: unknown): string {
   return error instanceof Error && allowed.has(error.message) ? error.message : "PROPOSAL_INVALID";
 }
 
+export function safePersonalIntentDiagnostic(value: unknown): string {
+  const allowed = new Set(["TIMEOUT", "ABORTED", "TRANSPORT_ERROR", "HTTP_ERROR", "INVALID_RESPONSE",
+    "WIRE_RESPONSE_LIMIT", "WIRE_JSON_INVALID", "WIRE_SCHEMA_INVALID", "OUTPUT_NOT_FINISHED",
+    "SERVED_MODEL_MISMATCH", "MESSAGE_MODEL_MISMATCH", "PROPOSAL_JSON_INVALID", "PROPOSAL_SCHEMA_INVALID",
+    "PROPOSAL_INVALID", "PERSONAL_INTENT_RESPONSE_LIMIT", "PERSONAL_INTENT_REQUEST_MISMATCH",
+    "PERSONAL_INTENT_ACTION_ORDER_INVALID", "PERSONAL_INTENT_SOURCE_SPAN_MISMATCH"]);
+  return typeof value === "string" && allowed.has(value) ? value : "UNAVAILABLE";
+}
+
 export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
   enabled?: boolean; modelKey: string; providerEndpointSlug: string; timeoutMs: number;
   maxOutputTokens?: number;

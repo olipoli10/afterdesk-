@@ -6,7 +6,7 @@ import { appendGatewayAuditEvent, canonicalFingerprint } from "../evidence";
 import { finishPersonalAiOperation } from "../personal-ai-operations";
 import { reinspectPersonalIntentAdmission, type PersonalIntentAdmission } from "./admission";
 import { inspectPersonalIntentCandidate } from "./contract";
-import { type createOpenRouterPersonalIntentAdapter, type OpenRouterPersonalIntentResult } from "./openrouter-adapter";
+import { safePersonalIntentDiagnostic, type createOpenRouterPersonalIntentAdapter, type OpenRouterPersonalIntentResult } from "./openrouter-adapter";
 import { retainPersonalIntentUncertain, type PersonalIntentUncertainReason } from "./recovery";
 import { resolvePersonalCalendarTemporal } from "./temporal";
 
@@ -131,6 +131,13 @@ export async function dispatchPersonalIntent(input: Input, env: NodeJS.ProcessEn
   } catch { providerResult = null; }
   finally { if (timer !== undefined) clearTimeout(timer); input.abortSignal.removeEventListener("abort", abort); }
   if (!providerResult || input.abortSignal.aborted || providerResult.status !== "PROPOSAL_INSPECTED_NOT_AUTHORIZED") {
+    if (providerResult?.status === "DISPATCH_OUTCOME_UNCERTAIN") {
+      // Diagnostics must survive outside operator probes. This is a fixed code,
+      // never candidate/source content. A logger failure cannot skip recovery.
+      try { console.warn(JSON.stringify({ event: "personal.intent.rejected", attemptId: admission.attempt.id,
+        diagnosticCode: safePersonalIntentDiagnostic(providerResult.diagnosticCode ?? providerResult.reason) })); }
+      catch { /* Durable uncertainty below remains mandatory. */ }
+    }
     return recordUncertain(admission, "PROVIDER_OUTCOME_UNKNOWN");
   }
   let inspected: ReturnType<typeof inspectPersonalIntentCandidate>;

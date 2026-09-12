@@ -42,6 +42,29 @@ beforeEach(() => {
 });
 
 describe("full personal gateway dispatch (synthetic transaction and wire only)", () => {
+  it.each([false, true])("retains uncertain state even when rejected-result logging throws=%s", async loggerThrows => {
+    const f = fixture();
+    const logger = vi.spyOn(console, "warn").mockImplementation(() => { if (loggerThrows) throw new Error("log unavailable"); });
+    try {
+      f.transport.mockResolvedValueOnce({ httpStatus: 200, body: JSON.stringify({ id: "syn", model: "synthetic/model",
+        choices: [{ index: 0, finish_reason: "length", message: { role: "assistant", content: "private unfinished content" } }] }) });
+      expect(await dispatchPersonalIntent(f.input)).toMatchObject({ status: "UNCERTAIN", recorded: true, reason: "PROVIDER_OUTCOME_UNKNOWN" });
+      expect(JSON.parse(logger.mock.calls[0][0])).toEqual({ event: "personal.intent.rejected", attemptId: "syn-attempt", diagnosticCode: "OUTPUT_NOT_FINISHED" });
+      expect(JSON.stringify(logger.mock.calls)).not.toContain("private unfinished content");
+      expect(f.transport).toHaveBeenCalledOnce();
+      expect(shared.finish).not.toHaveBeenCalled();
+    } finally { logger.mockRestore(); }
+  });
+  it("does not log arbitrary diagnostic values from an injected candidate", async () => {
+    const f = fixture(); const logger = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      const adapter = { ...f.adapter, dispatch: vi.fn().mockResolvedValue({ status: "DISPATCH_OUTCOME_UNCERTAIN", reason: "HTTP_ERROR",
+        diagnosticCode: "not-for-logs", dispatched: true, executionAuthorized: false, accounting: "UNSETTLED" }) };
+      expect(await dispatchPersonalIntent({ ...f.input, adapter })).toMatchObject({ status: "UNCERTAIN", recorded: true });
+      expect(JSON.parse(logger.mock.calls[0][0]).diagnosticCode).toBe("UNAVAILABLE");
+      expect(JSON.stringify(logger.mock.calls)).not.toContain("not-for-logs");
+    } finally { logger.mockRestore(); }
+  });
   it("stays OFF before any database or transport call", async () => {
     const f = fixture(); expect(await dispatchPersonalIntent({ ...f.input, enabled: undefined })).toMatchObject({ status: "DISABLED" });
     expect(shared.transaction).not.toHaveBeenCalled(); expect(f.transport).not.toHaveBeenCalled();
