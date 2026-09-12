@@ -27,6 +27,7 @@ const cases = [
   ["general", "Explique simplement la différence entre le béton 25 MPa et 32 MPa."],
   ["current-sources", "Il annonce cmb demain a mtl"],
   ["calendar-intent", "Ajoute un rendez-vous demain à Montréal."],
+  ["calendar-complete", "Ajoute Visite demain à 14:00 jusqu’à 15:00."],
 ] as const;
 async function main() {
   if (env.VERCEL_ENV !== "production" || !incident || !/^20260912-r[1-3]$/u.test(incident)) throw new Error();
@@ -47,9 +48,10 @@ async function main() {
   }
   for (const [name, body] of cases) {
     if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE === "calendar-intent" && name !== "calendar-intent") continue;
+    if (env.ENDVERA_BUILD_PERSONAL_INCIDENT_CASE === "calendar-complete" && name !== "calendar-complete") continue;
     const id = `operator-canary:${incident}:${name}`;
     const receivedAt = new Date().toISOString();
-    const intent = name === "calendar-intent" ? createPersonalIntentInput(id, body) : null;
+    const intent = name.startsWith("calendar-") ? createPersonalIntentInput(id, body) : null;
     const input = intent ? null : createAnswerInput({ requestId: id, workspaceId: ingress.manifest.workspaceId,
       body, receivedAt, senderVerified: true, workspaceBound: true });
     // These fields are adapter prerequisites only; the evidence below explicitly
