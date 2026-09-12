@@ -52,7 +52,7 @@ function splitUtf8(value, maxBytes = 7000) {
     current += character; bytes += size;
   }
   if (current) parts.push(current);
-  if (parts.length < 1 || parts.length > 8 || parts.join("") !== value) fail();
+  if (parts.length < 1 || parts.length > 4 || parts.join("") !== value) fail();
   return parts;
 }
 

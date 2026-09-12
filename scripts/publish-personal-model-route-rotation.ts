@@ -2,8 +2,9 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
-import { inspectPersonalModelIngressConfiguration } from "@/server/model-gateway/personal-intent/operator-ingress-contract";
+import { assertPersonalModelIngressWindow, inspectPersonalModelIngressConfiguration } from "@/server/model-gateway/personal-intent/operator-ingress-contract";
 import { inspectPersonalModelSetupManifest } from "@/server/model-gateway/personal-intent/operator-setup";
+import { validatePersonalModelOperatorArtifact } from "@/server/model-gateway/personal-intent/operator-preparation";
 
 const WORKSPACE_ID = "cmtrm2ljb0003i5ucritxdsy4";
 const OWNER_USER_ID = "cmtrm2l2t0000i5ucbyzqyf0z";
@@ -36,6 +37,7 @@ async function readConfiguration(): Promise<string> {
 async function main() {
   const encoded = await readConfiguration();
   const ingress = inspectPersonalModelIngressConfiguration(encoded);
+  assertPersonalModelIngressWindow(encoded, Date.now());
   const mapped = inspectPersonalModelSetupManifest(JSON.parse(ingress.configuration.manifestUtf8));
   const answer = mapped.answer ?? fail();
   const head = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
@@ -46,7 +48,8 @@ async function main() {
     || mapped.route.version !== TO_VERSION || mapped.policy.version !== TO_VERSION || answer.route.version !== TO_VERSION || answer.policy.version !== TO_VERSION
     || mapped.route.endpointKey !== "azure" || answer.route.endpointKey !== "azure"
     || mapped.route.modelKey !== "openai/gpt-5.6-luna" || answer.route.modelKey !== "openrouter/auto"
-    || mapped.policy.routeOrder[0]?.version !== TO_VERSION || answer.policy.routeOrder[0]?.version !== TO_VERSION) fail();
+    || mapped.policy.routeOrder[0]?.version !== TO_VERSION || answer.policy.routeOrder[0]?.version !== TO_VERSION
+    || validatePersonalModelOperatorArtifact(mapped.manifest.artifact, new Date()).status !== "PREPARED_NOT_PUBLISHED") fail();
 
   const receipt = await prisma.$transaction(async tx => {
     await tx.$executeRawUnsafe("SET LOCAL statement_timeout = '15000ms'");
@@ -96,6 +99,8 @@ async function main() {
     const nowRows = await tx.$queryRawUnsafe<Array<{ now: Date }>>("SELECT clock_timestamp() AS now");
     const now = nowRows[0]?.now;
     if (!(now instanceof Date) || !Number.isFinite(now.getTime())) fail();
+    assertPersonalModelIngressWindow(encoded, now.getTime());
+    if (validatePersonalModelOperatorArtifact(mapped.manifest.artifact, now).status !== "PREPARED_NOT_PUBLISHED") fail();
     await tx.modelGatewayRouteProfile.create({ data: { ...mapped.route,
       pricingEvidence: mapped.route.pricingEvidence as Prisma.InputJsonObject,
       privacyEvidence: mapped.route.privacyEvidence as Prisma.InputJsonObject,

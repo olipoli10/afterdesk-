@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { loadAnswerConfiguration } from "../src/server/personal-assistant/answer-worker";
 import { loadPersonalModelConfiguration } from "../src/server/model-gateway/personal-intent/configuration";
 import { inspectPersonalModelIngressConfiguration } from "../src/server/model-gateway/personal-intent/operator-ingress-contract";
@@ -9,9 +8,6 @@ import { inspectModelAuthority, inspectPersonalModelPilotEnvelope } from "../src
 import { resolveAccountSpendCeilingMicros } from "../src/server/account-spend";
 import { openConnectorSecret, requireConnectorKey } from "../src/server/personal-assistant/credential-cipher";
 import { prisma } from "../src/lib/db";
-import { createAnswerInput } from "../src/server/model-gateway/personal-answer/contract";
-import { answerWireRequest, createOpenRouterAnswerAdapter } from "../src/server/model-gateway/personal-answer/openrouter-adapter";
-import { createAnswerTransport } from "../src/server/model-gateway/personal-answer/openrouter-transport";
 
 // Read-only diagnosis. Never print environment values, credentials, or raw errors.
 const env = process.env;
@@ -82,29 +78,6 @@ try {
       await response.body?.cancel();
       if (!response.ok) throw new Error();
     } finally { clearTimeout(timeout); }
-  }
-  if (process.argv.includes("--verify-provider-answer")) {
-    stage = "PROVIDER_ANSWER_VERIFICATION";
-    const input = createAnswerInput({ requestId: `diagnostic-${randomUUID()}`, workspaceId: ingress.manifest.workspaceId,
-      body: "Explique en une phrase la différence entre le béton 25 MPa et 32 MPa.", senderVerified: true,
-      workspaceBound: true, receivedAt: new Date().toISOString() });
-    const adapterConfiguration = { enabled: true, allowedModels: budget.allowedModels, providerEndpoints: budget.providerEndpoints,
-      timeoutMs: 20_000, maxOutputTokens: budget.maxOutputTokens };
-    const expectedRequest = answerWireRequest(input, adapterConfiguration);
-    const transport = createAnswerTransport({ enabled: true, expectedRequest, getApiKey: async () => providerApiKey! }, env);
-    const result = await createOpenRouterAnswerAdapter(adapterConfiguration, transport).dispatch(input, new AbortController().signal);
-    report.providerAnswerStatus = result.status;
-    if (result.status === "ANSWER_INSPECTED") {
-      report.providerAnswerServedModel = result.servedModel;
-      report.providerAnswerPromptTokens = result.usage.prompt_tokens;
-      report.providerAnswerCompletionTokens = result.usage.completion_tokens;
-      report.providerAnswerContractInspected = true;
-    } else if (result.status === "UNCERTAIN") {
-      report.providerAnswerReason = result.reason;
-      report.providerAnswerHttpStatus = result.httpStatus;
-      report.providerAnswerContractStatus = result.resultContractStatus;
-    }
-    if (result.status !== "ANSWER_INSPECTED") throw new Error();
   }
 } catch { report.failedStage = stage; }
 finally { encryptionKey?.fill(0); providerApiKey = undefined; }

@@ -62,13 +62,9 @@ export function resolveCommands(plan, cliArguments = []) {
 export const PROVIDER_BOUNDARY_COMMAND = "npm run validate:provider-boundary";
 export const PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND =
   "tsx --require ./scripts/register-server-only.cjs scripts/inspect-personal-answer-runtime.ts --require-ready --verify-provider-key";
-export const PERSONAL_PROVIDER_ANSWER_DIAGNOSTIC_COMMAND =
-  "tsx --require ./scripts/register-server-only.cjs scripts/inspect-personal-answer-runtime.ts --require-ready --verify-provider-key --verify-provider-answer";
-
 export function resolveBuildPipelineCommands(plan, cliArguments = [], env = {}) {
-  const diagnostics = plan.env !== "production" ? []
-    : env.ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_ANSWER === "true" ? [PERSONAL_PROVIDER_ANSWER_DIAGNOSTIC_COMMAND]
-    : env.ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_KEY === "true" ? [PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND] : [];
+  const diagnostics = plan.env === "production" && env.ENDVERA_BUILD_VERIFY_PERSONAL_PROVIDER_KEY === "true"
+    ? [PERSONAL_PROVIDER_DIAGNOSTIC_COMMAND] : [];
   return [PROVIDER_BOUNDARY_COMMAND, ...diagnostics, ...resolveCommands(plan, cliArguments)];
 }
 

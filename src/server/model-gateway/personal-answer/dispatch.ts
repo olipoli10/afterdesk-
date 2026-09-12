@@ -47,14 +47,20 @@ async function requireLineage(tx: Tx, a: AnswerAdmission, expectedStatus: "prepa
 const SAFE_ADAPTER_ERROR_CLASSES: Readonly<Record<string, string>> = {
   ABORTED: "provider_dispatch_aborted",
   HTTP_ERROR: "provider_http_error",
-  INVALID_RESPONSE: "provider_contract_invalid",
+  INVALID_RESPONSE_NOT_JSON: "provider_contract_invalid",
+  INVALID_ANSWER_NOT_JSON: "provider_contract_invalid",
+  INVALID_ANSWER_CONTRACT: "provider_contract_invalid",
+  MESSAGE_MODEL_MISMATCH: "provider_model_not_allowed",
   SERVED_MODEL_NOT_ALLOWED: "provider_model_not_allowed",
   TIMEOUT: "provider_timeout",
   TRANSPORT_ERROR: "provider_transport_unavailable",
   UNEXPECTED_TOOL_USAGE: "provider_tool_usage_invalid",
   SEARCH_NOT_OBSERVED: "provider_search_not_observed",
 };
-const safeAdapterErrorClass = (reason?: string) => reason ? SAFE_ADAPTER_ERROR_CLASSES[reason] ?? "unknown_dispatched_outcome" : "unknown_dispatched_outcome";
+export const safeAdapterErrorClass = (reason?: string) => {
+  if (reason?.startsWith("INVALID_WIRE_")) return "provider_contract_invalid";
+  return reason ? SAFE_ADAPTER_ERROR_CLASSES[reason] ?? "unknown_dispatched_outcome" : "unknown_dispatched_outcome";
+};
 async function retainUncertain(a: AnswerAdmission, diagnostics?: Readonly<{ reason?: string; httpStatus?: number;
   resultContractStatus?: "invalid" | "not_evaluated" }>) {
   try {

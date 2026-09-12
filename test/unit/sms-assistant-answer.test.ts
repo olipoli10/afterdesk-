@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createAnswerInput, inspectAnswer, publicCitationUrl } from "../../src/server/model-gateway/personal-answer/contract";
 import { answerWireRequest, createOpenRouterAnswerAdapter, type AnswerAdapterConfig, type AnswerTransport } from "../../src/server/model-gateway/personal-answer/openrouter-adapter";
 import { personalAnswerReinspectionTimeoutMs } from "../../src/server/personal-assistant/answer-worker";
+import { safeAdapterErrorClass } from "../../src/server/model-gateway/personal-answer/dispatch";
 
 const source = (body = "Explique-moi le béton") => ({ requestId: "sms-1", workspaceId: "ws-1", senderVerified: true, workspaceBound: true, body, receivedAt: "2026-09-11T15:00:00Z" });
 const config: AnswerAdapterConfig = { enabled: true, allowedModels: ["synthetic/model-a", "synthetic/model-b"], providerEndpoints: ["synthetic/provider"], timeoutMs: 1000 };
@@ -54,8 +55,12 @@ describe("answer-only OpenRouter candidate", () => {
       .toMatchObject({ status: "UNCERTAIN", reason: "INVALID_WIRE_USAGE_INVALID_TYPE", httpStatus: 200, resultContractStatus: "invalid" });
     const extra = wire(); Object.assign(extra.choices[0].message, { provider_private_text: privateMarker });
     const extraResult = await createOpenRouterAnswerAdapter(config, async () => response(extra)).dispatch(input, signal());
-    expect(extraResult).toMatchObject({ status: "UNCERTAIN", reason: "INVALID_WIRE_CHOICES_ITEM_MESSAGE_UNRECOGNIZED_KEYS_PROVIDER_PRIVATE_TEXT" });
+    expect(extraResult).toMatchObject({ status: "UNCERTAIN", reason: "INVALID_WIRE_CHOICES_ITEM_MESSAGE_UNRECOGNIZED_KEYS" });
     expect(JSON.stringify(extraResult)).not.toContain(privateMarker);
+    if (extraResult.status !== "UNCERTAIN") throw new Error("EXPECTED_UNCERTAIN");
+    expect(safeAdapterErrorClass(extraResult.reason)).toBe("provider_contract_invalid");
+    expect(safeAdapterErrorClass("INVALID_ANSWER_CONTRACT")).toBe("provider_contract_invalid");
+    expect(safeAdapterErrorClass("MESSAGE_MODEL_MISMATCH")).toBe("provider_model_not_allowed");
   });
   it("cannot interpret action or identity requests through answer-only dispatch", () => {
     for (const body of ["Appelle Marc", "mon horaire"]) expect(() => createAnswerInput(source(body))).toThrow("ANSWER_LANE_REFUSED");
