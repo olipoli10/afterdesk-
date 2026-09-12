@@ -12,6 +12,26 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
+// Zod emits `oneOf` for discriminated unions. OpenAI-compatible strict
+// Structured Outputs accept the equivalent `anyOf` form, but reject `oneOf`
+// before a generation is created. Keep the Zod contract as the authority for
+// backend validation and normalize only the provider-facing wire schema.
+function toOpenAiStrictJsonSchema(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(toOpenAiStrictJsonSchema);
+  if (value === null || typeof value !== "object") return value;
+
+  const normalized: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (key === "$schema") continue;
+    normalized[key === "oneOf" ? "anyOf" : key] = toOpenAiStrictJsonSchema(item);
+  }
+  return normalized;
+}
+
+const personalIntentWireSchema = deepFreeze(
+  toOpenAiStrictJsonSchema(z.toJSONSchema(personalIntentProposalSchema)) as Record<string, unknown>,
+);
+
 // No conversational history, contacts, account IDs, credentials or tool handles.
 // JSON separation is a prompt hygiene measure, NOT an injection security boundary.
 export function personalIntentMessages(input: PersonalIntentInput) {
@@ -37,6 +57,6 @@ export function personalIntentMessages(input: PersonalIntentInput) {
 export function personalIntentResponseFormat() {
   return deepFreeze({ type: "json_schema" as const, json_schema: {
     name: "endvera_personal_intent_v1", strict: true as const,
-    schema: z.toJSONSchema(personalIntentProposalSchema),
+    schema: personalIntentWireSchema,
   } });
 }
