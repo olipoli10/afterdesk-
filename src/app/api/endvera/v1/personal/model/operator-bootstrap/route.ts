@@ -84,7 +84,20 @@ export async function POST(request: Request) {
         process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION,
       );
     } catch {
-      return response(503, "CONFIGURATION_REFUSED");
+      const raw = process.env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION;
+      if (typeof raw !== "string") return response(503, "CONFIGURATION_MISSING");
+      if (Buffer.byteLength(raw, "utf8") > PERSONAL_MODEL_INGRESS_LIMITS.configurationUtf8) {
+        return response(503, "CONFIGURATION_TOO_LARGE");
+      }
+      try {
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        if (parsed.version !== "personal-model-operator-ingress-configuration-v1") {
+          return response(503, "CONFIGURATION_VERSION_REFUSED");
+        }
+      } catch {
+        return response(503, "CONFIGURATION_JSON_REFUSED");
+      }
+      return response(503, "CONFIGURATION_CONTRACT_REFUSED");
     }
     let context: ReturnType<typeof personalModelOperatorRequestContext>;
     try {

@@ -81,7 +81,7 @@ describe("one-time personal model bootstrap diagnostics", () => {
     h.inspect.mockImplementationOnce(() => { throw new Error("secret-config"); });
     const configuration = await POST(request());
     expect(configuration.status).toBe(503);
-    expect(await configuration.text()).toBe('{"status":"CONFIGURATION_REFUSED","automaticRetry":false}');
+    expect(await configuration.text()).toBe('{"status":"CONFIGURATION_JSON_REFUSED","automaticRetry":false}');
 
     h.read.mockRejectedValueOnce(new Error("secret-key"));
     const command = await POST(request());
