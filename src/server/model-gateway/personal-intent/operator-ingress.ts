@@ -20,6 +20,16 @@ type Tx = Prisma.TransactionClient;
 type Receipt = ReturnType<typeof buildPersonalModelSetupApplied>["metadata"]["receipt"];
 const publications = new WeakMap<object, () => void>();
 
+function configurationFromEnvironment(env: NodeJS.ProcessEnv): string | undefined {
+  const count = env.ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_COUNT;
+  if (count === undefined) return env[configurationKey];
+  if (!/^[1-4]$/.test(count)) return undefined;
+  const parts = Array.from({ length: Number(count) }, (_, index) =>
+    env[`ENDVERA_PERSONAL_MODEL_OPERATOR_SETUP_CONFIGURATION_PART_${index + 1}`]);
+  if (parts.some(part => typeof part !== "string" || part.length === 0)) return undefined;
+  return parts.join("").replace(/^\uFEFF/, "").trim();
+}
+
 function plain(raw: unknown, fields: readonly string[]) {
   if (!raw || typeof raw !== "object" || types.isProxy(raw) || ![Object.prototype, null].includes(Object.getPrototypeOf(raw))) return refused();
   const keys = Reflect.ownKeys(raw);
@@ -58,7 +68,7 @@ function begin(raw: unknown, env: NodeJS.ProcessEnv, context: PersonalModelOpera
   const actor = actorSchema.parse(plain(input.actor, ["userId", "role", "emailVerified"]));
   const setupRef = uuid.parse(input.setupRef);
   const apiKey = write ? z.string().regex(/^[A-Za-z0-9_-]{24,512}$/).parse(input.apiKey) : undefined;
-  const pins = { configuration: env[configurationKey], database: env.DATABASE_URL, direct: env.DIRECT_URL,
+  const pins = { configuration: configurationFromEnvironment(env), database: env.DATABASE_URL, direct: env.DIRECT_URL,
     authority: write ? env.ENDVERA_EXTERNAL_AUTHORITY_REF : undefined,
     expiry: write ? env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT : undefined,
     key: write ? env.ENDVERA_CONNECTOR_ENCRYPTION_KEY : undefined };
@@ -71,7 +81,7 @@ function begin(raw: unknown, env: NodeJS.ProcessEnv, context: PersonalModelOpera
     if (!Number.isFinite(wall) || !Number.isFinite(mono) || !Number.isFinite(deadlineAt) || !Number.isFinite(monotoneDeadlineAt)
       || wall < lastWall || mono < lastMono || wall >= deadlineAt || mono >= monotoneDeadlineAt || mono >= dbDeadline || signal?.aborted) refused();
     lastWall = wall; lastMono = mono;
-    if (env[configurationKey] !== pins.configuration || env.DATABASE_URL !== pins.database || env.DIRECT_URL !== pins.direct) refused();
+    if (configurationFromEnvironment(env) !== pins.configuration || env.DATABASE_URL !== pins.database || env.DIRECT_URL !== pins.direct) refused();
     if (write && (env.ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED !== "false" || env.ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED !== "false"
       || env.ENDVERA_EXTERNAL_AUTHORITY_REF !== pins.authority || pins.authority !== config.manifest.authorityId
       || env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT !== pins.expiry || pins.expiry !== config.manifest.pilotExpiresAt
