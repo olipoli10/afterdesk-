@@ -48,7 +48,7 @@ endpoint before inference.
 - Targeted ESLint: passed.
 - Production provider boundary: 798 modules, zero violations.
 - Database migrations: 82 found, none pending.
-- Final production deployment: `dpl_J5Wamhdk8KSbdEikTwCg3c9maPxH`.
+- Final production deployment: `dpl_EseWdn68f6mfH3ee1HhiNCNYNK6y`.
 - Both `endvera-core-sandbox.vercel.app` and
   `endvera-core-sandbox-afterdesk.vercel.app` resolve to the final deployment.
 - `/api/health`: HTTP 200.
