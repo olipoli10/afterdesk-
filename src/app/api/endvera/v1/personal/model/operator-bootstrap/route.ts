@@ -99,7 +99,10 @@ export async function POST(request: Request) {
           return response(503, "CONFIGURATION_VERSION_REFUSED");
         }
       } catch {
-        return response(503, "CONFIGURATION_JSON_REFUSED");
+        const length = Buffer.byteLength(raw, "utf8");
+        if (!raw.startsWith("{")) return response(503, `CONFIGURATION_JSON_PREFIX_${raw.charCodeAt(0) || 0}_${length}`);
+        if (!raw.endsWith("}")) return response(503, `CONFIGURATION_JSON_TRUNCATED_${raw.charCodeAt(raw.length - 1) || 0}_${length}`);
+        return response(503, `CONFIGURATION_JSON_PARSE_${length}`);
       }
       return response(503, "CONFIGURATION_CONTRACT_REFUSED");
     }
