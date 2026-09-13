@@ -98,6 +98,18 @@ describe("personal SMS source deadline and exact ownership", () => {
     expect(model).toHaveBeenCalledTimes(1); expect(answer).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled();
     expect(JSON.parse(finish.mock.calls[0][6])).toMatchObject({ source: "MODEL_REVIEW_ONLY" });
   });
+  it("routes a natural appointment command to the guarded intent model, not the general answer model", async () => {
+    const body = "Salut, s'il te plaît, fais-moi un rendez-vous, OK, avec Dan ce soir à 22:30 au Randolph";
+    mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body } });
+    const answer = vi.fn();
+    const model = vi.fn(async () => ({ reply: "Proposition de rendez-vous à vérifier." }));
+    expect(await processPersonalSms(row.id, { ...env, ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true" },
+      { answer, model })).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(model).toHaveBeenCalledTimes(1);
+    expect(answer).not.toHaveBeenCalled();
+    expect(mocks.engine).not.toHaveBeenCalled();
+    expect(JSON.parse(finish.mock.calls[0][6])).toMatchObject({ source: "MODEL_REVIEW_ONLY" });
+  });
   it("replaces unbounded inbound cleanup with bounded proof-preserving recovery under the original deadline", async () => {
     mocks.list.mockResolvedValue([]);
     const deadlineAt = Date.now() + 4000;

@@ -91,7 +91,11 @@ export function classifyAssistantIntent(
 
   const calendar = has(text, /\b(rendez-vous|rdv|calendrier|calendar|meeting)\b/u);
   const declarativeAppointment = has(text, /^(?:rendez-vous|rdv|meeting)\b/u);
-  if (calendar && (consequential || declarativeAppointment)) {
+  const naturalAppointmentCommand = calendar && has(
+    text,
+    /\b(?:fais|faire|fixe|fixer|prend|prends|prendre|organise|organiser)(?:-moi|\s+moi)?(?:\s+|,\s*)[^.!?\n]{0,80}\b(?:rendez-vous|rdv|meeting)\b/u,
+  );
+  if (calendar && (consequential || declarativeAppointment || naturalAppointmentCommand)) {
     return {
       intentClass: "CALENDAR_OPERATION",
       inferredDataClass: "personal_data",

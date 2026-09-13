@@ -6,7 +6,8 @@ import { inspectPersonalIntentCandidate, type PersonalIntentInput, type Personal
  * READ: aujourd'hui / aujourd’hui / demain, optionally "pour ", "toute la
  * journée ..." or "... toute la journée". No weekday/week/month inference.
  * START: YYYY-MM-DD[T or space]HH:mm; YYYY-MM-DD à TIME;
- *        aujourd'hui/demain à TIME; demain de TIME.
+ *        aujourd'hui/demain/ce soir à TIME; the unaccented separator "a"
+ *        is also accepted for SMS dictation; demain de TIME.
  * END: same forms, or TIME on the START's explicit local date. An earlier end
  * never rolls to tomorrow. Cross-day events must name both dates explicitly.
  * TIME: two-digit HH:mm; H[h] or H[h]MM with H=0 or 13..23;
@@ -19,7 +20,7 @@ import { inspectPersonalIntentCandidate, type PersonalIntentInput, type Personal
  * search exhausts -14:00..+14:00, refusing nonexistent or duplicate wall times.
  * Context must later come from authenticated DB state, NOT a model's fields.
  */
-export const PERSONAL_TEMPORAL_GRAMMAR_VERSION = "quebec-explicit-calendar-v2";
+export const PERSONAL_TEMPORAL_GRAMMAR_VERSION = "quebec-explicit-calendar-v3";
 const contextSchema = z.object({ receivedAt: z.string().datetime({ offset: true }), timezone: z.string().min(1).max(100) }).strict();
 export type PersonalTemporalContext = Readonly<z.infer<typeof contextSchema>>;
 type Reason = "INVALID_INPUT" | "INVALID_CONTEXT" | "UNSUPPORTED_ACTION" | "UNSUPPORTED_TEMPORAL_GRAMMAR"
@@ -28,7 +29,7 @@ const questions: Record<Reason, string> = {
   INVALID_INPUT: "La demande source n’est pas vérifiable. Vérifie la demande dans ENDVERA.",
   INVALID_CONTEXT: "Le moment de réception ou le fuseau horaire doit être vérifié dans ENDVERA.",
   UNSUPPORTED_ACTION: "Cette étape ne permet pas de résoudre cette action de calendrier.",
-  UNSUPPORTED_TEMPORAL_GRAMMAR: "Précise la date au format AAAA-MM-JJ et les heures au format HH:MM, ou demain avec ces heures.",
+  UNSUPPORTED_TEMPORAL_GRAMMAR: "Précise aujourd’hui, ce soir, demain ou la date au format AAAA-MM-JJ, avec une heure au format 24 heures.",
   AMBIGUOUS_TIME: "Est-ce le matin ou l’après-midi? Précise l’heure au format 24 heures, par exemple 02:00 ou 14:00.",
   MISSING_END_TIME: "À quelle heure le rendez-vous se termine-t-il? Aucune durée par défaut n’a été ajoutée.",
   INVALID_DATE: "Cette date ou cette heure n’existe pas. Précise une date et une heure valides.",
@@ -170,12 +171,17 @@ function parseWall(raw: string, today: CalendarDate, endDate?: CalendarDate, amb
     if (!dateValid(date)) return clarify("INVALID_DATE");
     const parsed = literalTime(iso[4]); return "status" in parsed ? parsed : { ...date, ...parsed };
   }
-  const dated = /^(aujourd'hui|demain|\d{4}-\d{2}-\d{2}) à\s*(.+)$/.exec(quote) ?? /^(demain) de\s*(.+)$/.exec(quote);
+  const dated = /^(aujourd'hui|demain|ce soir|\d{4}-\d{2}-\d{2})\s+(?:à|a)\s*(.+)$/.exec(quote) ?? /^(demain) de\s*(.+)$/.exec(quote);
   if (dated) {
     const [year, month, day] = dated[1].split("-").map(Number);
-    const date = dated[1] === "demain" ? nextDate(today) : dated[1] === "aujourd'hui" ? today : { year, month, day };
+    const date = dated[1] === "demain" ? nextDate(today) : dated[1] === "aujourd'hui" || dated[1] === "ce soir" ? today : { year, month, day };
     if (!dateValid(date)) return clarify("INVALID_DATE");
-    const parsed = literalTime(dated[2]); return "status" in parsed ? parsed : { ...date, ...parsed };
+    const parsed = literalTime(dated[2]);
+    if ("status" in parsed) return parsed;
+    // "Ce soir" supplies a same-day date marker, not permission to infer AM/PM.
+    // Keep only an explicit clock compatible with the existing "du soir" range.
+    if (dated[1] === "ce soir" && parsed.hour < 17) return clarify("AMBIGUOUS_TIME");
+    return { ...date, ...parsed };
   }
   if (endDate) {
     const parsed = literalTime(quote); return "status" in parsed ? parsed : { ...endDate, ...parsed };

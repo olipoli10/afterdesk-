@@ -15,6 +15,7 @@ describe("ordinary SMS assistant routing", () => {
     ["Où en est mon chantier?", "CANONICAL_QUERY"],
     ["Résume mon document", "CANONICAL_QUERY"],
     ["Ajoute un rdv demain à 10h dans mon calendrier", "EXTERNAL_ACTION"],
+    ["Salut, s'il te plaît, fais-moi un rendez-vous, OK, avec Dan ce soir à 22:30 au Randolph", "EXTERNAL_ACTION"],
     ["Appelle Marc pour dire que je vais être en retard", "EXTERNAL_ACTION"],
     ["Texte mes dix employés", "EXTERNAL_ACTION"],
     ["Rédige un courriel pour Marc", "EXTERNAL_ACTION"],

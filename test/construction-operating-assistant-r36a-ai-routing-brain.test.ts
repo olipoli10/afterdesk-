@@ -54,6 +54,15 @@ describe("R36A provider-neutral AI Routing Brain", () => {
       selectedRoute: { modelKey: "deterministic-prepared-unsent" },
       externalDispatchPerformed: false,
     });
+    const naturalAppointment = prepareAssistantRoutingDecision({
+      ...baseRequest,
+      requestId: "abababab-abab-4bab-8bab-abababababab",
+      message: "Salut, s'il te plaît, fais-moi un rendez-vous, OK, avec Dan ce soir à 22:30 au Randolph",
+    });
+    expect(naturalAppointment).toMatchObject({
+      intentClass: "CALENDAR_OPERATION",
+      selectedRoute: { routeKey: "internal-calendar-v1" },
+    });
   });
 
   it("prepares Perplexity-type cited public business research without calling it", () => {

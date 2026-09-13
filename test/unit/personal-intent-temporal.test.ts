@@ -37,7 +37,7 @@ describe("source-bound deterministic calendar temporal resolution", () => {
   it("uses a source-explicit duration without inventing a default end", () => {
     expect(event("demain à18:30", "il dure 1 h")).toMatchObject({ status: "RESOLVED_NOT_AUTHORIZED",
       startsAtUtc: "2026-09-10T22:30:00.000Z", endsAtUtc: "2026-09-10T23:30:00.000Z",
-      grammarVersion: "quebec-explicit-calendar-v2", executionAuthorized: false });
+      grammarVersion: "quebec-explicit-calendar-v3", executionAuthorized: false });
     expect(event("demain à 14h", "pendant 30 minutes")).toMatchObject({ endsAtUtc: "2026-09-10T18:30:00.000Z" });
   });
   it("resolves the exact model spans from a natural one-hour appointment request", () => {
@@ -50,6 +50,24 @@ describe("source-bound deterministic calendar temporal resolution", () => {
       startsAtUtc: "2026-09-10T22:30:00.000Z", endsAtUtc: "2026-09-10T23:30:00.000Z",
       executionAuthorized: false,
     });
+  });
+  it("resolves the exact production same-evening spans from the receipt's local date", () => {
+    const source = "Ajoute à mon calendrier, ce soir a 22h30:, un rendez-vous d'une heure à Montréal avec Dan au randolph";
+    const input = createPersonalIntentInput("syn-production-same-evening", source);
+    const proposal = { schemaVersion: 1, requestFingerprint: input.requestFingerprint, actions: [{ id: "a", dependsOn: [], kind: "PREPARE_CALENDAR_EVENT",
+      title: span(source, "un rendez-vous d'une heure à Montréal avec Dan au randolph"), starts: span(source, "ce soir a 22h30"), ends: span(source, "d'une heure") }] };
+    expect(resolvePersonalCalendarTemporal(input, JSON.stringify(proposal), "a", {
+      receivedAt: "2026-09-13T01:36:56.296Z", timezone: "America/Toronto",
+    })).toMatchObject({
+      status: "RESOLVED_NOT_AUTHORIZED",
+      startsAtUtc: "2026-09-13T02:30:00.000Z",
+      endsAtUtc: "2026-09-13T03:30:00.000Z",
+      executionAuthorized: false,
+    });
+  });
+  it("does not let the same-evening marker guess an ambiguous or contradictory clock", () => {
+    expect(event("ce soir à 6h30", "il dure 1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
+    expect(event("ce soir à 14h", "il dure 1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
   });
   it("does not reinterpret a bare ambiguous clock as a duration", () => {
     expect(event("demain à18:30", "1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
