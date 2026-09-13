@@ -40,8 +40,20 @@ describe("source-bound deterministic calendar temporal resolution", () => {
       grammarVersion: "quebec-explicit-calendar-v2", executionAuthorized: false });
     expect(event("demain à 14h", "pendant 30 minutes")).toMatchObject({ endsAtUtc: "2026-09-10T18:30:00.000Z" });
   });
+  it("resolves the exact model spans from a natural one-hour appointment request", () => {
+    const source = "Ajoute à mon calendrier, demain à 18h30, un rendez-vous d'une heure à Montréal avec Dan. Sujet : chantier Griffintown";
+    const input = createPersonalIntentInput("syn-natural-duration", source);
+    const proposal = { schemaVersion: 1, requestFingerprint: input.requestFingerprint, actions: [{ id: "a", dependsOn: [], kind: "PREPARE_CALENDAR_EVENT",
+      title: span(source, "chantier Griffintown"), starts: span(source, "demain à 18h30"), ends: span(source, "d'une heure") }] };
+    expect(resolvePersonalCalendarTemporal(input, JSON.stringify(proposal), "a", context)).toMatchObject({
+      status: "RESOLVED_NOT_AUTHORIZED", title: "chantier Griffintown",
+      startsAtUtc: "2026-09-10T22:30:00.000Z", endsAtUtc: "2026-09-10T23:30:00.000Z",
+      executionAuthorized: false,
+    });
+  });
   it("does not reinterpret a bare ambiguous clock as a duration", () => {
     expect(event("demain à18:30", "1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
+    expect(event("demain à18:30", "d'14 h")).toMatchObject({ status: "CLARIFY", reason: "UNSUPPORTED_TEMPORAL_GRAMMAR" });
   });
   it("accepts explicit full local ISO dates and cross-day ends without guessing rollover", () => {
     expect(event("2026-09-10T23:30", "2026-09-11 01:15")).toMatchObject({ startsAtUtc: "2026-09-11T03:30:00.000Z", endsAtUtc: "2026-09-11T05:15:00.000Z" });

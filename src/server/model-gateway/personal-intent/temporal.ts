@@ -13,8 +13,8 @@ import { inspectPersonalIntentCandidate, type PersonalIntentInput, type Personal
  *       1..11 h [MM] du matin; 1..6 or 12 h de l'après-midi;
  *       5..11 h du soir; midi / minuit. Contradictory dayparts clarify.
  * Bare 1..12 h is ambiguous. An END span may instead be an explicitly cued
- * duration (for example "il dure 1 h" or "pendant 30 minutes"). No duration,
- * offset, year or timezone is ever guessed.
+ * duration (for example "il dure 1 h", "pendant 30 minutes" or
+ * "d'une heure"). No duration, offset, year or timezone is ever guessed.
  * Dates 2000..2100 and minute-granularity modern IANA offsets only. The offset
  * search exhausts -14:00..+14:00, refusing nonexistent or duplicate wall times.
  * Context must later come from authenticated DB state, NOT a model's fields.
@@ -141,7 +141,8 @@ function time(quote: string): { hour: number; minute: number } | Failure {
 }
 function explicitDuration(raw: string): { minutes: number } | Failure | null {
   const quote = normalize(raw);
-  const cue = /^(?:(?:il|elle|ça|ca|le rendez-vous|le rdv)\s+)?(?:dure|durera|durée(?:\s+de)?|pendant)\s+(.+)$/u.exec(quote);
+  const cue = /^(?:(?:il|elle|ça|ca|le rendez-vous|le rdv)\s+)?(?:dure|durera|durée(?:\s+de)?|pendant)\s+(.+)$/u.exec(quote)
+    ?? /^d'(une\s+heure(?:\s+\d{1,2}\s*(?:min|minute|minutes))?)$/u.exec(quote);
   if (!cue) return null;
   const value = cue[1];
   let hours = 0; let minutes = 0; let minuteOnly = false;
