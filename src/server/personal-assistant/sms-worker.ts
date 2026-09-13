@@ -140,6 +140,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       body: received.body, senderVerified: true, workspaceBound: true });
     const reservedCalendar = isReservedCalendarConfirmationMessage(received.body);
     let temporalFixedReply: string | undefined;
+    let temporalFixedReason: string | undefined;
     if (!reservedCalendar && !day) {
       // Inspect persisted context even with temporal processing OFF. A missing
       // schema/failed lookup cannot grant permission to use another interpreter.
@@ -163,12 +164,14 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       if (temporal.status === "TEMPORAL_REPLY_FIXED_RESPONSE" && temporal.sourceCompleted === false) {
         if (typeof temporal.reply !== "string" || temporal.reply.length < 1 || temporal.reply.length > 1500) throw new Error("SMS_TEMPORAL_ROUTING_CHANGED");
         temporalFixedReply = temporal.reply;
+        temporalFixedReason = temporal.reason;
       }
       else if (temporal.status !== "NOT_TEMPORAL_CONTEXT" || temporal.sourceCompleted !== false) throw new Error("SMS_TEMPORAL_ROUTING_CHANGED");
     }
     let reply: string; let source: "GOOGLE_CALENDAR" | "ENDVERA_LOCAL" | "CLARIFICATION" | "MODEL_REVIEW_ONLY" | "ENDVERA_ANSWER" | "ENDVERA_WEATHER";
     let intentContinuation = false;
-    if (!reservedCalendar && !day && temporalFixedReply === undefined
+    if (!reservedCalendar && !day
+      && (temporalFixedReply === undefined || temporalFixedReason === "NO_WAITING_QUESTION")
       && assistantRoute.disposition === "ROUTE" && assistantRoute.lane === "GENERAL_ANSWER"
       && env.ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED === "true") {
       intentContinuation = await withinDeadline(async () => deps.intentContinuation
@@ -176,6 +179,12 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         : (await inspectPersonalGatewaySubject(prisma, { kind: "personal_assistant_operation",
           operationId: claim.operationId, workspaceId: claim.workspaceId }, true)).conversationContext !== null, deadlineAt);
       requireLive();
+      // A CLARIFY proposal does not create the stricter partial-event registry,
+      // but the immediately preceding accepted ENDVERA question can still be a
+      // server-verified model transcript. Only that exact context may release a
+      // standalone time from the no-question fixed response back to the guarded
+      // intent model. An isolated time keeps the fixed refusal below.
+      if (intentContinuation && temporalFixedReason === "NO_WAITING_QUESTION") temporalFixedReply = undefined;
     }
     let weatherEvidence: Awaited<ReturnType<typeof processPersonalWeather>>["evidence"];
     let finalizeReview: PersonalModelSmsResult["finalizeReview"];

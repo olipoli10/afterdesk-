@@ -22,20 +22,22 @@ const handled = () => ({ status: "TEMPORAL_REPLY_HANDLED_NOT_EXECUTED", sourceCo
 const noContext = () => ({ status: "NOT_TEMPORAL_CONTEXT", sourceCompleted: false, executionAuthorized: false, committed: true });
 type WorkerDependencies = NonNullable<Parameters<typeof processPersonalSms>[2]>;
 const model = vi.fn<NonNullable<WorkerDependencies["model"]>>(), answer = vi.fn<NonNullable<WorkerDependencies["answer"]>>(),
-  engine = vi.fn<NonNullable<WorkerDependencies["engine"]>>(), calendar = vi.fn<NonNullable<WorkerDependencies["calendar"]>>();
+  engine = vi.fn<NonNullable<WorkerDependencies["engine"]>>(), calendar = vi.fn<NonNullable<WorkerDependencies["calendar"]>>(),
+  intentContinuation = vi.fn<NonNullable<WorkerDependencies["intentContinuation"]>>();
 beforeEach(() => {
   vi.resetAllMocks(); vi.useFakeTimers(); vi.setSystemTime(new Date("2026-09-10T13:00:00Z"));
   m.find.mockResolvedValue(inbound()); m.admission.mockResolvedValue({ operationId: "inbound" }); m.execute.mockResolvedValue(1);
   m.lower.mockResolvedValue(handled()); m.create.mockResolvedValue({ id: "ordinary-ack" }); m.finish.mockResolvedValue(1); m.identity.mockResolvedValue({ id: "identity" });
   m.transaction.mockImplementation(work => work({ constructionCommunicationIdentity: { findFirst: m.identity }, personalAssistantOperation: { create: m.create }, $executeRawUnsafe: m.finish }));
   model.mockResolvedValue({ reply: "Résultat modèle non exécuté." }); answer.mockResolvedValue({ reply: "Réponse générale." });
+  intentContinuation.mockResolvedValue(false);
   engine.mockResolvedValue({ reply: "Résultat local." });
   // Current Google authority is separately mocked; this test observes that its
   // actual worker call remains mandatory, not that this synthetic token passes it.
   calendar.mockResolvedValue({ result: { complete: true, source: "GOOGLE_CALENDAR", events: [] }, authority: { synthetic: true } } as unknown as Awaited<ReturnType<NonNullable<WorkerDependencies["calendar"]>>>);
 });
 afterEach(() => vi.useRealTimers());
-const deps = () => ({ model, answer, engine, calendar, intentContinuation: async () => false });
+const deps = () => ({ model, answer, engine, calendar, intentContinuation });
 
 describe("actual SMS worker temporal reply integration with synthetic lower", () => {
   it("known handled source returns without another completion CAS, acknowledgment or interpreter", async () => {
@@ -55,6 +57,23 @@ describe("actual SMS worker temporal reply integration with synthetic lower", ()
     expect(model).not.toHaveBeenCalled(); expect(engine).not.toHaveBeenCalled(); expect(m.identity).toHaveBeenCalledTimes(1); expect(m.finish).toHaveBeenCalledTimes(1);
     expect(m.create.mock.calls[0][0].data.request).toEqual({ to: "+15005550001", from: "+15005550006", text: reply, sourceOperationId: "inbound" });
     expect(JSON.parse(m.finish.mock.calls[0][6])).toMatchObject({ source: "CLARIFICATION", reply, replyDelivery: "PREPARED_UNSENT" });
+  });
+  it("keeps an isolated time fixed when no verified model clarification precedes it", async () => {
+    const reply = "Aucune précision d’heure valide ne peut être traitée pour ce texto en ce moment.";
+    m.lower.mockResolvedValue({ status: "TEMPORAL_REPLY_FIXED_RESPONSE", reason: "NO_WAITING_QUESTION", reply,
+      sourceCompleted: false, committed: true, attemptConsumed: false, executionAuthorized: false });
+    expect(await processPersonalSms("inbound", env, deps())).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(intentContinuation).toHaveBeenCalledTimes(1); expect(model).not.toHaveBeenCalled(); expect(answer).not.toHaveBeenCalled();
+    expect(JSON.parse(m.finish.mock.calls[0][6])).toMatchObject({ source: "CLARIFICATION", reply });
+  });
+  it("routes a standalone time through the guarded intent model only with verified clarification context", async () => {
+    const fixed = "Aucune précision d’heure valide ne peut être traitée pour ce texto en ce moment.";
+    m.lower.mockResolvedValue({ status: "TEMPORAL_REPLY_FIXED_RESPONSE", reason: "NO_WAITING_QUESTION", reply: fixed,
+      sourceCompleted: false, committed: true, attemptConsumed: false, executionAuthorized: false });
+    intentContinuation.mockResolvedValue(true);
+    expect(await processPersonalSms("inbound", env, deps())).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(intentContinuation).toHaveBeenCalledTimes(1); expect(model).toHaveBeenCalledTimes(1); expect(answer).not.toHaveBeenCalled();
+    expect(JSON.parse(m.finish.mock.calls[0][6])).toMatchObject({ source: "MODEL_REVIEW_ONLY", reply: "Résultat modèle non exécuté." });
   });
   it("fixed response still requires current identity before any acknowledgment", async () => {
     m.lower.mockResolvedValue({ status: "TEMPORAL_REPLY_FIXED_RESPONSE", reply: "Contexte indisponible.", sourceCompleted: false, committed: true });

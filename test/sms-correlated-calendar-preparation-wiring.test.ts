@@ -5,7 +5,7 @@ vi.mock("@/lib/db", () => ({ prisma: { personalAssistantOperation: { findUnique:
 vi.mock("@/server/personal-assistant/sms-inbox", () => ({ enqueuePersonalSms: m.admission }));
 vi.mock("@/server/personal-assistant/sms-temporal-reply-worker", () => ({ processSmsTemporalReply: m.lower }));
 vi.mock("@/server/personal-assistant/sms-correlated-calendar-preparation-hook", () => ({ prepareCorrelatedCalendarAfterCommittedSms: m.hook }));
-import { processPersonalSms } from "@/server/personal-assistant/sms-worker";
+import { PERSONAL_SMS_PROCESS_BUDGET_MS, processPersonalSms } from "@/server/personal-assistant/sms-worker";
 
 function environment() { return { ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_AUTHORITY_REF: "ENDVERA-PERSONAL-20260910-100CAD", ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner",
   ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED", TWILIO_ACCOUNT_SID: `AC${"a".repeat(32)}`, TWILIO_API_KEY_SID: "synthetic-key-id", TWILIO_API_KEY_SECRET: "synthetic-placeholder",
@@ -73,7 +73,7 @@ describe("real worker completion latch around the bounded postcommit helper", ()
     expect(await processPersonalSms("source", environment(), deps())).toEqual(completed); expect(m.hook).not.toHaveBeenCalled(); expect(m.claim).toHaveBeenCalledTimes(1);
   });
   it("known consumption returned after wall deadline does not obtain a new allowance", async () => {
-    m.lower.mockImplementation(async () => { vi.setSystemTime(Date.now() + 36_000); return handled(); });
+    m.lower.mockImplementation(async () => { vi.setSystemTime(Date.now() + PERSONAL_SMS_PROCESS_BUDGET_MS + 1_000); return handled(); });
     expect(await processPersonalSms("source", environment(), deps())).toEqual(completed); expect(m.hook).not.toHaveBeenCalled(); expect(m.claim).toHaveBeenCalledTimes(1);
   });
   it("captured source hash is the same claim hash even if source object changes during admission", async () => {
