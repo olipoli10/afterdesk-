@@ -26,6 +26,8 @@ import { processPersonalAnswerSms, type PersonalAnswerSmsResult } from "./answer
 import { weatherQuestion } from "@/lib/sms-assistant/weather";
 import { processPersonalWeather } from "./weather-worker";
 import { inspectPersonalGatewaySubject } from "@/server/model-gateway/personal-subject";
+import { authorizeOwnerSmsCalendarAutocreateInTransaction } from "./owner-sms-calendar-autocreate";
+import { wakePersonalAndroidDevice } from "./device-push";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -47,7 +49,7 @@ export const PERSONAL_SMS_BATCH_BUDGET_MS = 50_000;
 const CLEANUP_BUDGET_MS = 2_000;
 export type PersonalSmsSourceClaim = Readonly<{ operationId: string; workspaceId: string; userId: string; attempt: 1; leaseUntil: string }>;
 export type PersonalSmsExecutionContext = Readonly<{ claim: PersonalSmsSourceClaim; signal: AbortSignal; deadlineAt: number }>;
-type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; answer?: typeof processPersonalAnswerSms; calendar?: typeof readGoogleCalendarWithAuthority; intentContinuation?: (claim: PersonalSmsSourceClaim) => Promise<boolean>; deadlineAt?: number };
+type Dependencies = { engine?: (input: Parameters<typeof processUnifiedAssistantRequest>[0], context: PersonalSmsExecutionContext) => Promise<{ reply: string; intent?: string; canonicalEffectId?: string | null }>; model?: typeof processPersonalModelSms; answer?: typeof processPersonalAnswerSms; calendar?: typeof readGoogleCalendarWithAuthority; intentContinuation?: (claim: PersonalSmsSourceClaim) => Promise<boolean>; calendarAutocreate?: typeof authorizeOwnerSmsCalendarAutocreateInTransaction; deviceWake?: typeof wakePersonalAndroidDevice; deadlineAt?: number };
 
 const SAFE_OUTBOUND_FAILURE_CODES = new Set([
   "PERSONAL_OUTBOUND_DISABLED", "TWILIO_CONFIGURATION_REQUIRED", "CURRENT_TWILIO_RATE_REVIEW_REQUIRED",
@@ -269,7 +271,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
     if (reply.length > 1500) reply = "Ton résultat est trop long pour un seul résumé SMS fiable. Consulte le dossier dans ENDVERA ou demande une période plus précise. Aucun détail n’a été remplacé par une supposition.";
     // Persist reply separately from dispatch. Receiving an SMS is not approval
     // to spend an unbounded amount or send a third-party message.
-    await prisma.$transaction(async tx => {
+    const committed = await prisma.$transaction(async tx => {
       requireLive();
       const active = await tx.constructionCommunicationIdentity.findFirst({ where: { id: received.identityId, userId: row.createdByUserId, workspaceId: row.workspaceId, verified: true, status: "active", permissions: { has: "COMMAND" } } });
       if (!active) throw new Error("SMS_IDENTITY_REVOKED");
@@ -297,6 +299,20 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       const personalModelReview = finalizeReview ? await finalizeReview(tx) : undefined;
       requireTemporalPreparationCurrent();
       if (personalModelReview) reply = personalModelReviewReply(personalModelReview);
+      let calendarAutocreate: Extract<Awaited<ReturnType<typeof authorizeOwnerSmsCalendarAutocreateInTransaction>>, { status: "DEVICE_CALENDAR_AUTOCREATE_AUTHORIZED" }> | undefined;
+      if (personalModelReview) {
+        const automatic = await (deps.calendarAutocreate ?? authorizeOwnerSmsCalendarAutocreateInTransaction)(
+          tx,
+          Object.freeze({ claim, signal: controller.signal, deadlineAt }),
+          personalModelReview,
+          env,
+        );
+        requireLive();
+        if (automatic.status === "DEVICE_CALENDAR_AUTOCREATE_AUTHORIZED") {
+          calendarAutocreate = automatic;
+          reply = "C’est parti : j’ajoute ce rendez-vous au calendrier de ton téléphone. Pas besoin de l’approuver dans l’app. Ouvre ENDVERA seulement s’il n’apparaît pas automatiquement.";
+        }
+      }
       let temporalQuestion: Extract<Awaited<ReturnType<typeof inspectSmsTemporalQuestionPreparationInTransaction>>, { status: "ELIGIBLE_QUESTION_NOT_AUTHORIZED" }> | undefined;
       if (temporalPreparation && personalModelReview?.status === "REVIEW_PREPARED_NOT_AUTHORIZED"
         && personalModelReview.actions.length === 1 && personalModelReview.actions[0].status === "CLARIFY"
@@ -309,7 +325,7 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         else reply = inspected.reply;
       }
       let calendarConfirmationId: string | undefined;
-      if (personalModelReview && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true"
+      if (!calendarAutocreate && personalModelReview && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true"
         && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true" && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true"
         && env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED === "true") {
         const { prepareCalendarConfirmationForReviewInTransaction } = await import("./calendar-confirmation-preparation");
@@ -336,7 +352,8 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC')
           AND kind='personal_sms_inbound' AND status='processing' AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')`,
         claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil), JSON.stringify({ reply, source, replyDelivery: "PREPARED_UNSENT",
-          ...(source === "GOOGLE_CALENDAR" ? { googleReadAuthority, googleReadRange } : {}), ...(weatherEvidence ? { weatherEvidence } : {}), ...(personalModelReview ? { personalModelReview } : {}) }));
+          ...(source === "GOOGLE_CALENDAR" ? { googleReadAuthority, googleReadRange } : {}), ...(weatherEvidence ? { weatherEvidence } : {}),
+          ...(personalModelReview ? { personalModelReview } : {}), ...(calendarAutocreate ? { calendarAutocreate } : {}) }));
       if (finished !== 1) throw new Error("SMS_SOURCE_CLAIM_LOST");
       requireTemporalPreparationCurrent();
       if (calendarConfirmationId) {
@@ -347,8 +364,19 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
         requireLive();
       }
       requireTemporalPreparationCurrent();
+      return Object.freeze({ calendarAutocreate });
     }, { isolationLevel: "Serializable", maxWait: 1000, timeout: Math.max(1, Math.min(5000, deadlineAt - Date.now())) });
-    requireLive();
+    // The source and one-shot directive are already committed. Waking the
+    // phone is best effort only: a missing/failed push never reopens the source
+    // and the app foreground bridge can still claim the durable directive.
+    if (committed.calendarAutocreate && !controller.signal.aborted && Date.now() + 5_500 < deadlineAt) {
+      try {
+        await (deps.deviceWake ?? wakePersonalAndroidDevice)(
+          { userId: claim.userId, workspaceId: claim.workspaceId },
+          env as NodeJS.ProcessEnv,
+        );
+      } catch { /* Durable device directive remains pending; never retry the native write automatically. */ }
+    }
     return { status: "COMPLETED_REPLY_PREPARED" as const };
   } catch (error) {
     if (knownTemporalCompletion) return { status: "COMPLETED_REPLY_PREPARED" as const };

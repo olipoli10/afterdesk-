@@ -175,6 +175,45 @@ describe("personal SMS source deadline and exact ownership", () => {
     expect(mocks.prepareBridge).not.toHaveBeenCalled();
     expect(JSON.parse(finish.mock.calls[0][6]).reply).toContain("avant d’approuver dans l’app");
   });
+  it("commits one owner-SMS device directive without preparing an app or SMS approval", async () => {
+    const model = vi.fn(async () => ({ reply: "Proposition.", finalizeReview: async () => singleReview }));
+    const calendarAutocreate = vi.fn(async () => ({
+      status: "DEVICE_CALENDAR_AUTOCREATE_AUTHORIZED" as const,
+      executionAuthorized: true as const,
+      providerExecutionPerformed: false as const,
+      automaticRetry: false as const,
+      operationId: "calendar",
+      directiveId: "directive",
+      directiveRequestHash: "b".repeat(64),
+      workspaceId: "workspace",
+      userId: "owner",
+      draft: { title: "Marc au Randolph", startsAt: "2026-09-11T03:00:00.000Z", endsAt: "2026-09-11T04:00:00.000Z", timezone: "America/Toronto" },
+    }));
+    const deviceWake = vi.fn(async () => ({ status: "DISABLED" as const, reason: "NO_PUSH_TOKEN", externalTransportPerformed: false as const }));
+    const automaticEnv = {
+      ...confirmationEnv,
+      ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true",
+      ENDVERA_PERSONAL_PILOT_EXPIRES_AT: "2026-10-10T01:18:26Z",
+      ENDVERA_OWNER_SMS_CALENDAR_AUTOCREATE_ENABLED: "true",
+      ENDVERA_OWNER_SMS_CALENDAR_AUTOCREATE_AUTHORITY_REF: "ENDVERA-OWNER-SMS-CALENDAR-AUTOCREATE-20260913-V1",
+    };
+    expect(await processPersonalSms(row.id, automaticEnv, {
+      model: model as never,
+      calendarAutocreate: calendarAutocreate as never,
+      deviceWake: deviceWake as never,
+    })).toEqual({ status: "COMPLETED_REPLY_PREPARED" });
+    expect(calendarAutocreate).toHaveBeenCalledTimes(1);
+    expect(mocks.prepareConfirmation).not.toHaveBeenCalled();
+    expect(mocks.prepareBridge).not.toHaveBeenCalled();
+    expect(deviceWake).toHaveBeenCalledExactlyOnceWith(
+      { userId: "owner", workspaceId: "workspace" },
+      expect.objectContaining({ ENDVERA_OWNER_SMS_CALENDAR_AUTOCREATE_ENABLED: "true" }),
+    );
+    const committed = JSON.parse(finish.mock.calls[0][6]);
+    expect(committed.calendarAutocreate).toMatchObject({ directiveId: "directive", executionAuthorized: true });
+    expect(committed.reply).toContain("Pas besoin de l’approuver dans l’app");
+    expect(committed.reply).not.toContain("avant d’approuver");
+  });
   it("routes queued summary through dedicated sender inside the original batch deadline", async () => {
     mocks.list.mockResolvedValue([]); mocks.selectOutbound.mockResolvedValue({ candidates: [{ id: "summary", idempotencyKey: "calendar-confirmation:challenge" }] });
     const deadlineAt = Date.now() + 4000;

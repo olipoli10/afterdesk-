@@ -1,3 +1,4 @@
+import { randomBytes, randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
 import { admitPersonalIntent, type PersonalIntentAdmission } from "@/server/model-gateway/personal-intent/admission";
@@ -10,11 +11,13 @@ import { processPersonalSms } from "@/server/personal-assistant/sms-worker";
 import { prepareStoredPersonalIntentReview } from "@/server/model-gateway/personal-intent/review-consumer";
 import { GOOGLE_CALENDAR_READ_SCOPE, GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/construction-operating-assistant-r3/connector-contracts";
 import { personalModelReviewsForOwner } from "@/server/model-gateway/personal-intent/review-projection";
+import { registerPersonalAndroidDevice } from "@/server/personal-assistant/device-bridge";
+import { OWNER_SMS_CALENDAR_AUTOCREATE_AUTHORITY } from "@/server/personal-assistant/owner-sms-calendar-autocreate";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
 type Fixture = Awaited<ReturnType<typeof personalModelFixture>>;
-function controls(f: Fixture): NodeJS.ProcessEnv {
+function controls(): NodeJS.ProcessEnv {
   return { NODE_ENV: "test", ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: "true", ENDVERA_EXTERNAL_AUTHORITY_REF: PERSONAL_MODEL_AUTHORITY,
     ENDVERA_PERSONAL_PILOT_EXPIRES_AT: "2026-10-10T01:18:26Z", ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS: "20000000" };
 }
@@ -24,7 +27,7 @@ function input(f: Fixture) {
       nonModelExposureCeilingCadMicros: 80_000_000, totalCeilingCadMicros: 100_000_000 } };
 }
 async function admitted(f: Fixture) {
-  const result = await admitPersonalIntent(input(f), controls(f));
+  const result = await admitPersonalIntent(input(f), controls());
   expect(result.status, JSON.stringify(result, (_key, value) => typeof value === "bigint" ? value.toString() : value)).toBe("ADMITTED_NOT_DISPATCHED");
   return result as PersonalIntentAdmission;
 }
@@ -34,7 +37,7 @@ function response(f: Fixture, admission: PersonalIntentAdmission) {
     choices: [{ index: 0, finish_reason: "stop", message: { role: "assistant", content: JSON.stringify({ schemaVersion: 1,
       requestFingerprint: admission.source.input.requestFingerprint, actions: [{ id: "calendar", kind: "READ_CALENDAR", dependsOn: [], period: { start, end: start + quote.length, quote } }] }) } }] }) };
 }
-function dispatch(f: Fixture, admission: PersonalIntentAdmission, transport: OpenRouterPersonalIntentTransport, env = controls(f)) {
+function dispatch(f: Fixture, admission: PersonalIntentAdmission, transport: OpenRouterPersonalIntentTransport, env = controls()) {
   const adapter = createOpenRouterPersonalIntentAdapter({ enabled: true, modelKey: f.rate.model,
     providerEndpointSlug: f.rate.providerEndpoint, maxOutputTokens: f.rate.maxOutputTokens, timeoutMs: 1000, transportMode: "SYNTHETIC_LOCAL", transport });
   return dispatchPersonalIntent({ admission, adapter, currentRateConfiguration: f.rate,
@@ -42,15 +45,15 @@ function dispatch(f: Fixture, admission: PersonalIntentAdmission, transport: Ope
 }
 
 describe("personal model complete gateway on disposable PostgreSQL, fake transport only", () => {
-  async function reviewedSource(f: Fixture, actions: (admission: PersonalIntentAdmission) => unknown[], options: { rollback?: boolean; revoke?: boolean } = {}) {
+  async function reviewedSource(f: Fixture, actions: (admission: PersonalIntentAdmission) => unknown[], options: { rollback?: boolean; revoke?: boolean; tamperReview?: boolean; envPatch?: Readonly<Record<string, string | undefined>> } = {}) {
     let calls = 0;
     // Intake already records provider-origin provenance even in this synthetic
     // fixture. Processing must add no outbound transport flags; never erase it.
     const transportBefore = await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, externalTransportPerformed: true } });
-    const env = { ...controls(f), ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner",
+    const env = { ...controls(), ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner",
       ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED", TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_API_KEY_SID: "synthetic-key-id", TWILIO_API_KEY_SECRET: "synthetic-secret",
       TWILIO_AUTH_TOKEN: "synthetic-token", TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_PROVIDER_WEBHOOK_ORIGIN: "https://endvera.example",
-      ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true" };
+      ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ...options.envPatch };
     const result = await processPersonalSms(f.sourceOperationId, env, { model: async context => {
       const admission = await admitted(f);
       const outcome = await dispatch(f, admission, async () => {
@@ -65,15 +68,50 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
         const review = await prepareStoredPersonalIntentReview(tx, { enabled: true, userId: context.claim.userId, workspaceId: context.claim.workspaceId,
           sourceOperationId: context.claim.operationId, modelChildOperationId: admission.childOperationId }, env);
         if (options.rollback) throw new Error("SYNTHETIC_FINAL_SOURCE_CAS_LOST");
+        if (options.tamperReview && review.status === "REVIEW_PREPARED_NOT_AUTHORIZED") {
+          return { ...review, actions: review.actions.map(action => action.status === "PREPARED_UNSENT"
+            ? { ...action, requestHash: "f".repeat(64) }
+            : action) };
+        }
         return review;
       } };
     } });
     expect(calls).toBe(1);
     const source = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: f.sourceOperationId } });
     expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, externalTransportPerformed: true } })).toBe(transportBefore);
-    return { result, source };
+    return { result, source, env };
   }
   function span(body: string, quote: string) { const start = body.indexOf(quote); return { start, end: start + quote.length, quote }; }
+  const ownerCalendarBody = "Ajoute à mon calendrier demain à 23h00 un rendez-vous d'une heure avec Marc au Randolph";
+  const ownerCalendarActions = () => [{
+    id: "event",
+    kind: "PREPARE_CALENDAR_EVENT",
+    dependsOn: [],
+    title: span(ownerCalendarBody, "un rendez-vous d'une heure avec Marc au Randolph"),
+    starts: span(ownerCalendarBody, "demain à 23h00"),
+    ends: span(ownerCalendarBody, "d'une heure"),
+  }];
+  async function ownerCalendarDevice(f: Fixture) {
+    const connectorKey = randomBytes(32).toString("base64");
+    await registerPersonalAndroidDevice(f.userId, {
+      schemaVersion: 1,
+      action: "REGISTER",
+      workspaceId: f.workspaceId,
+      deviceId: randomUUID(),
+      deviceSecret: `${randomBytes(32).toString("base64url")}.${randomBytes(32).toString("base64url")}`,
+      platform: "android",
+      pushToken: null,
+      appVersion: "0.11.0-test",
+      permissions: { calendar: "GRANTED", notifications: "DENIED", selectedWritableCalendar: true },
+    }, { NODE_ENV: "test", ENDVERA_CONNECTOR_ENCRYPTION_KEY: connectorKey });
+    return connectorKey;
+  }
+  const ownerCalendarAuthority = (connectorKey: string) => ({
+    ENDVERA_CONNECTOR_ENCRYPTION_KEY: connectorKey,
+    ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true",
+    ENDVERA_OWNER_SMS_CALENDAR_AUTOCREATE_ENABLED: "true",
+    ENDVERA_OWNER_SMS_CALENDAR_AUTOCREATE_AUTHORITY_REF: OWNER_SMS_CALENDAR_AUTOCREATE_AUTHORITY,
+  });
   async function calendarAccount(f: Fixture, capability: "calendar_read" | "calendar_write") {
     const scope = capability === "calendar_read" ? GOOGLE_CALENDAR_READ_SCOPE : GOOGLE_CALENDAR_WRITE_SCOPE;
     await prisma.constructionConnectorAccount.create({ data: { workspaceId: f.workspaceId, provider: "google_calendar", createdByUserId: f.userId,
@@ -104,6 +142,59 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
     const projection = await personalModelReviewsForOwner(f.userId, f.workspaceId);
     expect(projection.reviews).toMatchObject([{ actions: [{ operationId: drafts[0].id, currentStatus: "pending", nextDecision: "REVIEW_EXACT_DRAFT" }] }]);
   });
+  it("turns one clear verified-owner SMS into one one-shot Android directive without app approval", async () => {
+    const f = await personalModelFixture(ownerCalendarBody);
+    const connectorKey = await ownerCalendarDevice(f);
+    const { result, source, env } = await reviewedSource(f, ownerCalendarActions, { envPatch: ownerCalendarAuthority(connectorKey) });
+    expect(result.status).toBe("COMPLETED_REPLY_PREPARED");
+    expect(source.status).toBe("completed");
+    expect(source.result).toMatchObject({
+      reply: expect.stringContaining("Pas besoin de l’approuver dans l’app"),
+      calendarAutocreate: {
+        status: "DEVICE_CALENDAR_AUTOCREATE_AUTHORIZED",
+        executionAuthorized: true,
+        providerExecutionPerformed: false,
+        automaticRetry: false,
+      },
+    });
+    const writes = await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } });
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toMatchObject({
+      status: "processing",
+      attempts: 1,
+      externalTransportPerformed: false,
+      result: { standingAuthority: { kind: "OWNER_VERIFIED_SMS_STANDING_V1", authorityRef: OWNER_SMS_CALENDAR_AUTOCREATE_AUTHORITY } },
+    });
+    const directives = await prisma.personalAssistantOperation.findMany({ where: { workspaceId: f.workspaceId, kind: "device_calendar_write_v1" } });
+    expect(directives).toHaveLength(1);
+    expect(directives[0]).toMatchObject({ status: "pending", attempts: 0, externalTransportPerformed: false, sourcePersonalOperationId: writes[0].id });
+    expect(await prisma.personalCalendarSmsConfirmation.count({ where: { workspaceId: f.workspaceId } })).toBe(0);
+    expect(await processPersonalSms(f.sourceOperationId, env)).toEqual({ status: "NOT_PENDING" });
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "device_calendar_write_v1" } })).toBe(1);
+  });
+  it("keeps the exact device draft pending when standing authority is off", async () => {
+    const f = await personalModelFixture(ownerCalendarBody);
+    const connectorKey = await ownerCalendarDevice(f);
+    const { result, source } = await reviewedSource(f, ownerCalendarActions, { envPatch: { ENDVERA_CONNECTOR_ENCRYPTION_KEY: connectorKey } });
+    expect(result.status).toBe("COMPLETED_REPLY_PREPARED");
+    expect(source.result).not.toHaveProperty("calendarAutocreate");
+    expect(source.result).toMatchObject({ reply: expect.stringContaining("avant d’approuver dans l’app") });
+    expect(await prisma.personalAssistantOperation.findFirstOrThrow({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } }))
+      .toMatchObject({ status: "pending", attempts: 0 });
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "device_calendar_write_v1" } })).toBe(0);
+  });
+  it("rolls back autocreate when the supplied review changes after durable model proof", async () => {
+    const f = await personalModelFixture(ownerCalendarBody);
+    const connectorKey = await ownerCalendarDevice(f);
+    const { result, source } = await reviewedSource(f, ownerCalendarActions, {
+      tamperReview: true,
+      envPatch: ownerCalendarAuthority(connectorKey),
+    });
+    expect(result.status).toBe("REVIEW_REQUIRED");
+    expect(source.status).toBe("uncertain");
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "calendar_write" } })).toBe(0);
+    expect(await prisma.personalAssistantOperation.count({ where: { workspaceId: f.workspaceId, kind: "device_calendar_write_v1" } })).toBe(0);
+  });
   it("prepares an exact self SMS only, without sending it", async () => {
     const f = await personalModelFixture("Texte-moi : Bonjour.");
     await prisma.constructionConnectorGrant.create({ data: { connectorAccountId: f.smsAccountId, capability: "personal_sms_send", status: "active", grantedAt: f.now, requestedScopes: ["personal_sms_send"], grantedScopes: ["personal_sms_send"] } });
@@ -124,16 +215,16 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
   });
   it("does not reserve or admit when disabled or explicit AI consent is revoked", async () => {
     const f = await personalModelFixture();
-    expect((await admitPersonalIntent({ ...input(f), enabled: false }, controls(f))).status).toBe("DISABLED");
+    expect((await admitPersonalIntent({ ...input(f), enabled: false }, controls())).status).toBe("DISABLED");
     await prisma.constructionConnectorGrant.update({ where: { id: f.modelGrantId }, data: { status: "revoked", revokedAt: new Date(), grantedScopes: [] } });
-    expect((await admitPersonalIntent(input(f), controls(f))).status).toBe("REFUSED");
+    expect((await admitPersonalIntent(input(f), controls())).status).toBe("REFUSED");
     expect(await prisma.aiOperation.count({ where: { personalAssistantOperationId: f.sourceOperationId } })).toBe(0);
     expect(await prisma.personalAssistantOperation.count({ where: { sourcePersonalOperationId: f.sourceOperationId } })).toBe(0);
   });
   it("rolls back AI, child, gateway and CAD reservation if the USD hold refuses", async () => {
     const f = await personalModelFixture();
     const before = await prisma.personalAssistantBudget.findUnique({ where: { id: `${PERSONAL_MODEL_AUTHORITY}:openrouter` } });
-    const result = await admitPersonalIntent(input(f), { ...controls(f), ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS: "1" });
+    const result = await admitPersonalIntent(input(f), { ...controls(), ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS: "1" });
     expect(result.status).toBe("REFUSED");
     expect(await prisma.aiOperation.count({ where: { personalAssistantOperationId: f.sourceOperationId } })).toBe(0);
     expect(await prisma.personalAssistantOperation.count({ where: { sourcePersonalOperationId: f.sourceOperationId } })).toBe(0);
@@ -142,7 +233,7 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
   });
   it("admits once under concurrency, stores only a proposal, never settles or replays", async () => {
     const f = await personalModelFixture();
-    const results = await Promise.allSettled(Array.from({ length: 3 }, () => admitPersonalIntent(input(f), controls(f))));
+    const results = await Promise.allSettled(Array.from({ length: 3 }, () => admitPersonalIntent(input(f), controls())));
     const admissions = results.flatMap(result => result.status === "fulfilled" && result.value.status === "ADMITTED_NOT_DISPATCHED" ? [result.value] : []);
     expect(admissions).toHaveLength(1);
     const admission = admissions[0]; let calls = 0;
@@ -152,7 +243,7 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
     expect(dispatched.executionAuthorized).toBe(false);
     await dispatch(f, admission, transport);
     expect(calls).toBe(1);
-    expect((await admitPersonalIntent(input(f), controls(f))).status).toBe("REFUSED");
+    expect((await admitPersonalIntent(input(f), controls())).status).toBe("REFUSED");
     expect(await prisma.personalAssistantOperation.count({ where: { sourcePersonalOperationId: f.sourceOperationId } })).toBe(1);
     const child = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: admission.childOperationId } });
     expect(child.status).toBe("completed"); expect(child.externalTransportPerformed).toBe(false);
@@ -172,7 +263,7 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
   it("refuses dispatch when the account USD cap is withdrawn after admission", async () => {
     const f = await personalModelFixture(); const admission = await admitted(f); let calls = 0;
     const result = await dispatch(f, admission, async () => { calls++; return response(f, admission); },
-      { ...controls(f), ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS: "1" });
+      { ...controls(), ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS: "1" });
     expect(result.status).not.toBe("PROPOSAL_STORED_NOT_AUTHORIZED"); expect(calls).toBe(0);
     expect((await prisma.accountProviderSpendHold.findUniqueOrThrow({ where: { id: admission.attempt.accountSpendHoldId } })).status).toBe("held");
   });
@@ -189,7 +280,7 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
     expect(calls).toBe(1);
   });
   it("does not accept a proposal when the USD ceiling is removed during latency", async () => {
-    const f = await personalModelFixture(); const admission = await admitted(f); const env = controls(f); let calls = 0;
+    const f = await personalModelFixture(); const admission = await admitted(f); const env = controls(); let calls = 0;
     const result = await dispatch(f, admission, async () => {
       calls++;
       delete env.ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS;
@@ -219,6 +310,6 @@ describe("personal model complete gateway on disposable PostgreSQL, fake transpo
     await dispatch(f, admission, async () => { calls++; return response(f, admission); });
     expect(calls).toBe(0);
     expect((await prisma.accountProviderSpendHold.findUniqueOrThrow({ where: { id: admission.attempt.accountSpendHoldId } })).status).toBe("held");
-    expect((await admitPersonalIntent(input(f), controls(f))).status).toBe("REFUSED");
+    expect((await admitPersonalIntent(input(f), controls())).status).toBe("REFUSED");
   });
 });

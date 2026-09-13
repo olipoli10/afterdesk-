@@ -12,7 +12,6 @@ import {
   personalDeviceRegistrationSchema,
   personalDeviceReceiptSchema,
   type PersonalDeviceRegistration,
-  type PersonalDeviceReceipt,
 } from "@/lib/personal-device-bridge";
 import { requireActiveConstructionMember } from "@/server/construction-assistant-v1/workspace";
 import { openConnectorSecret, requireConnectorKey, sealConnectorSecret } from "./credential-cipher";
@@ -44,6 +43,13 @@ const claimStateSchema = z.object({
   schemaVersion: z.literal(1),
   receiptTokenHash: z.string().regex(/^[a-f0-9]{64}$/),
 }).passthrough();
+const standingAuthoritySchema = z.object({
+  kind: z.literal("OWNER_VERIFIED_SMS_STANDING_V1"),
+  authorityRef: z.literal("ENDVERA-OWNER-SMS-CALENDAR-AUTOCREATE-20260913-V1"),
+  sourceOperationId: z.string().min(1).max(191),
+  modelChildOperationId: z.string().min(1).max(191),
+  sourceAuthorityFingerprint: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+}).strict();
 type Db = Prisma.TransactionClient | typeof prisma;
 
 const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
@@ -257,7 +263,9 @@ export async function personalDeviceStatus(
 
 export async function authorizeDeviceCalendarOperationInTransaction(tx: Prisma.TransactionClient, input: {
   userId: string; workspaceId: string; operationId: string; expectedRequestHash: string;
+  standingAuthority?: z.input<typeof standingAuthoritySchema>;
 }) {
+    const standingAuthority = input.standingAuthority === undefined ? undefined : standingAuthoritySchema.parse(input.standingAuthority);
     await requireOwner(tx, input.userId, input.workspaceId);
     const source = await tx.personalAssistantOperation.findFirst({
       where: {
@@ -318,6 +326,7 @@ export async function authorizeDeviceCalendarOperationInTransaction(tx: Prisma.T
         result: {
           route: "ANDROID_DEVICE", approvedBy: input.userId, approvedHash: input.expectedRequestHash,
           approvalToken, writeAuthority: authority, dispatchStarted: false, automaticRetry: false,
+          ...(standingAuthority ? { standingAuthority } : {}),
         },
       },
     });
