@@ -37,7 +37,7 @@ describe("source-bound deterministic calendar temporal resolution", () => {
   it("uses a source-explicit duration without inventing a default end", () => {
     expect(event("demain à18:30", "il dure 1 h")).toMatchObject({ status: "RESOLVED_NOT_AUTHORIZED",
       startsAtUtc: "2026-09-10T22:30:00.000Z", endsAtUtc: "2026-09-10T23:30:00.000Z",
-      grammarVersion: "quebec-explicit-calendar-v3", executionAuthorized: false });
+      grammarVersion: "quebec-explicit-calendar-v4", executionAuthorized: false });
     expect(event("demain à 14h", "pendant 30 minutes")).toMatchObject({ endsAtUtc: "2026-09-10T18:30:00.000Z" });
   });
   it("resolves the exact model spans from a natural one-hour appointment request", () => {
@@ -65,9 +65,36 @@ describe("source-bound deterministic calendar temporal resolution", () => {
       executionAuthorized: false,
     });
   });
-  it("does not let the same-evening marker guess an ambiguous or contradictory clock", () => {
-    expect(event("ce soir à 6h30", "il dure 1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
+  it("uses the explicit same-evening marker for ordinary Quebec 12-hour clocks", () => {
+    expect(event("ce soir à 6h30", "il dure 1 h")).toMatchObject({
+      status: "RESOLVED_NOT_AUTHORIZED",
+      startsAtUtc: "2026-09-09T22:30:00.000Z",
+      endsAtUtc: "2026-09-09T23:30:00.000Z",
+    });
+    expect(event("ce soir à 11 h", "d'une heure")).toMatchObject({
+      status: "RESOLVED_NOT_AUTHORIZED",
+      startsAtUtc: "2026-09-10T03:00:00.000Z",
+      endsAtUtc: "2026-09-10T04:00:00.000Z",
+    });
+  });
+  it("does not let the same-evening marker reinterpret a contradictory clock", () => {
     expect(event("ce soir à 14h", "il dure 1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
+    expect(event("ce soir à 4h", "il dure 1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
+    expect(event("ce soir à 12h", "il dure 1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });
+  });
+  it("resolves the exact latest production request from its Toronto receipt", () => {
+    const source = "Ajoute à mon calendrier ce soir à 11 h un rendez-vous d'une heure avec Marc au Randolph ";
+    const input = createPersonalIntentInput("cmu00xlwg0001jt048eoz00mb", source);
+    const proposal = { schemaVersion: 1, requestFingerprint: input.requestFingerprint, actions: [{ id: "event", dependsOn: [], kind: "PREPARE_CALENDAR_EVENT",
+      title: span(source, "un rendez-vous d'une heure avec Marc au Randolph"), starts: span(source, "ce soir à 11 h"), ends: span(source, "d'une heure") }] };
+    expect(resolvePersonalCalendarTemporal(input, JSON.stringify(proposal), "event", {
+      receivedAt: "2026-09-13T16:24:07.852Z", timezone: "America/Toronto",
+    })).toMatchObject({
+      status: "RESOLVED_NOT_AUTHORIZED",
+      startsAtUtc: "2026-09-14T03:00:00.000Z",
+      endsAtUtc: "2026-09-14T04:00:00.000Z",
+      title: "un rendez-vous d'une heure avec Marc au Randolph",
+    });
   });
   it("does not reinterpret a bare ambiguous clock as a duration", () => {
     expect(event("demain à18:30", "1 h")).toMatchObject({ status: "CLARIFY", reason: "AMBIGUOUS_TIME" });

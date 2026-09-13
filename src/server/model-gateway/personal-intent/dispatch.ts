@@ -18,15 +18,16 @@ type Input = Readonly<{
   transportMode: "SYNTHETIC_LOCAL" | "EXTERNAL_PROVIDER";
 }>;
 const result = (status: "DISABLED" | "NOT_DISPATCHED" | "CLAIM_LOST" | "UNCERTAIN" | "PROPOSAL_STORED_NOT_AUTHORIZED",
-  reason: string, recorded = false) => Object.freeze({ status, reason, recorded, executionAuthorized: false as const,
+  reason: string, recorded = false, diagnosticCode?: string) => Object.freeze({ status, reason, recorded,
+    ...(diagnosticCode ? { diagnosticCode } : {}), executionAuthorized: false as const,
     accounting: "UNSETTLED" as const, automaticRetry: false as const });
 
-async function recordUncertain(admission: PersonalIntentAdmission, reason: PersonalIntentUncertainReason) {
+async function recordUncertain(admission: PersonalIntentAdmission, reason: PersonalIntentUncertainReason, diagnosticCode?: string) {
   // A DB outage is not a successful terminal write. The lease remains durable
   // and the bounded recovery worker can later record it; never repeat transport.
   let recorded = false;
   try { recorded = await retainPersonalIntentUncertain(admission, reason); } catch { /* Retain the running claim and both spend holds. */ }
-  return result("UNCERTAIN", reason, recorded);
+  return result("UNCERTAIN", reason, recorded, diagnosticCode);
 }
 
 async function requireCurrentUsdHold(tx: Prisma.TransactionClient, admission: PersonalIntentAdmission, now: Date, env: NodeJS.ProcessEnv) {
@@ -131,14 +132,16 @@ export async function dispatchPersonalIntent(input: Input, env: NodeJS.ProcessEn
   } catch { providerResult = null; }
   finally { if (timer !== undefined) clearTimeout(timer); input.abortSignal.removeEventListener("abort", abort); }
   if (!providerResult || input.abortSignal.aborted || providerResult.status !== "PROPOSAL_INSPECTED_NOT_AUTHORIZED") {
+    let diagnosticCode: string | undefined;
     if (providerResult?.status === "DISPATCH_OUTCOME_UNCERTAIN") {
       // Diagnostics must survive outside operator probes. This is a fixed code,
       // never candidate/source content. A logger failure cannot skip recovery.
+      diagnosticCode = safePersonalIntentDiagnostic(providerResult.diagnosticCode ?? providerResult.reason);
       try { console.warn(JSON.stringify({ event: "personal.intent.rejected", attemptId: admission.attempt.id,
-        diagnosticCode: safePersonalIntentDiagnostic(providerResult.diagnosticCode ?? providerResult.reason) })); }
+        diagnosticCode })); }
       catch { /* Durable uncertainty below remains mandatory. */ }
     }
-    return recordUncertain(admission, "PROVIDER_OUTCOME_UNKNOWN");
+    return recordUncertain(admission, "PROVIDER_OUTCOME_UNKNOWN", diagnosticCode);
   }
   let inspected: ReturnType<typeof inspectPersonalIntentCandidate>;
   let providerRequestId: string;

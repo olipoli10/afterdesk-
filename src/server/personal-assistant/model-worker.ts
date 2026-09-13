@@ -81,9 +81,13 @@ export async function processPersonalModelSms(context: PersonalSmsExecutionConte
   live();
   if (dispatched.status === "CLAIM_LOST") throw new Error("PERSONAL_MODEL_SOURCE_CLAIM_LOST");
   await requireLiveSource();
-  if (dispatched.status !== "PROPOSAL_STORED_NOT_AUTHORIZED") return {
-    reply: "Je n’ai pas pu interpréter cette demande de façon fiable. Aucun changement de calendrier, texto à tes contacts ou appel n’a été exécuté. La demande est conservée pour vérification.",
-  };
+  if (dispatched.status !== "PROPOSAL_STORED_NOT_AUTHORIZED") {
+    const temporaryCapacity = "diagnosticCode" in dispatched && ["PROVIDER_BODY_RATE_LIMIT_EXCEEDED",
+      "PROVIDER_BODY_PROVIDER_OVERLOADED", "PROVIDER_BODY_PROVIDER_UNAVAILABLE"].includes(dispatched.diagnosticCode ?? "");
+    return { reply: temporaryCapacity
+      ? "OpenRouter est temporairement surchargé et n’a pas retourné de proposition. Aucun changement de calendrier, texto à tes contacts ou appel n’a été exécuté. Réessaie ta demande; aucun nouvel essai automatique n’a été lancé."
+      : "Je n’ai pas pu interpréter cette demande de façon fiable. Aucun changement de calendrier, texto à tes contacts ou appel n’a été exécuté. La demande est conservée pour vérification." };
+  }
   return { reply: "Une proposition doit être vérifiée dans ENDVERA.",
     finalizeReview: async tx => {
       requireCurrentConfiguration();

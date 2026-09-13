@@ -48,7 +48,8 @@ describe("full personal gateway dispatch (synthetic transaction and wire only)",
     try {
       f.transport.mockResolvedValueOnce({ httpStatus: 200, body: JSON.stringify({ id: "syn", model: "synthetic/model",
         choices: [{ index: 0, finish_reason: "length", message: { role: "assistant", content: "private unfinished content" } }] }) });
-      expect(await dispatchPersonalIntent(f.input)).toMatchObject({ status: "UNCERTAIN", recorded: true, reason: "PROVIDER_OUTCOME_UNKNOWN" });
+      expect(await dispatchPersonalIntent(f.input)).toMatchObject({ status: "UNCERTAIN", recorded: true,
+        reason: "PROVIDER_OUTCOME_UNKNOWN", diagnosticCode: "OUTPUT_NOT_FINISHED" });
       expect(JSON.parse(logger.mock.calls[0][0])).toEqual({ event: "personal.intent.rejected", attemptId: "syn-attempt", diagnosticCode: "OUTPUT_NOT_FINISHED" });
       expect(JSON.stringify(logger.mock.calls)).not.toContain("private unfinished content");
       expect(f.transport).toHaveBeenCalledOnce();
@@ -60,7 +61,8 @@ describe("full personal gateway dispatch (synthetic transaction and wire only)",
     try {
       const adapter = { ...f.adapter, dispatch: vi.fn().mockResolvedValue({ status: "DISPATCH_OUTCOME_UNCERTAIN", reason: "HTTP_ERROR",
         diagnosticCode: "not-for-logs", dispatched: true, executionAuthorized: false, accounting: "UNSETTLED" }) };
-      expect(await dispatchPersonalIntent({ ...f.input, adapter })).toMatchObject({ status: "UNCERTAIN", recorded: true });
+      expect(await dispatchPersonalIntent({ ...f.input, adapter })).toMatchObject({ status: "UNCERTAIN", recorded: true,
+        diagnosticCode: "UNAVAILABLE" });
       expect(JSON.parse(logger.mock.calls[0][0]).diagnosticCode).toBe("UNAVAILABLE");
       expect(JSON.stringify(logger.mock.calls)).not.toContain("not-for-logs");
     } finally { logger.mockRestore(); }

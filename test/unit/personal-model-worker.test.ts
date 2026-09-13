@@ -90,6 +90,17 @@ describe("exclusive personal SMS candidate orchestration", () => {
     expect(m.dispatch).toHaveBeenCalledTimes(1);
     expect(m.review).not.toHaveBeenCalled();
   });
+  it("reports an observed OpenRouter throttle as capacity trouble, not bad interpretation", async () => {
+    m.dispatch.mockResolvedValue({ status: "UNCERTAIN", diagnosticCode: "PROVIDER_BODY_RATE_LIMIT_EXCEEDED" });
+    const result = await processPersonalModelSms(context(), env);
+    expect(result.reply).toContain("OpenRouter");
+    expect(result.reply).toContain("temporairement surchargé");
+    expect(result.reply).not.toContain("interpréter cette demande");
+    expect(result.reply).toContain("Aucun changement de calendrier");
+    expect(result.finalizeReview).toBeUndefined();
+    expect(m.dispatch).toHaveBeenCalledTimes(1);
+    expect(m.review).not.toHaveBeenCalled();
+  });
   it("does not return even a failure notice after losing the claim", async () => {
     m.dispatch.mockResolvedValue({ status: "CLAIM_LOST" });
     await expect(processPersonalModelSms(context(), env)).rejects.toThrow("SOURCE_CLAIM_LOST");

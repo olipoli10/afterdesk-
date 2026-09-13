@@ -13,14 +13,15 @@ import { inspectPersonalIntentCandidate, type PersonalIntentInput, type Personal
  * TIME: two-digit HH:mm; H[h] or H[h]MM with H=0 or 13..23;
  *       1..11 h [MM] du matin; 1..6 or 12 h de l'après-midi;
  *       5..11 h du soir; midi / minuit. Contradictory dayparts clarify.
- * Bare 1..12 h is ambiguous. An END span may instead be an explicitly cued
+ * Bare 1..12 h is ambiguous except that "ce soir" makes 5..11 h explicitly
+ * evening (17:00..23:00). An END span may instead be an explicitly cued
  * duration (for example "il dure 1 h", "pendant 30 minutes" or
  * "d'une heure"). No duration, offset, year or timezone is ever guessed.
  * Dates 2000..2100 and minute-granularity modern IANA offsets only. The offset
  * search exhausts -14:00..+14:00, refusing nonexistent or duplicate wall times.
  * Context must later come from authenticated DB state, NOT a model's fields.
  */
-export const PERSONAL_TEMPORAL_GRAMMAR_VERSION = "quebec-explicit-calendar-v3";
+export const PERSONAL_TEMPORAL_GRAMMAR_VERSION = "quebec-explicit-calendar-v4";
 const contextSchema = z.object({ receivedAt: z.string().datetime({ offset: true }), timezone: z.string().min(1).max(100) }).strict();
 export type PersonalTemporalContext = Readonly<z.infer<typeof contextSchema>>;
 type Reason = "INVALID_INPUT" | "INVALID_CONTEXT" | "UNSUPPORTED_ACTION" | "UNSUPPORTED_TEMPORAL_GRAMMAR"
@@ -176,10 +177,17 @@ function parseWall(raw: string, today: CalendarDate, endDate?: CalendarDate, amb
     const [year, month, day] = dated[1].split("-").map(Number);
     const date = dated[1] === "demain" ? nextDate(today) : dated[1] === "aujourd'hui" || dated[1] === "ce soir" ? today : { year, month, day };
     if (!dateValid(date)) return clarify("INVALID_DATE");
-    const parsed = literalTime(dated[2]);
+    const sameEveningClock = dated[1] === "ce soir"
+      ? /^(\d{1,2})\s*h(?:\s*(\d{2}))?$/.exec(dated[2])
+      : null;
+    const parsed = sameEveningClock && Number(sameEveningClock[1]) >= 5 && Number(sameEveningClock[1]) <= 11
+      && Number(sameEveningClock[2] ?? 0) <= 59
+      ? { hour: Number(sameEveningClock[1]) + 12, minute: Number(sameEveningClock[2] ?? 0) }
+      : literalTime(dated[2]);
     if ("status" in parsed) return parsed;
-    // "Ce soir" supplies a same-day date marker, not permission to infer AM/PM.
-    // Keep only an explicit clock compatible with the existing "du soir" range.
+    // In ordinary Quebec French, "ce soir à 5 h..11 h" is itself the explicit
+    // daypart. Other 12-hour clocks remain contradictory/ambiguous; never turn
+    // "ce soir à 3 h" into tomorrow morning or silently reinterpret 14 h.
     if (dated[1] === "ce soir" && parsed.hour < 17) return clarify("AMBIGUOUS_TIME");
     return { ...date, ...parsed };
   }

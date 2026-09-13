@@ -2,66 +2,112 @@
  * existing local preparation helper, not credentials. Publication is separate. */
 import { execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
+import { z } from "zod";
 import { preparePersonalModelOperatorArtifact } from "../src/server/model-gateway/personal-intent/operator-preparation";
 import { inspectPersonalModelIngressConfiguration } from "../src/server/model-gateway/personal-intent/operator-ingress-contract";
 import { inspectPersonalModelSetupManifest } from "../src/server/model-gateway/personal-intent/operator-setup";
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
+type ReviewDocument = { reviewRef: string; contentHash: string };
+type RoutePin = { id: string; version: number; residency: string[] };
+type PolicyPin = { id: string; version: number };
+type PrivacyEvidence = { modelKey: string; endpointKey: string; residency: string[]; certificationOwner: string };
+type MutableConfiguration = {
+  route: RoutePin;
+  policy: PolicyPin;
+  rateConfiguration: { model: string; providerEndpoint: string; inputUsdMicrosPerMillionTokens: number;
+    outputUsdMicrosPerMillionTokens: number; cadMicrosPerUsd: number; maxOutputTokens: number };
+  privacyEvidence: PrivacyEvidence;
+  operatorReview: { rates: ReviewDocument; privacy: ReviewDocument; fxAndFees: ReviewDocument; reviewerRef: string };
+  answer: { route: RoutePin; policy: PolicyPin; privacyEvidence: PrivacyEvidence;
+    operatorReview: { compatibility: ReviewDocument; privacy: ReviewDocument; reviewerRef: string } };
+};
+const zdrEndpointSchema = z.object({
+  model_id: z.string(), tag: z.string(), status: z.number(), context_length: z.number(),
+  pricing: z.object({ prompt: z.string(), completion: z.string() }).passthrough(),
+  supported_parameters: z.array(z.string()),
+}).passthrough();
+const zdrCatalogSchema = z.object({ data: z.array(zdrEndpointSchema) }).passthrough();
+const healthEndpointSchema = z.object({
+  tag: z.string(), status: z.number(), uptime_last_1d: z.number().nullable().optional(),
+}).passthrough();
+const healthCatalogSchema = z.object({ data: z.object({ endpoints: z.array(healthEndpointSchema) }).passthrough() }).passthrough();
 async function main() {
   const original = JSON.parse(execFileSync(process.execPath, ["--require", "./scripts/register-server-only.cjs", "--import", "tsx",
     "scripts/prepare-personal-capacity-baseline.ts"], { encoding: "utf8", maxBuffer: 65536 }));
   const ingress = inspectPersonalModelIngressConfiguration(JSON.stringify(original));
   const prior = inspectPersonalModelSetupManifest(JSON.parse(ingress.configuration.manifestUtf8));
-  const configuration = structuredClone(prior.manifest.artifact.configuration) as Record<string, any>;
+  const configuration = structuredClone(prior.manifest.artifact.configuration) as MutableConfiguration;
   if (configuration.route.version !== 3 || configuration.rateConfiguration.model !== "openai/gpt-5.6-luna"
     || configuration.rateConfiguration.providerEndpoint !== "azure") throw new Error("ROTATION_SOURCE_MISMATCH");
   const now = new Date();
-  const url = "https://openrouter.ai/api/v1/endpoints/zdr";
-  const response = await fetch(url, { redirect: "error", signal: AbortSignal.timeout(10000) });
-  if (!response.ok) throw new Error("ROTATION_PUBLIC_REVIEW_UNAVAILABLE");
-  const catalog = await response.json();
-  const rows = catalog.data.filter((row: any) => row.model_id === "openai/gpt-5.6-luna-pro" && row.tag === "azure");
-  if (rows.length !== 1) throw new Error("ROTATION_ENDPOINT_AMBIGUOUS");
-  const endpoint = rows[0];
-  if (endpoint.status !== 0 || endpoint.context_length < 32768 || endpoint.pricing.prompt !== "0.0000002"
-    || endpoint.pricing.completion !== "0.0000012"
+  const zdrUrl = "https://openrouter.ai/api/v1/endpoints/zdr";
+  const endpointUrl = "https://openrouter.ai/api/v1/models/openai/gpt-5.6-luna-pro/endpoints";
+  const [zdrResponse, endpointResponse] = await Promise.all([
+    fetch(zdrUrl, { redirect: "error", signal: AbortSignal.timeout(10000) }),
+    fetch(endpointUrl, { redirect: "error", signal: AbortSignal.timeout(10000) }),
+  ]);
+  if (!zdrResponse.ok || !endpointResponse.ok) throw new Error("ROTATION_PUBLIC_REVIEW_UNAVAILABLE");
+  const [catalog, endpointCatalog] = await Promise.all([
+    zdrResponse.json().then(value => zdrCatalogSchema.parse(value)),
+    endpointResponse.json().then(value => healthCatalogSchema.parse(value)),
+  ]);
+  const rows = catalog.data.filter(row => row.model_id === "openai/gpt-5.6-luna-pro" && row.tag === "azure/eu");
+  const healthRows = endpointCatalog.data.endpoints.filter(row => row.tag === "azure/eu");
+  if (rows.length !== 1 || healthRows.length !== 1) throw new Error("ROTATION_ENDPOINT_AMBIGUOUS");
+  const endpoint = rows[0], health = healthRows[0];
+  if (endpoint.status !== 0 || endpoint.context_length < 32768 || endpoint.pricing.prompt !== "0.00000022"
+    || endpoint.pricing.completion !== "0.00000132"
     || !["max_completion_tokens", "structured_outputs", "response_format"].every(p => endpoint.supported_parameters.includes(p))) {
     throw new Error("ROTATION_ENDPOINT_REVIEW_MISMATCH");
   }
-  const review = { sourceUrl: url, retrievedAt: now.toISOString(), model: endpoint.model_id, provider: "azure",
+  if (health.status !== 0 || typeof health.uptime_last_1d !== "number" || health.uptime_last_1d < 99.5) {
+    throw new Error("ROTATION_ENDPOINT_HEALTH_REVIEW_MISMATCH");
+  }
+  const review = { sourceUrls: [zdrUrl, endpointUrl], retrievedAt: now.toISOString(), model: endpoint.model_id, provider: "azure/eu",
     status: endpoint.status, pricing: endpoint.pricing, supportedParameters: endpoint.supported_parameters,
-    zeroRetentionCatalogMember: true, existingProviderAndResidencyUnchanged: true };
-  const document = { reviewRef: "CODEX_OWNER_AUTHORIZED_CAPACITY_REPAIR_20260912", contentHash: `sha256:${hash(JSON.stringify(review))}` };
+    uptimeLastDayPercent: health.uptime_last_1d, zeroRetentionCatalogMember: true, residency: ["EU"] };
+  const document = { reviewRef: "CODEX_OWNER_AUTHORIZED_AZURE_EU_REPAIR_20260913", contentHash: `sha256:${hash(JSON.stringify(review))}` };
   const fxReview = { source: "https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=1",
     observationDate: "2026-09-11", observedUsdCad: 1.3866, cadMicrosPerUsd: 1_400_000, headroomBasisPoints: 1000,
     reviewedAt: "2026-09-12T20:57:00Z", note: "Rounded upward; provider/payment fees and FX headroom retained" };
   const newModel = "openai/gpt-5.6-luna-pro";
+  const residency = ["EU"];
   configuration.rateConfiguration.model = newModel;
+  configuration.rateConfiguration.providerEndpoint = "azure/eu";
+  configuration.rateConfiguration.inputUsdMicrosPerMillionTokens = 220_000;
+  configuration.rateConfiguration.outputUsdMicrosPerMillionTokens = 1_320_000;
   configuration.rateConfiguration.cadMicrosPerUsd = fxReview.cadMicrosPerUsd;
   // The same total budget and conservative rates; 2048 bounds reasoning + output
   // and stays within the already existing answer-adapter maximum.
   configuration.rateConfiguration.maxOutputTokens = 2048;
   configuration.privacyEvidence.modelKey = newModel;
+  configuration.privacyEvidence.endpointKey = "azure/eu";
+  configuration.privacyEvidence.residency = residency;
+  configuration.route.residency = residency;
   configuration.operatorReview.rates = document;
   configuration.operatorReview.privacy = document;
   configuration.operatorReview.fxAndFees = { reviewRef: "BOC_20260911_WITH_CONSERVATIVE_HEADROOM",
     contentHash: `sha256:${hash(JSON.stringify(fxReview))}` };
-  configuration.operatorReview.reviewerRef = "CODEX_OWNER_AUTHORIZED_CAPACITY_REPAIR_20260912";
+  configuration.operatorReview.reviewerRef = "CODEX_OWNER_AUTHORIZED_AZURE_EU_REPAIR_20260913";
   configuration.answer.operatorReview.compatibility = document;
   configuration.answer.operatorReview.privacy = document;
   configuration.answer.operatorReview.reviewerRef = configuration.operatorReview.reviewerRef;
   configuration.privacyEvidence.certificationOwner = configuration.operatorReview.reviewerRef;
   configuration.answer.privacyEvidence.certificationOwner = configuration.operatorReview.reviewerRef;
-  configuration.route.id = `personal-intent-route-${randomUUID()}`; configuration.route.version = 4;
-  configuration.policy.id = `personal-intent-policy-${randomUUID()}`; configuration.policy.version = 4;
-  configuration.answer.route.id = `personal-answer-route-${randomUUID()}`; configuration.answer.route.version = 4;
-  configuration.answer.policy.id = `personal-answer-policy-${randomUUID()}`; configuration.answer.policy.version = 4;
+  configuration.answer.privacyEvidence.endpointKey = "azure/eu";
+  configuration.answer.privacyEvidence.residency = residency;
+  configuration.answer.route.residency = residency;
+  configuration.route.id = `personal-intent-route-${randomUUID()}`; configuration.route.version = 5;
+  configuration.policy.id = `personal-intent-policy-${randomUUID()}`; configuration.policy.version = 5;
+  configuration.answer.route.id = `personal-answer-route-${randomUUID()}`; configuration.answer.route.version = 5;
+  configuration.answer.policy.id = `personal-answer-policy-${randomUUID()}`; configuration.answer.policy.version = 5;
   const artifact = preparePersonalModelOperatorArtifact({ enabled: true, configuration }, now);
   if (artifact.status !== "PREPARED_NOT_PUBLISHED") throw new Error("ROTATION_ARTIFACT_REFUSED");
   const setupId = randomUUID();
   const manifest = { ...prior.manifest, setupId, artifact };
   const manifestUtf8 = JSON.stringify(manifest);
   const value = { ...original, setupRef: setupId, manifestUtf8, manifestSha256: hash(manifestUtf8),
-    controllerReceiptRef: "CODEX_OWNER_AUTHORIZED_CAPACITY_REPAIR_20260912" };
+    controllerReceiptRef: "CODEX_OWNER_AUTHORIZED_AZURE_EU_REPAIR_20260913" };
   const encoded = JSON.stringify(value);
   inspectPersonalModelIngressConfiguration(encoded);
   const mapped = inspectPersonalModelSetupManifest(manifest);
