@@ -9,7 +9,7 @@ vi.mock("@/server/model-gateway/personal-intent/openrouter-adapter", () => ({ cr
 vi.mock("@/server/model-gateway/personal-intent/openrouter-transport", () => ({ createPersonalOpenRouterTransport: m.transport }));
 vi.mock("@/server/personal-assistant/model-connection", () => ({ personalModelCredentialForDispatch: m.credential }));
 vi.mock("@/server/model-gateway/personal-intent/review-consumer", () => ({ prepareStoredPersonalIntentReview: m.review }));
-import { processPersonalModelSms, personalModelReviewReply } from "@/server/personal-assistant/model-worker";
+import { PERSONAL_INTENT_PROVIDER_TIMEOUT_MS, processPersonalModelSms, personalModelReviewReply } from "@/server/personal-assistant/model-worker";
 
 const configuration = { status: "CONFIGURED_NOT_AUTHORIZED", configurationFingerprint: "synthetic-reviewed", policyVersionId: "policy", rateConfiguration: {}, pilotEnvelopeReview: {} };
 const admission = { status: "ADMITTED_NOT_DISPATCHED", source: { actorUserId: "owner", input: {} }, modelAuthority: {}, childOperationId: "child",
@@ -19,8 +19,8 @@ const review = { status: "REVIEW_PREPARED_NOT_AUTHORIZED" as const, executionAut
   accounting: "UNSETTLED" as const, automaticRetry: false as const, semanticIntentVerified: false as const, modelChildOperationId: "child",
   source: { operationId: "source", text: "demain", receivedAt: "2026-09-10T04:00:00Z", timezone: "America/Toronto" },
   actions: [{ actionId: "read", kind: "READ_CALENDAR", status: "READ_REVIEW_ONLY" as const }] };
-function context() { return { signal: new AbortController().signal, deadlineAt: Date.now() + 35_000,
-  claim: Object.freeze({ operationId: "source", workspaceId: "workspace", userId: "owner", attempt: 1 as const, leaseUntil: new Date(Date.now() + 35_000).toISOString() }) }; }
+function context() { return { signal: new AbortController().signal, deadlineAt: Date.now() + 48_000,
+  claim: Object.freeze({ operationId: "source", workspaceId: "workspace", userId: "owner", attempt: 1 as const, leaseUntil: new Date(Date.now() + 48_000).toISOString() }) }; }
 beforeEach(() => {
   vi.resetAllMocks(); vi.useFakeTimers(); vi.setSystemTime(new Date("2026-09-10T04:00:00Z"));
   m.configuration.mockReturnValue(configuration); m.query.mockResolvedValue([{ id: "source" }]); m.admit.mockResolvedValue(admission);
@@ -49,11 +49,23 @@ describe("exclusive personal SMS candidate orchestration", () => {
     const result = await processPersonalModelSms(context(), env);
     expect(m.credential).not.toHaveBeenCalled(); expect(m.review).not.toHaveBeenCalled();
     expect(m.dispatch.mock.calls[0][0].transportMode).toBe("EXTERNAL_PROVIDER");
-    expect(m.adapter.mock.calls[0][0].timeoutMs).toBe(25_000);
+    expect(PERSONAL_INTENT_PROVIDER_TIMEOUT_MS).toBe(40_000);
+    expect(m.adapter.mock.calls[0][0].timeoutMs).toBe(PERSONAL_INTENT_PROVIDER_TIMEOUT_MS);
     const tx = {} as Prisma.TransactionClient;
     expect(await result.finalizeReview!(tx)).toBe(review);
     expect(m.review.mock.calls[0][0]).toBe(tx);
     expect(m.review.mock.calls[0][1]).toMatchObject({ userId: "owner", workspaceId: "workspace", sourceOperationId: "source", modelChildOperationId: "child" });
+  });
+  it("accepts a valid provider result after the former 25 second cutoff", async () => {
+    m.dispatch.mockImplementation(async () => {
+      await new Promise(resolve => setTimeout(resolve, 30_000));
+      return { status: "PROPOSAL_STORED_NOT_AUTHORIZED" };
+    });
+    const pending = processPersonalModelSms(context(), env);
+    await vi.advanceTimersByTimeAsync(30_000);
+    const result = await pending;
+    expect(result.finalizeReview).toBeTypeOf("function");
+    expect(m.adapter.mock.calls[0][0].timeoutMs).toBe(PERSONAL_INTENT_PROVIDER_TIMEOUT_MS);
   });
   it("lazy credential rechecks source ownership before and after loading", async () => {
     await processPersonalModelSms(context(), env);

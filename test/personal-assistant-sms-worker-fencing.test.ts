@@ -18,7 +18,7 @@ vi.mock("@/server/personal-assistant/calendar-confirmation-bridge", () => ({ pre
 vi.mock("@/server/personal-assistant/calendar-confirmation-maintenance", () => ({ maintainCalendarSmsConfirmations: mocks.maintenance }));
 vi.mock("@/server/personal-assistant/sms-inbound-recovery", () => ({ recoverExpiredPersonalSmsClaims: mocks.recoverInbound }));
 vi.mock("@/server/personal-assistant/outbound-queue", () => ({ selectPersonalAutomaticOutboundCandidates: mocks.selectOutbound }));
-import { drainPersonalSms, processPersonalSms } from "@/server/personal-assistant/sms-worker";
+import { PERSONAL_SMS_PROCESS_BUDGET_MS, drainPersonalSms, processPersonalSms } from "@/server/personal-assistant/sms-worker";
 
 const env = { ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_AUTHORITY_REF: "synthetic-authority", ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner",
   ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED", TWILIO_ACCOUNT_SID: `AC${"a".repeat(32)}`, TWILIO_API_KEY_SID: "synthetic-key-id", TWILIO_API_KEY_SECRET: "synthetic-secret",
@@ -125,7 +125,7 @@ describe("personal SMS source deadline and exact ownership", () => {
     mocks.maintenance.mockImplementation(async () => { expect(mocks.execute).toHaveBeenCalledTimes(1); expect(mocks.engine).not.toHaveBeenCalled(); });
     await processPersonalSms(row.id, maintenanceEnv);
     expect(mocks.maintenance).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ actor: { userId: "owner", workspaceId: "workspace" }, batchSize: 25,
-      deadlineAt: Date.parse("2026-09-10T03:00:35Z") }), maintenanceEnv);
+      deadlineAt: Date.parse("2026-09-10T03:00:00Z") + PERSONAL_SMS_PROCESS_BUDGET_MS }), maintenanceEnv);
   });
   it("can keep independent work after bookkeeping failure, without opening an effect route", async () => {
     mocks.maintenance.mockRejectedValue(new Error("synthetic locked bookkeeping"));
@@ -133,7 +133,7 @@ describe("personal SMS source deadline and exact ownership", () => {
     expect(mocks.engine).toHaveBeenCalledTimes(1); expect(mocks.confirmation).not.toHaveBeenCalled(); expect(mocks.send).not.toHaveBeenCalled();
   });
   it("does not interpret if bookkeeping has consumed the original deadline", async () => {
-    mocks.maintenance.mockImplementation(async () => { vi.setSystemTime(new Date("2026-09-10T03:00:35Z")); throw new Error("synthetic timeout"); });
+    mocks.maintenance.mockImplementation(async () => { vi.setSystemTime(Date.parse("2026-09-10T03:00:00Z") + PERSONAL_SMS_PROCESS_BUDGET_MS); throw new Error("synthetic timeout"); });
     expect(await processPersonalSms(row.id, maintenanceEnv)).toMatchObject({ status: "REVIEW_REQUIRED" });
     expect(mocks.engine).not.toHaveBeenCalled(); expect(finish).not.toHaveBeenCalled();
   });
@@ -310,7 +310,7 @@ describe("personal SMS source deadline and exact ownership", () => {
     let resolve!: (value: { reply: string }) => void;
     mocks.engine.mockImplementation(() => new Promise(done => { resolve = done; }));
     const pending = processPersonalSms(row.id, env, { engine: mocks.engine });
-    await vi.advanceTimersByTimeAsync(36_000);
+    await vi.advanceTimersByTimeAsync(49_000);
     expect(await pending).toMatchObject({ status: "REVIEW_REQUIRED", automaticRetry: false, engineCancellationConfirmed: false });
     expect(mocks.engine.mock.calls[0][1].signal.aborted).toBe(true);
     resolve({ reply: "Réponse trop tardive" }); await vi.advanceTimersByTimeAsync(1);
@@ -319,7 +319,7 @@ describe("personal SMS source deadline and exact ownership", () => {
   it("does not start an interpreter after a late acknowledgement of the source claim", async () => {
     let acknowledge!: (value: number) => void;
     mocks.execute.mockImplementationOnce(() => new Promise(done => { acknowledge = done; }));
-    const pending = processPersonalSms(row.id, env); await vi.advanceTimersByTimeAsync(36_000);
+    const pending = processPersonalSms(row.id, env); await vi.advanceTimersByTimeAsync(49_000);
     expect(await pending).toMatchObject({ status: "REVIEW_REQUIRED" });
     acknowledge(1); await vi.advanceTimersByTimeAsync(1);
     expect(mocks.engine).not.toHaveBeenCalled(); expect(committedReplies).toHaveLength(0);
@@ -329,7 +329,7 @@ describe("personal SMS source deadline and exact ownership", () => {
     mocks.engine.mockImplementation(() => new Promise(() => undefined));
     mocks.execute.mockResolvedValueOnce(1).mockImplementation(() => new Promise(() => undefined));
     const pending = processPersonalSms(row.id, env);
-    await vi.advanceTimersByTimeAsync(38_000);
+    await vi.advanceTimersByTimeAsync(51_000);
     expect(await pending).toMatchObject({ status: "REVIEW_REQUIRED", recorded: false, engineCancellationConfirmed: false });
     expect(committedReplies).toHaveLength(0);
   });

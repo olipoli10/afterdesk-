@@ -14,6 +14,7 @@ import { formatPersonalModelReviewMessage } from "./model-review-message";
 
 type Review = Awaited<ReturnType<typeof prepareStoredPersonalIntentReview>>;
 export type PersonalModelSmsResult = Readonly<{ reply: string; finalizeReview?: (tx: Prisma.TransactionClient) => Promise<Review> }>;
+export const PERSONAL_INTENT_PROVIDER_TIMEOUT_MS = 40_000;
 
 export function personalModelReviewReply(review: Review): string {
   return formatPersonalModelReviewMessage(review);
@@ -69,7 +70,9 @@ export async function processPersonalModelSms(context: PersonalSmsExecutionConte
     } }, env);
   const adapter = createOpenRouterPersonalIntentAdapter({ enabled: true, modelKey: policy.model,
     providerEndpointSlug: policy.providerEndpoint, maxOutputTokens: policy.maxOutputTokens,
-    timeoutMs: Math.max(1, Math.min(25_000, Math.floor(context.deadlineAt - Date.now() - 5_000))),
+    // Preserve five seconds for durable review/source finalization. The former
+    // 25 s cap cut off an otherwise admitted request before the worker deadline.
+    timeoutMs: Math.max(1, Math.min(PERSONAL_INTENT_PROVIDER_TIMEOUT_MS, Math.floor(context.deadlineAt - Date.now() - 5_000))),
     transportMode: "EXTERNAL_PROVIDER", transport });
   await requireLiveSource();
   const dispatched = await dispatchPersonalIntent({ enabled: true, admission, adapter, abortSignal: context.signal,

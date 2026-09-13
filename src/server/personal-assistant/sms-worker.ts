@@ -39,7 +39,10 @@ export function personalCalendarWindow(now: Date, timezone: string, day: "TODAY"
   return { start: fromZonedTime(start, timezone).toISOString(), end: fromZonedTime(addDays(start, 1), timezone).toISOString() };
 }
 function commandUuid(id: string) { const raw = hash(id); return `${raw.slice(0, 8)}-${raw.slice(8, 12)}-4${raw.slice(13, 16)}-8${raw.slice(17, 20)}-${raw.slice(20, 32)}`; }
-export const PERSONAL_SMS_PROCESS_BUDGET_MS = 35_000;
+// Leave the model enough time to survive a slow-but-valid provider response,
+// while the webhook's 55 s after() window still retains time for the source
+// commit and one guarded Twilio reply.
+export const PERSONAL_SMS_PROCESS_BUDGET_MS = 48_000;
 export const PERSONAL_SMS_BATCH_BUDGET_MS = 50_000;
 const CLEANUP_BUDGET_MS = 2_000;
 export type PersonalSmsSourceClaim = Readonly<{ operationId: string; workspaceId: string; userId: string; attempt: 1; leaseUntil: string }>;
