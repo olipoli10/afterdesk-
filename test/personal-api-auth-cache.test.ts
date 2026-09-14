@@ -29,8 +29,18 @@ describe("personal auth refusal caching — synthetic unit checks", () => {
     const result = await personalApiUser(new Request("https://pilot.example.invalid/api/personal"));
     expect(result.response?.status).toBe(429);
     expect(result.response?.headers.get("cache-control")).toBe("private, no-store");
+    expect(result.response?.headers.get("retry-after")).toBe("60");
     expect(fake.rate).toHaveBeenCalledExactlyOnceWith("personal-connectors:synthetic-owner", { window: 60, max: 20 });
     expect(await result.response?.json()).toEqual({ error: "Réessaie dans une minute." });
+  });
+  it("supports an isolated rate budget for a critical authenticated route", async () => {
+    const result = await personalApiUser(
+      new Request("https://pilot.example.invalid/api/endvera/v1/mobile/device-bridge"),
+      { namespace: "personal-device-bridge", window: 60, max: 60 },
+    );
+    expect(result.user).toBe(owner);
+    expect(result.response).toBeUndefined();
+    expect(fake.rate).toHaveBeenCalledExactlyOnceWith("personal-device-bridge:synthetic-owner", { window: 60, max: 60 });
   });
   it("does not manufacture a response or change the authenticated principal on success", async () => {
     const result = await personalApiUser(new Request("https://pilot.example.invalid/api/personal"));

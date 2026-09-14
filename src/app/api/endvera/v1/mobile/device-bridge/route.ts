@@ -17,6 +17,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const headers = { "cache-control": "private, no-store", vary: "Cookie, Authorization, X-Endvera-Device-Id, X-Endvera-Device-Secret" };
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers });
+const deviceBridgeRatePolicy = Object.freeze({
+  namespace: "personal-device-bridge",
+  window: 60,
+  max: 60,
+});
 
 function deviceIdentity(request: Request) {
   const deviceId = request.headers.get("x-endvera-device-id");
@@ -27,7 +32,7 @@ function deviceIdentity(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const auth = await personalApiUser(request);
+  const auth = await personalApiUser(request, deviceBridgeRatePolicy);
   if (auth.response) return auth.response;
   const params = new URL(request.url).searchParams;
   const workspaceId = params.get("workspaceId");
@@ -42,7 +47,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await personalApiUser(request);
+  const auth = await personalApiUser(request, deviceBridgeRatePolicy);
   if (auth.response) return auth.response;
   const body = await request.json().catch(() => null);
   const command = personalDeviceCommandSchema.safeParse(body);
@@ -74,4 +79,3 @@ export async function POST(request: Request) {
     return json({ error: code }, conflict ? 409 : 403);
   }
 }
-
