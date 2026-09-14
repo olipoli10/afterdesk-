@@ -276,8 +276,8 @@ describe("initial-only setup transaction (SQL simulated, actual artifact/cipher/
     } };
     await expect(d.apply()).rejects.toThrow();
   });
-  it("rejects stale reviews before any credential write", async () => {
-    const d = database(); d.state.dbNow = new Date(now.getTime() + 86400001);
+  it("rejects an expired pilot before any credential write", async () => {
+    const d = database(); d.state.dbNow = new Date("2026-10-10T01:18:26Z");
     await expect(d.apply()).rejects.toThrow(); expect(d.state.credential).toBeNull();
   });
   it.each(["wall-nan", "mono-nan", "mono-backwards", "wall-backwards"])("refuses %s after all writes at final core clock", async kind => {

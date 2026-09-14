@@ -108,14 +108,14 @@ describe("offline personal-model operator preparation", () => {
     expect(after.draftPolicy.canonicalHash).not.toBe(before.draftPolicy.canonicalHash);
     expect(after.reviewedHashes.rateConfiguration).toBe(before.reviewedHashes.rateConfiguration);
   });
-  it("rejects serialized artifact tampering, stale validity and oversized payloads", () => {
+  it("rejects serialized artifact tampering, expired pilot validity and oversized payloads", () => {
     const result = prepare(); if (result.status !== "PREPARED_NOT_PUBLISHED") throw new Error("synthetic fixture");
     for (const changed of [ { ...result, executionAuthorized: true }, { ...result, artifactHash: `sha256:${"0".repeat(64)}` },
       { ...result, draftPolicy: { ...result.draftPolicy, status: "published" } },
       { ...result, draftRoute: { ...result.draftRoute, modelKey: "other-model" } },
       { ...result, disabledSwitches: { ...result.disabledSwitches, ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED" } },
     ]) expect(validatePersonalModelOperatorArtifact(changed, now).status).toBe("INCOMPLETE");
-    expect(validatePersonalModelOperatorArtifact(result, new Date("2026-09-11T12:00:01Z")).status).toBe("INCOMPLETE");
+    expect(validatePersonalModelOperatorArtifact(result, new Date("2026-10-10T01:18:26Z")).status).toBe("INCOMPLETE");
     expect(prepare({ ...config(), excessive: "x".repeat(40000) }).status).toBe("INCOMPLETE");
     expect(validatePersonalModelOperatorArtifact({ ...result, excessive: "x".repeat(140000) }, now).status).toBe("INCOMPLETE");
   });

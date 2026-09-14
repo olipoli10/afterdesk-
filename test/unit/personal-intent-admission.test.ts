@@ -53,7 +53,7 @@ describe("personal intent admission fail-closed boundary (synthetic DB only)", (
     { ...review, nonModelExposureCeilingCadMicros: 0 }, { ...review, reviewedAt: "2026-09-09T11:59:59Z" },
     { ...review, reviewedAt: "2026-09-10T12:00:01Z" }, { ...review, reviewRef: " " },
     { ...review, aggregatePilotBillingVerified: true },
-  ])("refuses missing, stale, enlarged or fabricated envelope review", async pilotEnvelopeReview => {
+  ])("refuses missing, pre-pilot, future, enlarged or fabricated envelope review", async pilotEnvelopeReview => {
     const f = fixture();
     expect(await admitPersonalIntent({ ...input, pilotEnvelopeReview }, env)).toMatchObject({
       status: "REFUSED", reason: "PERSONAL_MODEL_TOTAL_ENVELOPE_REVIEW_REQUIRED", executionAuthorized: false,

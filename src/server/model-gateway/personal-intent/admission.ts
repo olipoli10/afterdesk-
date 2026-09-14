@@ -12,7 +12,7 @@ import { claimPersonalAiOperation, reservePersonalAiOperation, type PersonalAiOp
 import { inspectPersonalGatewaySubject } from "../personal-subject";
 import { resolveGatewayPolicy, type GatewayPolicySnapshot, type GatewayRouteSnapshot } from "../policy";
 import type { PersonalGatewayOperationRequest, PersonalGatewayOperationSubject } from "../types";
-import { inspectPersonalModelBudget, PERSONAL_MODEL_AUTHORITY } from "./budget-policy";
+import { inspectPersonalModelBudget, isPersonalModelPilotReviewCurrent, PERSONAL_MODEL_AUTHORITY } from "./budget-policy";
 import { personalIntentProposalSchema } from "./contract";
 import { personalIntentMessages, personalIntentResponseFormat } from "./prompt";
 
@@ -95,8 +95,7 @@ export function inspectPersonalModelPilotEnvelope(env: NodeJS.ProcessEnv, now: D
   const parsed = envelopeReviewSchema.safeParse(reviewInput);
   if (!parsed.success) refuse("PERSONAL_MODEL_TOTAL_ENVELOPE_REVIEW_REQUIRED");
   const review = parsed.data;
-  const reviewedAt = Date.parse(review.reviewedAt);
-  if (!review.reviewRef.trim() || reviewedAt > now.getTime() || now.getTime() - reviewedAt > 86_400_000 ||
+  if (!review.reviewRef.trim() || !isPersonalModelPilotReviewCurrent(review.reviewedAt, now) ||
     BigInt(review.nonModelExposureCeilingCadMicros) + modelCeiling > BigInt(review.totalCeilingCadMicros)) refuse("PERSONAL_MODEL_TOTAL_ENVELOPE_REVIEW_REQUIRED");
   return Object.freeze(review);
 }

@@ -30,14 +30,24 @@ const rateSchema = z.object({
 export type PersonalModelRateConfiguration = z.infer<typeof rateSchema>;
 const ceilDivide = (n: bigint, d: bigint) => (n + d - 1n) / d;
 
+/** A reviewed configuration remains current for this one fixed pilot. It may
+ * never predate the authority, be future-dated, or outlive the pilot. Current
+ * consent, route, breaker and atomic budget checks still run per request. */
+export function isPersonalModelPilotReviewCurrent(reviewedAt: string, now: Date) {
+  const timestamp = now.getTime();
+  const reviewedAtMs = Date.parse(reviewedAt);
+  return Number.isFinite(timestamp) && Number.isFinite(reviewedAtMs)
+    && timestamp >= pilotStart && timestamp < pilotEnd
+    && reviewedAtMs >= pilotStart && reviewedAtMs <= timestamp;
+}
+
 export function inspectPersonalModelBudget(configuration: unknown, now: Date) {
   const rate = rateSchema.parse(configuration);
   const timestamp = now.getTime();
   if (!Number.isFinite(timestamp) || timestamp < pilotStart || timestamp >= pilotEnd) {
     throw new Error("PERSONAL_MODEL_AUTHORITY_INACTIVE");
   }
-  const reviewedAt = Date.parse(rate.reviewedAt);
-  if (reviewedAt > timestamp || timestamp - reviewedAt > 86_400_000) throw new Error("PERSONAL_MODEL_RATE_REVIEW_STALE");
+  if (!isPersonalModelPilotReviewCurrent(rate.reviewedAt, now)) throw new Error("PERSONAL_MODEL_RATE_REVIEW_STALE");
   if (rate.maxOutputTokens > rate.totalContextTokens || rate.perCallCeilingCadMicros > rate.ceilingCadMicros) {
     throw new Error("PERSONAL_MODEL_BUDGET_CONFIGURATION_INVALID");
   }

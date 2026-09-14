@@ -113,8 +113,9 @@ transactional check. Stage B must bind actual deployed source/schema and reviewe
 manifest before invocation; supplied hashes alone are not deployment attestation.
 Never run generate/migrate automatically.
 
-All operator/rate/envelope reviews must be at most 24 hours old and not future;
-privacy must be effective/unexpired. USD/CAD conversion, additional fees,
+All operator/rate/envelope reviews must originate inside the explicit fixed pilot
+and not be future-dated. They remain eligible only until that pilot ends; no daily
+manual renewal is required. Privacy must be effective/unexpired. USD/CAD conversion, additional fees,
 headroom and both ceilings remain required by existing inspectors. Artifact
 hashes are integrity, not evidence that documents or certifications are genuine.
 

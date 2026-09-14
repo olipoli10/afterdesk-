@@ -40,8 +40,12 @@ The closed `configuration` object contains:
   and positive `maxInputTokens` no larger than the reviewed model context.
 - `policy`: explicit future `id` and positive `version`.
 
-Operator, rate and envelope reviews must be current (at most 24 hours old, not
-future-dated). The pilot must be active. Privacy must be effective and unexpired.
+Operator, rate and envelope reviews must be recorded inside the explicit pilot
+window and must not be future-dated. They remain valid only until the fixed pilot
+ends; there is no daily manual renewal. The pilot must be active. Privacy must be
+effective and unexpired. Runtime admission still rechecks current owner consent,
+the exact published route, breakers and atomic USD/CAD budget availability for
+every request.
 Output tokens are pinned exactly, at most 8192; retries and fallback remain absent.
 
 ## What the artifact means

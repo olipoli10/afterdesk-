@@ -4,7 +4,7 @@ import { canonicalFingerprint } from "../evidence";
 import { resolveGatewayPolicy, type GatewayPolicySnapshot, type GatewayRouteSnapshot } from "../policy";
 import { requireAdapterDefinition, requireOperationDefinition, requirePolicyKey, requireRouteKey } from "../registry";
 import { inspectPersonalModelPilotEnvelope, PERSONAL_MODEL_OUTPUT_CONTRACT_HASH } from "./admission";
-import { inspectPersonalModelBudget, PERSONAL_MODEL_AUTHORITY } from "./budget-policy";
+import { inspectPersonalModelBudget, isPersonalModelPilotReviewCurrent, PERSONAL_MODEL_AUTHORITY } from "./budget-policy";
 import { PERSONAL_INTENT_ADAPTER_LIMITS } from "./openrouter-adapter";
 import { PERSONAL_INTENT_PROMPT_VERSION } from "./prompt";
 import { ANSWER_OPERATION, candidateAnswerSchema } from "../personal-answer/contract";
@@ -71,7 +71,7 @@ export function preparePersonalModelOperatorArtifact(input: Readonly<{ enabled?:
   const policyPin = policySchema.safeParse(raw.policy);
   const missing: string[] = [];
   if (!review.success) missing.push("REVIEWER_AND_FOUR_REVIEW_DOCUMENT_HASHES_REQUIRED");
-  else if (Date.parse(review.data.reviewedAt) > now.getTime() || now.getTime() - Date.parse(review.data.reviewedAt) > 86_400_000)
+  else if (!isPersonalModelPilotReviewCurrent(review.data.reviewedAt, now))
     missing.push("CURRENT_OPERATOR_REVIEW_REQUIRED");
   if (!pilot.success) missing.push("CURRENT_EXPLICIT_PILOT_CONTEXT_REQUIRED");
   if (!routePin.success) missing.push("EXACT_ROUTE_VERSION_RESIDENCY_AND_INPUT_LIMIT_REQUIRED");
@@ -131,8 +131,7 @@ export function preparePersonalModelOperatorArtifact(input: Readonly<{ enabled?:
   if (raw.answer !== undefined) {
     const parsed = answerSetupSchema.safeParse(raw.answer);
     if (!parsed.success) return incomplete("EXACT_PERSONAL_ANSWER_REVIEW_AND_ROUTE_REQUIRED");
-    const answerReviewAt = Date.parse(parsed.data.operatorReview.reviewedAt);
-    if (answerReviewAt > now.getTime() || now.getTime() - answerReviewAt > 86_400_000)
+    if (!isPersonalModelPilotReviewCurrent(parsed.data.operatorReview.reviewedAt, now))
       return incomplete("CURRENT_PERSONAL_ANSWER_REVIEW_REQUIRED");
     if (!parsed.data.privacyEvidence || typeof parsed.data.privacyEvidence !== "object" || Array.isArray(parsed.data.privacyEvidence))
       return incomplete("EXACT_PERSONAL_ANSWER_PRIVACY_EVIDENCE_REQUIRED");

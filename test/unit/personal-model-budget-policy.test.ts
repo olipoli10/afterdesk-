@@ -39,8 +39,14 @@ describe("personal model current-authority reservation policy", () => {
   it.each(["2026-09-10T01:18:25Z", "2026-10-10T01:18:26Z", "invalid"])("rejects inactive authority at %s", date => {
     expect(() => inspectPersonalModelBudget(rate, new Date(date))).toThrow("AUTHORITY_INACTIVE");
   });
-  it.each(["2026-09-09T02:59:59Z", "2026-09-10T03:00:01Z"])("rejects stale/future review %s", reviewedAt => {
+  it.each(["2026-09-10T01:18:25Z", "2026-09-10T03:00:01Z"])("rejects pre-pilot/future review %s", reviewedAt => {
     expect(() => inspectPersonalModelBudget({ ...rate, reviewedAt }, now)).toThrow("RATE_REVIEW_STALE");
+  });
+  it("keeps an in-pilot review valid beyond 24 hours while the fixed pilot remains active", () => {
+    expect(inspectPersonalModelBudget(rate, new Date("2026-10-09T23:00:00Z"))).toMatchObject({
+      status: "BUDGET_POLICY_INSPECTED_NOT_RESERVED",
+      executionAuthorized: false,
+    });
   });
   it("rejects excess per-call reservation, mismatched caps and old usage claims", () => {
     expect(() => inspectPersonalModelBudget({ ...rate, perCallCeilingCadMicros: 1 }, now)).toThrow("PER_CALL_CEILING");

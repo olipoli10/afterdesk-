@@ -30,8 +30,9 @@ describe("server-owned model configuration", () => {
     const result = loadPersonalModelConfiguration({ ...env, ENDVERA_PERSONAL_MODEL_CONFIGURATION_JSON: encoded }, now);
     expect(result).toEqual({ status: "REFUSED", executionAuthorized: false, reason: "PERSONAL_MODEL_CONFIGURATION_INVALID" });
   });
-  it("refuses stale reviews and ended pilot even if flags remain enabled", () => {
-    for (const date of ["2026-09-11T12:00:01Z", "2026-10-11T12:00:00Z"]) expect(loadPersonalModelConfiguration(env, new Date(date)).status).toBe("REFUSED");
+  it("keeps the reviewed configuration active through the pilot and refuses after the pilot ends", () => {
+    expect(loadPersonalModelConfiguration(env, new Date("2026-10-09T23:00:00Z")).status).toBe("CONFIGURED_NOT_AUTHORIZED");
+    expect(loadPersonalModelConfiguration(env, new Date("2026-10-11T12:00:00Z")).status).toBe("REFUSED");
   });
   it("fingerprints the exact reviewed configuration", () => {
     const before = loadPersonalModelConfiguration(env, now);
