@@ -51,10 +51,9 @@ export async function wakePersonalAndroidDevice(
       headers: { "content-type": "application/json", accept: "application/json" },
       body: JSON.stringify({
         to: payload.pushToken,
-        title: "ENDVERA",
-        body: "Une action autorisée attend ton téléphone.",
         data: { type: "ENDVERA_DEVICE_WAKE_V1" },
         priority: "high",
+        ttl: 900,
       }),
       signal: controller.signal,
     });

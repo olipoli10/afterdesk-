@@ -55,6 +55,17 @@ const api = new MobileApi({
 });
 let runPromise: Promise<DeviceBridgeOutcome> | null = null;
 
+async function ensureNotificationChannel() {
+  if (Platform.OS !== "android") return;
+  await Notifications.setNotificationChannelAsync("endvera-actions", {
+    name: "Actions ENDVERA",
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: "#C97B39",
+    sound: "default",
+  });
+}
+
 function randomToken() {
   const bytes = Crypto.getRandomBytes(43);
   let token = "";
@@ -129,7 +140,10 @@ async function expoPushToken(snapshot: DevicePermissionSnapshot) {
   if (snapshot.notifications !== "GRANTED" || Platform.OS !== "android") return null;
   const projectId = Constants.expoConfig?.extra?.eas?.projectId;
   if (typeof projectId !== "string" || !projectId) return null;
-  try { return (await Notifications.getExpoPushTokenAsync({ projectId })).data; }
+  try {
+    await ensureNotificationChannel();
+    return (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+  }
   catch { return null; }
 }
 
@@ -157,6 +171,20 @@ export async function registerThisAndroidDevice(workspaceId: string) {
   });
   await writeSecure(IDENTITY_KEY, identity);
   return personalDeviceStatusSchema.parse(status);
+}
+
+export async function refreshLinkedAndroidDevice(workspaceId: string) {
+  if (Platform.OS !== "android") return null;
+  const identity = await readSecure(IDENTITY_KEY, identitySchema);
+  if (!identity || identity.workspaceId !== workspaceId) return null;
+  return registerThisAndroidDevice(workspaceId);
+}
+
+export async function runLinkedDeviceCalendarBridge() {
+  if (Platform.OS !== "android") return null;
+  const identity = await readSecure(IDENTITY_KEY, identitySchema);
+  if (!identity) return null;
+  return runDeviceCalendarBridge(identity.workspaceId);
 }
 
 export async function localDeviceBridgeSnapshot() {
@@ -231,7 +259,7 @@ async function runOnce(workspaceId: string): Promise<DeviceBridgeOutcome> {
       startDate: new Date(directive.request.startsAt),
       endDate: new Date(directive.request.endsAt),
       timeZone: directive.request.timezone,
-      notes: "Ajouté par ENDVERA après approbation explicite.",
+      notes: "Ajouté par ENDVERA à ta demande SMS.",
     });
     journal = journalSchema.parse({ ...journal, phase: "NATIVE_APPLIED", nativeEventId: event.id });
   } catch {

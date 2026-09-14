@@ -226,13 +226,15 @@ export default function DeviceAccessScreen() {
           setSelectedCalendar(choice);
           try {
             const registration = await registerThisAndroidDevice(activeWorkspace.id);
-            if (registration.status !== "LINKED" || !registration.calendarWriteEnabled) throw new Error("DEVICE_CALENDAR_NOT_LINKED");
+            if (registration.status !== "LINKED" || !registration.calendarWriteEnabled || !registration.pushEnabled) {
+              throw new Error("DEVICE_BACKGROUND_WAKE_NOT_LINKED");
+            }
             if (!mounted.current) return;
             setDeviceLinked(true);
             const outcome = await runDeviceCalendarBridge(activeWorkspace.id);
             if (!mounted.current) return;
             setBridgeOutcome(outcome);
-            setPermissionFeedback(`Prêt : ${granted}/${next.length} accès accordés. « ${choice.title} » est choisi et ce téléphone est associé à ENDVERA.`);
+            setPermissionFeedback(`Prêt en arrière-plan : ${granted}/${next.length} accès accordés. « ${choice.title} » est choisi et ENDVERA peut réveiller ce téléphone.`);
           } catch {
             if (!mounted.current) return;
             setDeviceLinked(false);
@@ -277,7 +279,9 @@ export default function DeviceAccessScreen() {
     setError(null);
     try {
       const registration = await registerThisAndroidDevice(activeWorkspace.id);
-      if (registration.status !== "LINKED" || !registration.calendarWriteEnabled) throw new Error("DEVICE_CALENDAR_NOT_LINKED");
+      if (registration.status !== "LINKED" || !registration.calendarWriteEnabled || !registration.pushEnabled) {
+        throw new Error("DEVICE_BACKGROUND_WAKE_NOT_LINKED");
+      }
       if (!mounted.current) return;
       setDeviceLinked(true);
       setBridgeOutcome(await runDeviceCalendarBridge(activeWorkspace.id));

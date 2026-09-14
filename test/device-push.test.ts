@@ -51,8 +51,7 @@ describe("generic Android device wake", () => {
     expect(request[0]).toBe("https://exp.host/--/api/v2/push/send");
     const body = JSON.parse(String(request[1].body));
     expect(body).toEqual({
-      to: token, title: "ENDVERA", body: "Une action autorisée attend ton téléphone.",
-      data: { type: "ENDVERA_DEVICE_WAKE_V1" }, priority: "high",
+      to: token, data: { type: "ENDVERA_DEVICE_WAKE_V1" }, priority: "high", ttl: 900,
     });
     expect(JSON.stringify(body)).not.toMatch(/workspace|owner|calendar|operation|rendez-vous/i);
   });

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "135511277612",
+    "project_id": "endvera-personal-20260910",
+    "storage_bucket": "endvera-personal-20260910.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135511277612:android:48d522fb07f5edc04e1189",
+        "android_client_info": {
+          "package_name": "ai.endvera.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "135511277612-t6s7f0se0aaq4p8a698mjdgqu5b6auns.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiHrDLjs8geX7cgLlLfy8bZyRd-FmfQ3o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "135511277612-t6s7f0se0aaq4p8a698mjdgqu5b6auns.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

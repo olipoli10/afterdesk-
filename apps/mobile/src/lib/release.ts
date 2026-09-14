@@ -1,9 +1,9 @@
 export const MOBILE_RELEASE_INFO = {
   schemaVersion: 1,
   productName: "ENDVERA",
-  semanticVersion: "0.2.1",
+  semanticVersion: "0.2.2",
   ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1" },
-  android: { package: "ai.endvera.mobile", versionCode: 11 },
+  android: { package: "ai.endvera.mobile", versionCode: 12 },
   publicPaths: {
     privacy: "/privacy",
     security: "/security",

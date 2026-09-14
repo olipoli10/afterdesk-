@@ -3,7 +3,7 @@
     "name": "ENDVERA",
     "slug": "endvera",
     "owner": "endveras-team",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "endvera",
@@ -20,7 +20,8 @@
     },
     "android": {
       "package": "ai.endvera.mobile",
-      "versionCode": 11,
+      "versionCode": 12,
+      "googleServicesFile": "./google-services.json",
       "blockedPermissions": [
         "android.permission.READ_SMS",
         "android.permission.WRITE_SMS",
@@ -106,7 +107,8 @@
           "faceIDPermission": "Permettre à ENDVERA de confirmer une action sensible avec la sécurité de votre téléphone."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {

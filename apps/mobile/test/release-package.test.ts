@@ -10,8 +10,8 @@ describe("R35 mobile release information", () => {
       ios: { bundleIdentifier: expo.ios.bundleIdentifier, buildNumber: expo.ios.buildNumber },
       android: { package: expo.android.package, versionCode: expo.android.versionCode },
     });
-    expect(mobileReleaseLabel("ios")).toBe("0.2.1 (1)");
-    expect(mobileReleaseLabel("android")).toBe("0.2.1 (11)");
+    expect(mobileReleaseLabel("ios")).toBe("0.2.2 (1)");
+    expect(mobileReleaseLabel("android")).toBe("0.2.2 (12)");
   });
 
   it("shows only local package readiness and no external effect", () => {
