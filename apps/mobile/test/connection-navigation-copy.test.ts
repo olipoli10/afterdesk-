@@ -26,7 +26,7 @@ beforeEach(() => { vi.clearAllMocks(); effects.buttons.length = 0; state.role = 
 describe("installed app and separate connection navigation — rendered components, not device proof", () => {
   it("preserves version diagnostics without asserting the installed build is unsigned or undeployed", () => {
     const text = render(SettingsScreen);
-    expect(text).toContain("0.2.2"); expect(text).toContain("Android 12");
+    expect(text).toContain("0.2.3"); expect(text).toContain("Android 13");
     expect(text).not.toContain("ni signé"); expect(text).not.toContain("ni déployé");
     expect(text).toContain("L’installation de l’app n’active pas tes connexions");
   });

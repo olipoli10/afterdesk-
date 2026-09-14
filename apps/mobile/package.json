@@ -1,7 +1,7 @@
 {
   "name": "@endvera/mobile",
   "main": "index.js",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "dependencies": {
     "@better-auth/expo": "1.6.25",
     "better-auth": "1.6.25",

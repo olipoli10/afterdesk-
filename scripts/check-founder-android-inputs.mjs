@@ -70,7 +70,7 @@ export function validateFounderAndroidBuildInputs(raw) {
   const app = value.app?.expo, eas = value.eas, pkg = value.packageJson;
   if (!app || app.name !== 'ENDVERA' || app.slug !== 'endvera' || app.scheme !== 'endvera' || app.owner !== 'endveras-team'
     || app.extra?.eas?.projectId !== PROJECT || app.android?.package !== 'ai.endvera.mobile'
-    || app.android?.versionCode !== expected.expectedVersionCode || pkg?.name !== '@endvera/mobile' || pkg.main !== 'expo-router/entry'
+    || app.android?.versionCode !== expected.expectedVersionCode || pkg?.name !== '@endvera/mobile' || pkg.main !== 'index.js'
     || typeof app.version !== 'string' || !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.test(app.version) || pkg.version !== app.version) fail('APP_IDENTITY');
   const identities = value.definition?.identities;
   const android = Array.isArray(identities) ? identities.filter(item => item?.target === 'ANDROID') : [];

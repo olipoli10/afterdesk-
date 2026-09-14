@@ -1,23 +1,25 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import * as Notifications from "expo-notifications";
 import { AppState } from "react-native";
 import { refreshLinkedAndroidDevice, runDeviceCalendarBridge } from "@/lib/device-calendar-bridge";
 
 export function DeviceCalendarBridgeRunner({ workspaceId }: { workspaceId?: string }) {
-  const reconciling = useRef(false);
   const reconcile = useCallback(() => {
-    if (!workspaceId || reconciling.current) return;
-    reconciling.current = true;
+    if (!workspaceId) return;
+    void runDeviceCalendarBridge(workspaceId);
+  }, [workspaceId]);
+
+  const refreshAndReconcile = useCallback(() => {
+    if (!workspaceId) return;
     void refreshLinkedAndroidDevice(workspaceId)
       .catch(() => null)
-      .then(() => runDeviceCalendarBridge(workspaceId))
-      .finally(() => { reconciling.current = false; });
+      .then(() => runDeviceCalendarBridge(workspaceId));
   }, [workspaceId]);
 
   useEffect(() => {
-    reconcile();
+    refreshAndReconcile();
     const appState = AppState.addEventListener("change", (state) => {
-      if (state === "active") reconcile();
+      if (state === "active") refreshAndReconcile();
     });
     const received = Notifications.addNotificationReceivedListener(reconcile);
     const tapped = Notifications.addNotificationResponseReceivedListener(reconcile);
@@ -26,7 +28,7 @@ export function DeviceCalendarBridgeRunner({ workspaceId }: { workspaceId?: stri
       received.remove();
       tapped.remove();
     };
-  }, [reconcile]);
+  }, [reconcile, refreshAndReconcile]);
 
   return null;
 }

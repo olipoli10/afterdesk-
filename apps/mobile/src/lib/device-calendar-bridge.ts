@@ -7,11 +7,18 @@ import { Platform } from "react-native";
 import { z } from "zod";
 import { MobileApi } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
+import {
+  deviceCalendarMarker,
+  persistedDeviceCalendarEventMatches,
+  type ExpectedDeviceCalendarEvent,
+} from "@/lib/device-calendar-verification";
 import { personalDeviceStatusSchema, type DevicePermissionSnapshot } from "@/lib/personal-device-bridge";
 
 const IDENTITY_KEY = "endvera.device.identity.v1";
 const CALENDAR_KEY = "endvera.device.calendar.v1";
 const JOURNAL_KEY = "endvera.device.calendar.receipt.v1";
+const MAX_DIRECTIVES_PER_WAKE = 10;
+const VERIFICATION_DELAYS_MS = [0, 250, 750, 1_500] as const;
 
 const identitySchema = z.object({
   schemaVersion: z.literal(1),
@@ -53,7 +60,7 @@ const api = new MobileApi({
     catch { return ""; }
   },
 });
-let runPromise: Promise<DeviceBridgeOutcome> | null = null;
+let runQueue: Promise<unknown> = Promise.resolve();
 
 async function ensureNotificationChannel() {
   if (Platform.OS !== "android") return;
@@ -95,7 +102,7 @@ export async function listWritableDeviceCalendars(): Promise<WritableDeviceCalen
   if (permission.status !== "granted") return [];
   const calendars = await Calendar.getCalendars(Calendar.EntityTypes.EVENT);
   return calendars
-    .filter((calendar) => calendar.allowsModifications && calendar.isVisible !== false)
+    .filter((calendar) => calendar.allowsModifications && calendar.isVisible !== false && calendar.isSynced === true)
     .sort((left, right) => Number(Boolean(right.isPrimary)) - Number(Boolean(left.isPrimary))
       || left.title.localeCompare(right.title))
     .map((calendar) => selectedCalendarSchema.parse({
@@ -213,6 +220,34 @@ async function recoverReceipt(identity: z.infer<typeof identitySchema>, journal:
   return result.status;
 }
 
+function wait(milliseconds: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function findPersistedEvent(
+  calendar: Calendar.ExpoCalendar,
+  expected: ExpectedDeviceCalendarEvent,
+  candidateId?: string,
+) {
+  for (const delay of VERIFICATION_DELAYS_MS) {
+    if (delay > 0) await wait(delay);
+    if (candidateId) {
+      try {
+        const byId = await Calendar.ExpoCalendarEvent.get(candidateId);
+        if (persistedDeviceCalendarEventMatches(byId, expected)) return byId;
+      } catch { /* The range lookup below remains authoritative. */ }
+    }
+    try {
+      const start = new Date(Date.parse(expected.startsAt) - 60_000);
+      const end = new Date(Date.parse(expected.endsAt) + 60_000);
+      const listed = await calendar.listEvents(start, end);
+      const matched = listed.find((event) => persistedDeviceCalendarEventMatches(event, expected));
+      if (matched) return matched;
+    } catch { /* Retry read-only verification; never repeat the native write. */ }
+  }
+  return null;
+}
+
 async function runOnce(workspaceId: string): Promise<DeviceBridgeOutcome> {
   const at = new Date().toISOString();
   if (Platform.OS !== "android") return { state: "IDLE", detail: "Pont Android non applicable.", at };
@@ -233,7 +268,7 @@ async function runOnce(workspaceId: string): Promise<DeviceBridgeOutcome> {
   if (permissions.status !== "granted") return { state: "REFUSED", detail: "Permission calendrier absente.", at };
   const calendars = await listWritableDeviceCalendars();
   if (!calendars.some((calendar) => calendar.id === selected.id)) {
-    return { state: "REFUSED", detail: "Le calendrier choisi n’est plus modifiable.", at };
+    return { state: "REFUSED", detail: "Le calendrier choisi n’est plus visible, modifiable et synchronisé.", at };
   }
   let status;
   try { status = await api.personalDeviceStatus(workspaceId, identity.deviceId, identity.deviceSecret); }
@@ -254,14 +289,27 @@ async function runOnce(workspaceId: string): Promise<DeviceBridgeOutcome> {
   await writeSecure(JOURNAL_KEY, journal);
   try {
     const calendar = await Calendar.ExpoCalendar.get(selected.id);
+    if (!calendar.allowsModifications || calendar.isVisible === false || calendar.isSynced !== true) {
+      throw new Error("DEVICE_CALENDAR_NOT_SYNCED");
+    }
+    const marker = deviceCalendarMarker(directive.directiveId);
+    const expected: ExpectedDeviceCalendarEvent = {
+      calendarId: selected.id,
+      title: directive.request.title,
+      startsAt: directive.request.startsAt,
+      endsAt: directive.request.endsAt,
+      marker,
+    };
     const event = await calendar.createEvent({
       title: directive.request.title,
       startDate: new Date(directive.request.startsAt),
       endDate: new Date(directive.request.endsAt),
       timeZone: directive.request.timezone,
-      notes: "Ajouté par ENDVERA à ta demande SMS.",
+      notes: `Ajouté par ENDVERA à ta demande SMS.\n${marker}`,
     });
-    journal = journalSchema.parse({ ...journal, phase: "NATIVE_APPLIED", nativeEventId: event.id });
+    const persisted = await findPersistedEvent(calendar, expected, event.id);
+    if (!persisted) throw new Error("DEVICE_CALENDAR_READBACK_FAILED");
+    journal = journalSchema.parse({ ...journal, phase: "NATIVE_APPLIED", nativeEventId: persisted.id });
   } catch {
     journal = journalSchema.parse({ ...journal, phase: "UNCERTAIN", reason: "NATIVE_RESULT_UNKNOWN" });
   }
@@ -278,9 +326,30 @@ async function runOnce(workspaceId: string): Promise<DeviceBridgeOutcome> {
   }
 }
 
+async function drainDeviceCalendarBridge(workspaceId: string): Promise<DeviceBridgeOutcome> {
+  let completed = 0;
+  let lastCompleted: DeviceBridgeOutcome | null = null;
+  for (let processed = 0; processed < MAX_DIRECTIVES_PER_WAKE; processed += 1) {
+    const result = await runOnce(workspaceId);
+    if (result.state !== "COMPLETED") {
+      if (result.state === "IDLE" && lastCompleted) {
+        return { ...lastCompleted, detail: `${completed} rendez-vous ajouté(s), relu(s) et confirmé(s).` };
+      }
+      return result;
+    }
+    completed += 1;
+    lastCompleted = result;
+  }
+  return lastCompleted ?? { state: "IDLE", detail: "Aucune action autorisée en attente.", at: new Date().toISOString() };
+}
+
 export function runDeviceCalendarBridge(workspaceId: string) {
-  if (!runPromise) runPromise = runOnce(workspaceId).finally(() => { runPromise = null; });
-  return runPromise;
+  const scheduled = runQueue.then(
+    () => drainDeviceCalendarBridge(workspaceId),
+    () => drainDeviceCalendarBridge(workspaceId),
+  );
+  runQueue = scheduled;
+  return scheduled;
 }
 
 export async function revokeThisAndroidDevice(workspaceId: string) {

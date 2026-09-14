@@ -12,6 +12,23 @@ describe("Android calendar bridge safety structure", () => {
     expect(source).not.toContain("setInterval");
   });
 
+  it("confirms only a persisted event in a visible writable synchronized calendar", () => {
+    expect(source).toContain("calendar.isSynced === true");
+    expect(source).toContain("ExpoCalendarEvent.get(candidateId)");
+    expect(source).toContain("calendar.listEvents(start, end)");
+    expect(source).toContain("persistedDeviceCalendarEventMatches");
+    const persisted = source.indexOf("const persisted = await findPersistedEvent");
+    expect(persisted).toBeGreaterThan(0);
+    expect(source.indexOf('phase: "NATIVE_APPLIED"', persisted)).toBeGreaterThan(persisted);
+  });
+
+  it("serializes every wake and drains all pending directives without dropping a notification", () => {
+    expect(source).toContain("MAX_DIRECTIVES_PER_WAKE");
+    expect(source).toContain("drainDeviceCalendarBridge");
+    expect(source).toContain("runQueue.then");
+    expect(runner).not.toContain("reconciling.current");
+  });
+
   it("runs only on foreground, registration, or a generic notification wake", () => {
     expect(runner).toContain('state === "active"');
     expect(runner).toContain("addNotificationReceivedListener");

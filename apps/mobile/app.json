@@ -3,7 +3,7 @@
     "name": "ENDVERA",
     "slug": "endvera",
     "owner": "endveras-team",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "endvera",
@@ -20,7 +20,7 @@
     },
     "android": {
       "package": "ai.endvera.mobile",
-      "versionCode": 12,
+      "versionCode": 13,
       "googleServicesFile": "./google-services.json",
       "blockedPermissions": [
         "android.permission.READ_SMS",
