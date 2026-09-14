@@ -10,6 +10,24 @@ function event(suffix = "", starts = "demain à 14h", timezone = "America/Toront
   return resolvePersonalCalendarTemporal(input, JSON.stringify(proposal), "a", { receivedAt: "2026-09-10T13:00:00Z", timezone });
 }
 describe("calendar literal source and explicit timezone boundaries", () => {
+  it("resolves the observed 18:30 owner command after exact unique span realignment", () => {
+    const source = "Ajoute à mon calendrier, demain à 18:30, un rendez-vous d'une heure avec Marc au Randolph";
+    const input = createPersonalIntentInput("observed-owner-1830", source);
+    const proposal = { schemaVersion: 1, requestFingerprint: input.requestFingerprint,
+      actions: [{ id: "event", kind: "PREPARE_CALENDAR_EVENT", dependsOn: [],
+        title: { start: 0, end: 1, quote: "un rendez-vous d'une heure avec Marc au Randolph" },
+        starts: { start: 0, end: 1, quote: "demain à 18:30" },
+        ends: { start: 0, end: 1, quote: "d'une heure" } }] };
+    expect(resolvePersonalCalendarTemporal(input, JSON.stringify(proposal), "event", {
+      receivedAt: "2026-09-14T00:34:38.000Z",
+      timezone: "America/Toronto",
+    })).toMatchObject({
+      status: "RESOLVED_NOT_AUTHORIZED",
+      startsAtUtc: "2026-09-14T22:30:00.000Z",
+      endsAtUtc: "2026-09-14T23:30:00.000Z",
+      timezone: "America/Toronto",
+    });
+  });
   it("accepts the natural explicit de interval without changing a source quote", () => {
     expect(event("", "demain de 14h")).toMatchObject({ status: "RESOLVED_NOT_AUTHORIZED", startsAtUtc: "2026-09-11T18:00:00.000Z", endsAtUtc: "2026-09-11T19:00:00.000Z" });
   });

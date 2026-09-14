@@ -53,7 +53,7 @@ describe("OFF-by-default personal OpenRouter transport adapter", () => {
     if (kind === "finish") body.choices[0].finish_reason = "length";
     else {
       const proposal = structuredClone(value);
-      if (kind === "span") proposal.actions[0].period.start = 0;
+      if (kind === "span") proposal.actions[0].period.quote = "not-in-source";
       if (kind === "fingerprint") proposal.requestFingerprint = `sha256:${"f".repeat(64)}`;
       if (kind === "schema") Object.assign(proposal, { secretProviderBody: "not-for-logs" });
       body.choices[0].message.content = JSON.stringify(proposal);

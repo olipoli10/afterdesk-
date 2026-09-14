@@ -18,6 +18,22 @@ export type PersonalIntentInput = Readonly<z.infer<typeof inputSchema>>;
 const sha = (value: string) => `sha256:${createHash("sha256").update(value, "utf8").digest("hex")}`;
 const invalidUnicode = (value: string) => /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(value);
 
+function alignExactSourceSpan(source: string, quoted: z.infer<typeof span>) {
+  if (invalidUnicode(quoted.quote)) throw new Error("PERSONAL_INTENT_SOURCE_SPAN_MISMATCH");
+  if (quoted.end > quoted.start && quoted.end <= source.length
+    && source.slice(quoted.start, quoted.end) === quoted.quote) return;
+
+  // Models are unreliable UTF-16 counters. The quote remains untrusted, but a
+  // unique byte-for-byte occurrence lets the server derive its coordinates
+  // without fuzzy matching, normalization, invention, or semantic authority.
+  const start = source.indexOf(quoted.quote);
+  if (start < 0 || source.indexOf(quoted.quote, start + 1) >= 0) {
+    throw new Error("PERSONAL_INTENT_SOURCE_SPAN_MISMATCH");
+  }
+  quoted.start = start;
+  quoted.end = start + quoted.quote.length;
+}
+
 export function createPersonalIntentInput(sourceOperationId: string, source: string): PersonalIntentInput {
   id.parse(sourceOperationId); sourceSchema.parse(source);
   if (invalidUnicode(source)) throw new Error("PERSONAL_INTENT_SOURCE_UNICODE_INVALID");
@@ -62,8 +78,7 @@ export function inspectPersonalIntentCandidate(raw: string, untrustedInput: Pers
       : action.kind === "PREPARE_CALENDAR_EVENT" ? [action.title, action.starts, action.ends]
       : action.kind === "CLARIFY" ? [] : [action.message];
     for (const quoted of quotes) {
-      if (quoted.end <= quoted.start || quoted.end > input.source.length || invalidUnicode(quoted.quote)
-        || input.source.slice(quoted.start, quoted.end) !== quoted.quote) throw new Error("PERSONAL_INTENT_SOURCE_SPAN_MISMATCH");
+      alignExactSourceSpan(input.source, quoted);
     }
     prior.add(action.id);
   }

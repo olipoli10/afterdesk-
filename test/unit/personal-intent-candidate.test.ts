@@ -20,11 +20,35 @@ describe("personal model candidate is evidence-bound, never action authority", (
   it("refuses a changed source with the old fingerprint", () => {
     expect(() => inspect(proposal(), createPersonalIntentInput("syn-inbound-1", source.replace("demain", "lundi")))).toThrow("PERSONAL_INTENT_REQUEST_MISMATCH");
   });
-  it("refuses fabricated and shifted quotation spans", () => {
+  it("refuses fabricated quotation spans and realigns a unique exact quote", () => {
     const p = proposal(); p.actions[0].period.quote = "lundi";
     expect(() => inspect(p)).toThrow("PERSONAL_INTENT_SOURCE_SPAN_MISMATCH");
     p.actions[0].period = { ...span(), start: 0 };
-    expect(() => inspect(p)).toThrow("PERSONAL_INTENT_SOURCE_SPAN_MISMATCH");
+    expect(inspect(p).proposal.actions[0]).toMatchObject({
+      period: span(),
+    });
+  });
+  it("refuses to guess when an exact quote occurs more than once", () => {
+    const repeated = "demain puis demain";
+    const request = createPersonalIntentInput("syn-repeated", repeated);
+    const value = { schemaVersion: 1, requestFingerprint: request.requestFingerprint,
+      actions: [{ id: "a1", kind: "READ_CALENDAR", period: { start: 1, end: 2, quote: "demain" }, dependsOn: [] }] };
+    expect(() => inspect(value, request)).toThrow("PERSONAL_INTENT_SOURCE_SPAN_MISMATCH");
+  });
+  it("realigns the exact unique fields from the observed 18:30 calendar command", () => {
+    const text = "Ajoute à mon calendrier, demain à 18:30, un rendez-vous d'une heure avec Marc au Randolph";
+    const request = createPersonalIntentInput("observed-owner-sms", text);
+    const value = { schemaVersion: 1, requestFingerprint: request.requestFingerprint,
+      actions: [{ id: "event", kind: "PREPARE_CALENDAR_EVENT", dependsOn: [],
+        title: { start: 0, end: 1, quote: "un rendez-vous d'une heure avec Marc au Randolph" },
+        starts: { start: 0, end: 1, quote: "demain à 18:30" },
+        ends: { start: 0, end: 1, quote: "d'une heure" } }] };
+    const inspected = inspect(value, request).proposal.actions[0];
+    expect(inspected).toMatchObject({
+      title: span(text, "un rendez-vous d'une heure avec Marc au Randolph"),
+      starts: span(text, "demain à 18:30"),
+      ends: span(text, "d'une heure"),
+    });
   });
   it("refuses fabricated target numbers, even for a self-SMS proposal", () => {
     const p = { ...proposal(), actions: [{ id: "a1", kind: "PREPARE_SELF_SMS", message: span(), to: "+15555550101", dependsOn: [] }] };
